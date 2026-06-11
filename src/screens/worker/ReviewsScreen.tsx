@@ -9,41 +9,24 @@ import { colors, fonts, shadows } from '../../theme';
 
 type ReviewsScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'Reviews'>;
 
-const dummyReviews = [
-  {
-    id: 1,
-    employer: 'Reyes Household',
-    timeAgo: '2 days ago',
-    jobType: 'Tile setter',
-    stars: 5,
-    comment: '"Quality work and punctual. Will hire again."',
-    avatarLetter: 'R',
-    avatarColor: colors.sky,
-  },
-  {
-    id: 2,
-    employer: 'Cruz Family',
-    timeAgo: '2 weeks ago',
-    jobType: 'House painting',
-    stars: 4,
-    comment: '"Good worker. Took initiative. Slightly slower than expected but clean work."',
-    avatarLetter: 'C',
-    avatarColor: colors.butter,
-  },
-  {
-    id: 3,
-    employer: 'Flores Household',
-    timeAgo: '1 month ago',
-    jobType: 'Fence repair',
-    stars: 5,
-    comment: '"Excellent. Would recommend to neighbors."',
-    avatarLetter: 'F',
-    avatarColor: colors.peach,
-  },
-];
+import { ActivityIndicator } from 'react-native';
+import { useReviews } from '../../hooks/useReviews';
 
 export const ReviewsScreen: React.FC = () => {
   const navigation = useNavigation<ReviewsScreenNavigationProp>();
+  const { data, isLoading, error } = useReviews();
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  const reputationScore = data?.reputation_score || 0;
+  const reviewsCount = data?.reviews_count || 0;
+  const reviewsList = data?.reviews || [];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -61,13 +44,13 @@ export const ReviewsScreen: React.FC = () => {
         {/* Summary Card */}
         <View style={styles.summaryCard}>
           <View style={styles.scoreSection}>
-            <Text style={styles.scoreNumber}>4.8</Text>
+            <Text style={styles.scoreNumber}>{reputationScore.toFixed(1)}</Text>
             <View style={styles.starsRow}>
               {[1, 2, 3, 4, 5].map((s) => (
-                <Ionicons key={s} name="star" size={12} color={colors.gold} />
+                <Ionicons key={s} name={s <= Math.round(reputationScore) ? "star" : "star-outline"} size={12} color={colors.gold} />
               ))}
             </View>
-            <Text style={styles.reviewsCount}>8 reviews</Text>
+            <Text style={styles.reviewsCount}>{reviewsCount} reviews</Text>
           </View>
 
           <View style={styles.distributionSection}>
@@ -101,17 +84,17 @@ export const ReviewsScreen: React.FC = () => {
 
         {/* Reviews List */}
         <View style={styles.reviewsList}>
-          {dummyReviews.map((review) => (
+          {reviewsList.map((review) => (
             <View key={review.id} style={styles.reviewCard}>
               <View style={styles.reviewHeader}>
                 <View style={styles.reviewerInfo}>
-                  <View style={[styles.avatar, { backgroundColor: review.avatarColor }]}>
-                    <Text style={styles.avatarText}>{review.avatarLetter}</Text>
+                  <View style={[styles.avatar, { backgroundColor: colors.sky }]}>
+                    <Text style={styles.avatarText}>{review.reviewer?.name?.charAt(0) || 'U'}</Text>
                   </View>
                   <View>
-                    <Text style={styles.reviewerName}>{review.employer}</Text>
+                    <Text style={styles.reviewerName}>{review.reviewer?.name}</Text>
                     <Text style={styles.reviewMeta}>
-                      {review.timeAgo} • {review.jobType}
+                      {review.reviewer_role}
                     </Text>
                   </View>
                 </View>
@@ -119,14 +102,14 @@ export const ReviewsScreen: React.FC = () => {
                   {[1, 2, 3, 4, 5].map((s) => (
                     <Ionicons 
                       key={s} 
-                      name={s <= review.stars ? "star" : "star-outline"} 
+                      name={s <= review.overall_rating ? "star" : "star-outline"} 
                       size={12} 
-                      color={s <= review.stars ? colors.gold : colors.inkLight} 
+                      color={s <= review.overall_rating ? colors.gold : colors.inkLight} 
                     />
                   ))}
                 </View>
               </View>
-              <Text style={styles.reviewComment}>{review.comment}</Text>
+              {review.comment ? <Text style={styles.reviewComment}>"{review.comment}"</Text> : null}
             </View>
           ))}
         </View>

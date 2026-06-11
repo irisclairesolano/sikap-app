@@ -52,6 +52,8 @@ import ProfileScreen from '../screens/worker/ProfileScreen';
 import ReviewsScreen from '../screens/worker/ReviewsScreen';
 import NotificationsScreen from '../screens/worker/NotificationsScreen';
 import RateEmployerScreen from '../screens/worker/RateEmployerScreen';
+import EditProfileScreen from '../screens/common/EditProfileScreen';
+import SettingsScreen from '../screens/common/SettingsScreen';
 
 // Home Stack
 const FindStack: React.FC = () => (
@@ -165,18 +167,6 @@ const HireReceiptScreen: React.FC = () => (
 const ReportScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
     <Text>Report</Text>
-  </View>
-);
-
-const EditProfileScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Edit Profile</Text>
-  </View>
-);
-
-const SettingsScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Settings</Text>
   </View>
 );
 

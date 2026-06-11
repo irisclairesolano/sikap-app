@@ -124,12 +124,10 @@ import { EmployerDashboardScreen } from '../screens/employer/EmployerDashboardSc
 import ProfileScreen from '../screens/employer/ProfileScreen';
 import NotificationsScreen from '../screens/employer/NotificationsScreen';
 import RateWorkerScreen from '../screens/employer/RateWorkerScreen';
-
-const MyJobsScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>My Posted Jobs</Text>
-  </View>
-);
+import MyJobsScreen from '../screens/employer/MyJobsScreen';
+import JobStatusManagementScreen from '../screens/employer/JobStatusManagementScreen';
+import EditProfileScreen from '../screens/common/EditProfileScreen';
+import SettingsScreen from '../screens/common/SettingsScreen';
 
 import { PostJobScreen } from '../screens/employer/PostJobScreen';
 import { ViewApplicantsScreen } from '../screens/employer/ViewApplicantsScreen';
@@ -166,27 +164,9 @@ const ReportScreen: React.FC = () => (
   </View>
 );
 
-const EditProfileScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Edit Profile</Text>
-  </View>
-);
-
-const SettingsScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Settings</Text>
-  </View>
-);
-
 const ReviewsScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
     <Text>Reviews</Text>
-  </View>
-);
-
-const JobStatusManagementScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Job Status Management</Text>
   </View>
 );
 

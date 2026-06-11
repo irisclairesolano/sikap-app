@@ -6,11 +6,24 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { WorkerStackParamList } from '../../navigation/workerTypes';
 import { colors, fonts, shadows } from '../../theme';
+import { useNotifications } from '../../hooks/useNotifications';
+import { ActivityIndicator } from 'react-native';
 
 type NotificationsScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'Notifications'>;
 
 export const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation<NotificationsScreenNavigationProp>();
+  const { data, isLoading, error } = useNotifications();
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  const notifications = data?.notifications.data || [];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -31,66 +44,32 @@ export const NotificationsScreen: React.FC = () => {
         <Text style={[styles.eyebrow, { color: colors.primary }]}>Today</Text>
 
         <View style={styles.notificationList}>
-          {/* Unread: New job request */}
-          <View style={[styles.notificationCard, styles.unreadPrimary]}>
-            <View style={[styles.iconBubble, { backgroundColor: colors.peach }]}>
-              <Ionicons name="chatbubbles" size={18} color={colors.primary} />
-            </View>
-            <View style={styles.notificationContent}>
-              <Text style={styles.notificationTitle}>New job request</Text>
-              <Text style={styles.notificationBody}>
-                Reyes Household wants to talk about your tile-setter application.
-              </Text>
-              <Text style={styles.notificationTime}>2 hours ago</Text>
-            </View>
-          </View>
+          {notifications.length === 0 ? (
+            <Text style={{ fontFamily: fonts.body, color: colors.inkSoft, textAlign: 'center', marginTop: 20 }}>
+              No notifications yet.
+            </Text>
+          ) : (
+            notifications.map(notif => {
+              const isUnread = notif.read_at === null;
+              // Extract meaningful text based on notification type/data structure if known.
+              // Fallback to generic message.
+              const title = notif.data?.title || notif.type.replace('Notification', '');
+              const message = notif.data?.message || 'You have a new notification.';
 
-          {/* Unread: Job marked complete */}
-          <View style={[styles.notificationCard, styles.unreadMint]}>
-            <View style={[styles.iconBubble, { backgroundColor: colors.mint }]}>
-              <Ionicons name="checkmark-circle" size={18} color={colors.mintDeep} />
-            </View>
-            <View style={styles.notificationContent}>
-              <Text style={styles.notificationTitle}>Job marked complete</Text>
-              <Text style={styles.notificationBody}>
-                Cruz Family marked your house-painting job as done. Leave a rating!
-              </Text>
-              <Text style={styles.notificationTime}>5 hours ago</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Earlier Section */}
-        <Text style={[styles.eyebrow, { marginTop: 24 }]}>Earlier</Text>
-
-        <View style={styles.notificationList}>
-          {/* Read: 5-star review */}
-          <View style={styles.notificationCard}>
-            <View style={[styles.iconBubble, { backgroundColor: colors.butter }]}>
-              <Ionicons name="star" size={18} color={colors.primary} />
-            </View>
-            <View style={styles.notificationContent}>
-              <Text style={styles.notificationTitle}>You received a 5-star review</Text>
-              <Text style={styles.notificationBody}>
-                "Quality work and punctual. Will hire again."
-              </Text>
-              <Text style={styles.notificationTime}>2 days ago</Text>
-            </View>
-          </View>
-
-          {/* Read: Account verified */}
-          <View style={styles.notificationCard}>
-            <View style={[styles.iconBubble, { backgroundColor: colors.mint }]}>
-              <Ionicons name="shield-checkmark" size={18} color={colors.mintDeep} />
-            </View>
-            <View style={styles.notificationContent}>
-              <Text style={styles.notificationTitle}>Account verified</Text>
-              <Text style={styles.notificationBody}>
-                Your ID was approved. Welcome to SIKAP!
-              </Text>
-              <Text style={styles.notificationTime}>1 week ago</Text>
-            </View>
-          </View>
+              return (
+                <View key={notif.id} style={[styles.notificationCard, isUnread && styles.unreadPrimary]}>
+                  <View style={[styles.iconBubble, { backgroundColor: isUnread ? colors.peach : colors.butter }]}>
+                    <Ionicons name="notifications" size={18} color={colors.primary} />
+                  </View>
+                  <View style={styles.notificationContent}>
+                    <Text style={styles.notificationTitle}>{title}</Text>
+                    <Text style={styles.notificationBody}>{message}</Text>
+                    <Text style={styles.notificationTime}>{new Date(notif.created_at).toLocaleDateString()}</Text>
+                  </View>
+                </View>
+              );
+            })
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
