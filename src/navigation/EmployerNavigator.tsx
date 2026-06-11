@@ -3,15 +3,16 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { Text, View } from 'react-native';
+import { colors } from '../theme';
 
 export type EmployerStackParamList = {
   Home: undefined;
   PostJob: undefined;
   JobDetails: { id: number };
   ViewApplicants: { id: number };
-  ApplicantProfile: { id: number };
+  ApplicantDetail: { applicantId: number; jobTitle: string; applicantName: string; status: string };
   SendRequest: { id: number };
-  ConfirmHire: { id: number };
+  ConfirmHire: { applicantId: number; applicantName: string; jobTitle: string };
   CancelHire: { id: number };
   MarkComplete: { id: number };
   RateWorker: { id: number };
@@ -38,11 +39,11 @@ const Stack = createNativeStackNavigator<EmployerStackParamList>();
 // Home Stack
 const HomeStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Home" component={HomeScreen} />
+    <Stack.Screen name="Home" component={EmployerDashboardScreen} />
     <Stack.Screen name="PostJob" component={PostJobScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="ViewApplicants" component={ViewApplicantsScreen} />
-    <Stack.Screen name="ApplicantProfile" component={ApplicantProfileScreen} />
+    <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
     <Stack.Screen name="SendRequest" component={SendRequestScreen} />
     <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
     <Stack.Screen name="CancelHire" component={CancelHireScreen} />
@@ -106,8 +107,8 @@ const EmployerNavigator: React.FC = () => {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#0D9488',
-        tabBarInactiveTintColor: '#78716C',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.inkSoft,
         headerShown: false,
       })}
     >
@@ -119,12 +120,10 @@ const EmployerNavigator: React.FC = () => {
   );
 };
 
-// Placeholder screens
-const HomeScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Employer Home</Text>
-  </View>
-);
+import { EmployerDashboardScreen } from '../screens/employer/EmployerDashboardScreen';
+import ProfileScreen from '../screens/employer/ProfileScreen';
+import NotificationsScreen from '../screens/employer/NotificationsScreen';
+import RateWorkerScreen from '../screens/employer/RateWorkerScreen';
 
 const MyJobsScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -132,23 +131,10 @@ const MyJobsScreen: React.FC = () => (
   </View>
 );
 
-const NotificationsScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Notifications</Text>
-  </View>
-);
-
-const ProfileScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Employer Profile</Text>
-  </View>
-);
-
-const PostJobScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Post a Job</Text>
-  </View>
-);
+import { PostJobScreen } from '../screens/employer/PostJobScreen';
+import { ViewApplicantsScreen } from '../screens/employer/ViewApplicantsScreen';
+import ApplicantDetailScreen from '../screens/employer/ApplicantDetailScreen';
+import ConfirmHireScreen from '../screens/employer/ConfirmHireScreen';
 
 const JobDetailsScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -156,27 +142,9 @@ const JobDetailsScreen: React.FC = () => (
   </View>
 );
 
-const ViewApplicantsScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>View Applicants</Text>
-  </View>
-);
-
-const ApplicantProfileScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Applicant Profile</Text>
-  </View>
-);
-
 const SendRequestScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
     <Text>Send Request</Text>
-  </View>
-);
-
-const ConfirmHireScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Confirm Hire</Text>
   </View>
 );
 
@@ -189,12 +157,6 @@ const CancelHireScreen: React.FC = () => (
 const MarkCompleteScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
     <Text>Mark Complete</Text>
-  </View>
-);
-
-const RateWorkerScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Rate Worker</Text>
   </View>
 );
 

@@ -8,6 +8,7 @@ export interface User {
   municipality: string;
   document_url: string | null;
   verification_status: 'pending' | 'approved' | 'rejected' | 'correction_needed';
+  registration_status?: 'pending_email_verification' | 'pending_id_upload' | 'pending_review' | 'approved' | 'rejected';
   verification_badge: boolean;
   is_suspended: boolean;
   reputation_score: number;
@@ -39,6 +40,7 @@ export interface Application {
   final_agreed_price: number | null; // only at employer_confirmed or accepted
   references_revealed: boolean; // true at Stage 2
   contact_revealed: boolean; // true at Stage 4
+  job: JobPost;
   worker: {
     id: number;
     name: string;
@@ -110,7 +112,20 @@ export interface WorkerExperience {
 
 export interface ApiResponse<T> {
   data: T;
+  message?: string;
+}
+
+// Laravel API response format for OTP verification
+export interface LaravelOtpResponse {
   message: string;
+  user_id: number;
+}
+
+// Laravel API response format for login
+export interface LaravelLoginResponse {
+  token: string;
+  token_type: string;
+  user: User;
 }
 
 export interface ApiError {

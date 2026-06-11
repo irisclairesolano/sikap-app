@@ -3,6 +3,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { useAuthCheck } from '../hooks/useAuthCheck';
 import AuthNavigator from './AuthNavigator';
+import { AuthStackParamList } from './authTypes';
 import EmployerNavigator from './EmployerNavigator';
 import WorkerNavigator from './WorkerNavigator';
 
@@ -15,9 +16,8 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const RootNavigator: React.FC = () => {
-  const { user, isLoading, isAuthenticated, isVerified } = useAuthCheck();
+  const { user, isLoading, isVerified } = useAuthCheck();
 
-  // Show loading while checking auth
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -26,22 +26,37 @@ const RootNavigator: React.FC = () => {
     );
   }
 
-  // If not authenticated, show auth flow
-  if (!isAuthenticated) {
-    return <AuthNavigator />;
+  if (!user) {
+    return <AuthNavigator key="guest" />;
   }
 
-  // If authenticated but not verified, show pending verification
   if (!isVerified) {
-    return <AuthNavigator />;
+    let gateStart: keyof AuthStackParamList = 'PendingVerify';
+    let params: any = undefined;
+
+    const status = user.registration_status;
+    if (status === 'pending_email_verification') {
+      gateStart = 'OTPVerify';
+      params = { userId: user.id, email: user.email, role: user.role || 'worker' };
+    } else if (status === 'pending_id_upload' || (!status && !user.document_url)) {
+      gateStart = 'IDUpload';
+      params = { userId: user.id, role: user.role || 'worker' };
+    } else if (status === 'pending_review' || (!status && user.document_url)) {
+      gateStart = 'PendingVerify';
+    } else if (status === 'rejected') {
+      gateStart = 'Login';
+    }
+
+    return (
+      <AuthNavigator key={`pending-${user.id}`} initialRouteName={gateStart} initialParams={params} />
+    );
   }
 
-  // If authenticated and verified, show appropriate navigator
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {user?.role === 'worker' ? (
+      {user.role === 'worker' ? (
         <Stack.Screen name="Worker" component={WorkerNavigator} />
-      ) : user?.role === 'employer' ? (
+      ) : user.role === 'employer' ? (
         <Stack.Screen name="Employer" component={EmployerNavigator} />
       ) : (
         <Stack.Screen name="Auth" component={AuthNavigator} />

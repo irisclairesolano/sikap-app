@@ -1,172 +1,314 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useMutation } from '@tanstack/react-query';
-import { authApi } from '../../api/auth';
+import React, { useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ApiClientError } from '../../api/client';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import { useAuth } from '../../hooks/useAuth';
+import { AuthStackParamList } from '../../navigation/authTypes';
+import { colors, fonts } from '../../theme';
 import { LoginRequest } from '../../types';
-import { colors } from '../../theme/colors';
+import { Ionicons } from '@expo/vector-icons';
 
-type AuthStackParamList = {
-  Login: undefined;
-  Register: undefined;
-  ForgotPassword: undefined;
-};
-
-type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
+type LoginScreenNavigationProp = NativeStackNavigationProp<
+  AuthStackParamList,
+  'Login'
+>;
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
+  const insets = useSafeAreaInsets();
+  const { loginMutation } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<string>('');
-
-  const loginMutation = useMutation({
-    mutationFn: authApi.login,
-    onSuccess: (data) => {
-      console.log('Login successful:', data);
-      // Navigation will be handled by RootNavigator auth check
-      Alert.alert('Success', 'Login successful!');
-    },
-    onError: (error: any) => {
-      console.error('Login error:', error);
-      setErrors(error.message || 'Login failed');
-    },
-  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [banner, setBanner] = useState('');
 
   const handleLogin = () => {
-    setErrors('');
-    
-    // Basic validation
-    if (!email || !password) {
-      setErrors('Please fill in all fields');
-      return;
-    }
-
+    setBanner('');
     const credentials: LoginRequest = {
-      email,
+      email: email.trim(),
       password,
     };
 
-    loginMutation.mutate(credentials);
+    if (!credentials.email || !credentials.password) {
+      setBanner('Please fill in all fields.');
+      return;
+    }
+
+    loginMutation.mutate(credentials, {
+      onSuccess: (data) => {
+        const status = data?.user?.registration_status;
+        const navigateByStatus = (status: string) => {
+          const user = data?.user;
+          const role = (user?.role === 'admin' ? 'worker' : user?.role) || 'worker';
+          const userId = user?.id || 0;
+          const userEmail = user?.email || email;
+
+          switch (status) {
+            case 'pending_email_verification':
+              navigation.navigate('OTPVerify', { userId, email: userEmail, role });
+              break;
+            case 'pending_id_upload':
+              navigation.navigate('IDUpload', { userId, role });
+              break;
+            case 'pending_review':
+              navigation.navigate('PendingVerify');
+              break;
+            case 'approved':
+              // notifyAuthChanged() will trigger AuthNavigator re-render and go to Dashboard
+              break;
+            case 'rejected':
+              setBanner('Your application was rejected. Please contact support.');
+              break;
+            default:
+              break;
+          }
+        };
+        if (status) {
+          navigateByStatus(status);
+        }
+        setBanner('');
+      },
+      onError: (err: unknown) => {
+        if (err instanceof ApiClientError) {
+          setBanner(err.message === 'UNAUTHORIZED' ? 'Invalid credentials.' : err.message);
+          return;
+        }
+        setBanner(err instanceof Error ? err.message : 'Login failed');
+      },
+    });
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to your account</Text>
-
-        {errors ? <Text style={styles.errorText}>{errors}</Text> : null}
-
-        <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
-            <Text style={styles.input}>{email || 'Enter email'}</Text>
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <Text style={styles.input}>{password ? '•'.repeat(password.length) : 'Enter password'}</Text>
-          </View>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
+        
+        {/* App Bar */}
+        <View style={styles.appBar}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
+            <Ionicons name="arrow-back" size={24} color={colors.ink} />
+          </TouchableOpacity>
+          <View style={{ width: 40 }} />
+          <View style={{ width: 40 }} />
         </View>
 
-        <TouchableOpacity 
-          style={[styles.button, loginMutation.isPending && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={loginMutation.isPending}
+        <ScrollView
+          contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.buttonText}>
-            {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
-          </Text>
-        </TouchableOpacity>
+          <View style={styles.brandRow}>
+            <Text style={styles.brandText}>sikap</Text>
+            <View style={styles.brandDot} />
+          </View>
 
-        <View style={styles.footer}>
-          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-            <Text style={styles.linkText}>Forgot Password?</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.header}>
+            <View style={styles.eyebrowContainer}>
+              <Text style={styles.eyebrow}>Sign in</Text>
+            </View>
+            <Text style={styles.title}>
+              Welcome <Text style={styles.titleItalic}>back.</Text>
+            </Text>
+            <Text style={styles.subtitle}>
+              Sign in to manage your account.
+            </Text>
+          </View>
+
+          {banner ? (
+            <View style={styles.bannerError}>
+              <Text style={styles.bannerTextError}>{banner}</Text>
+            </View>
+          ) : null}
+
+          <View style={styles.form}>
+            <Input
+              label="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              placeholder="you@example.com"
+            />
+
+            <View>
+              <Input
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                rightIcon={{
+                  name: showPassword ? 'eye-off' : 'eye',
+                  type: 'ionicon',
+                  onPress: () => setShowPassword(!showPassword),
+                }}
+                placeholder="Your password"
+              />
+              <TouchableOpacity 
+                style={styles.forgotBtn} 
+                onPress={() => navigation.navigate('ForgotPassword')}
+              >
+                <Text style={styles.forgotText}>Forgot password?</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.footer}>
+            <Button
+              label={loginMutation.isPending ? 'Signing in...' : 'Sign in'}
+              size="lg"
+              fullWidth
+              loading={loginMutation.isPending}
+              onPress={handleLogin}
+            />
+          </View>
+
+          <View style={styles.createAccountContainer}>
+            <Text style={styles.newText}>New user?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Welcome')}>
+              <Text style={styles.createText}>Create an account</Text>
+            </TouchableOpacity>
+          </View>
+
+        </ScrollView>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.paper,
   },
-  content: {
-    flex: 1,
-    padding: 20,
+  appBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    textAlign: 'center',
+  scroll: {
+    paddingHorizontal: 26,
+    paddingTop: 12,
+    flexGrow: 1,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 28,
+  },
+  brandText: {
+    fontFamily: fonts.display,
+    fontSize: 28,
+    fontWeight: '900',
+    color: colors.ink,
+    letterSpacing: -0.84,
+  },
+  brandDot: {
+    width: 8,
+    height: 8,
+    backgroundColor: colors.primary,
+    borderRadius: 4,
+    marginLeft: -2,
     marginBottom: 8,
+  },
+  header: {
+    marginBottom: 28,
+  },
+  eyebrowContainer: {
+    marginBottom: 8,
+  },
+  eyebrow: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.primary,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+  },
+  title: {
+    fontFamily: fonts.display,
+    fontSize: 36,
+    lineHeight: 36,
+    color: colors.ink,
+    letterSpacing: -0.9,
+    marginBottom: 10,
+  },
+  titleItalic: {
+    fontFamily: fonts.displayItalic,
+    color: colors.primary,
   },
   subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  errorText: {
-    color: colors.error,
-    fontSize: 12,
-    textAlign: 'center',
-    marginBottom: 16,
+    fontFamily: fonts.body,
+    fontSize: 15,
+    color: colors.inkMuted,
   },
   form: {
-    marginBottom: 24,
+    gap: 14,
   },
-  inputContainer: {
-    marginBottom: 16,
+  forgotBtn: {
+    alignItems: 'flex-end',
+    marginTop: 6,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.textPrimary,
-    marginBottom: 8,
-  },
-  input: {
-    fontSize: 16,
-    color: colors.textPrimary,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    backgroundColor: colors.white,
-  },
-  button: {
-    backgroundColor: colors.primary,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  buttonDisabled: {
-    backgroundColor: colors.border,
-  },
-  buttonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
+  forgotText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.primary,
   },
   footer: {
-    alignItems: 'center',
-    gap: 8,
+    marginTop: 24,
   },
-  linkText: {
-    color: colors.primary,
+  createAccountContainer: {
+    marginTop: 'auto',
+    alignItems: 'center',
+    paddingTop: 40,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+  },
+  newText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkSoft,
+    marginBottom: 4,
+  },
+  createText: {
+    fontFamily: fonts.bodyBold,
     fontSize: 14,
+    color: colors.primary,
+  },
+  bannerError: {
+    backgroundColor: '#FEE2E2',
+    borderColor: colors.error,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 14,
+  },
+  bannerTextError: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.error,
     textAlign: 'center',
   },
 });

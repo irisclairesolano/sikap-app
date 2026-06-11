@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from 'expo-secure-store';
 import { authApi } from '../api/auth';
 import { profileApi } from '../api/profile';
+import { notifyAuthChanged } from '../store/authEvents';
 import { LoginRequest, RegisterRequest, User } from '../types';
 
 export const useAuth = () => {
@@ -11,14 +12,10 @@ export const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: async (data) => {
-      // Store token
       await SecureStore.setItemAsync('auth_token', data.token);
-      
-      // Set user data in cache
       queryClient.setQueryData(['profile'], data.user);
-      
-      // Invalidate any cached data
       queryClient.invalidateQueries();
+      notifyAuthChanged();
     },
     onError: (error) => {
       console.error('Login error:', error);
@@ -26,19 +23,8 @@ export const useAuth = () => {
     },
   });
 
-  // Register mutation
   const registerMutation = useMutation({
     mutationFn: authApi.register,
-    onSuccess: async (data) => {
-      // Store token
-      await SecureStore.setItemAsync('auth_token', data.token);
-      
-      // Set user data in cache
-      queryClient.setQueryData(['profile'], data.user);
-      
-      // Invalidate any cached data
-      queryClient.invalidateQueries();
-    },
     onError: (error) => {
       console.error('Register error:', error);
       throw error;

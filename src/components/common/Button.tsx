@@ -1,0 +1,149 @@
+import React from 'react';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, ViewStyle, TextStyle, TouchableOpacityProps, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, fonts, shadows } from '../../theme';
+
+export interface ButtonProps extends TouchableOpacityProps {
+  label: string;
+  variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost' | 'soft';
+  size?: 'base' | 'lg';
+  loading?: boolean;
+  disabled?: boolean;
+  fullWidth?: boolean;
+  accessibilityLabel?: string;
+  icon?: any;
+  iconPosition?: 'left' | 'right';
+  style?: any;
+};
+
+const Button: React.FC<ButtonProps> = ({
+  label,
+  onPress,
+  variant = 'primary',
+  size = 'base',
+  loading,
+  disabled,
+  fullWidth,
+  accessibilityLabel,
+  icon,
+  iconPosition = 'left',
+  style,
+}) => {
+  const variantStyle: ViewStyle =
+    variant === 'primary'
+      ? styles.primaryBg
+      : variant === 'danger'
+        ? styles.dangerBg
+        : variant === 'outline'
+          ? styles.outlineBg
+          : variant === 'ghost'
+            ? styles.ghostBg
+            : styles.secondaryBg;
+
+  const labelStyle: TextStyle =
+    variant === 'outline' ? styles.labelOutline 
+    : variant === 'secondary' ? styles.labelSecondary
+    : variant === 'ghost' ? styles.labelGhost
+    : styles.labelOnPrimary;
+
+  const shadowStyle: ViewStyle | undefined =
+    variant === 'primary' && !disabled ? shadows.color 
+    : variant === 'secondary' && !disabled ? shadows.sm : undefined;
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.base,
+        size === 'lg' && styles.lg,
+        variantStyle,
+        shadowStyle,
+        fullWidth && styles.fullWidth,
+        (disabled || loading) && styles.disabled,
+        style,
+      ]}
+      onPress={onPress}
+      disabled={disabled || loading}
+      activeOpacity={0.85}
+      accessibilityLabel={accessibilityLabel || label}
+      accessibilityRole="button"
+    >
+      {loading ? (
+        <ActivityIndicator color={variant === 'outline' || variant === 'ghost' ? colors.primary : variant === 'secondary' ? colors.ink : colors.white} />
+      ) : (
+        <View style={styles.contentRow}>
+          {icon && iconPosition === 'left' && (
+            <Ionicons name={icon} size={size === 'lg' ? 20 : 18} color={labelStyle.color} style={{ marginRight: 8 }} />
+          )}
+          <Text style={[styles.label, size === 'lg' && styles.labelLg, labelStyle]}>{label}</Text>
+          {icon && iconPosition === 'right' && (
+            <Ionicons name={icon} size={size === 'lg' ? 20 : 18} color={labelStyle.color} style={{ marginLeft: 8 }} />
+          )}
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  base: {
+    paddingVertical: 16,
+    paddingHorizontal: 22,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  contentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lg: {
+    paddingVertical: 18,
+    paddingHorizontal: 26,
+  },
+  fullWidth: {
+    alignSelf: 'stretch',
+  },
+  disabled: {
+    opacity: 0.55,
+  },
+  primaryBg: {
+    backgroundColor: colors.primary,
+  },
+  secondaryBg: {
+    backgroundColor: colors.white, // Soft variant
+  },
+  outlineBg: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+  },
+  ghostBg: {
+    backgroundColor: 'transparent',
+  },
+  dangerBg: {
+    backgroundColor: colors.error,
+  },
+  label: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
+  },
+  labelLg: {
+    fontSize: 16,
+  },
+  labelOnPrimary: {
+    color: colors.white,
+  },
+  labelSecondary: {
+    color: colors.ink,
+  },
+  labelOutline: {
+    color: colors.primary,
+  },
+  labelGhost: {
+    color: colors.inkMuted,
+  },
+});
+
+export default Button;

@@ -2,12 +2,10 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
+import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors } from '../../theme/colors';
-
-type AuthStackParamList = {
-  Splash: undefined;
-  Onboarding1: undefined;
-};
+import { fonts } from '../../theme/typography';
+import { Wordmark } from '../../components/common/Wordmark';
 
 type SplashScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Splash'>;
 
@@ -43,10 +41,10 @@ const SplashScreen: React.FC = () => {
 
     animateDots();
 
-    // Navigate to onboarding after 2.5 seconds
+    // Navigate to onboarding after 1.5 seconds
     const timer = setTimeout(() => {
-      navigation.replace('Onboarding1');
-    }, 2500);
+      navigation.replace('Welcome');
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [navigation, dotAnimations]);
@@ -55,12 +53,8 @@ const SplashScreen: React.FC = () => {
     <View style={styles.container}>
       {/* Logo Container */}
       <View style={styles.logoContainer}>
-        <View style={styles.logoBox}>
-          <Text style={styles.logoIcon}>💼</Text>
-        </View>
-        
-        <Text style={styles.appName}>SIKAP</Text>
-        <Text style={styles.tagline}>Trabaho para sa Sorsogon</Text>
+        <Wordmark size={64} />
+        <Text style={styles.subtitle}>Find local work.</Text>
       </View>
 
       {/* Loading Dots */}
@@ -77,13 +71,6 @@ const SplashScreen: React.FC = () => {
           />
         ))}
       </View>
-
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          Sorsogon State University — Bulan Campus
-        </Text>
-      </View>
     </View>
   );
 };
@@ -91,7 +78,7 @@ const SplashScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.peach,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -99,50 +86,24 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
-  logoBox: {
-    width: 58,
-    height: 58,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoIcon: {
-    fontSize: 28,
-  },
-  appName: {
-    color: colors.white,
-    fontSize: 22,
-    fontWeight: '800',
-    letterSpacing: 1,
-    marginTop: 3,
-  },
-  tagline: {
-    color: 'rgba(255, 255, 255, 0.75)',
-    fontSize: 11,
+  subtitle: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 13,
+    color: colors.primaryDark,
+    marginTop: 14,
   },
   dotsContainer: {
     flexDirection: 'row',
-    gap: 4,
-    marginTop: 8,
+    gap: 6,
+    position: 'absolute',
+    bottom: 64,
   },
   dot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: 'rgba(255, 255, 255, 0.35)',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 22,
-    alignItems: 'center',
-  },
-  footerText: {
-    color: 'rgba(255, 255, 255, 0.45)',
-    fontSize: 9,
-    textAlign: 'center',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
   },
 });
 
