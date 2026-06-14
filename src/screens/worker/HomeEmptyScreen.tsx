@@ -1,18 +1,39 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useQuery } from '@tanstack/react-query';
 import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { useAuth } from '../../hooks/useAuth';
+import { profileApi } from '../../api/profile';
 
 export const HomeEmptyScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const { user } = useAuth();
+  const isFocused = useIsFocused();
+
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: profileApi.getProfile,
+    enabled: isFocused,
+  });
 
   const getInitial = (name?: string) => name ? name.charAt(0).toUpperCase() : 'M';
+
+  // Calculate progress
+  const hasSkills = (profile?.worker_profile?.skills?.length || 0) > 0;
+  const hasHistory = (profile?.worker_profile?.experiences?.length || 0) > 0;
+  const hasRefs = (profile?.worker_profile?.character_references?.length || 0) > 0;
+
+  let progressCount = 1; // Account verified
+  if (hasSkills) progressCount++;
+  if (hasHistory) progressCount++;
+  if (hasRefs) progressCount++;
+
+  const progressPercent = Math.round((progressCount / 4) * 100);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -20,7 +41,14 @@ export const HomeEmptyScreen: React.FC = () => {
         <View style={styles.appBar}>
           <View style={styles.appBarLeft}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{getInitial(user?.name || 'Worker')}</Text>
+              {user?.avatar_url ? (
+                <Image 
+                  source={{ uri: user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '')}${user.avatar_url}` }} 
+                  style={styles.avatarImage} 
+                />
+              ) : (
+                <Text style={styles.avatarText}>{getInitial(user?.name || 'Worker')}</Text>
+              )}
             </View>
             <View>
               <Text style={styles.greetingSmall}>Hi,</Text>
@@ -38,10 +66,10 @@ export const HomeEmptyScreen: React.FC = () => {
         <View style={styles.progressCard}>
           <Text style={styles.welcomeText}>WELCOME TO SIKAP</Text>
           <Text style={styles.progressHeadline}>
-            Your profile is{'\n'}<Text style={styles.progressAccent}>20% complete.</Text>
+            Your profile is{'\n'}<Text style={styles.progressAccent}>{progressPercent}% complete.</Text>
           </Text>
           <View style={styles.progressBarBg}>
-            <View style={styles.progressBarFill} />
+            <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
           </View>
         </View>
 
@@ -60,52 +88,52 @@ export const HomeEmptyScreen: React.FC = () => {
             </View>
           </View>
 
-          {/* Add Skills (Active) */}
+          {/* Add Skills */}
           <TouchableOpacity 
-            style={[styles.taskCard, styles.activeTaskCard]}
+            style={[styles.taskCard, !hasSkills && styles.activeTaskCard]}
             onPress={() => navigation.navigate('AddSkills')}
             activeOpacity={0.7}
           >
-            <View style={[styles.taskIconBox, { backgroundColor: colors.peach }]}>
-              <Ionicons name="construct" size={16} color={colors.primary} />
+            <View style={[styles.taskIconBox, { backgroundColor: hasSkills ? colors.mint : colors.peach }]}>
+              <Ionicons name={hasSkills ? "checkmark" : "construct"} size={16} color={hasSkills ? colors.mintDeep : colors.primary} />
             </View>
             <View style={styles.taskTextContainer}>
               <Text style={styles.taskTitle}>Add your skills</Text>
-              <Text style={styles.taskSubtitle}>Tell employers what you do</Text>
+              <Text style={styles.taskSubtitle}>{hasSkills ? 'Completed' : 'Tell employers what you do'}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.primary} />
+            <Ionicons name={hasSkills ? "pencil" : "chevron-forward"} size={18} color={hasSkills ? colors.inkLight : colors.primary} />
           </TouchableOpacity>
 
           {/* Add Work History */}
           <TouchableOpacity 
-            style={styles.taskCard}
+            style={[styles.taskCard, (!hasHistory && hasSkills) && styles.activeTaskCard]}
             onPress={() => navigation.navigate('AddWorkHistory')}
             activeOpacity={0.7}
           >
-            <View style={[styles.taskIconBox, { backgroundColor: colors.paperCream }]}>
-              <Ionicons name="briefcase-outline" size={16} color={colors.inkMuted} />
+            <View style={[styles.taskIconBox, { backgroundColor: hasHistory ? colors.mint : colors.paperCream }]}>
+              <Ionicons name={hasHistory ? "checkmark" : "briefcase-outline"} size={16} color={hasHistory ? colors.mintDeep : colors.inkMuted} />
             </View>
             <View style={styles.taskTextContainer}>
               <Text style={styles.taskTitle}>Add work history</Text>
-              <Text style={styles.taskSubtitle}>Optional but recommended</Text>
+              <Text style={styles.taskSubtitle}>{hasHistory ? 'Completed' : 'Optional but recommended'}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
+            <Ionicons name={hasHistory ? "pencil" : "chevron-forward"} size={18} color={colors.inkLight} />
           </TouchableOpacity>
 
           {/* Add Character References */}
           <TouchableOpacity 
-            style={styles.taskCard}
+            style={[styles.taskCard, (!hasRefs && hasHistory) && styles.activeTaskCard]}
             onPress={() => navigation.navigate('AddCharacterReferences')}
             activeOpacity={0.7}
           >
-            <View style={[styles.taskIconBox, { backgroundColor: colors.paperCream }]}>
-              <Ionicons name="people-outline" size={16} color={colors.inkMuted} />
+            <View style={[styles.taskIconBox, { backgroundColor: hasRefs ? colors.mint : colors.paperCream }]}>
+              <Ionicons name={hasRefs ? "checkmark" : "people-outline"} size={16} color={hasRefs ? colors.mintDeep : colors.inkMuted} />
             </View>
             <View style={styles.taskTextContainer}>
               <Text style={styles.taskTitle}>Add character references</Text>
-              <Text style={styles.taskSubtitle}>Up to 3 people who can vouch</Text>
+              <Text style={styles.taskSubtitle}>{hasRefs ? 'Completed' : 'Up to 3 people who can vouch'}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
+            <Ionicons name={hasRefs ? "pencil" : "chevron-forward"} size={18} color={colors.inkLight} />
           </TouchableOpacity>
 
         </View>
@@ -152,6 +180,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  avatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
   avatarText: {
     fontFamily: fonts.bodyBold,
     fontSize: 16,
@@ -178,7 +211,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   progressCard: {
-    backgroundColor: colors.primary, // gradient placeholder
+    backgroundColor: colors.primaryDark, // gradient placeholder
     borderRadius: 20,
     padding: 24,
     marginTop: 8,

@@ -130,12 +130,8 @@ const IDUploadScreen: React.FC = () => {
   };
 
   return (
-    <ScrollView 
-      style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}
-      contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.appBar}>
+    <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
+      <View style={[styles.appBar, { paddingHorizontal: 26 }]}>
         <TouchableOpacity onPress={() => navigation.navigate('Register', { role: userRole })} style={styles.iconBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
@@ -144,6 +140,12 @@ const IDUploadScreen: React.FC = () => {
         </View>
         <View style={{ width: 40 }} />
       </View>
+
+      <ScrollView 
+        style={styles.container}
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
+        showsVerticalScrollIndicator={false}
+      >
 
       <View style={styles.progressBar}>
         <View style={styles.progressActive} />
@@ -226,6 +228,7 @@ const IDUploadScreen: React.FC = () => {
         />
       </View>
     </ScrollView>
+  </View>
   );
 };
 

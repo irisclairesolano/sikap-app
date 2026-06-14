@@ -8,25 +8,39 @@ import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import Button from '../../components/common/Button';
 
-const SUGGESTED_SKILLS = [
-  'Electrical', 'Welding', 'Tile setting', 'Cooking', 'Childcare', 
-  'Laundry', 'Gardening', 'Driving', 'Cleaning', 'Carpentry', 'Masonry', 'Painting', 'Plumbing'
-];
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { skillsApi, Skill } from '../../api/skills';
+import { profileApi } from '../../api/profile';
 
 export const AddSkillsScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
 
-  const toggleSkill = (skill: string) => {
-    if (selectedSkills.includes(skill)) {
-      setSelectedSkills(selectedSkills.filter(s => s !== skill));
+  const { data: skills = [] } = useQuery({
+    queryKey: ['skills'],
+    queryFn: skillsApi.getSkills,
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: (skillIds: number[]) => profileApi.addSkills(skillIds),
+    onSuccess: () => {
+      navigation.goBack();
+    },
+    onError: (err) => {
+      console.error('Failed to save skills', err);
+    }
+  });
+
+  const toggleSkill = (skill: Skill) => {
+    if (selectedSkills.find(s => s.id === skill.id)) {
+      setSelectedSkills(selectedSkills.filter(s => s.id !== skill.id));
     } else {
       setSelectedSkills([...selectedSkills, skill]);
     }
   };
 
-  const getSkillIcon = (skill: string) => {
-    switch(skill) {
+  const getSkillIcon = (skillName: string) => {
+    switch(skillName) {
       case 'Carpentry': return 'hammer';
       case 'Masonry': return 'construct';
       case 'Painting': return 'brush';
@@ -57,12 +71,12 @@ export const AddSkillsScreen: React.FC = () => {
         <View style={styles.chipContainer}>
           {selectedSkills.map(skill => (
             <TouchableOpacity 
-              key={skill} 
+              key={skill.id} 
               style={[styles.chip, styles.chipSelected]}
               onPress={() => toggleSkill(skill)}
             >
-              <Ionicons name={getSkillIcon(skill) as any} size={14} color={colors.primaryDark} style={{ marginRight: 4 }} />
-              <Text style={styles.chipTextSelected}>{skill}</Text>
+              <Ionicons name={getSkillIcon(skill.name) as any} size={14} color={colors.primaryDark} style={{ marginRight: 4 }} />
+              <Text style={styles.chipTextSelected}>{skill.name}</Text>
               <Ionicons name="close" size={14} color={colors.primaryDark} style={{ marginLeft: 4 }} />
             </TouchableOpacity>
           ))}
@@ -73,13 +87,13 @@ export const AddSkillsScreen: React.FC = () => {
 
         <Text style={styles.sectionHeader}>Suggested</Text>
         <View style={styles.chipContainer}>
-          {SUGGESTED_SKILLS.filter(s => !selectedSkills.includes(s)).map(skill => (
+          {skills.filter(s => !selectedSkills.find(selected => selected.id === s.id)).map(skill => (
             <TouchableOpacity 
-              key={skill} 
+              key={skill.id} 
               style={styles.chip}
               onPress={() => toggleSkill(skill)}
             >
-              <Text style={styles.chipText}>+ {skill}</Text>
+              <Text style={styles.chipText}>+ {skill.name}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -87,10 +101,11 @@ export const AddSkillsScreen: React.FC = () => {
 
       <View style={styles.bottomBar}>
         <Button 
-          label="Save skills" 
+          label={saveMutation.isPending ? "Saving..." : "Next"} 
           size="lg"
           fullWidth 
-          onPress={() => navigation.goBack()}
+          loading={saveMutation.isPending}
+          onPress={() => saveMutation.mutate(selectedSkills.map(s => s.id))}
         />
       </View>
     </SafeAreaView>

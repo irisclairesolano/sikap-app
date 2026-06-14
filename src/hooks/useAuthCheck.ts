@@ -23,11 +23,12 @@ export const useAuthCheck = () => {
           return;
         }
 
-        const response = await apiClient<{ data: User }>('/profile');
-        if (!cancelled) setUser(response.data);
-      } catch {
+        const response = await apiClient<User>('/profile');
+        if (!cancelled) setUser(response);
+      } catch (error: any) {
         if (!cancelled) {
-          await SecureStore.deleteItemAsync('auth_token').catch(() => {});
+          // Only clear the user state, do NOT delete the token.
+          // apiClient handles deleting the token automatically on 401 Unauthorized.
           setUser(null);
         }
       } finally {

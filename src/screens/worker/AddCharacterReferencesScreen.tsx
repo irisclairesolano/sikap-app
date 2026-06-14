@@ -1,24 +1,65 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import Button from '../../components/common/Button';
+import CustomInput from '../../components/common/Input';
+import { profileApi } from '../../api/profile';
 
-// Dummy data for visual completion
-const REFERENCES = [
-  { id: '1', initials: 'JR', name: 'Juan Reyes', role: 'Former employer · 2024', color: colors.sky },
-  { id: '2', initials: 'AS', name: 'Ana Santos', role: 'Brgy. Captain · Community', color: colors.butter },
-];
+// Colors for avatars
+const AVATAR_COLORS = [colors.sky, colors.butter, colors.mint];
 
 export const AddCharacterReferencesScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
+  const queryClient = useQueryClient();
+  
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: profileApi.getProfile,
+  });
+
+  const references = profile?.worker_profile?.character_references || [];
+  const [isAdding, setIsAdding] = useState(false);
+
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [relationship, setRelationship] = useState('');
+
+  const saveMutation = useMutation({
+    mutationFn: () => profileApi.addReference({
+      name,
+      phone,
+      relationship,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setName('');
+      setPhone('');
+      setRelationship('');
+      setIsAdding(false);
+    },
+    onError: (err) => {
+      console.error('Failed to add reference', err);
+    }
+  });
+
+  const showForm = isAdding || references.length === 0;
+
+  const getInitials = (n: string) => {
+    return n.split(' ').map(part => part.charAt(0)).slice(0, 2).join('').toUpperCase();
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
@@ -29,7 +70,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>
           Three people{'\n'}who can <Text style={styles.titleAccent}>vouch.</Text>
         </Text>
@@ -41,45 +82,96 @@ export const AddCharacterReferencesScreen: React.FC = () => {
           </Text>
         </View>
 
-        <Text style={styles.sectionHeader}>References · {REFERENCES.length} of 3</Text>
+        {!showForm && (
+          <>
+            <Text style={styles.sectionHeader}>References · {references.length} of 3</Text>
 
-        <View style={styles.listContainer}>
-          {REFERENCES.map((ref) => (
-            <View key={ref.id} style={styles.refCard}>
-              <View style={[styles.avatar, { backgroundColor: ref.color }]}>
-                <Text style={styles.avatarText}>{ref.initials}</Text>
-              </View>
-              <View style={styles.refDetails}>
-                <Text style={styles.refName}>{ref.name}</Text>
-                <Text style={styles.refRole}>{ref.role}</Text>
-              </View>
-              <TouchableOpacity>
-                <Ionicons name="ellipsis-vertical" size={18} color={colors.inkLight} />
+            <View style={styles.listContainer}>
+              {references.map((ref, index) => (
+                <View key={ref.id} style={styles.refCard}>
+                  <View style={[styles.avatar, { backgroundColor: AVATAR_COLORS[index % AVATAR_COLORS.length] }]}>
+                    <Text style={styles.avatarText}>{getInitials(ref.name)}</Text>
+                  </View>
+                  <View style={styles.refDetails}>
+                    <Text style={styles.refName}>{ref.name}</Text>
+                    <Text style={styles.refRole}>{ref.relationship} · {ref.phone}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            {references.length < 3 && (
+              <TouchableOpacity style={styles.addButton} activeOpacity={0.7} onPress={() => setIsAdding(true)}>
+                <View style={styles.addIconCircle}>
+                  <Ionicons name="add" size={22} color={colors.white} />
+                </View>
+                <Text style={styles.addTitle}>Add another reference</Text>
+                <Text style={styles.addSubtitle}>{3 - references.length} slot{3 - references.length > 1 ? 's' : ''} remaining</Text>
               </TouchableOpacity>
-            </View>
-          ))}
-        </View>
+            )}
+          </>
+        )}
 
-        {REFERENCES.length < 3 && (
-          <TouchableOpacity style={styles.addButton} activeOpacity={0.7}>
-            <View style={styles.addIconCircle}>
-              <Ionicons name="add" size={22} color={colors.white} />
-            </View>
-            <Text style={styles.addTitle}>Add another reference</Text>
-            <Text style={styles.addSubtitle}>{3 - REFERENCES.length} slot{3 - REFERENCES.length > 1 ? 's' : ''} remaining</Text>
-          </TouchableOpacity>
+        {showForm && (
+          <View style={{ marginTop: 32, gap: 16 }}>
+            <CustomInput
+              label="Full name"
+              value={name}
+              onChangeText={setName}
+              placeholder="E.g. Juan Reyes"
+              icon="person-outline"
+            />
+            <CustomInput
+              label="Relationship"
+              value={relationship}
+              onChangeText={setRelationship}
+              placeholder="E.g. Former employer"
+              icon="people-outline"
+            />
+            <CustomInput
+              label="Phone number"
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="E.g. 09123456789"
+              icon="call-outline"
+              keyboardType="phone-pad"
+            />
+          </View>
         )}
       </ScrollView>
 
       <View style={styles.bottomBar}>
-        <Button 
-          label="Done" 
-          size="lg"
-          variant="soft"
-          fullWidth 
-          onPress={() => navigation.goBack()}
-        />
+        {showForm ? (
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            {references.length > 0 && (
+              <Button 
+                label="Cancel" 
+                size="lg"
+                variant="outline"
+                onPress={() => setIsAdding(false)}
+                style={{ flex: 1 }}
+              />
+            )}
+            <Button 
+              label={saveMutation.isPending ? "Saving..." : "Save reference"} 
+              size="lg"
+              style={{ flex: references.length > 0 ? 2 : 1 }}
+              loading={saveMutation.isPending}
+              onPress={() => saveMutation.mutate()}
+              disabled={!name || !phone || !relationship}
+            />
+          </View>
+        ) : (
+          <Button 
+            label="Done" 
+            size="lg"
+            variant="soft"
+            fullWidth 
+            onPress={() => navigation.goBack()}
+          />
+        )}
       </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

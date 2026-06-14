@@ -137,16 +137,16 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
           </Text>
           <Ionicons name="chevron-down" size={20} color={colors.inkSoft} />
         </TouchableOpacity>
-        {municipalityError && (
+        {municipalityError ? (
           <Text style={styles.errorText}>{municipalityError}</Text>
-        )}
+        ) : null}
         
         {/* Show selected municipality when available */}
-        {municipalityValue && (
+        {municipalityValue ? (
           <Text style={styles.selectedValue}>
             Selected: {municipalityValue}
           </Text>
-        )}
+        ) : null}
       </View>
 
       {/* Barangay Picker */}
@@ -180,16 +180,16 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             color={municipalityValue ? colors.inkSoft : colors.inkFaint}
           />
         </TouchableOpacity>
-        {barangayError && (
+        {barangayError ? (
           <Text style={styles.errorText}>{barangayError}</Text>
-        )}
+        ) : null}
         
         {/* Show selected barangay when available */}
-        {barangayValue && (
+        {barangayValue ? (
           <Text style={styles.selectedValue}>
             Selected: {barangayValue}
           </Text>
-        )}
+        ) : null}
       </View>
 
       {/* Modals */}

@@ -4,18 +4,51 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingV
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import CustomInput from '../../components/common/Input';
 import Button from '../../components/common/Button';
+import { profileApi } from '../../api/profile';
 
 export const AddWorkHistoryScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
+  const queryClient = useQueryClient();
   
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: profileApi.getProfile,
+  });
+
+  const [isAdding, setIsAdding] = useState(false);
+  const experiences = profile?.worker_profile?.experiences || [];
+
   const [jobTitle, setJobTitle] = useState('');
   const [employer, setEmployer] = useState('');
   const [duration, setDuration] = useState('');
   const [description, setDescription] = useState('');
+
+  const saveMutation = useMutation({
+    mutationFn: () => profileApi.addExperience({
+      job_title: jobTitle,
+      employer_name: employer,
+      duration: duration,
+      description: description,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setJobTitle('');
+      setEmployer('');
+      setDuration('');
+      setDescription('');
+      setIsAdding(false);
+    },
+    onError: (err) => {
+      console.error('Failed to add work experience', err);
+    }
+  });
+
+  const showForm = isAdding || experiences.length === 0;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -35,51 +68,104 @@ export const AddWorkHistoryScreen: React.FC = () => {
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>
-            Add a <Text style={styles.titleAccent}>recent</Text>{'\n'}job.
+            {showForm ? (
+              <>Add a <Text style={styles.titleAccent}>recent</Text>{'\n'}job.</>
+            ) : (
+              <>Your <Text style={styles.titleAccent}>work</Text>{'\n'}history.</>
+            )}
           </Text>
-          <Text style={styles.subtitle}>You can add more later.</Text>
+          <Text style={styles.subtitle}>
+            {showForm ? 'You can add more later.' : `${experiences.length} experience${experiences.length > 1 ? 's' : ''} added.`}
+          </Text>
 
-          <View style={styles.formContainer}>
-            <CustomInput
-              label="Job title"
-              value={jobTitle}
-              onChangeText={setJobTitle}
-              placeholder="E.g. Tile setter"
-              icon="briefcase-outline"
-            />
-            <CustomInput
-              label="Employer or project"
-              value={employer}
-              onChangeText={setEmployer}
-              placeholder="E.g. Reyes household renovation"
-              icon="business-outline"
-            />
-            <CustomInput
-              label="How long?"
-              value={duration}
-              onChangeText={setDuration}
-              placeholder="E.g. 2 weeks · January 2026"
-              icon="calendar-outline"
-            />
-            <CustomInput
-              label="Description (optional)"
-              value={description}
-              onChangeText={setDescription}
-              placeholder="What did you do?"
-              multiline
-              icon="document-text-outline"
-            />
-          </View>
+          {!showForm && (
+            <View style={styles.listContainer}>
+              {experiences.map((exp) => (
+                <View key={exp.id} style={styles.card}>
+                  <View style={styles.cardIcon}>
+                    <Ionicons name="briefcase" size={20} color={colors.inkMuted} />
+                  </View>
+                  <View style={styles.cardContent}>
+                    <Text style={styles.cardTitle}>{exp.job_title}</Text>
+                    <Text style={styles.cardSubtitle}>{exp.employer_name}</Text>
+                    <Text style={styles.cardMeta}>{exp.duration}</Text>
+                  </View>
+                </View>
+              ))}
+              <TouchableOpacity style={styles.addButton} onPress={() => setIsAdding(true)}>
+                <View style={styles.addIconCircle}>
+                  <Ionicons name="add" size={22} color={colors.white} />
+                </View>
+                <Text style={styles.addTitle}>Add another job</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {showForm && (
+            <View style={styles.formContainer}>
+              <CustomInput
+                label="Job title"
+                value={jobTitle}
+                onChangeText={setJobTitle}
+                placeholder="E.g. Tile setter"
+                icon="briefcase-outline"
+              />
+              <CustomInput
+                label="Employer or project"
+                value={employer}
+                onChangeText={setEmployer}
+                placeholder="E.g. Reyes household renovation"
+                icon="business-outline"
+              />
+              <CustomInput
+                label="How long?"
+                value={duration}
+                onChangeText={setDuration}
+                placeholder="E.g. 2 weeks · January 2026"
+                icon="calendar-outline"
+              />
+              <CustomInput
+                label="Description (optional)"
+                value={description}
+                onChangeText={setDescription}
+                placeholder="What did you do?"
+                multiline
+                icon="document-text-outline"
+              />
+            </View>
+          )}
         </ScrollView>
 
         <View style={styles.bottomBar}>
-          <Button 
-            label="Save work history" 
-            size="lg"
-            fullWidth 
-            onPress={() => navigation.goBack()}
-            disabled={!jobTitle || !employer || !duration}
-          />
+          {showForm ? (
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              {experiences.length > 0 && (
+                <Button 
+                  label="Cancel" 
+                  size="lg"
+                  variant="outline"
+                  onPress={() => setIsAdding(false)}
+                  style={{ flex: 1 }}
+                />
+              )}
+              <Button 
+                label={saveMutation.isPending ? "Saving..." : "Save job"} 
+                size="lg"
+                style={{ flex: experiences.length > 0 ? 2 : 1 }}
+                loading={saveMutation.isPending}
+                onPress={() => saveMutation.mutate()}
+                disabled={!jobTitle || !employer || !duration}
+              />
+            </View>
+          ) : (
+            <Button 
+              label="Done" 
+              size="lg"
+              variant="soft"
+              fullWidth 
+              onPress={() => navigation.goBack()}
+            />
+          )}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -145,6 +231,80 @@ const styles = StyleSheet.create({
   formContainer: {
     marginTop: 32,
     gap: 16,
+  },
+  listContainer: {
+    marginTop: 32,
+    gap: 12,
+  },
+  card: {
+    flexDirection: 'row',
+    backgroundColor: colors.paperBright,
+    borderRadius: 14,
+    padding: 16,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
+    gap: 14,
+  },
+  cardIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.paperCream,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardContent: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
+    color: colors.ink,
+    marginBottom: 2,
+  },
+  cardSubtitle: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkSoft,
+    marginBottom: 2,
+  },
+  cardMeta: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkMuted,
+  },
+  addButton: {
+    backgroundColor: colors.paperBright,
+    borderWidth: 2,
+    borderColor: colors.paperCream,
+    borderStyle: 'dashed',
+    borderRadius: 14,
+    padding: 20,
+    marginTop: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  addIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  addTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.primaryDark,
   },
   bottomBar: {
     paddingHorizontal: 24,

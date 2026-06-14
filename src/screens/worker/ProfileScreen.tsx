@@ -1,34 +1,46 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { WorkerStackParamList } from '../../navigation/workerTypes';
+import { useQuery } from '@tanstack/react-query';
+import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
+import { profileApi } from '../../api/profile';
+import { useAuth } from '../../hooks/useAuth';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'Profile'>;
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
+  const { user: authUser } = useAuth();
 
-  // Dummy worker data
+  const { data: user, isLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: profileApi.getProfile,
+  });
+
+  if (isLoading || !user) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ fontFamily: fonts.body, color: colors.inkMuted }}>Loading profile...</Text>
+      </SafeAreaView>
+    );
+  }
+
   const worker = {
-    name: 'Maria Santos',
-    location: 'San Rafael, Bulan',
-    tier: 'Tier 1',
-    verified: true,
-    reputation: 4.8,
-    ratings: 8,
-    jobsDone: 12,
-    onTime: '98%',
-    memberSince: '2y',
-    skills: ['Carpentry', 'Masonry', 'Painting', 'Plumbing'],
-    recentReview: {
-      employer: 'Reyes Household',
-      stars: 5,
-      comment: '"Quality work and punctual. Will hire again."'
-    }
+    name: user.name,
+    location: `${user.barangay}, ${user.municipality}`,
+    tier: 'Tier 1', // TODO: Implement tier logic
+    verified: user.verification_status === 'approved',
+    reputation: user.reputation_score,
+    ratings: 0, // TODO: Implement ratings count
+    jobsDone: 0, // TODO: Implement jobs done
+    onTime: '100%', // TODO: Implement on time calculation
+    memberSince: 'New', // TODO: Implement member since calculation based on created_at
+    skills: user.worker_profile?.skills || [],
+    recentReview: null as null | { employer: string, stars: number, comment: string } // TODO: Implement recent review fetch
   };
 
   return (
@@ -47,7 +59,11 @@ export const ProfileScreen: React.FC = () => {
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{worker.name.charAt(0)}</Text>
+            {user.avatar_url ? (
+              <Image source={{ uri: user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '')}${user.avatar_url}` }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>{worker.name.charAt(0)}</Text>
+            )}
           </View>
           <View style={styles.profileInfo}>
             <View style={styles.nameRow}>
@@ -102,19 +118,23 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.skillsSection}>
           <Text style={styles.sectionEyebrow}>Skills</Text>
           <View style={styles.skillsList}>
-            {worker.skills.map((skill, index) => {
-              const bgColors = [colors.peach, colors.mint, colors.butter, colors.sky];
-              const textColors = [colors.primaryDark, colors.mintDeep, colors.ink, colors.skyDeep];
-              const icons = ['hammer', 'construct', 'brush', 'water'] as const;
-              const colorIdx = index % 4;
-              
-              return (
-                <View key={skill} style={[styles.chip, { backgroundColor: bgColors[colorIdx] }]}>
-                  <Ionicons name={icons[colorIdx]} size={14} color={textColors[colorIdx]} />
-                  <Text style={[styles.chipText, { color: textColors[colorIdx] }]}>{skill}</Text>
-                </View>
-              );
-            })}
+            {worker.skills.length === 0 ? (
+              <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>No skills added yet.</Text>
+            ) : (
+              worker.skills.map((skill, index) => {
+                const bgColors = [colors.peach, colors.mint, colors.butter, colors.sky];
+                const textColors = [colors.primaryDark, colors.mintDeep, colors.ink, colors.skyDeep];
+                const icons = ['hammer', 'construct', 'brush', 'water'] as const;
+                const colorIdx = index % 4;
+                
+                return (
+                  <View key={skill.id} style={[styles.chip, { backgroundColor: bgColors[colorIdx] }]}>
+                    <Ionicons name={icons[colorIdx]} size={14} color={textColors[colorIdx]} />
+                    <Text style={[styles.chipText, { color: textColors[colorIdx] }]}>{skill.name}</Text>
+                  </View>
+                );
+              })
+            )}
           </View>
         </View>
 
@@ -154,6 +174,7 @@ const styles = StyleSheet.create({
   scrollContent: { padding: 20, paddingBottom: 40 },
   profileHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 16 },
   avatarContainer: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.peach, alignItems: 'center', justifyContent: 'center' },
+  avatarImage: { width: 64, height: 64, borderRadius: 32 },
   avatarText: { fontFamily: fonts.bodyBold, fontSize: 24, color: colors.primaryDark },
   profileInfo: { flex: 1 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },

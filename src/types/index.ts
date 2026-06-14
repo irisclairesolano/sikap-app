@@ -7,11 +7,14 @@ export interface User {
   barangay: string;
   municipality: string;
   document_url: string | null;
+  avatar_url?: string | null;
   verification_status: 'pending' | 'approved' | 'rejected' | 'correction_needed';
   registration_status?: 'pending_email_verification' | 'pending_id_upload' | 'pending_review' | 'approved' | 'rejected';
   verification_badge: boolean;
   is_suspended: boolean;
   reputation_score: number;
+  worker_profile?: WorkerProfile;
+  employer_profile?: EmployerProfile;
 }
 
 export interface JobPost {
@@ -55,6 +58,12 @@ export interface Application {
   };
 }
 
+export interface Skill {
+  id: number;
+  name: string;
+  category: string;
+}
+
 export interface WorkerProfile {
   id: number;
   name: string;
@@ -62,7 +71,7 @@ export interface WorkerProfile {
   barangay: string;
   municipality: string;
   bio?: string;
-  skills: string[];
+  skills: Skill[];
   experiences: WorkerExperience[];
   character_references: CharacterReference[];
   verification_status: 'pending' | 'approved' | 'rejected' | 'correction_needed';

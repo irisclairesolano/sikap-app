@@ -102,6 +102,20 @@ export const authApi = {
     }
   },
 
+  updateEmail: async (currentEmail: string, newEmail: string): Promise<void> => {
+    console.log('🔍 API Update Email Request:', { currentEmail, newEmail });
+    try {
+      const response = await apiClient('/auth/email', {
+        method: 'PATCH',
+        body: JSON.stringify({ current_email: currentEmail, new_email: newEmail }),
+      });
+      console.log('🔍 API Update Email Response:', response);
+    } catch (error) {
+      console.log('🔍 API Update Email Error:', error);
+      throw error;
+    }
+  },
+
   uploadId: async (idPhoto: FormData): Promise<void> => {
     console.log('🔍 API Upload ID Request:', idPhoto);
     try {
