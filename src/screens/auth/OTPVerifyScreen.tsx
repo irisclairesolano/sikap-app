@@ -3,7 +3,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation } from '@tanstack/react-query';
 import * as SecureStore from 'expo-secure-store';
 import React, { useState, useEffect } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { Platform, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import { ApiClientError } from '../../api/client';
@@ -12,6 +13,7 @@ import Input from '../../components/common/Input';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
+import { OtpInput } from 'react-native-otp-entry';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'OTPVerify'>;
 type RouteProps = RouteProp<AuthStackParamList, 'OTPVerify'>;
@@ -21,6 +23,11 @@ const OTPVerifyScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const { userId, email, role } = route.params;
   const insets = useSafeAreaInsets();
+  
+  const [currentEmail, setCurrentEmail] = useState(email);
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [newEmailInput, setNewEmailInput] = useState(email);
+
   const [otp, setOtp] = useState('');
   const [banner, setBanner] = useState('');
 
@@ -35,7 +42,7 @@ const OTPVerifyScreen: React.FC = () => {
   }, [countdown]);
 
   const verifyMutation = useMutation({
-    mutationFn: (code: string) => authApi.verifyOtp(userId, code, email),
+    mutationFn: (code: string) => authApi.verifyOtp(userId, code, currentEmail),
     onSuccess: async (response) => {
       setBanner('');
       if (response?.user_id) {
@@ -64,13 +71,27 @@ const OTPVerifyScreen: React.FC = () => {
   });
 
   const resendMutation = useMutation({
-    mutationFn: () => authApi.resendOtp(userId, email),
+    mutationFn: () => authApi.resendOtp(userId, currentEmail),
     onSuccess: () => {
       setBanner('');
       setCountdown(59); // Reset countdown
     },
     onError: (err: unknown) => {
       const msg = err instanceof ApiClientError ? err.message : 'Could not resend code';
+      setBanner(msg);
+    },
+  });
+
+  const updateEmailMutation = useMutation({
+    mutationFn: (newAddress: string) => authApi.updateEmail(currentEmail, newAddress),
+    onSuccess: () => {
+      setBanner('');
+      setCurrentEmail(newEmailInput);
+      setIsEditingEmail(false);
+      setCountdown(59); // Start a new countdown assuming the backend resent the OTP
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof ApiClientError ? err.message : 'Could not update email';
       setBanner(msg);
     },
   });
@@ -86,28 +107,26 @@ const OTPVerifyScreen: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
-        
-        {/* App Bar */}
-        <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
-            <Ionicons name="arrow-back" size={24} color={colors.ink} />
-          </TouchableOpacity>
-          <View style={styles.stepBadge}>
-            <Text style={styles.stepBadgeText}>3 of 4</Text>
-          </View>
-          <View style={{ width: 40 }} />
+    <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
+      
+      {/* App Bar */}
+      <View style={styles.appBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
+          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+        </TouchableOpacity>
+        <View style={styles.stepBadge}>
+          <Text style={styles.stepBadgeText}>3 of 4</Text>
         </View>
+        <View style={{ width: 40 }} />
+      </View>
 
-        <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
+      <KeyboardAwareScrollView
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={20}
+      >
           <View style={styles.headerCentered}>
             <View style={styles.iconBox}>
               <Ionicons name="mail-open" size={28} color={colors.primary} />
@@ -117,16 +136,52 @@ const OTPVerifyScreen: React.FC = () => {
               Check your{'\n'}<Text style={styles.titleItalic}>inbox.</Text>
             </Text>
             
-            <Text style={styles.subtitle}>
-              We sent a 6-digit code to
-            </Text>
-            
-            <View style={styles.emailRow}>
-              <Text style={styles.emailText}>{email}</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Welcome')}>
-                <Text style={styles.editLink}>Edit</Text>
-              </TouchableOpacity>
-            </View>
+            {isEditingEmail ? (
+              <View style={{ width: '100%', alignItems: 'center' }}>
+                <Text style={styles.subtitle}>Update your email address</Text>
+                <View style={{ width: '100%', marginTop: 12 }}>
+                  <Input
+                    value={newEmailInput}
+                    onChangeText={setNewEmailInput}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    placeholder="Enter new email"
+                  />
+                  <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 16, marginTop: 12 }}>
+                    <TouchableOpacity 
+                      onPress={() => { 
+                        setIsEditingEmail(false); 
+                        setNewEmailInput(currentEmail); 
+                      }}
+                      style={{ paddingVertical: 4 }}
+                    >
+                      <Text style={{ fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.inkMuted }}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      onPress={() => updateEmailMutation.mutate(newEmailInput)}
+                      style={{ paddingVertical: 4, paddingHorizontal: 16, backgroundColor: colors.primary, borderRadius: 20 }}
+                    >
+                      <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.white }}>
+                        {updateEmailMutation.isPending ? 'Saving...' : 'Save Email'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View style={{ alignItems: 'center' }}>
+                <Text style={styles.subtitle}>
+                  We sent a 6-digit code to
+                </Text>
+                
+                <View style={styles.emailRow}>
+                  <Text style={styles.emailText}>{currentEmail}</Text>
+                  <TouchableOpacity onPress={() => setIsEditingEmail(true)} style={{ padding: 4 }}>
+                    <Text style={styles.editLink}>Edit</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
 
           {banner ? (
@@ -136,12 +191,38 @@ const OTPVerifyScreen: React.FC = () => {
           ) : null}
 
           <View style={styles.form}>
-            <Input
-              label="6-digit code"
-              value={otp}
-              onChangeText={setOtp}
-              keyboardType="number-pad"
-              placeholder="Enter code"
+            <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink, marginBottom: 8, marginLeft: 4 }}>6-digit code</Text>
+            <OtpInput
+              numberOfDigits={6}
+              focusColor={colors.primary}
+              focusStickBlinkingDuration={500}
+              onTextChange={(text) => setOtp(text)}
+              onFilled={(text) => {
+                setOtp(text);
+                // Optionally auto-submit here if you want
+              }}
+              theme={{
+                containerStyle: {
+                  gap: 8,
+                },
+                pinCodeContainerStyle: {
+                  backgroundColor: colors.white,
+                  borderColor: colors.inkLighter,
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  flex: 1,
+                  height: 56,
+                },
+                pinCodeTextStyle: {
+                  fontFamily: fonts.bodyBold,
+                  color: colors.ink,
+                  fontSize: 22,
+                },
+                focusedPinCodeContainerStyle: {
+                  borderColor: colors.primary,
+                  borderWidth: 2,
+                }
+              }}
             />
           </View>
 
@@ -164,9 +245,8 @@ const OTPVerifyScreen: React.FC = () => {
               onPress={() => resendMutation.mutate()}
             />
           </View>
-        </ScrollView>
-      </View>
-    </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+    </View>
   );
 };
 

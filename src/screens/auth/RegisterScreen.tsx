@@ -3,14 +3,13 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
-  KeyboardAvoidingView,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { AuthStackParamList } from '../../navigation/authTypes';
@@ -103,28 +102,25 @@ const RegisterScreen: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
-        
-        {/* App Bar */}
-        <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
-            <Ionicons name="arrow-back" size={24} color={colors.ink} />
-          </TouchableOpacity>
-          <View style={styles.stepBadge}>
-            <Text style={styles.stepBadgeText}>1 of 4</Text>
-          </View>
-          <View style={{ width: 40 }} />
+    <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
+      {/* App Bar */}
+      <View style={styles.appBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
+          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+        </TouchableOpacity>
+        <View style={styles.stepBadge}>
+          <Text style={styles.stepBadgeText}>2 of 4</Text>
         </View>
+        <View style={{ width: 40 }} />
+      </View>
 
-        <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
+      <KeyboardAwareScrollView
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={20}
+      >
           {/* Progress Bar */}
           <View style={styles.progressBar}>
             <View style={styles.progressActive} />
@@ -243,9 +239,8 @@ const RegisterScreen: React.FC = () => {
               onPress={handleSubmit(onSubmit)}
             />
           </View>
-        </ScrollView>
-      </View>
-    </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+    </View>
   );
 };
 

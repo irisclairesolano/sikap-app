@@ -1,7 +1,6 @@
 import { apiClient } from './client';
 import { 
   User, 
-  ApiResponse,
   WorkerExperience,
   CharacterReference
 } from '../types';
@@ -9,17 +8,37 @@ import {
 export const profileApi = {
   // Get current user profile
   getProfile: async (): Promise<User> => {
-    const response = await apiClient<ApiResponse<User>>('/profile');
-    return response.data;
+    const response = await apiClient<any>('/profile');
+    return response?.data !== undefined ? response.data : response;
   },
 
   // Update profile
-  updateProfile: async (data: Partial<User>): Promise<User> => {
-    const response = await apiClient<ApiResponse<User>>('/profile', {
+  updateProfile: async (data: Partial<User> & { bio?: string, availability_status?: string, description?: string }): Promise<any> => {
+    const response = await apiClient<any>('/profile', {
       method: 'PUT',
       body: JSON.stringify(data),
     });
-    return response.data;
+    return response?.data !== undefined ? response.data : response;
+  },
+
+  // Upload avatar
+  uploadAvatar: async (imageUri: string): Promise<{ avatar_url: string }> => {
+    const formData = new FormData();
+    const filename = imageUri.split('/').pop() || 'avatar.jpg';
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : 'image/jpeg';
+    
+    formData.append('avatar', {
+      uri: imageUri,
+      name: filename,
+      type,
+    } as any);
+
+    const response = await apiClient<any>('/profile/avatar', {
+      method: 'POST',
+      body: formData,
+    });
+    return response?.data !== undefined ? response.data : response;
   },
 
   // Add skills to profile
@@ -32,11 +51,11 @@ export const profileApi = {
 
   // Add work experience
   addExperience: async (experience: Omit<WorkerExperience, 'id'>): Promise<WorkerExperience> => {
-    const response = await apiClient<ApiResponse<WorkerExperience>>('/profile/experiences', {
+    const response = await apiClient<any>('/profile/experiences', {
       method: 'POST',
       body: JSON.stringify(experience),
     });
-    return response.data;
+    return response?.experience !== undefined ? response.experience : (response?.data !== undefined ? response.data : response);
   },
 
   // Remove work experience
@@ -48,11 +67,11 @@ export const profileApi = {
 
   // Add character reference
   addReference: async (reference: Omit<CharacterReference, 'id'>): Promise<CharacterReference> => {
-    const response = await apiClient<ApiResponse<CharacterReference>>('/profile/references', {
+    const response = await apiClient<any>('/profile/references', {
       method: 'POST',
       body: JSON.stringify(reference),
     });
-    return response.data;
+    return response?.reference !== undefined ? response.reference : (response?.data !== undefined ? response.data : response);
   },
 
   // Remove character reference

@@ -57,9 +57,9 @@ import SettingsScreen from '../screens/common/SettingsScreen';
 
 // Home Stack
 const FindStack: React.FC = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Home" component={JobFeedScreen} />
+  <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="HomeEmpty">
     <Stack.Screen name="HomeEmpty" component={HomeEmptyScreen} />
+    <Stack.Screen name="Home" component={JobFeedScreen} />
     <Stack.Screen name="AddSkills" component={AddSkillsScreen} />
     <Stack.Screen name="AddWorkHistory" component={AddWorkHistoryScreen} />
     <Stack.Screen name="AddCharacterReferences" component={AddCharacterReferencesScreen} />

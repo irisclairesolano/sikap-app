@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { WorkerStackParamList } from '../../navigation/workerTypes';
+import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 

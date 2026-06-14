@@ -9,7 +9,7 @@ import { Input as RNEInput } from 'react-native-elements';
 import { colors, fonts } from '../../theme';
 
 export type InputProps = {
-  label: string;
+  label?: string;
   value: string;
   onChangeText: (text: string) => void;
   error?: string;
@@ -48,11 +48,11 @@ const CustomInput: React.FC<InputProps> = ({
   const [isFocused, setIsFocused] = useState(false);
 
   // Convert label to sentence case (if requested format is e.g. "FULL NAME")
-  const sentenceCaseLabel = label.charAt(0).toUpperCase() + label.slice(1).toLowerCase();
+  const sentenceCaseLabel = label ? label.charAt(0).toUpperCase() + label.slice(1).toLowerCase() : '';
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.label}>{sentenceCaseLabel}</Text>
+      {label ? <Text style={styles.label}>{sentenceCaseLabel}</Text> : null}
       <View style={[
         styles.focusRing,
         isFocused && styles.focusRingActive

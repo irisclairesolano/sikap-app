@@ -2,15 +2,14 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import {
-  KeyboardAvoidingView,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ApiClientError } from '../../api/client';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
@@ -91,11 +90,7 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
+    <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
         
         {/* App Bar */}
         <View style={styles.appBar}>
@@ -106,10 +101,12 @@ const LoginScreen: React.FC = () => {
           <View style={{ width: 40 }} />
         </View>
 
-        <ScrollView
+        <KeyboardAwareScrollView
           contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          enableOnAndroid={true}
+          extraScrollHeight={20}
         >
           <View style={styles.brandRow}>
             <Text style={styles.brandText}>sikap</Text>
@@ -182,9 +179,8 @@ const LoginScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
 
-        </ScrollView>
-      </View>
-    </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+    </View>
   );
 };
 
