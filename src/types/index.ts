@@ -73,7 +73,7 @@ export interface WorkerProfile {
   bio?: string;
   skills: Skill[];
   experiences: WorkerExperience[];
-  character_references: CharacterReference[];
+  references: CharacterReference[];
   verification_status: 'pending' | 'approved' | 'rejected' | 'correction_needed';
   verification_badge: boolean;
   reputation_score: number;
@@ -86,6 +86,7 @@ export interface EmployerProfile {
   barangay: string;
   municipality: string;
   bio?: string;
+  description?: string;
   verification_status: 'pending' | 'approved' | 'rejected' | 'correction_needed';
   verification_badge: boolean;
   reputation_score: number;

@@ -193,8 +193,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       </View>
 
       {/* Modals */}
-      {renderMunicipalityModal}
-      {renderBarangayModal}
+      {municipalityModalVisible ? renderMunicipalityModal : null}
+      {barangayModalVisible ? renderBarangayModal : null}
     </View>
   );
 };

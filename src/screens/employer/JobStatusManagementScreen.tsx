@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   headerPill: { backgroundColor: colors.paperBright, paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, ...shadows.sm },
   headerPillText: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.inkMuted },
   content: { flex: 1, padding: 20, justifyContent: 'center' },
-  card: { backgroundColor: colors.paperBright, borderRadius: 16, padding: 24, alignItems: 'center', ...shadows.md },
+  card: { backgroundColor: colors.paperBright, borderRadius: 16, padding: 24, alignItems: 'center', ...shadows.base },
   iconContainer: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.sky, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   jobTitle: { fontFamily: fonts.bodyBold, fontSize: 20, color: colors.ink, marginBottom: 8 },
   statusText: { fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft, marginBottom: 32 },

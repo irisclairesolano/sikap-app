@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ApiClientError } from '../../api/client';
 import Button from '../../components/common/Button';
@@ -26,7 +26,6 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const insets = useSafeAreaInsets();
   const { loginMutation } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -90,7 +89,8 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
         
         {/* App Bar */}
         <View style={styles.appBar}>
@@ -102,7 +102,7 @@ const LoginScreen: React.FC = () => {
         </View>
 
         <KeyboardAwareScrollView
-          contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
+          contentContainerStyle={[styles.scroll, { paddingBottom: 32 }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           enableOnAndroid={true}
@@ -180,11 +180,16 @@ const LoginScreen: React.FC = () => {
           </View>
 
         </KeyboardAwareScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.paper,
+  },
   flex: {
     flex: 1,
   },

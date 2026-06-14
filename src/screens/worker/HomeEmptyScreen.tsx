@@ -26,7 +26,7 @@ export const HomeEmptyScreen: React.FC = () => {
   // Calculate progress
   const hasSkills = (profile?.worker_profile?.skills?.length || 0) > 0;
   const hasHistory = (profile?.worker_profile?.experiences?.length || 0) > 0;
-  const hasRefs = (profile?.worker_profile?.character_references?.length || 0) > 0;
+  const hasRefs = (profile?.worker_profile?.references?.length || 0) > 0;
 
   let progressCount = 1; // Account verified
   if (hasSkills) progressCount++;

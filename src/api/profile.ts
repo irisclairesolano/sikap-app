@@ -58,6 +58,15 @@ export const profileApi = {
     return response?.experience !== undefined ? response.experience : (response?.data !== undefined ? response.data : response);
   },
 
+  // Update work experience
+  updateExperience: async (experienceId: number, experience: Omit<WorkerExperience, 'id'>): Promise<WorkerExperience> => {
+    const response = await apiClient<any>(`/profile/experiences/${experienceId}`, {
+      method: 'PUT',
+      body: JSON.stringify(experience),
+    });
+    return response?.experience !== undefined ? response.experience : (response?.data !== undefined ? response.data : response);
+  },
+
   // Remove work experience
   removeExperience: async (experienceId: number): Promise<void> => {
     await apiClient(`/profile/experiences/${experienceId}`, {

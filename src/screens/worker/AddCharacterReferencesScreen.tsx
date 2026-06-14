@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -9,6 +9,7 @@ import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import Button from '../../components/common/Button';
 import CustomInput from '../../components/common/Input';
+import CustomAlert from '../../components/common/CustomAlert';
 import { profileApi } from '../../api/profile';
 
 // Colors for avatars
@@ -23,30 +24,140 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     queryFn: profileApi.getProfile,
   });
 
-  const references = profile?.worker_profile?.character_references || [];
+  const references = profile?.worker_profile?.references || [];
   const [isAdding, setIsAdding] = useState(false);
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [relationship, setRelationship] = useState('');
 
+  const handleNameChange = (text: string) => {
+    // Strip out numbers and symbols (allow letters, spaces, hyphens, periods, and ñ/Ñ)
+    setName(text.replace(/[^a-zA-Z\s\-\.ñÑ]/g, ''));
+  };
+
+  const handleRelationshipChange = (text: string) => {
+    // Strip out numbers and symbols (allow letters, spaces, hyphens, periods, and ñ/Ñ)
+    setRelationship(text.replace(/[^a-zA-Z\s\-\.ñÑ]/g, ''));
+  };
+
+  const [editingReferenceId, setEditingReferenceId] = useState<number | null>(null);
+  const [phoneError, setPhoneError] = useState<string | undefined>(undefined);
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<any>({ title: '', message: '', buttons: [] });
+
+  const validatePhone = (value: string) => {
+    if (!value) {
+      return undefined;
+    }
+    const sanitized = value.replace(/[^0-9]/g, '');
+    if (!sanitized.startsWith('09')) {
+      return 'Phone number must start with 09';
+    }
+    if (sanitized.length !== 11) {
+      return 'Phone number must be exactly 11 digits';
+    }
+    const sanitizedUserPhone = profile?.phone ? profile.phone.replace(/[^0-9]/g, '') : '';
+    if (sanitizedUserPhone && sanitized === sanitizedUserPhone) {
+      return 'Cannot be your own phone number';
+    }
+    return undefined;
+  };
+
+  const handlePhoneChange = (text: string) => {
+    const cleaned = text.replace(/[^0-9]/g, '');
+    const newPhone = cleaned.slice(0, 11);
+    setPhone(newPhone);
+
+    const errorMsg = validatePhone(newPhone);
+    if (newPhone.length === 11 || phoneError) {
+      setPhoneError(errorMsg);
+    } else {
+      setPhoneError(undefined);
+    }
+  };
+
   const saveMutation = useMutation({
-    mutationFn: () => profileApi.addReference({
-      name,
-      phone,
-      relationship,
-    }),
+    mutationFn: async () => {
+      const errorMsg = validatePhone(phone);
+      if (errorMsg) {
+        setPhoneError(errorMsg);
+        throw new Error(errorMsg);
+      }
+
+      const payload = {
+        name,
+        phone,
+        relationship,
+      };
+      if (editingReferenceId !== null) {
+        await profileApi.removeReference(editingReferenceId);
+      }
+      return profileApi.addReference(payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      setName('');
-      setPhone('');
-      setRelationship('');
-      setIsAdding(false);
+      handleCancel();
     },
     onError: (err) => {
-      console.error('Failed to add reference', err);
+      console.error('Failed to save reference', err);
     }
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => profileApi.removeReference(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      handleCancel();
+    },
+    onError: (err) => {
+      console.error('Failed to delete reference', err);
+    }
+  });
+
+  const handleCancel = () => {
+    setName('');
+    setPhone('');
+    setRelationship('');
+    setIsAdding(false);
+    setEditingReferenceId(null);
+    setPhoneError(undefined);
+  };
+
+  const handleEditPress = (ref: any) => {
+    setName(ref.name);
+    setPhone(ref.phone);
+    setRelationship(ref.relationship);
+    setEditingReferenceId(ref.id);
+    setPhoneError(undefined);
+    setIsAdding(true);
+  };
+
+  const handleDeletePress = (id: number) => {
+    setAlertConfig({
+      title: 'Delete Reference',
+      message: 'Are you sure you want to delete this character reference?',
+      buttons: [
+        { text: 'Cancel', style: 'cancel', onPress: () => setAlertVisible(false) },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => {
+            setAlertVisible(false);
+            deleteMutation.mutate(id);
+          }
+        }
+      ]
+    });
+    setAlertVisible(true);
+  };
+
+
+
+  const handleBackPress = () => {
+    navigation.goBack();
+  };
 
   const showForm = isAdding || references.length === 0;
 
@@ -60,108 +171,70 @@ export const AddCharacterReferencesScreen: React.FC = () => {
         style={{ flex: 1 }} 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-      <View style={styles.appBar}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.ink} />
-        </TouchableOpacity>
-        <View style={styles.appBarBadge}>
-          <Text style={styles.appBarBadgeText}>References</Text>
+        <View style={styles.appBar}>
+          <TouchableOpacity onPress={handleBackPress} style={styles.iconButton}>
+            <Ionicons name="arrow-back" size={24} color={colors.ink} />
+          </TouchableOpacity>
+          <View style={styles.appBarBadge}>
+            <Text style={styles.appBarBadgeText}>References</Text>
+          </View>
+          <View style={{ width: 40 }} />
         </View>
-        <View style={{ width: 40 }} />
-      </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>
-          Three people{'\n'}who can <Text style={styles.titleAccent}>vouch.</Text>
-        </Text>
-
-        <View style={styles.infoBanner}>
-          <Ionicons name="lock-closed" size={18} color={colors.mintDeep} style={{ marginTop: 2 }} />
-          <Text style={styles.infoText}>
-            <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink }}>Reference contacts stay hidden</Text> until an employer formally shortlists you.
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          <Text style={styles.title}>
+            Three people{'\n'}who can <Text style={styles.titleAccent}>vouch.</Text>
           </Text>
-        </View>
 
-        {!showForm && (
-          <>
-            <Text style={styles.sectionHeader}>References · {references.length} of 3</Text>
-
-            <View style={styles.listContainer}>
-              {references.map((ref, index) => (
-                <View key={ref.id} style={styles.refCard}>
-                  <View style={[styles.avatar, { backgroundColor: AVATAR_COLORS[index % AVATAR_COLORS.length] }]}>
-                    <Text style={styles.avatarText}>{getInitials(ref.name)}</Text>
-                  </View>
-                  <View style={styles.refDetails}>
-                    <Text style={styles.refName}>{ref.name}</Text>
-                    <Text style={styles.refRole}>{ref.relationship} · {ref.phone}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-
-            {references.length < 3 && (
-              <TouchableOpacity style={styles.addButton} activeOpacity={0.7} onPress={() => setIsAdding(true)}>
-                <View style={styles.addIconCircle}>
-                  <Ionicons name="add" size={22} color={colors.white} />
-                </View>
-                <Text style={styles.addTitle}>Add another reference</Text>
-                <Text style={styles.addSubtitle}>{3 - references.length} slot{3 - references.length > 1 ? 's' : ''} remaining</Text>
-              </TouchableOpacity>
-            )}
-          </>
-        )}
-
-        {showForm && (
-          <View style={{ marginTop: 32, gap: 16 }}>
-            <CustomInput
-              label="Full name"
-              value={name}
-              onChangeText={setName}
-              placeholder="E.g. Juan Reyes"
-              icon="person-outline"
-            />
-            <CustomInput
-              label="Relationship"
-              value={relationship}
-              onChangeText={setRelationship}
-              placeholder="E.g. Former employer"
-              icon="people-outline"
-            />
-            <CustomInput
-              label="Phone number"
-              value={phone}
-              onChangeText={setPhone}
-              placeholder="E.g. 09123456789"
-              icon="call-outline"
-              keyboardType="phone-pad"
-            />
+          <View style={styles.infoBanner}>
+            <Ionicons name="lock-closed" size={18} color={colors.mintDeep} style={{ marginTop: 2 }} />
+            <Text style={styles.infoText}>
+              <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink }}>Reference contacts stay hidden</Text> until an employer formally shortlists you.
+            </Text>
           </View>
-        )}
-      </ScrollView>
 
-      <View style={styles.bottomBar}>
-        {showForm ? (
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            {references.length > 0 && (
-              <Button 
-                label="Cancel" 
-                size="lg"
-                variant="outline"
-                onPress={() => setIsAdding(false)}
-                style={{ flex: 1 }}
-              />
-            )}
-            <Button 
-              label={saveMutation.isPending ? "Saving..." : "Save reference"} 
-              size="lg"
-              style={{ flex: references.length > 0 ? 2 : 1 }}
-              loading={saveMutation.isPending}
-              onPress={() => saveMutation.mutate()}
-              disabled={!name || !phone || !relationship}
-            />
-          </View>
-        ) : (
+          {/* Add reference card at the top of main content */}
+          {references.length < 3 && (
+            <TouchableOpacity style={styles.addButton} activeOpacity={0.7} onPress={() => setIsAdding(true)}>
+              <View style={styles.addIconCircle}>
+                <Ionicons name="add" size={22} color={colors.white} />
+              </View>
+              <Text style={styles.addTitle}>Add another reference</Text>
+              <Text style={styles.addSubtitle}>
+                {3 - references.length === 3 ? 'Three slots remaining' : 3 - references.length === 2 ? 'Two slots remaining' : 'One slot remaining'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* References List is shown below the add card */}
+          {references.length > 0 && (
+            <>
+              <Text style={styles.sectionHeader}>References · {references.length} of 3</Text>
+
+              <View style={styles.listContainer}>
+                {references.map((ref, index) => (
+                  <TouchableOpacity 
+                    key={ref.id} 
+                    style={styles.refCard}
+                    activeOpacity={0.7}
+                    onPress={() => handleEditPress(ref)}
+                  >
+                    <View style={[styles.avatar, { backgroundColor: AVATAR_COLORS[index % AVATAR_COLORS.length] }]}>
+                      <Text style={styles.avatarText}>{getInitials(ref.name)}</Text>
+                    </View>
+                    <View style={styles.refDetails}>
+                      <Text style={styles.refName}>{ref.name}</Text>
+                      <Text style={styles.refRole}>{ref.relationship} · {ref.phone}</Text>
+                    </View>
+                    <Ionicons name="pencil" size={18} color={colors.inkMuted} style={{ paddingHorizontal: 4 }} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </>
+          )}
+        </ScrollView>
+
+        <View style={styles.bottomBar}>
           <Button 
             label="Done" 
             size="lg"
@@ -169,8 +242,108 @@ export const AddCharacterReferencesScreen: React.FC = () => {
             fullWidth 
             onPress={() => navigation.goBack()}
           />
-        )}
-      </View>
+        </View>
+
+        {/* Add/Edit Reference Modal */}
+        <Modal
+          visible={isAdding}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={handleCancel}
+        >
+          <KeyboardAvoidingView 
+            style={{ flex: 1 }} 
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          >
+            <TouchableOpacity 
+              style={styles.modalOverlay} 
+              activeOpacity={1} 
+              onPress={handleCancel}
+            >
+              <View 
+                style={styles.modalContent} 
+                onStartShouldSetResponder={() => true}
+              >
+                <View style={styles.dragIndicator} />
+                
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalHeaderTitle}>
+                    {editingReferenceId !== null ? 'Edit Reference' : 'Add Reference'}
+                  </Text>
+                  <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
+                    <Ionicons name="close" size={22} color={colors.inkSoft} />
+                  </TouchableOpacity>
+                </View>
+
+                <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+                  <View style={{ gap: 16, paddingBottom: 24 }}>
+                    <CustomInput
+                      label="Full name"
+                      value={name}
+                      onChangeText={handleNameChange}
+                      placeholder="E.g. Juan Reyes"
+                      icon="person-outline"
+                    />
+                    <CustomInput
+                      label="Relationship"
+                      value={relationship}
+                      onChangeText={handleRelationshipChange}
+                      placeholder="E.g. Former employer"
+                      icon="people-outline"
+                    />
+                    <CustomInput
+                      label="Phone number"
+                      value={phone}
+                      onChangeText={handlePhoneChange}
+                      error={phoneError}
+                      placeholder="E.g. 09123456789"
+                      icon="call-outline"
+                      keyboardType="phone-pad"
+                    />
+                  </View>
+                </ScrollView>
+
+                <View style={styles.modalFooter}>
+                  {editingReferenceId !== null ? (
+                    <Button 
+                      label="Delete" 
+                      size="lg"
+                      variant="outline"
+                      onPress={() => handleDeletePress(editingReferenceId)}
+                      style={{ flex: 1, borderColor: colors.error }}
+                      // textStyle will automatically be red since we pass outline, but we can override if needed. 
+                      // Outline with error border is clear enough
+                    />
+                  ) : (
+                    <Button 
+                      label="Cancel" 
+                      size="lg"
+                      variant="outline"
+                      onPress={handleCancel}
+                      style={{ flex: 1 }}
+                    />
+                  )}
+                  <Button 
+                    label={saveMutation.isPending ? "Saving..." : (editingReferenceId !== null ? "Save changes" : "Save reference")} 
+                    size="lg"
+                    style={{ flex: 2 }}
+                    loading={saveMutation.isPending}
+                    onPress={() => saveMutation.mutate()}
+                    disabled={!name || !phone || !relationship || !!validatePhone(phone)}
+                  />
+                </View>
+              </View>
+            </TouchableOpacity>
+          </KeyboardAvoidingView>
+        </Modal>
+
+        <CustomAlert
+          visible={alertVisible}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          buttons={alertConfig.buttons}
+          onRequestClose={() => setAlertVisible(false)}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -331,9 +504,56 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 32,
+    paddingTop: 12,
+    paddingBottom: 16,
     backgroundColor: colors.paper,
+  },
+  formSectionHeader: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.ink,
+    marginBottom: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(43, 31, 21, 0.4)', // Ink overlaid color
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.paper,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingTop: 12,
+    paddingHorizontal: 24,
+    paddingBottom: 36,
+    maxHeight: '90%',
+  },
+  dragIndicator: {
+    width: 38,
+    height: 4,
+    backgroundColor: colors.inkFaint,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalHeaderTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 18,
+    color: colors.ink,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
   },
 });
 

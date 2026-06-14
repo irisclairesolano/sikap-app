@@ -43,6 +43,11 @@ export const ProfileScreen: React.FC = () => {
     recentReview: null as null | { employer: string, stars: number, comment: string } // TODO: Implement recent review fetch
   };
 
+  const hasSkills = (user?.worker_profile?.skills?.length || 0) > 0;
+  const hasHistory = (user?.worker_profile?.experiences?.length || 0) > 0;
+  const hasRefs = (user?.worker_profile?.references?.length || 0) > 0;
+  const isProfileComplete = hasSkills && hasHistory && hasRefs;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
@@ -56,6 +61,23 @@ export const ProfileScreen: React.FC = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {!isProfileComplete && (
+          <TouchableOpacity 
+            style={styles.setupBanner}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('HomeEmpty')}
+          >
+            <View style={styles.setupBannerIcon}>
+              <Ionicons name="alert-circle" size={24} color={colors.primaryDark} />
+            </View>
+            <View style={styles.setupBannerText}>
+              <Text style={styles.setupBannerTitle}>Finish setting up</Text>
+              <Text style={styles.setupBannerSubtitle}>Your profile is missing some details. Tap to complete it.</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.primaryDark} />
+          </TouchableOpacity>
+        )}
+
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
@@ -149,14 +171,14 @@ export const ProfileScreen: React.FC = () => {
             </View>
             <View style={{ marginTop: 10 }}>
               <View style={styles.reviewNameRow}>
-                <Text style={styles.reviewerName}>{worker.recentReview.employer}</Text>
+                <Text style={styles.reviewerName}>{worker.recentReview?.employer}</Text>
                 <View style={styles.starsRowSmall}>
                   {[1, 2, 3, 4, 5].map(s => (
-                    <Ionicons key={s} name="star" size={11} color={s <= worker.recentReview.stars ? colors.gold : colors.inkFaint} />
+                    <Ionicons key={s} name="star" size={11} color={s <= (worker.recentReview?.stars ?? 0) ? colors.gold : colors.inkFaint} />
                   ))}
                 </View>
               </View>
-              <Text style={styles.reviewComment}>{worker.recentReview.comment}</Text>
+              <Text style={styles.reviewComment}>{worker.recentReview?.comment}</Text>
             </View>
           </View>
         )}
@@ -206,6 +228,11 @@ const styles = StyleSheet.create({
   reviewerName: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink },
   starsRowSmall: { flexDirection: 'row', gap: 1 },
   reviewComment: { fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft, marginTop: 4, fontStyle: 'italic' },
+  setupBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.peach, borderRadius: 16, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: colors.peachBright },
+  setupBannerIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.paperBright, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  setupBannerText: { flex: 1 },
+  setupBannerTitle: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.primaryDark, marginBottom: 2 },
+  setupBannerSubtitle: { fontFamily: fonts.body, fontSize: 12, color: colors.primaryDark, opacity: 0.8 },
 });
 
 export default ProfileScreen;

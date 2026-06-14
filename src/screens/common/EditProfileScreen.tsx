@@ -7,6 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { colors, fonts, shadows } from '../../theme';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
+import CustomAlert from '../../components/common/CustomAlert';
 import { useAuth } from '../../hooks/useAuth';
 import { profileApi } from '../../api/profile';
 
@@ -20,6 +21,9 @@ export const EditProfileScreen: React.FC = () => {
   const [bio, setBio] = useState(user?.worker_profile?.bio || user?.employer_profile?.description || '');
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({ title: '', message: '', onPress: undefined as (() => void) | undefined });
 
   const isVerified = user?.verification_status === 'approved';
   
@@ -48,10 +52,20 @@ export const EditProfileScreen: React.FC = () => {
       setIsUploading(true);
       await profileApi.uploadAvatar(uri);
       await refetchProfile();
-      Alert.alert('Success', 'Profile picture updated successfully!');
+      setAlertConfig({
+        title: 'Looking Good!',
+        message: 'Your profile picture was updated successfully.',
+        onPress: undefined
+      });
+      setAlertVisible(true);
     } catch (err: any) {
       console.error(err);
-      Alert.alert('Error', err.message || 'Failed to upload profile picture.');
+      setAlertConfig({
+        title: 'Upload Failed',
+        message: err.message || 'We could not upload your profile picture.',
+        onPress: undefined
+      });
+      setAlertVisible(true);
     } finally {
       setIsUploading(false);
     }
@@ -73,11 +87,23 @@ export const EditProfileScreen: React.FC = () => {
 
       await profileApi.updateProfile(updateData);
       await refetchProfile();
-      Alert.alert('Success', 'Profile updated successfully!');
-      navigation.goBack();
+      setAlertConfig({
+        title: 'Profile Saved',
+        message: 'Your changes have been saved successfully.',
+        onPress: () => {
+          setAlertVisible(false);
+          navigation.goBack();
+        }
+      });
+      setAlertVisible(true);
     } catch (err: any) {
       console.error(err);
-      Alert.alert('Error', err.message || 'Failed to update profile.');
+      setAlertConfig({
+        title: 'Save Failed',
+        message: err.message || 'We could not save your changes.',
+        onPress: undefined
+      });
+      setAlertVisible(true);
     } finally {
       setIsSaving(false);
     }
@@ -110,7 +136,7 @@ export const EditProfileScreen: React.FC = () => {
             </View>
           </TouchableOpacity>
           <Text style={styles.avatarHint}>Tap to change photo</Text>
-        </View
+        </View>
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Full Name</Text>
@@ -158,6 +184,23 @@ export const EditProfileScreen: React.FC = () => {
 
         <Button title={isSaving ? "Saving..." : "Save changes"} onPress={handleSave} disabled={isSaving} style={{ marginTop: 24 }} />
       </ScrollView>
+
+      <CustomAlert
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onRequestClose={() => {
+          setAlertVisible(false);
+          if (alertConfig.onPress) alertConfig.onPress();
+        }}
+        buttons={[{
+          text: 'Okay',
+          onPress: () => {
+            setAlertVisible(false);
+            if (alertConfig.onPress) alertConfig.onPress();
+          }
+        }]}
+      />
     </SafeAreaView>
   );
 };

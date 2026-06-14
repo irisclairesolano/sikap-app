@@ -207,7 +207,7 @@ const OTPVerifyScreen: React.FC = () => {
                 },
                 pinCodeContainerStyle: {
                   backgroundColor: colors.white,
-                  borderColor: colors.inkLighter,
+                  borderColor: colors.inkLight,
                   borderWidth: 1,
                   borderRadius: 12,
                   flex: 1,

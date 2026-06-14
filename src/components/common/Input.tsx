@@ -16,6 +16,8 @@ export type InputProps = {
   placeholder?: string;
   secureTextEntry?: boolean;
   multiline?: boolean;
+  numberOfLines?: number;
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   maxLength?: number;
   keyboardType?: KeyboardTypeOptions;
   editable?: boolean;
@@ -37,6 +39,8 @@ const CustomInput: React.FC<InputProps> = ({
   placeholder,
   secureTextEntry,
   multiline,
+  numberOfLines,
+  autoCapitalize,
   maxLength,
   keyboardType,
   editable,
@@ -63,6 +67,8 @@ const CustomInput: React.FC<InputProps> = ({
           placeholder={placeholder}
           secureTextEntry={secureTextEntry}
           multiline={multiline}
+          numberOfLines={numberOfLines}
+          autoCapitalize={autoCapitalize}
           maxLength={maxLength}
           keyboardType={keyboardType}
           editable={editable}

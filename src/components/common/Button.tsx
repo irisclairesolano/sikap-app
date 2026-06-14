@@ -4,7 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, shadows } from '../../theme';
 
 export interface ButtonProps extends TouchableOpacityProps {
-  label: string;
+  label?: string;
+  title?: string;
   variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost' | 'soft';
   size?: 'base' | 'lg';
   loading?: boolean;
@@ -18,6 +19,7 @@ export interface ButtonProps extends TouchableOpacityProps {
 
 const Button: React.FC<ButtonProps> = ({
   label,
+  title,
   onPress,
   variant = 'primary',
   size = 'base',
@@ -29,6 +31,7 @@ const Button: React.FC<ButtonProps> = ({
   iconPosition = 'left',
   style,
 }) => {
+  const displayLabel = label || title || '';
   const variantStyle: ViewStyle =
     variant === 'primary'
       ? styles.primaryBg
@@ -38,12 +41,15 @@ const Button: React.FC<ButtonProps> = ({
           ? styles.outlineBg
           : variant === 'ghost'
             ? styles.ghostBg
-            : styles.secondaryBg;
+            : variant === 'soft'
+              ? styles.softBg
+              : styles.secondaryBg;
 
   const labelStyle: TextStyle =
     variant === 'outline' ? styles.labelOutline 
     : variant === 'secondary' ? styles.labelSecondary
     : variant === 'ghost' ? styles.labelGhost
+    : variant === 'soft' ? styles.labelSoft
     : styles.labelOnPrimary;
 
   const shadowStyle: ViewStyle | undefined =
@@ -64,7 +70,7 @@ const Button: React.FC<ButtonProps> = ({
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.85}
-      accessibilityLabel={accessibilityLabel || label}
+      accessibilityLabel={accessibilityLabel || displayLabel}
       accessibilityRole="button"
     >
       {loading ? (
@@ -74,7 +80,7 @@ const Button: React.FC<ButtonProps> = ({
           {icon && iconPosition === 'left' && (
             <Ionicons name={icon} size={size === 'lg' ? 20 : 18} color={labelStyle.color} style={{ marginRight: 8 }} />
           )}
-          <Text style={[styles.label, size === 'lg' && styles.labelLg, labelStyle]}>{label}</Text>
+          <Text style={[styles.label, size === 'lg' && styles.labelLg, labelStyle]}>{displayLabel}</Text>
           {icon && iconPosition === 'right' && (
             <Ionicons name={icon} size={size === 'lg' ? 20 : 18} color={labelStyle.color} style={{ marginLeft: 8 }} />
           )}
@@ -125,6 +131,9 @@ const styles = StyleSheet.create({
   dangerBg: {
     backgroundColor: colors.error,
   },
+  softBg: {
+    backgroundColor: colors.primaryTint,
+  },
   label: {
     fontFamily: fonts.bodyBold,
     fontSize: 15,
@@ -143,6 +152,9 @@ const styles = StyleSheet.create({
   },
   labelGhost: {
     color: colors.inkMuted,
+  },
+  labelSoft: {
+    color: colors.primaryDark,
   },
 });
 

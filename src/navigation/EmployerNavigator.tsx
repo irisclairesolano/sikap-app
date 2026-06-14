@@ -59,7 +59,7 @@ const MyJobsStack: React.FC = () => (
     <Stack.Screen name="MyJobs" component={MyJobsScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="ViewApplicants" component={ViewApplicantsScreen} />
-    <Stack.Screen name="ApplicantProfile" component={ApplicantProfileScreen} />
+    <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
     <Stack.Screen name="SendRequest" component={SendRequestScreen} />
     <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
     <Stack.Screen name="CancelHire" component={CancelHireScreen} />
