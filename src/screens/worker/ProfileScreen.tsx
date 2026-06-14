@@ -65,7 +65,7 @@ export const ProfileScreen: React.FC = () => {
           <TouchableOpacity 
             style={styles.setupBanner}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate('HomeEmpty')}
+            onPress={() => navigation.navigate('Find' as any, { screen: 'HomeEmpty' })}
           >
             <View style={styles.setupBannerIcon}>
               <Ionicons name="alert-circle" size={24} color={colors.primaryDark} />
