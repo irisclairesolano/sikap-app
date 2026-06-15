@@ -123,44 +123,13 @@ export const ApplyScreen: React.FC = () => {
 
           {/* Privacy Shield Active */}
           <View style={styles.shieldCard}>
-            <View style={styles.shieldHeader}>
+            <View style={[styles.shieldHeader, { marginBottom: 0 }]}>
               <View style={styles.shieldIconBox}>
-                <Ionicons name="shield-checkmark" size={16} color={colors.inkMuted} />
+                <Ionicons name="shield-checkmark" size={16} color={colors.mintDeep} />
               </View>
               <View>
-                <Text style={styles.shieldSubText}>Privacy Shield</Text>
-                <Text style={styles.shieldTitleText}>Active for this application</Text>
-              </View>
-            </View>
-            
-            <View style={styles.shieldRow}>
-              <Text style={styles.shieldLabel}>Phone Number</Text>
-              <View style={styles.shieldStatusLocked}>
-                <Ionicons name="lock-closed" size={10} color={colors.inkSoft} style={{ marginRight: 2 }} />
-                <Text style={styles.shieldStatusLockedText}>Stage 2</Text>
-              </View>
-            </View>
-
-            <View style={styles.shieldRow}>
-              <Text style={styles.shieldLabel}>Character References</Text>
-              <View style={styles.shieldStatusLocked}>
-                <Ionicons name="lock-closed" size={10} color={colors.inkSoft} style={{ marginRight: 2 }} />
-                <Text style={styles.shieldStatusLockedText}>Stage 2</Text>
-              </View>
-            </View>
-
-            <View style={styles.shieldRow}>
-              <Text style={styles.shieldLabel}>Agreed Price</Text>
-              <View style={styles.shieldStatusLocked}>
-                <Ionicons name="lock-closed" size={10} color={colors.inkSoft} style={{ marginRight: 2 }} />
-                <Text style={styles.shieldStatusLockedText}>Stage 3</Text>
-              </View>
-            </View>
-
-            <View style={[styles.shieldRow, { borderBottomWidth: 0 }]}>
-              <Text style={styles.shieldLabel}>Email Address</Text>
-              <View style={styles.shieldStatusNever}>
-                <Text style={styles.shieldStatusNeverText}>Never</Text>
+                <Text style={styles.shieldSubText}>Privacy Shield Active</Text>
+                <Text style={styles.shieldTitleText}>Only public info is visible</Text>
               </View>
             </View>
           </View>

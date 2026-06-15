@@ -99,26 +99,14 @@ const ApplicationDetailScreen: React.FC = () => {
             <Text style={styles.lede}>You applied for <Text style={styles.ledeHighlight}>{jobTitle}</Text>. Reyes Household is reviewing your profile.</Text>
             
             <View style={[styles.shieldCard, { marginTop: 24 }]}>
-              <View style={styles.shieldHeader}>
+              <View style={[styles.shieldHeader, { marginBottom: 0 }]}>
                 <View style={[styles.shieldBadge, { backgroundColor: colors.sky }]}>
                   <Ionicons name="shield-checkmark" size={18} color={colors.skyDeep} />
                 </View>
                 <View>
                   <Text style={[styles.shieldSub, { color: colors.skyDeep }]}>Privacy Shield Active</Text>
-                  <Text style={styles.shieldTitle}>Only public info visible</Text>
+                  <Text style={styles.shieldTitle}>Only public info is visible</Text>
                 </View>
-              </View>
-              <View style={styles.shieldRow}>
-                <Text style={styles.shieldLabel}>Character References</Text>
-                <Text style={[styles.shieldStatus, { color: colors.inkSoft }]}>Hidden</Text>
-              </View>
-              <View style={styles.shieldRow}>
-                <Text style={styles.shieldLabel}>Mobile Number</Text>
-                <Text style={[styles.shieldStatus, { color: colors.inkSoft }]}>Hidden</Text>
-              </View>
-              <View style={styles.shieldRow}>
-                <Text style={styles.shieldLabel}>Email Address</Text>
-                <Text style={[styles.shieldStatus, { color: colors.inkSoft }]}>Never</Text>
               </View>
             </View>
           </View>
