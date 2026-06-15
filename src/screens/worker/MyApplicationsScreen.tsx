@@ -147,9 +147,10 @@ const styles = StyleSheet.create({
   headline: {
     fontFamily: fonts.display,
     fontSize: 28,
-    lineHeight: 32,
+    lineHeight: 36,
     color: colors.ink,
     letterSpacing: -0.6,
+    paddingBottom: 2,
   },
   iconButton: {
     width: 40,

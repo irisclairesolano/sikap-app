@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   reputationScore: {
     fontFamily: fonts.bodyBold,
     fontSize: 52,
-    lineHeight: 52,
+    lineHeight: 60,
     color: colors.ink,
   },
   reputationStars: {

@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   reputationCard: { backgroundColor: colors.peach, borderRadius: 20, padding: 20, marginBottom: 16 },
   reputationEyebrow: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.skyDeep, textTransform: 'uppercase', letterSpacing: 1 },
   reputationRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 6 },
-  reputationScore: { fontFamily: fonts.bodyBold, fontSize: 52, lineHeight: 52, color: colors.ink },
+  reputationScore: { fontFamily: fonts.bodyBold, fontSize: 52, lineHeight: 60, color: colors.ink },
   reputationStars: { alignItems: 'flex-end', paddingBottom: 6 },
   starsRow: { flexDirection: 'row', gap: 2 },
   reputationCount: { fontFamily: fonts.bodyBold, fontSize: 12, color: colors.inkSoft, marginTop: 4 },

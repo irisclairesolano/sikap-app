@@ -168,10 +168,11 @@ const styles = StyleSheet.create({
   headline: {
     fontFamily: fonts.display,
     fontSize: 32,
-    lineHeight: 32,
+    lineHeight: 40,
     marginBottom: 24,
     textAlign: 'center',
     letterSpacing: -0.8,
+    paddingBottom: 4,
   },
   count: {
     fontFamily: fonts.numericBold,
@@ -194,8 +195,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 100,
     backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: 'transparent',
     shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,

@@ -35,6 +35,12 @@ export const HomeEmptyScreen: React.FC = () => {
 
   const progressPercent = Math.round((progressCount / 4) * 100);
 
+  React.useEffect(() => {
+    if (hasSkills && hasHistory && hasRefs) {
+      navigation.replace('Home');
+    }
+  }, [hasSkills, hasHistory, hasRefs, navigation]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>

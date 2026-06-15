@@ -154,9 +154,10 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: fonts.display,
     fontSize: 32,
-    lineHeight: 36,
+    lineHeight: 40,
     color: colors.ink,
     letterSpacing: -0.8,
+    paddingBottom: 4,
   },
   titleAccent: {
     fontFamily: fonts.displayItalic,
@@ -198,8 +199,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 100,
-    borderWidth: 1,
-    borderColor: 'transparent',
     shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,

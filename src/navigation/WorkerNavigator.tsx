@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { colors } from '../theme';
+import { colors, fonts } from '../theme';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
+import { profileApi } from '../api/profile';
 
 export type WorkerStackParamList = {
   Home: undefined;
@@ -56,23 +58,46 @@ import EditProfileScreen from '../screens/common/EditProfileScreen';
 import SettingsScreen from '../screens/common/SettingsScreen';
 
 // Home Stack
-const FindStack: React.FC = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="HomeEmpty">
-    <Stack.Screen name="HomeEmpty" component={HomeEmptyScreen} />
-    <Stack.Screen name="Home" component={JobFeedScreen} />
-    <Stack.Screen name="AddSkills" component={AddSkillsScreen} />
-    <Stack.Screen name="AddWorkHistory" component={AddWorkHistoryScreen} />
-    <Stack.Screen name="AddCharacterReferences" component={AddCharacterReferencesScreen} />
-    <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
-    <Stack.Screen name="Apply" component={ApplyScreen} />
-    <Stack.Screen name="ApplicationDetail" component={ApplicationDetailScreen} />
-    <Stack.Screen name="AcceptHire" component={AcceptHireScreen} />
-    <Stack.Screen name="HireReceipt" component={HireReceiptScreen} />
-    <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
-    <Stack.Screen name="Report" component={ReportScreen} />
-    <Stack.Screen name="Notifications" component={NotificationsScreen} />
-  </Stack.Navigator>
-);
+const FindStack: React.FC = () => {
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: profileApi.getProfile,
+  });
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.paper }}>
+        <Text style={{ fontFamily: fonts.body, color: colors.inkMuted }}>Loading...</Text>
+      </View>
+    );
+  }
+
+  const hasSkills = (profile?.worker_profile?.skills?.length || 0) > 0;
+  const hasHistory = (profile?.worker_profile?.experiences?.length || 0) > 0;
+  const hasRefs = (profile?.worker_profile?.references?.length || 0) > 0;
+  const isProfileComplete = hasSkills && hasHistory && hasRefs;
+
+  return (
+    <Stack.Navigator 
+      screenOptions={{ headerShown: false }} 
+      initialRouteName={isProfileComplete ? "Home" : "HomeEmpty"}
+    >
+      <Stack.Screen name="HomeEmpty" component={HomeEmptyScreen} />
+      <Stack.Screen name="Home" component={JobFeedScreen} />
+      <Stack.Screen name="AddSkills" component={AddSkillsScreen} />
+      <Stack.Screen name="AddWorkHistory" component={AddWorkHistoryScreen} />
+      <Stack.Screen name="AddCharacterReferences" component={AddCharacterReferencesScreen} />
+      <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
+      <Stack.Screen name="Apply" component={ApplyScreen} />
+      <Stack.Screen name="ApplicationDetail" component={ApplicationDetailScreen} />
+      <Stack.Screen name="AcceptHire" component={AcceptHireScreen} />
+      <Stack.Screen name="HireReceipt" component={HireReceiptScreen} />
+      <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
+      <Stack.Screen name="Report" component={ReportScreen} />
+      <Stack.Screen name="Notifications" component={NotificationsScreen} />
+    </Stack.Navigator>
+  );
+};
 
 // Search Stack
 const SearchStack: React.FC = () => (

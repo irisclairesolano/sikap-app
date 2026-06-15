@@ -184,9 +184,10 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: fonts.display,
     fontSize: 32,
-    lineHeight: 36,
+    lineHeight: 40,
     color: colors.ink,
     letterSpacing: -0.8,
+    paddingBottom: 4,
   },
   titleAccent: {
     fontFamily: fonts.displayItalic,
