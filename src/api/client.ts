@@ -30,6 +30,7 @@ export async function apiClient<T>(
   });
 
   const headers: Record<string, string> = {
+    Accept: 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(typeof options.headers === 'object' &&
     options.headers !== null &&
