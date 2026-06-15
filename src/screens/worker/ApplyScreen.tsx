@@ -1,4 +1,4 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,6 +29,7 @@ export const ApplyScreen: React.FC = () => {
   const route = useRoute<ApplyRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const { id } = route.params;
+  const insets = useSafeAreaInsets();
 
   const { data: job, isLoading: isJobLoading, isError: isJobError } = useJob(id);
   const { mutate: apply, isPending, isError, error, isSuccess } = useApply(id);
@@ -177,7 +178,7 @@ export const ApplyScreen: React.FC = () => {
 
   // APPLICATION FORM
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView 
         style={styles.flex1} 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -238,7 +239,7 @@ export const ApplyScreen: React.FC = () => {
 
         </ScrollView>
 
-        <View style={styles.bottomBar}>
+        <View style={[styles.bottomBar, { paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 24 }]}>
           <Button 
             label="Send application" 
             size="lg"
