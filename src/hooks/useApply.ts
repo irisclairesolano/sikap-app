@@ -26,3 +26,19 @@ export const useApply = (jobId: number) => {
     },
   });
 };
+
+export const useWithdrawApplication = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ message: string }, Error, number>({
+    mutationFn: async (applicationId) => {
+      return apiClient<{ message: string }>(`/applications/${applicationId}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+    },
+  });
+};

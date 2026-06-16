@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
+import { useWithdrawApplication } from '../../hooks/useApply';
 
 type ApplicationDetailScreenRouteProp = RouteProp<WorkerStackParamList, 'ApplicationDetail'>;
 type ApplicationDetailScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'ApplicationDetail'>;
@@ -16,6 +17,8 @@ const ApplicationDetailScreen: React.FC = () => {
   const navigation = useNavigation<ApplicationDetailScreenNavigationProp>();
   const { applicationId, jobTitle, employerName, status, compensation } = route.params;
 
+  const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawApplication();
+
   const handleAccept = () => {
     // Navigate back to MyApplications
     navigation.popToTop();
@@ -23,6 +26,14 @@ const ApplicationDetailScreen: React.FC = () => {
 
   const handleReject = () => {
     navigation.popToTop();
+  };
+
+  const handleWithdraw = () => {
+    withdraw(applicationId, {
+      onSuccess: () => {
+        navigation.goBack();
+      }
+    });
   };
 
   const getStage = () => {
@@ -205,10 +216,24 @@ const ApplicationDetailScreen: React.FC = () => {
       {/* FOOTER ACTIONS */}
       <View style={styles.footer}>
         {stage === 1 && (
-          <Button label="Withdraw application" variant="ghost" size="lg" fullWidth />
+          <Button 
+            label={isWithdrawing ? "Withdrawing..." : "Withdraw application"} 
+            variant="ghost" 
+            size="lg" 
+            fullWidth 
+            onPress={handleWithdraw}
+            loading={isWithdrawing}
+          />
         )}
         {stage === 2 && (
-          <Button label="Withdraw application" variant="ghost" size="lg" fullWidth />
+          <Button 
+            label={isWithdrawing ? "Withdrawing..." : "Withdraw application"} 
+            variant="ghost" 
+            size="lg" 
+            fullWidth 
+            onPress={handleWithdraw}
+            loading={isWithdrawing}
+          />
         )}
         {stage === 3 && (
           <View style={{ gap: 12 }}>

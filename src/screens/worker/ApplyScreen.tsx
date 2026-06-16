@@ -7,7 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { useJob } from '../../hooks/useJob';
-import { useApply } from '../../hooks/useApply';
+import { useApply, useWithdrawApplication } from '../../hooks/useApply';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import CustomInput from '../../components/common/Input';
@@ -32,7 +32,8 @@ export const ApplyScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
 
   const { data: job, isLoading: isJobLoading, isError: isJobError } = useJob(id);
-  const { mutate: apply, isPending, isError, error, isSuccess } = useApply(id);
+  const { mutate: apply, isPending, isError, error, isSuccess, data } = useApply(id);
+  const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawApplication();
 
   const [coverNote, setCoverNote] = useState('');
   const maxLength = 1000;
@@ -43,6 +44,16 @@ export const ApplyScreen: React.FC = () => {
 
   const handleBackToJobs = () => {
     navigation.navigate('Home'); 
+  };
+
+  const handleWithdraw = () => {
+    if (data?.application_id) {
+      withdraw(data.application_id, {
+        onSuccess: () => {
+          navigation.navigate('Home');
+        }
+      });
+    }
   };
 
   if (isJobLoading) {
@@ -135,9 +146,10 @@ export const ApplyScreen: React.FC = () => {
           </View>
 
           <Button 
-            label="Withdraw application" 
+            label={isWithdrawing ? "Withdrawing..." : "Withdraw application"} 
             variant="ghost" 
-            onPress={handleBackToJobs} // Or actual withdraw logic
+            onPress={handleWithdraw}
+            loading={isWithdrawing}
             style={{ marginTop: 32 }}
           />
         </ScrollView>
