@@ -5,17 +5,40 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { colors } from '../theme';
 
+import { EmployerDashboardScreen } from '../screens/employer/EmployerDashboardScreen';
+import ProfileScreen from '../screens/employer/ProfileScreen';
+import NotificationsScreen from '../screens/employer/NotificationsScreen';
+import RateWorkerScreen from '../screens/employer/RateWorkerScreen';
+import MyJobsScreen from '../screens/employer/MyJobsScreen';
+import JobStatusManagementScreen from '../screens/employer/JobStatusManagementScreen';
+import EditProfileScreen from '../screens/common/EditProfileScreen';
+import SettingsScreen from '../screens/common/SettingsScreen';
+import ReportScreen from '../screens/common/ReportScreen';
+
+import { PostJobScreen } from '../screens/employer/PostJobScreen';
+import { ViewApplicantsScreen } from '../screens/employer/ViewApplicantsScreen';
+import ApplicantDetailScreen from '../screens/employer/ApplicantDetailScreen';
+import ConfirmHireScreen from '../screens/employer/ConfirmHireScreen';
+
 export type EmployerStackParamList = {
   Home: undefined;
   PostJob: undefined;
   JobDetails: { id: number };
   ViewApplicants: { id: number };
-  ApplicantDetail: { applicantId: number; jobTitle: string; applicantName: string; status: string };
+  ApplicantDetail: {
+    applicantId: number;
+    jobTitle: string;
+    applicantName: string;
+    status: string;
+    phone?: string;
+    emergencyContactName?: string;
+    emergencyContactPhone?: string;
+  };
   SendRequest: { id: number };
   ConfirmHire: { applicantId: number; applicantName: string; jobTitle: string };
   CancelHire: { id: number };
   MarkComplete: { id: number };
-  RateWorker: { id: number };
+  RateWorker: { id: number; workerName: string; jobTitle: string };
   Report: { id: number };
   EditProfile: undefined;
   Settings: undefined;
@@ -120,20 +143,6 @@ const EmployerNavigator: React.FC = () => {
   );
 };
 
-import { EmployerDashboardScreen } from '../screens/employer/EmployerDashboardScreen';
-import ProfileScreen from '../screens/employer/ProfileScreen';
-import NotificationsScreen from '../screens/employer/NotificationsScreen';
-import RateWorkerScreen from '../screens/employer/RateWorkerScreen';
-import MyJobsScreen from '../screens/employer/MyJobsScreen';
-import JobStatusManagementScreen from '../screens/employer/JobStatusManagementScreen';
-import EditProfileScreen from '../screens/common/EditProfileScreen';
-import SettingsScreen from '../screens/common/SettingsScreen';
-
-import { PostJobScreen } from '../screens/employer/PostJobScreen';
-import { ViewApplicantsScreen } from '../screens/employer/ViewApplicantsScreen';
-import ApplicantDetailScreen from '../screens/employer/ApplicantDetailScreen';
-import ConfirmHireScreen from '../screens/employer/ConfirmHireScreen';
-
 const JobDetailsScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
     <Text>Job Details</Text>
@@ -158,9 +167,9 @@ const MarkCompleteScreen: React.FC = () => (
   </View>
 );
 
-const ReportScreen: React.FC = () => (
+const HireReceiptScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Report</Text>
+    <Text>Hire Receipt</Text>
   </View>
 );
 

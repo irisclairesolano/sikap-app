@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAlert } from '../../contexts/AlertContext';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, shadows } from '../../theme';
@@ -8,53 +9,61 @@ import * as SecureStore from 'expo-secure-store';
 import { useQueryClient } from '@tanstack/react-query';
 import { notifyAuthChanged } from '../../store/authEvents';
 
+const SettingRow = ({
+  icon,
+  title,
+  type = 'nav',
+  value,
+  onToggle,
+  onPress,
+  isDestructive = false,
+}: any) => (
+  <TouchableOpacity
+    style={styles.settingRow}
+    onPress={type === 'nav' ? onPress : undefined}
+    disabled={type !== 'nav'}
+  >
+    <View style={styles.settingRowLeft}>
+      <Ionicons name={icon} size={22} color={isDestructive ? colors.error : colors.ink} />
+      <Text style={[styles.settingRowTitle, isDestructive && { color: colors.error }]}>
+        {title}
+      </Text>
+    </View>
+    {type === 'nav' && <Ionicons name="chevron-forward" size={20} color={colors.inkLight} />}
+    {type === 'toggle' && (
+      <Switch
+        trackColor={{ false: colors.inkFaint, true: colors.mint }}
+        thumbColor={colors.paperBright}
+        onValueChange={onToggle}
+        value={value}
+      />
+    )}
+  </TouchableOpacity>
+);
+
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
+  const { showAlert } = useAlert();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
   const handleLogout = () => {
-    Alert.alert(
-      "Log Out",
-      "Are you sure you want to log out?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Log Out", 
-          style: "destructive",
-          onPress: async () => {
-            await SecureStore.deleteItemAsync('auth_token');
-            queryClient.clear();
-            notifyAuthChanged();
-          }
-        }
-      ]
-    );
+    showAlert('Log Out', 'Are you sure you want to log out?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Log Out',
+        style: 'destructive',
+        onPress: async () => {
+          await SecureStore.deleteItemAsync('auth_token');
+          queryClient.clear();
+          notifyAuthChanged();
+        },
+      },
+    ]);
   };
-
-  const SettingRow = ({ icon, title, type = 'nav', value, onToggle, onPress, isDestructive = false }: any) => (
-    <TouchableOpacity 
-      style={styles.settingRow} 
-      onPress={type === 'nav' ? onPress : undefined}
-      disabled={type !== 'nav'}
-    >
-      <View style={styles.settingRowLeft}>
-        <Ionicons name={icon} size={22} color={isDestructive ? colors.error : colors.ink} />
-        <Text style={[styles.settingRowTitle, isDestructive && { color: colors.error }]}>{title}</Text>
-      </View>
-      {type === 'nav' && <Ionicons name="chevron-forward" size={20} color={colors.inkLight} />}
-      {type === 'toggle' && (
-        <Switch
-          trackColor={{ false: colors.inkFaint, true: colors.mint }}
-          thumbColor={colors.paperBright}
-          onValueChange={onToggle}
-          value={value}
-        />
-      )}
-    </TouchableOpacity>
-  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -69,11 +78,14 @@ export const SettingsScreen: React.FC = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
           <View style={styles.sectionCard}>
-            <SettingRow icon="person-outline" title="Edit Profile" onPress={() => navigation.navigate('EditProfile')} />
+            <SettingRow
+              icon="person-outline"
+              title="Edit Profile"
+              onPress={() => navigation.navigate('EditProfile')}
+            />
             <View style={styles.divider} />
             <SettingRow icon="shield-checkmark-outline" title="Verification Status" />
           </View>
@@ -82,20 +94,28 @@ export const SettingsScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Preferences</Text>
           <View style={styles.sectionCard}>
-            <SettingRow 
-              icon="notifications-outline" 
-              title="Push Notifications" 
-              type="toggle" 
-              value={notificationsEnabled} 
-              onToggle={setNotificationsEnabled} 
+            <SettingRow
+              icon="notifications-outline"
+              title="Push Notifications"
+              type="toggle"
+              value={notificationsEnabled}
+              onToggle={setNotificationsEnabled}
             />
             <View style={styles.divider} />
-            <SettingRow 
-              icon="location-outline" 
-              title="Location Services" 
-              type="toggle" 
-              value={locationEnabled} 
-              onToggle={setLocationEnabled} 
+            <SettingRow
+              icon="location-outline"
+              title="Location Services"
+              type="toggle"
+              value={locationEnabled}
+              onToggle={setLocationEnabled}
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              icon="moon-outline"
+              title="Dark Mode"
+              type="toggle"
+              value={darkModeEnabled}
+              onToggle={setDarkModeEnabled}
             />
           </View>
         </View>
@@ -113,22 +133,13 @@ export const SettingsScreen: React.FC = () => {
 
         <View style={styles.section}>
           <View style={styles.sectionCard}>
-            <SettingRow 
-              icon="log-out-outline" 
-              title="Log Out" 
-              onPress={handleLogout} 
-            />
+            <SettingRow icon="log-out-outline" title="Log Out" onPress={handleLogout} />
             <View style={styles.divider} />
-            <SettingRow 
-              icon="trash-outline" 
-              title="Delete Account" 
-              isDestructive={true} 
-            />
+            <SettingRow icon="trash-outline" title="Delete Account" isDestructive={true} />
           </View>
         </View>
-        
-        <Text style={styles.versionText}>SIKAP v1.0.0</Text>
 
+        <Text style={styles.versionText}>SIKAP v1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -136,19 +147,56 @@ export const SettingsScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.paper },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
   iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerPill: { backgroundColor: colors.paperBright, paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, ...shadows.sm },
+  headerPill: {
+    backgroundColor: colors.paperBright,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    ...shadows.sm,
+  },
   headerPillText: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.inkMuted },
   scrollContent: { padding: 20, paddingBottom: 40 },
   section: { marginBottom: 24 },
-  sectionTitle: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.inkSoft, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, marginLeft: 4 },
-  sectionCard: { backgroundColor: colors.paperBright, borderRadius: 16, overflow: 'hidden', ...shadows.sm },
-  settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: colors.paperBright },
+  sectionTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.inkSoft,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  sectionCard: {
+    backgroundColor: colors.paperBright,
+    borderRadius: 16,
+    overflow: 'hidden',
+    ...shadows.sm,
+  },
+  settingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: colors.paperBright,
+  },
   settingRowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   settingRowTitle: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.ink },
   divider: { height: 1, backgroundColor: colors.inkFaint, marginLeft: 50 },
-  versionText: { fontFamily: fonts.body, fontSize: 12, color: colors.inkLight, textAlign: 'center', marginTop: 10 }
+  versionText: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkLight,
+    textAlign: 'center',
+    marginTop: 10,
+  },
 });
 
 export default SettingsScreen;

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 
 export interface Reviewer {
@@ -32,6 +32,34 @@ export const useReviews = () => {
     queryFn: async () => {
       const response = await apiClient<ReviewsResponse>('/reviews');
       return response;
+    },
+  });
+};
+
+export interface SubmitReviewPayload {
+  cat1: number;
+  cat2: number;
+  cat3: number;
+  cat4: number;
+  comment?: string;
+}
+
+export const useSubmitReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    { message: string },
+    Error,
+    { applicationId: number; payload: SubmitReviewPayload }
+  >({
+    mutationFn: async ({ applicationId, payload }) => {
+      return apiClient<{ message: string }>(`/applications/${applicationId}/review`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
   });
 };

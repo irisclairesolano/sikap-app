@@ -1,16 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAlert } from '../../contexts/AlertContext';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
-import { useWithdrawApplication } from '../../hooks/useApply';
+import { useWithdrawApplication, useAcceptOffer, useRejectOffer } from '../../hooks/useApply';
 
 type ApplicationDetailScreenRouteProp = RouteProp<WorkerStackParamList, 'ApplicationDetail'>;
-type ApplicationDetailScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'ApplicationDetail'>;
+type ApplicationDetailScreenNavigationProp = NativeStackNavigationProp<
+  WorkerStackParamList,
+  'ApplicationDetail'
+>;
 
 const ApplicationDetailScreen: React.FC = () => {
   const route = useRoute<ApplicationDetailScreenRouteProp>();
@@ -18,31 +22,72 @@ const ApplicationDetailScreen: React.FC = () => {
   const { applicationId, jobTitle, employerName, status, compensation } = route.params;
 
   const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawApplication();
+  const { mutate: acceptOffer, isPending: isAccepting } = useAcceptOffer();
+  const { mutate: rejectOffer, isPending: isRejecting } = useRejectOffer();
+  const { showAlert } = useAlert();
 
   const handleAccept = () => {
-    // Navigate back to MyApplications
-    navigation.popToTop();
+    acceptOffer(applicationId, {
+      onSuccess: () => {
+        showAlert('Offer Accepted!', `You have accepted the offer for ${jobTitle}.`, [
+          { text: 'OK', onPress: () => navigation.popToTop() },
+        ]);
+      },
+      onError: (err: any) => {
+        showAlert('Error', err.response?.data?.message || 'Could not accept offer.');
+      },
+    });
   };
 
   const handleReject = () => {
-    navigation.popToTop();
+    rejectOffer(applicationId, {
+      onSuccess: () => {
+        showAlert('Offer Rejected', `You have rejected the offer for ${jobTitle}.`, [
+          { text: 'OK', onPress: () => navigation.popToTop() },
+        ]);
+      },
+      onError: (err: any) => {
+        showAlert('Error', err.response?.data?.message || 'Could not reject offer.');
+      },
+    });
   };
 
   const handleWithdraw = () => {
-    withdraw(applicationId, {
-      onSuccess: () => {
-        navigation.goBack();
-      }
-    });
+    showAlert(
+      'Are you sure you want to withdraw?',
+      'Withdrawing means you are cancelling your interest in the job and the employer will be notified. This action cannot be undone.',
+      [
+        { text: 'No, continue', style: 'cancel' },
+        {
+          text: 'Yes',
+          style: 'destructive',
+          onPress: () => {
+            withdraw(applicationId, {
+              onSuccess: () => {
+                navigation.goBack();
+              },
+            });
+          },
+        },
+      ],
+    );
   };
 
   const getStage = () => {
     switch (status) {
-      case 'pending': return 1;
-      case 'shortlisted': return 2;
-      case 'employer_confirmed': return 3;
-      case 'accepted': return 4;
-      default: return 1;
+      case 'pending':
+        return 1;
+      case 'shortlisted':
+      case 'pending_negotiation':
+        return 2;
+      case 'employer_confirmed':
+        return 3;
+      case 'accepted':
+        return 4;
+      case 'completed':
+        return 5;
+      default:
+        return 1;
     }
   };
 
@@ -56,9 +101,15 @@ const ApplicationDetailScreen: React.FC = () => {
         </TouchableOpacity>
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>
-            {stage === 1 ? 'Application Tracking' : 
-             stage === 2 ? 'Shortlisted' : 
-             stage === 3 ? 'Offer Received' : 'Hired'}
+            {stage === 1
+              ? 'Application Tracking'
+              : stage === 2
+                ? 'Shortlisted'
+                : stage === 3
+                  ? 'Offer Received'
+                  : stage === 4
+                    ? 'Hired'
+                    : 'Completed'}
           </Text>
         </View>
         <TouchableOpacity style={styles.iconBtn}>
@@ -70,52 +121,111 @@ const ApplicationDetailScreen: React.FC = () => {
         {/* 4-Stage Tracker */}
         <View style={styles.stages}>
           <View style={stage >= 1 ? styles.stageActive : styles.stage}>
-            <View style={[styles.stageCircle, stage >= 2 ? styles.stageDone : stage === 1 ? styles.stageCircleActive : null]}>
-              {stage >= 2 ? <Ionicons name="checkmark" size={14} color="white" /> : <Text style={stage === 1 ? styles.stageCircleTextActive : styles.stageCircleText}>1</Text>}
+            <View
+              style={[
+                styles.stageCircle,
+                stage >= 2 ? styles.stageDone : stage === 1 ? styles.stageCircleActive : null,
+              ]}
+            >
+              {stage >= 2 ? (
+                <Ionicons name="checkmark" size={14} color="white" />
+              ) : (
+                <Text style={stage === 1 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                  1
+                </Text>
+              )}
             </View>
             <Text style={styles.stageLabel}>Applied</Text>
           </View>
           <View style={[styles.stageDivider, stage >= 2 && styles.stageDoneDivider]} />
-          
+
           <View style={stage >= 2 ? styles.stageActive : styles.stage}>
-            <View style={[styles.stageCircle, stage >= 3 ? styles.stageDone : stage === 2 ? styles.stageCircleActive : null]}>
-              {stage >= 3 ? <Ionicons name="checkmark" size={14} color="white" /> : <Text style={stage === 2 ? styles.stageCircleTextActive : styles.stageCircleText}>2</Text>}
+            <View
+              style={[
+                styles.stageCircle,
+                stage >= 3 ? styles.stageDone : stage === 2 ? styles.stageCircleActive : null,
+              ]}
+            >
+              {stage >= 3 ? (
+                <Ionicons name="checkmark" size={14} color="white" />
+              ) : (
+                <Text style={stage === 2 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                  2
+                </Text>
+              )}
             </View>
             <Text style={styles.stageLabel}>Shortlisted</Text>
           </View>
           <View style={[styles.stageDivider, stage >= 3 && styles.stageDoneDivider]} />
-          
+
           <View style={stage >= 3 ? styles.stageActive : styles.stage}>
-            <View style={[styles.stageCircle, stage >= 4 ? styles.stageDone : stage === 3 ? styles.stageCircleActive : null]}>
-              {stage >= 4 ? <Ionicons name="checkmark" size={14} color="white" /> : <Text style={stage === 3 ? styles.stageCircleTextActive : styles.stageCircleText}>3</Text>}
+            <View
+              style={[
+                styles.stageCircle,
+                stage >= 4 ? styles.stageDone : stage === 3 ? styles.stageCircleActive : null,
+              ]}
+            >
+              {stage >= 4 ? (
+                <Ionicons name="checkmark" size={14} color="white" />
+              ) : (
+                <Text style={stage === 3 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                  3
+                </Text>
+              )}
             </View>
             <Text style={styles.stageLabel}>Offer</Text>
           </View>
           <View style={[styles.stageDivider, stage >= 4 && styles.stageDoneDivider]} />
-          
+
           <View style={stage >= 4 ? styles.stageActive : styles.stage}>
-            <View style={[styles.stageCircle, stage === 4 ? styles.stageCircleActive : null]}>
-              <Text style={stage === 4 ? styles.stageCircleTextActive : styles.stageCircleText}>4</Text>
+            <View
+              style={[
+                styles.stageCircle,
+                stage >= 5 ? styles.stageDone : stage === 4 ? styles.stageCircleActive : null,
+              ]}
+            >
+              {stage >= 5 ? (
+                <Ionicons name="checkmark" size={14} color="white" />
+              ) : (
+                <Text style={stage === 4 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                  4
+                </Text>
+              )}
             </View>
             <Text style={styles.stageLabel}>Hired</Text>
+          </View>
+          <View style={[styles.stageDivider, stage >= 5 && styles.stageDoneDivider]} />
+
+          <View style={stage >= 5 ? styles.stageActive : styles.stage}>
+            <View style={[styles.stageCircle, stage === 5 ? styles.stageCircleActive : null]}>
+              <Text style={stage === 5 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                5
+              </Text>
+            </View>
+            <Text style={styles.stageLabel}>Done</Text>
           </View>
         </View>
 
         {/* Dynamic Content based on Stage */}
-        
+
         {/* STAGE 1: PENDING */}
         {stage === 1 && (
           <View>
             <Text style={styles.pageTitle}>Application sent.</Text>
-            <Text style={styles.lede}>You applied for <Text style={styles.ledeHighlight}>{jobTitle}</Text>. Reyes Household is reviewing your profile.</Text>
-            
+            <Text style={styles.lede}>
+              You applied for <Text style={styles.ledeHighlight}>{jobTitle}</Text>. Reyes Household
+              is reviewing your profile.
+            </Text>
+
             <View style={[styles.shieldCard, { marginTop: 24 }]}>
               <View style={[styles.shieldHeader, { marginBottom: 0 }]}>
                 <View style={[styles.shieldBadge, { backgroundColor: colors.sky }]}>
                   <Ionicons name="shield-checkmark" size={18} color={colors.skyDeep} />
                 </View>
                 <View>
-                  <Text style={[styles.shieldSub, { color: colors.skyDeep }]}>Privacy Shield Active</Text>
+                  <Text style={[styles.shieldSub, { color: colors.skyDeep }]}>
+                    Privacy Shield Active
+                  </Text>
                   <Text style={styles.shieldTitle}>Only public info is visible</Text>
                 </View>
               </View>
@@ -126,16 +236,25 @@ const ApplicationDetailScreen: React.FC = () => {
         {/* STAGE 2: SHORTLISTED */}
         {stage === 2 && (
           <View>
-            <Text style={styles.pageTitle}>{employerName}<br/><Text style={styles.titleItalic}>wants to talk.</Text></Text>
-            <Text style={styles.lede}>You've been shortlisted for <Text style={styles.ledeHighlight}>{jobTitle}</Text>. They may reach out to discuss the work and price.</Text>
-            
+            <Text style={styles.pageTitle}>
+              {employerName}
+              <br />
+              <Text style={styles.titleItalic}>wants to talk.</Text>
+            </Text>
+            <Text style={styles.lede}>
+              You've been shortlisted for <Text style={styles.ledeHighlight}>{jobTitle}</Text>. They
+              may reach out to discuss the work and price.
+            </Text>
+
             <View style={[styles.shieldCard, { marginTop: 14 }]}>
               <View style={styles.shieldHeader}>
                 <View style={[styles.shieldBadge, { backgroundColor: colors.peach }]}>
                   <Ionicons name="eye" size={18} color={colors.primary} />
                 </View>
                 <View>
-                  <Text style={[styles.shieldSub, { color: colors.primary }]}>Now visible to employer</Text>
+                  <Text style={[styles.shieldSub, { color: colors.primary }]}>
+                    Now visible to employer
+                  </Text>
                   <Text style={styles.shieldTitle}>References + contact unlocked</Text>
                 </View>
               </View>
@@ -150,9 +269,15 @@ const ApplicationDetailScreen: React.FC = () => {
             </View>
 
             <View style={styles.butterNotice}>
-              <Ionicons name="information-circle" size={18} color={colors.primaryDark} style={{ marginTop: 1 }} />
+              <Ionicons
+                name="information-circle"
+                size={18}
+                color={colors.primaryDark}
+                style={{ marginTop: 1 }}
+              />
               <Text style={styles.butterNoticeText}>
-                <Text style={{ fontWeight: '700' }}>Talk outside the app</Text>, then come back when you've agreed on a price.
+                <Text style={{ fontWeight: '700' }}>Talk outside the app</Text>, then come back when
+                you've agreed on a price.
               </Text>
             </View>
           </View>
@@ -162,7 +287,13 @@ const ApplicationDetailScreen: React.FC = () => {
         {stage === 3 && (
           <View>
             <View style={styles.priceCard}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                }}
+              >
                 <Text style={styles.priceEyebrow}>Final agreed price</Text>
                 <View style={styles.lockBadge}>
                   <Ionicons name="lock-closed" size={16} color={colors.primary} />
@@ -175,7 +306,7 @@ const ApplicationDetailScreen: React.FC = () => {
             <View style={styles.mintNotice}>
               <Ionicons name="checkmark-circle" size={20} color={colors.mintDeep} />
               <Text style={styles.mintNoticeText}>
-                <Text style={{ fontWeight: '700', color: colors.ink }}>Slot locked. </Text> 
+                <Text style={{ fontWeight: '700', color: colors.ink }}>Slot locked. </Text>
                 No price surprises, no ghosting.
               </Text>
             </View>
@@ -205,8 +336,27 @@ const ApplicationDetailScreen: React.FC = () => {
             <View style={styles.mintNotice}>
               <Ionicons name="briefcase" size={20} color={colors.mintDeep} />
               <Text style={styles.mintNoticeText}>
-                <Text style={{ fontWeight: '700', color: colors.ink }}>You are hired! </Text> 
+                <Text style={{ fontWeight: '700', color: colors.ink }}>You are hired! </Text>
                 Proceed to the job location on the agreed date.
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* STAGE 5: COMPLETED */}
+        {stage === 5 && (
+          <View>
+            <View style={[styles.priceCard, { backgroundColor: colors.sky }]}>
+              <Text style={styles.priceEyebrow}>Job Completed</Text>
+              <Text style={styles.priceNum}>₱{compensation || '1,800'}</Text>
+              <Text style={styles.priceDesc}>Job finished. Awaiting review.</Text>
+            </View>
+
+            <View style={[styles.mintNotice, { backgroundColor: colors.peach }]}>
+              <Ionicons name="star" size={20} color={colors.primary} />
+              <Text style={[styles.mintNoticeText, { color: colors.primary }]}>
+                <Text style={{ fontWeight: '700', color: colors.primaryDark }}>Job complete! </Text>
+                Please rate your employer to help the community.
               </Text>
             </View>
           </View>
@@ -215,52 +365,62 @@ const ApplicationDetailScreen: React.FC = () => {
 
       {/* FOOTER ACTIONS */}
       <View style={styles.footer}>
-        {stage === 1 && (
-          <Button 
-            label={isWithdrawing ? "Withdrawing..." : "Withdraw application"} 
-            variant="ghost" 
-            size="lg" 
-            fullWidth 
+        {stage === 1 && status !== 'withdrawn' && (
+          <Button
+            label={isWithdrawing ? 'Withdrawing...' : 'Withdraw application'}
+            variant="ghost"
+            size="lg"
+            fullWidth
             onPress={handleWithdraw}
             loading={isWithdrawing}
           />
         )}
-        {stage === 2 && (
-          <Button 
-            label={isWithdrawing ? "Withdrawing..." : "Withdraw application"} 
-            variant="ghost" 
-            size="lg" 
-            fullWidth 
+        {stage === 2 && status !== 'withdrawn' && (
+          <Button
+            label={isWithdrawing ? 'Withdrawing...' : 'Withdraw application'}
+            variant="ghost"
+            size="lg"
+            fullWidth
             onPress={handleWithdraw}
             loading={isWithdrawing}
           />
         )}
         {stage === 3 && (
           <View style={{ gap: 12 }}>
-            <Button 
-              label="Accept and start" 
-              variant="primary" 
-              size="lg" 
-              fullWidth 
+            <Button
+              label="Accept and start"
+              variant="primary"
+              size="lg"
+              fullWidth
               icon={<Ionicons name="checkmark" size={18} color="white" />}
               onPress={handleAccept}
+              loading={isAccepting}
+              disabled={isRejecting}
             />
-            <Button 
-              label="Reject offer" 
-              variant="ghost" 
-              size="base" 
-              fullWidth 
+            <Button
+              label="Reject offer"
+              variant="ghost"
+              size="base"
+              fullWidth
               onPress={handleReject}
+              loading={isRejecting}
+              disabled={isAccepting}
             />
           </View>
         )}
         {stage === 4 && (
-          <Button 
-            label="Mark as Completed" 
-            variant="primary" 
-            size="lg" 
-            fullWidth 
-            icon={<Ionicons name="checkmark-done" size={18} color="white" />}
+          <Button label="Job is in progress" variant="ghost" size="lg" fullWidth disabled />
+        )}
+        {stage === 5 && (
+          <Button
+            label="Rate Employer"
+            variant="primary"
+            size="lg"
+            fullWidth
+            icon={<Ionicons name="star" size={18} color="white" />}
+            onPress={() =>
+              navigation.navigate('RateEmployer', { id: applicationId, employerName, jobTitle })
+            }
           />
         )}
       </View>
@@ -270,49 +430,168 @@ const ApplicationDetailScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.paper },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
   iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerPill: { backgroundColor: colors.paperBright, paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, ...shadows.sm },
+  headerPill: {
+    backgroundColor: colors.paperBright,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    ...shadows.sm,
+  },
   headerPillText: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.primary },
   scrollContent: { padding: 20, paddingBottom: 40 },
-  stages: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
+  stages: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
   stage: { alignItems: 'center', opacity: 0.5 },
   stageActive: { alignItems: 'center', opacity: 1 },
-  stageCircle: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.inkFaint, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  stageCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: colors.inkFaint,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
   stageCircleActive: { borderColor: colors.primary, backgroundColor: colors.primary },
   stageDone: { borderColor: colors.mintDeep, backgroundColor: colors.mintDeep, borderWidth: 0 },
   stageCircleText: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.inkMuted },
   stageCircleTextActive: { fontFamily: fonts.bodyBold, fontSize: 10, color: 'white' },
   stageLabel: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.ink },
-  stageDivider: { height: 2, flex: 1, backgroundColor: colors.inkFaint, marginHorizontal: 8, marginBottom: 16 },
+  stageDivider: {
+    height: 2,
+    flex: 1,
+    backgroundColor: colors.inkFaint,
+    marginHorizontal: 8,
+    marginBottom: 16,
+  },
   stageDoneDivider: { backgroundColor: colors.mintDeep },
   pageTitle: { fontFamily: fonts.display, fontSize: 26, color: colors.ink, letterSpacing: -0.5 },
   titleItalic: { fontFamily: fonts.displayItalic, color: colors.primary },
-  lede: { fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft, marginTop: 12, lineHeight: 22 },
+  lede: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.inkSoft,
+    marginTop: 12,
+    lineHeight: 22,
+  },
   ledeHighlight: { fontFamily: fonts.bodyBold, color: colors.ink },
-  shieldCard: { backgroundColor: colors.paperBright, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: colors.inkFaint },
+  shieldCard: {
+    backgroundColor: colors.paperBright,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
   shieldHeader: { flexDirection: 'row', gap: 12, marginBottom: 16 },
-  shieldBadge: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  shieldSub: { fontFamily: fonts.bodyBold, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 },
+  shieldBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shieldSub: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   shieldTitle: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink, marginTop: 2 },
-  shieldRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderTopWidth: 1, borderTopColor: colors.inkFaint },
+  shieldRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+  },
   shieldLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.ink },
   shieldStatus: { fontFamily: fonts.bodyBold, fontSize: 13 },
-  butterNotice: { backgroundColor: colors.butter, borderRadius: 12, padding: 14, marginTop: 16, flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
-  butterNoticeText: { fontFamily: fonts.body, fontSize: 13, color: colors.ink, lineHeight: 20, flex: 1 },
+  butterNotice: {
+    backgroundColor: colors.butter,
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 16,
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'flex-start',
+  },
+  butterNoticeText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.ink,
+    lineHeight: 20,
+    flex: 1,
+  },
   priceCard: { backgroundColor: colors.butter, borderRadius: 20, padding: 24, marginTop: 16 },
-  priceEyebrow: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.ink, textTransform: 'uppercase', letterSpacing: 1 },
-  lockBadge: { width: 36, height: 36, backgroundColor: 'white', borderRadius: 18, alignItems: 'center', justifyContent: 'center', ...shadows.sm },
+  priceEyebrow: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.ink,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  lockBadge: {
+    width: 36,
+    height: 36,
+    backgroundColor: 'white',
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadows.sm,
+  },
   priceNum: { fontFamily: fonts.bodyBold, fontSize: 40, color: colors.ink, marginTop: 18 },
   priceDesc: { fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft, marginTop: 8 },
-  mintNotice: { backgroundColor: colors.mint, borderRadius: 12, padding: 14, marginTop: 12, flexDirection: 'row', gap: 10, alignItems: 'center' },
+  mintNotice: {
+    backgroundColor: colors.mint,
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 12,
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  },
   mintNoticeText: { fontFamily: fonts.body, fontSize: 13, color: colors.mintDeep, flex: 1 },
-  employerContactCard: { backgroundColor: colors.paperBright, borderRadius: 12, padding: 14, marginTop: 12, flexDirection: 'row', gap: 12, alignItems: 'center', ...shadows.sm },
-  avatarSmall: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.mint, alignItems: 'center', justifyContent: 'center' },
+  employerContactCard: {
+    backgroundColor: colors.paperBright,
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 12,
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+    ...shadows.sm,
+  },
+  avatarSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.mint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   avatarSmallText: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.mintDeep },
   employerNameCard: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink },
   employerSubCard: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, marginTop: 2 },
-  footer: { padding: 20, paddingBottom: 24, backgroundColor: colors.paper, borderTopWidth: 1, borderTopColor: colors.inkFaint },
+  footer: {
+    padding: 20,
+    paddingBottom: 24,
+    backgroundColor: colors.paper,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+  },
 });
 
 export default ApplicationDetailScreen;

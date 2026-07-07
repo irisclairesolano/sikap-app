@@ -16,13 +16,9 @@ export class ApiClientError extends Error {
   }
 }
 
-export async function apiClient<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
+export async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = await SecureStore.getItemAsync('auth_token');
-  const isFormData =
-    typeof FormData !== 'undefined' && options.body instanceof FormData;
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
 
   console.log(`🔗 API Request: ${BASE_URL}${endpoint}`, {
     method: options.method || 'GET',
@@ -59,7 +55,9 @@ export async function apiClient<T>(
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
       console.log(`dY"- API Timeout: ${endpoint}`);
-      throw new Error('The server is taking too long to respond (likely waking up). Please try again.');
+      throw new Error(
+        'The server is taking too long to respond (likely waking up). Please try again.',
+      );
     }
     throw error;
   }
@@ -78,30 +76,30 @@ export async function apiClient<T>(
     let errBody: { message?: string; errors?: Record<string, string[]> } = {};
     let rawText = '';
     let contentType = res.headers.get('content-type') || '';
-    
-    console.log("🔍 HTTP Response Details:", {
+
+    console.log('🔍 HTTP Response Details:', {
       status: res.status,
       statusText: res.statusText,
       contentType: contentType,
       headers: Object.fromEntries(res.headers.entries()),
     });
-    
+
     try {
       const responseText = await res.text();
       rawText = responseText;
-      console.log("🔍 Raw Response Text:", responseText);
-      
+      console.log('🔍 Raw Response Text:', responseText);
+
       // Check if it's HTML (common error pages)
       if (responseText.includes('<!DOCTYPE html>') || responseText.includes('<html>')) {
-        console.log("🔍 Response is HTML - likely an error page");
+        console.log('🔍 Response is HTML - likely an error page');
         errBody.message = 'Server returned an error page instead of JSON';
       } else {
         // Try to parse as JSON
         errBody = JSON.parse(responseText);
-        console.log("🔍 Parsed JSON Response:", errBody);
+        console.log('🔍 Parsed JSON Response:', errBody);
       }
-      
-      console.log("🔍 API Error Details:", {
+
+      console.log('🔍 API Error Details:', {
         status: res.status,
         statusText: res.statusText,
         body: errBody,
@@ -109,20 +107,19 @@ export async function apiClient<T>(
         contentType: contentType,
       });
     } catch (parseError) {
-      console.log("🔍 API Error Details: Could not parse response body");
-      console.log("🔍 Parse Error:", parseError);
-      console.log("🔍 Raw Response Text:", rawText.substring(0, 500) + (rawText.length > 500 ? '...' : ''));
+      console.log('🔍 API Error Details: Could not parse response body');
+      console.log('🔍 Parse Error:', parseError);
+      console.log(
+        '🔍 Raw Response Text:',
+        rawText.substring(0, 500) + (rawText.length > 500 ? '...' : ''),
+      );
       errBody.message = 'Failed to parse server response';
     }
-    throw new ApiClientError(
-      errBody.message ?? 'Something went wrong',
-      res.status,
-      errBody.errors
-    );
+    throw new ApiClientError(errBody.message ?? 'Something went wrong', res.status, errBody.errors);
   }
 
   // Log successful response before parsing
-  console.log("🔍 API Success Response:", {
+  console.log('🔍 API Success Response:', {
     status: res.status,
     statusText: res.statusText,
     headers: Object.fromEntries(res.headers.entries()),
@@ -130,11 +127,11 @@ export async function apiClient<T>(
 
   try {
     const data = await res.json();
-    console.log("🔍 API Parsed Response:", data);
+    console.log('🔍 API Parsed Response:', data);
     return data;
   } catch (parseError) {
-    console.log("🔍 API Parse Error:", parseError);
-    console.log("🔍 Raw Response Text:", await res.text());
+    console.log('🔍 API Parse Error:', parseError);
+    console.log('🔍 Raw Response Text:', await res.text());
     throw new Error('Failed to parse server response');
   }
 }

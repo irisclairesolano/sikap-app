@@ -1,5 +1,14 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, ViewStyle, TextStyle, TouchableOpacityProps, View } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ViewStyle,
+  TextStyle,
+  TouchableOpacityProps,
+  View,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, shadows } from '../../theme';
 
@@ -15,7 +24,7 @@ export interface ButtonProps extends TouchableOpacityProps {
   icon?: any;
   iconPosition?: 'left' | 'right';
   style?: any;
-};
+}
 
 const Button: React.FC<ButtonProps> = ({
   label,
@@ -46,15 +55,22 @@ const Button: React.FC<ButtonProps> = ({
               : styles.secondaryBg;
 
   const labelStyle: TextStyle =
-    variant === 'outline' ? styles.labelOutline 
-    : variant === 'secondary' ? styles.labelSecondary
-    : variant === 'ghost' ? styles.labelGhost
-    : variant === 'soft' ? styles.labelSoft
-    : styles.labelOnPrimary;
+    variant === 'outline'
+      ? styles.labelOutline
+      : variant === 'secondary'
+        ? styles.labelSecondary
+        : variant === 'ghost'
+          ? styles.labelGhost
+          : variant === 'soft'
+            ? styles.labelSoft
+            : styles.labelOnPrimary;
 
   const shadowStyle: ViewStyle | undefined =
-    variant === 'primary' && !disabled ? shadows.color 
-    : variant === 'secondary' && !disabled ? shadows.sm : undefined;
+    variant === 'primary' && !disabled
+      ? shadows.color
+      : variant === 'secondary' && !disabled
+        ? shadows.sm
+        : undefined;
 
   return (
     <TouchableOpacity
@@ -74,15 +90,35 @@ const Button: React.FC<ButtonProps> = ({
       accessibilityRole="button"
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'outline' || variant === 'ghost' ? colors.primary : variant === 'secondary' ? colors.ink : colors.white} />
+        <ActivityIndicator
+          color={
+            variant === 'outline' || variant === 'ghost'
+              ? colors.primary
+              : variant === 'secondary'
+                ? colors.ink
+                : colors.white
+          }
+        />
       ) : (
         <View style={styles.contentRow}>
           {icon && iconPosition === 'left' && (
-            <Ionicons name={icon} size={size === 'lg' ? 20 : 18} color={labelStyle.color} style={{ marginRight: 8 }} />
+            <Ionicons
+              name={icon}
+              size={size === 'lg' ? 20 : 18}
+              color={labelStyle.color}
+              style={{ marginRight: 8 }}
+            />
           )}
-          <Text style={[styles.label, size === 'lg' && styles.labelLg, labelStyle]}>{displayLabel}</Text>
+          <Text style={[styles.label, size === 'lg' && styles.labelLg, labelStyle]}>
+            {displayLabel}
+          </Text>
           {icon && iconPosition === 'right' && (
-            <Ionicons name={icon} size={size === 'lg' ? 20 : 18} color={labelStyle.color} style={{ marginLeft: 8 }} />
+            <Ionicons
+              name={icon}
+              size={size === 'lg' ? 20 : 18}
+              color={labelStyle.color}
+              style={{ marginLeft: 8 }}
+            />
           )}
         </View>
       )}

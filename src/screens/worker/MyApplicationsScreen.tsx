@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  RefreshControl,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -12,46 +20,49 @@ import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { Application } from '../../types';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 
-const FILTERS = ['Active', 'Pending', 'Completed'];
+const FILTERS = ['Active', 'Pending', 'Completed', 'Withdrawn'];
 
 export const MyApplicationsScreen: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('Active');
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
 
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isRefetching
-  } = useMyApplications('All'); // Fetch all, we'll filter client-side for simplicity right now
+  const { data, isLoading, isError, error, refetch, isRefetching } = useMyApplications('All'); // Fetch all, we'll filter client-side for simplicity right now
 
   const applications = data?.pages.flatMap((page) => page.data) || [];
 
   const filteredApps = applications.filter((app) => {
     if (activeFilter === 'Active') return app.status === 'accepted';
-    if (activeFilter === 'Pending') return app.status === 'pending' || app.status === 'employer_confirmed';
-    if (activeFilter === 'Completed') return app.status === 'completed' || app.status === 'rejected' || app.status === 'withdrawn';
+    if (activeFilter === 'Pending')
+      return app.status === 'pending' || app.status === 'employer_confirmed';
+    if (activeFilter === 'Completed')
+      return app.status === 'completed' || app.status === 'rejected';
+    if (activeFilter === 'Withdrawn') return app.status === 'withdrawn';
     return true;
   });
 
   const getCount = (filterName: string) => {
     return applications.filter((app) => {
       if (filterName === 'Active') return app.status === 'accepted';
-      if (filterName === 'Pending') return app.status === 'pending' || app.status === 'employer_confirmed';
-      if (filterName === 'Completed') return app.status === 'completed' || app.status === 'rejected' || app.status === 'withdrawn';
+      if (filterName === 'Pending')
+        return app.status === 'pending' || app.status === 'employer_confirmed';
+      if (filterName === 'Completed')
+        return app.status === 'completed' || app.status === 'rejected';
+      if (filterName === 'Withdrawn') return app.status === 'withdrawn';
       return true;
     }).length;
   };
 
   const handlePressCard = (application: Application) => {
-    navigation.navigate('ApplicationDetail', { 
+    if (application.status === 'withdrawn') {
+      return;
+    }
+
+    navigation.navigate('ApplicationDetail', {
       applicationId: application.id,
       jobTitle: application.job?.title || 'Unknown Job',
       employerName: application.job?.employer?.name || 'Unknown Employer',
       status: application.status,
-      compensation: application.final_agreed_price?.toString()
+      compensation: application.final_agreed_price?.toString(),
     });
   };
 
@@ -67,8 +78,12 @@ export const MyApplicationsScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.filterContainer}>
-        {FILTERS.map(filter => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterContainer}
+      >
+        {FILTERS.map((filter) => (
           <TouchableOpacity
             key={filter}
             style={[styles.chip, activeFilter === filter && styles.chipActive]}
@@ -79,7 +94,7 @@ export const MyApplicationsScreen: React.FC = () => {
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 

@@ -1,6 +1,14 @@
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,11 +25,16 @@ type ApplyRouteProp = RouteProp<WorkerStackParamList, 'Apply'>;
 
 const getCategoryStyles = (category: string) => {
   switch (category) {
-    case 'Construction': return { icon: 'hammer', bg: colors.peach, color: colors.primary };
-    case 'Domestic': return { icon: 'home', bg: colors.mint, color: colors.mintDeep };
-    case 'Agriculture': return { icon: 'leaf', bg: colors.paperCream, color: colors.inkSoft };
-    case 'Skilled Trade': return { icon: 'construct', bg: colors.sky, color: colors.skyDeep };
-    default: return { icon: 'briefcase', bg: colors.paperCream, color: colors.inkSoft };
+    case 'Construction':
+      return { icon: 'hammer', bg: colors.peach, color: colors.primary };
+    case 'Domestic':
+      return { icon: 'home', bg: colors.mint, color: colors.mintDeep };
+    case 'Agriculture':
+      return { icon: 'leaf', bg: colors.paperCream, color: colors.inkSoft };
+    case 'Skilled Trade':
+      return { icon: 'construct', bg: colors.sky, color: colors.skyDeep };
+    default:
+      return { icon: 'briefcase', bg: colors.paperCream, color: colors.inkSoft };
   }
 };
 
@@ -43,7 +56,7 @@ export const ApplyScreen: React.FC = () => {
   };
 
   const handleBackToJobs = () => {
-    navigation.navigate('Home'); 
+    navigation.navigate('Home');
   };
 
   const handleWithdraw = () => {
@@ -51,7 +64,7 @@ export const ApplyScreen: React.FC = () => {
       withdraw(data.application_id, {
         onSuccess: () => {
           navigation.navigate('Home');
-        }
+        },
       });
     }
   };
@@ -95,26 +108,37 @@ export const ApplyScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContentSuccess} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContentSuccess}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Stepper */}
           <View style={styles.stepper}>
             <View style={[styles.step, styles.stepActive]}>
-              <View style={[styles.stepCircle, styles.stepCircleActive]}><Text style={styles.stepCircleTextActive}>1</Text></View>
+              <View style={[styles.stepCircle, styles.stepCircleActive]}>
+                <Text style={styles.stepCircleTextActive}>1</Text>
+              </View>
               <Text style={[styles.stepLabel, styles.stepLabelActive]}>Applied</Text>
             </View>
             <View style={styles.stepDivider} />
             <View style={styles.step}>
-              <View style={styles.stepCircle}><Text style={styles.stepCircleText}>2</Text></View>
+              <View style={styles.stepCircle}>
+                <Text style={styles.stepCircleText}>2</Text>
+              </View>
               <Text style={styles.stepLabel}>Shortlisted</Text>
             </View>
             <View style={styles.stepDivider} />
             <View style={styles.step}>
-              <View style={styles.stepCircle}><Text style={styles.stepCircleText}>3</Text></View>
+              <View style={styles.stepCircle}>
+                <Text style={styles.stepCircleText}>3</Text>
+              </View>
               <Text style={styles.stepLabel}>Offer</Text>
             </View>
             <View style={styles.stepDivider} />
             <View style={styles.step}>
-              <View style={styles.stepCircle}><Text style={styles.stepCircleText}>4</Text></View>
+              <View style={styles.stepCircle}>
+                <Text style={styles.stepCircleText}>4</Text>
+              </View>
               <Text style={styles.stepLabel}>Hired</Text>
             </View>
           </View>
@@ -125,7 +149,8 @@ export const ApplyScreen: React.FC = () => {
               <Ionicons name="paper-plane" size={22} color={colors.primary} />
             </View>
             <Text style={styles.successHeadline}>
-              Application{'\n'}<Text style={styles.successAccent}>sent.</Text>
+              Application{'\n'}
+              <Text style={styles.successAccent}>sent.</Text>
             </Text>
             <Text style={styles.successSub}>
               {job.employer?.name || 'The employer'} is reviewing applicants now.
@@ -145,9 +170,9 @@ export const ApplyScreen: React.FC = () => {
             </View>
           </View>
 
-          <Button 
-            label={isWithdrawing ? "Withdrawing..." : "Withdraw application"} 
-            variant="ghost" 
+          <Button
+            label={isWithdrawing ? 'Withdrawing...' : 'Withdraw application'}
+            variant="ghost"
             onPress={handleWithdraw}
             loading={isWithdrawing}
             style={{ marginTop: 32 }}
@@ -160,8 +185,8 @@ export const ApplyScreen: React.FC = () => {
   // APPLICATION FORM
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <KeyboardAvoidingView 
-        style={styles.flex1} 
+      <KeyboardAvoidingView
+        style={styles.flex1}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.appBar}>
@@ -172,20 +197,24 @@ export const ApplyScreen: React.FC = () => {
           <View style={{ width: 40 }} />
         </View>
 
-        {isError && (
-          <ErrorBanner message={error?.message || 'Failed to submit application.'} />
-        )}
+        {isError && <ErrorBanner message={error?.message || 'Failed to submit application.'} />}
 
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Job Summary Card */}
           <View style={styles.summaryCard}>
             <View style={[styles.summaryIconBox, { backgroundColor: catStyles.bg }]}>
               <Ionicons name={catStyles.icon as any} size={20} color={catStyles.color} />
             </View>
             <View style={styles.summaryDetails}>
-              <Text style={styles.summaryTitle} numberOfLines={1}>{job.title}</Text>
-              <Text style={styles.summaryEmployer} numberOfLines={1}>{job.employer?.name}</Text>
+              <Text style={styles.summaryTitle} numberOfLines={1}>
+                {job.title}
+              </Text>
+              <Text style={styles.summaryEmployer} numberOfLines={1}>
+                {job.employer?.name}
+              </Text>
             </View>
             <View style={styles.summaryWageBox}>
               <Text style={styles.summaryWage}>₱{job.compensation}</Text>
@@ -212,17 +241,24 @@ export const ApplyScreen: React.FC = () => {
 
           {/* Reassurance Card */}
           <View style={styles.reassuranceCard}>
-            <Ionicons name="shield-checkmark" size={18} color={colors.mintDeep} style={styles.reassuranceIcon} />
+            <Ionicons
+              name="shield-checkmark"
+              size={18}
+              color={colors.mintDeep}
+              style={styles.reassuranceIcon}
+            />
             <Text style={styles.reassuranceText}>
-              Your public profile is shared with the employer. Your phone number and character references stay private until they shortlist you.
+              Your public profile is shared with the employer. Your phone number and character
+              references stay private until they shortlist you.
             </Text>
           </View>
-
         </ScrollView>
 
-        <View style={[styles.bottomBar, { paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 24 }]}>
-          <Button 
-            label="Send application" 
+        <View
+          style={[styles.bottomBar, { paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 24 }]}
+        >
+          <Button
+            label="Send application"
             size="lg"
             onPress={handleSubmit}
             loading={isPending}

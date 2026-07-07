@@ -1,23 +1,50 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAlert } from '../../contexts/AlertContext';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
+import { useJobRequest } from '../../hooks/useJobApplications';
 
 type ApplicantDetailScreenRouteProp = RouteProp<EmployerStackParamList, 'ApplicantDetail'>;
-type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<EmployerStackParamList, 'ApplicantDetail'>;
+type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
+  EmployerStackParamList,
+  'ApplicantDetail'
+>;
 
 const ApplicantDetailScreen: React.FC = () => {
   const route = useRoute<ApplicantDetailScreenRouteProp>();
   const navigation = useNavigation<ApplicantDetailScreenNavigationProp>();
   const { applicantId, jobTitle, applicantName, status } = route.params;
 
-  // In Iteration 1, we'll use dummy data
-  const isShortlisted = status === 'shortlisted' || status === 'employer_confirmed';
+  const jobRequestMutation = useJobRequest();
+  const { showAlert } = useAlert();
+
+  const isShortlisted =
+    status === 'employer_requested' || status === 'accepted' || status === 'employer_confirmed';
+  const isConfirmed = status === 'employer_confirmed';
+  const isAccepted = status === 'accepted';
+  const isPending = status === 'pending';
+  const isCompleted = status === 'completed';
+
+  const handleShortlist = () => {
+    jobRequestMutation.mutate(applicantId, {
+      onSuccess: () => {
+        showAlert(
+          'Shortlisted!',
+          `${applicantName} has been shortlisted. Waiting for their acceptance.`,
+          [{ text: 'OK', onPress: () => navigation.goBack() }],
+        );
+      },
+      onError: (err: any) => {
+        showAlert('Error', err.response?.data?.message || 'Could not shortlist applicant.');
+      },
+    });
+  };
 
   const navigateToConfirmHire = () => {
     navigation.navigate('ConfirmHire', { applicantId, applicantName, jobTitle });
@@ -49,10 +76,10 @@ const ApplicantDetailScreen: React.FC = () => {
               <Ionicons name="checkmark-circle" size={18} color={colors.mintDeep} />
             </View>
             <Text style={styles.locationText}>
-              <Ionicons name="location" size={11} color={colors.primary} /> Sorsogon City
+              <Ionicons name="location" size={11} color={colors.primary} /> Worker
             </Text>
             <View style={styles.verifiedBadge}>
-              <Text style={styles.verifiedBadgeText}>Verified • Tier 1</Text>
+              <Text style={styles.verifiedBadgeText}>Verified</Text>
             </View>
           </View>
         </View>
@@ -61,14 +88,9 @@ const ApplicantDetailScreen: React.FC = () => {
         <View style={styles.reputationCard}>
           <Text style={styles.reputationEyebrow}>Reputation</Text>
           <View style={styles.reputationRow}>
-            <Text style={styles.reputationScore}>4.8</Text>
+            <Text style={styles.reputationScore}>N/A</Text>
             <View style={styles.reputationStars}>
-              <View style={styles.starsRow}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Ionicons key={star} name="star" size={14} color={colors.gold} />
-                ))}
-              </View>
-              <Text style={styles.reputationCount}>8 ratings</Text>
+              <Text style={styles.reputationCount}>No ratings yet</Text>
             </View>
           </View>
           <Text style={styles.reputationTagline}>Their score travels with them.</Text>
@@ -77,40 +99,17 @@ const ApplicantDetailScreen: React.FC = () => {
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
-            <Text style={[styles.statValue, { color: colors.mintDeep }]}>12</Text>
+            <Text style={[styles.statValue, { color: colors.mintDeep }]}>0</Text>
             <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Jobs done</Text>
           </View>
-          <View style={[styles.statBox, { backgroundColor: colors.butter }]}>
-            <Text style={[styles.statValue, { color: colors.ink }]}>98%</Text>
-            <Text style={[styles.statLabel, { color: colors.inkSoft }]}>On time</Text>
-          </View>
           <View style={[styles.statBox, { backgroundColor: colors.sky }]}>
-            <Text style={[styles.statValue, { color: colors.skyDeep }]}>2y</Text>
+            <Text style={[styles.statValue, { color: colors.skyDeep }]}>New</Text>
             <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Member</Text>
           </View>
         </View>
 
-        {/* Skills */}
-        <View style={styles.skillsSection}>
-          <Text style={styles.sectionEyebrow}>Skills</Text>
-          <View style={styles.skillsList}>
-            <View style={[styles.chip, { backgroundColor: colors.peach }]}>
-              <Ionicons name="hammer" size={14} color={colors.primaryDark} />
-              <Text style={[styles.chipText, { color: colors.primaryDark }]}>Carpentry</Text>
-            </View>
-            <View style={[styles.chip, { backgroundColor: colors.mint }]}>
-              <Ionicons name="construct" size={14} color={colors.mintDeep} />
-              <Text style={[styles.chipText, { color: colors.mintDeep }]}>Masonry</Text>
-            </View>
-            <View style={[styles.chip, { backgroundColor: colors.butter }]}>
-              <Ionicons name="brush" size={14} color={colors.ink} />
-              <Text style={[styles.chipText, { color: colors.ink }]}>Painting</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Contact Info (Requires Shortlist) */}
-        {!isShortlisted ? (
+        {/* Contact Info (Requires Shortlist & Confirmed) */}
+        {!isConfirmed ? (
           <View style={styles.privacyShield}>
             <View style={styles.shieldHeader}>
               <View style={styles.shieldIcon}>
@@ -122,7 +121,7 @@ const ApplicantDetailScreen: React.FC = () => {
               </View>
             </View>
             <Text style={styles.shieldDesc}>
-              Shortlist {applicantName.split(' ')[0]} to unlock their phone number and references.
+              Confirm hire to unlock their phone number and references.
             </Text>
           </View>
         ) : (
@@ -133,14 +132,32 @@ const ApplicantDetailScreen: React.FC = () => {
               </View>
               <View>
                 <Text style={styles.shieldTitle}>Contact details unlocked</Text>
-                <Text style={[styles.shieldSub, { color: colors.mintDeep }]}>You can now talk outside the app</Text>
+                <Text style={[styles.shieldSub, { color: colors.mintDeep }]}>
+                  You can now talk outside the app
+                </Text>
               </View>
             </View>
             <View style={{ marginTop: 12, gap: 8 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ fontFamily: fonts.body, color: colors.inkSoft, fontSize: 13 }}>Phone</Text>
-                <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink, fontSize: 13 }}>0912 345 6789</Text>
+                <Text style={{ fontFamily: fonts.body, color: colors.inkSoft, fontSize: 13 }}>
+                  Phone
+                </Text>
+                <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink, fontSize: 13 }}>
+                  {route.params.phone || '0912 345 6789'}
+                </Text>
               </View>
+              {route.params.emergencyContactName && (
+                <View
+                  style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}
+                >
+                  <Text style={{ fontFamily: fonts.body, color: colors.inkSoft, fontSize: 13 }}>
+                    Emergency ({route.params.emergencyContactName})
+                  </Text>
+                  <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink, fontSize: 13 }}>
+                    {route.params.emergencyContactPhone}
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
         )}
@@ -148,22 +165,44 @@ const ApplicantDetailScreen: React.FC = () => {
 
       {/* Fixed Bottom Action */}
       <View style={styles.footer}>
-        {!isShortlisted ? (
-          <Button 
-            label="Shortlist Applicant" 
-            variant="primary" 
-            size="lg" 
-            fullWidth 
+        {isPending && (
+          <Button
+            label="Shortlist Applicant"
+            variant="primary"
+            size="lg"
+            fullWidth
+            loading={jobRequestMutation.isPending}
+            onPress={handleShortlist}
             icon={<Ionicons name="star" size={18} color="white" />}
           />
-        ) : (
-          <Button 
-            label="Proceed to Confirm Hire" 
-            variant="primary" 
-            size="lg" 
-            fullWidth 
+        )}
+        {isAccepted && (
+          <Button
+            label="Proceed to Confirm Hire"
+            variant="primary"
+            size="lg"
+            fullWidth
             icon={<Ionicons name="arrow-forward" size={18} color="white" />}
             onPress={navigateToConfirmHire}
+          />
+        )}
+        {status === 'employer_requested' && (
+          <Button label="Waiting for worker..." variant="outline" size="lg" fullWidth disabled />
+        )}
+        {isCompleted && (
+          <Button
+            label="Rate Worker"
+            variant="primary"
+            size="lg"
+            fullWidth
+            icon={<Ionicons name="star" size={18} color="white" />}
+            onPress={() =>
+              navigation.navigate('RateWorker', {
+                id: applicantId,
+                workerName: applicantName,
+                jobTitle,
+              })
+            }
           />
         )}
       </View>

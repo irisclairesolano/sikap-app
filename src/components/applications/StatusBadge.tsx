@@ -9,7 +9,7 @@ interface StatusBadgeProps {
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ application }) => {
   const { status, references_revealed, contact_revealed } = application;
-  
+
   let label = '';
   let colorConfig: { bg: string; text: string } = { bg: colors.inkFaint, text: colors.inkSoft };
 

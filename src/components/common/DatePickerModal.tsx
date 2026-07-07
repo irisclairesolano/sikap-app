@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ScrollView,
-} from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts } from '../../theme';
 import Button from './Button';
@@ -31,8 +24,18 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
   const month = currentDate.getMonth();
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   const daysOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -110,7 +113,9 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
     }
 
     // Month calculations
-    const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
+    const months =
+      (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+      (endDate.getMonth() - startDate.getMonth());
     if (months <= 0) {
       const weeks = Math.round(diffDays / 7);
       return `${weeks} week${weeks > 1 ? 's' : ''} · ${startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
@@ -172,7 +177,7 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
           >
             {day}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity>,
       );
     }
 
@@ -180,15 +185,9 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent={true} animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          
           {/* Header Drag Bar */}
           <View style={styles.dragIndicator} />
 
@@ -202,34 +201,41 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Range display summary */}
             <View style={styles.summaryContainer}>
-              <TouchableOpacity 
-                style={[
-                  styles.summaryBox,
-                  activeInput === 'start' && styles.summaryBoxActive
-                ]}
+              <TouchableOpacity
+                style={[styles.summaryBox, activeInput === 'start' && styles.summaryBoxActive]}
                 onPress={() => setActiveInput('start')}
               >
                 <Text style={styles.summaryLabel}>FROM</Text>
                 <Text style={styles.summaryValue}>
                   {startDate
-                    ? startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    ? startDate.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })
                     : 'Select start'}
                 </Text>
               </TouchableOpacity>
-              
-              <Ionicons name="arrow-forward" size={16} color={colors.inkMuted} style={styles.summaryArrow} />
-              
-              <TouchableOpacity 
-                style={[
-                  styles.summaryBox,
-                  activeInput === 'end' && styles.summaryBoxActive
-                ]}
+
+              <Ionicons
+                name="arrow-forward"
+                size={16}
+                color={colors.inkMuted}
+                style={styles.summaryArrow}
+              />
+
+              <TouchableOpacity
+                style={[styles.summaryBox, activeInput === 'end' && styles.summaryBoxActive]}
                 onPress={() => setActiveInput('end')}
               >
                 <Text style={styles.summaryLabel}>TO</Text>
                 <Text style={styles.summaryValue}>
                   {endDate
-                    ? endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    ? endDate.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })
                     : 'Select end'}
                 </Text>
               </TouchableOpacity>
@@ -264,21 +270,14 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
             {startDate && (
               <View style={styles.durationPreview}>
                 <Ionicons name="time-outline" size={18} color={colors.primary} />
-                <Text style={styles.durationPreviewText}>
-                  {calculateDurationText()}
-                </Text>
+                <Text style={styles.durationPreviewText}>{calculateDurationText()}</Text>
               </View>
             )}
           </ScrollView>
 
           {/* Action Footer */}
           <View style={styles.footer}>
-            <Button
-              label="Cancel"
-              variant="outline"
-              onPress={onClose}
-              style={{ flex: 1 }}
-            />
+            <Button label="Cancel" variant="outline" onPress={onClose} style={{ flex: 1 }} />
             <Button
               label="Confirm"
               variant="primary"

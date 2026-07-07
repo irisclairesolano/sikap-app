@@ -7,25 +7,36 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { useJobs } from '../../hooks/useJobs';
+import { useSavedJobs, useToggleSaveJob } from '../../hooks/useSavedJobs';
 import { JobCard } from '../../components/jobs/JobCard';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { EmptyState } from '../../components/common/EmptyState';
 import { useAuth } from '../../hooks/useAuth';
 
-const CATEGORIES = ['All', 'Construction', 'Domestic', 'Agriculture', 'Skilled Trade', 'Transport', 'Craft'];
+const CATEGORIES = [
+  'All',
+  'Construction',
+  'Domestic',
+  'Agriculture',
+  'Skilled Trade',
+  'Transport',
+  'Craft',
+];
 
 export const JobFeedScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const [activeCategory, setActiveCategory] = useState('All');
   const { user } = useAuth();
-  
+
   const { data, isLoading, isError, error, refetch } = useJobs();
+  const { data: savedJobsData } = useSavedJobs();
+  const { mutate: toggleSave } = useToggleSaveJob();
 
   const filteredJobs = useMemo(() => {
     if (!data?.data) return [];
     if (activeCategory === 'All') return data.data;
-    return data.data.filter(job => job.category === activeCategory);
+    return data.data.filter((job) => job.category === activeCategory);
   }, [data, activeCategory]);
 
   const handleJobPress = (id: number) => {
@@ -34,6 +45,10 @@ export const JobFeedScreen: React.FC = () => {
 
   const getInitial = (name?: string) => {
     return name ? name.charAt(0).toUpperCase() : 'M';
+  };
+
+  const isSaved = (id: number) => {
+    return savedJobsData?.data?.some((job) => job.id === id) || false;
   };
 
   const renderHeader = () => (
@@ -45,7 +60,9 @@ export const JobFeedScreen: React.FC = () => {
           </View>
           <View>
             <Text style={styles.greetingSmall}>Hi,</Text>
-            <Text style={styles.greetingName}>{user?.name ? user.name.split(' ')[0] : 'Worker'}</Text>
+            <Text style={styles.greetingName}>
+              {user?.name ? user.name.split(' ')[0] : 'Worker'}
+            </Text>
           </View>
         </View>
         <TouchableOpacity style={styles.iconButton}>
@@ -54,17 +71,18 @@ export const JobFeedScreen: React.FC = () => {
       </View>
 
       <Text style={styles.headline}>
-        <Text style={styles.count}>{filteredJobs.length}</Text> jobs <Text style={styles.accent}>nearby.</Text>
+        <Text style={styles.count}>{filteredJobs.length}</Text> jobs{' '}
+        <Text style={styles.accent}>nearby.</Text>
       </Text>
 
       <View style={styles.filterContainer}>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterScroll}
         >
-          {CATEGORIES.map(category => (
-            <TouchableOpacity 
+          {CATEGORIES.map((category) => (
+            <TouchableOpacity
               key={category}
               style={[styles.chip, activeCategory === category && styles.chipActive]}
               onPress={() => setActiveCategory(category)}
@@ -101,9 +119,14 @@ export const JobFeedScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea}>
       <FlatList
         data={filteredJobs}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <JobCard job={item} onPress={() => handleJobPress(item.id)} />
+          <JobCard
+            job={item}
+            onPress={() => handleJobPress(item.id)}
+            isSaved={isSaved(item.id)}
+            onSave={() => toggleSave(item.id)}
+          />
         )}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={<EmptyState message={`No jobs found for ${activeCategory}.`} />}

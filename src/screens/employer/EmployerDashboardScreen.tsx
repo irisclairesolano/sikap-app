@@ -11,16 +11,43 @@ import Button from '../../components/common/Button';
 
 // Dummy active jobs
 const ACTIVE_JOBS = [
-  { id: 1, title: 'Carpenter wanted', location: 'Bulan', applicants: 5, icon: 'hammer', color: colors.peach, iconColor: colors.primaryDark, isNew: true },
-  { id: 2, title: 'House painter', location: 'Bulan', applicants: 2, icon: 'brush', color: colors.mint, iconColor: colors.mintDeep, isNew: false },
-  { id: 3, title: 'Fence repair', location: 'San Vicente', applicants: 1, icon: 'construct', color: colors.butter, iconColor: colors.ink, isNew: false },
+  {
+    id: 1,
+    title: 'Carpenter wanted',
+    location: 'Bulan',
+    applicants: 5,
+    icon: 'hammer',
+    color: colors.peach,
+    iconColor: colors.primaryDark,
+    isNew: true,
+  },
+  {
+    id: 2,
+    title: 'House painter',
+    location: 'Bulan',
+    applicants: 2,
+    icon: 'brush',
+    color: colors.mint,
+    iconColor: colors.mintDeep,
+    isNew: false,
+  },
+  {
+    id: 3,
+    title: 'Fence repair',
+    location: 'San Vicente',
+    applicants: 1,
+    icon: 'construct',
+    color: colors.butter,
+    iconColor: colors.ink,
+    isNew: false,
+  },
 ];
 
 export const EmployerDashboardScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<EmployerStackParamList>>();
   const { user } = useAuth();
 
-  const getInitial = (name?: string) => name ? name.charAt(0).toUpperCase() : 'E';
+  const getInitial = (name?: string) => (name ? name.charAt(0).toUpperCase() : 'E');
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -31,7 +58,9 @@ export const EmployerDashboardScreen: React.FC = () => {
           </View>
           <View>
             <Text style={styles.greetingSmall}>Hi,</Text>
-            <Text style={styles.greetingName}>{user?.name ? user.name.split(' ')[0] : 'Employer'}</Text>
+            <Text style={styles.greetingName}>
+              {user?.name ? user.name.split(' ')[0] : 'Employer'}
+            </Text>
           </View>
         </View>
         <TouchableOpacity style={styles.iconButton}>
@@ -40,7 +69,6 @@ export const EmployerDashboardScreen: React.FC = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={[styles.statCard, { backgroundColor: colors.peach }]}>
@@ -58,16 +86,21 @@ export const EmployerDashboardScreen: React.FC = () => {
           <View style={[styles.statCard, { backgroundColor: colors.sky }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
               <Text style={[styles.statNum, { color: colors.skyDeep }]}>4.9</Text>
-              <Ionicons name="star" size={14} color={colors.skyDeep} style={{ marginLeft: 2, marginBottom: 4 }} />
+              <Ionicons
+                name="star"
+                size={14}
+                color={colors.skyDeep}
+                style={{ marginLeft: 2, marginBottom: 4 }}
+              />
             </View>
             <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Reputation</Text>
           </View>
         </View>
 
-        <Button 
-          label="Post a new job" 
+        <Button
+          label="Post a new job"
           size="lg"
-          fullWidth 
+          fullWidth
           icon="add"
           onPress={() => navigation.navigate('PostJob')}
           style={{ marginTop: 24 }}
@@ -77,8 +110,8 @@ export const EmployerDashboardScreen: React.FC = () => {
 
         <View style={styles.listContainer}>
           {ACTIVE_JOBS.map((job) => (
-            <TouchableOpacity 
-              key={job.id} 
+            <TouchableOpacity
+              key={job.id}
               style={styles.jobCard}
               onPress={() => navigation.navigate('JobDetails', { id: job.id })}
               activeOpacity={0.7}
@@ -89,12 +122,18 @@ export const EmployerDashboardScreen: React.FC = () => {
               <View style={styles.jobDetails}>
                 <Text style={styles.jobTitle}>{job.title}</Text>
                 <Text style={styles.jobSubtitle}>
-                  {job.location} · <Text style={styles.jobApplicantsNum}>{job.applicants}</Text> applicant{job.applicants > 1 ? 's' : ''}
+                  {job.location} · <Text style={styles.jobApplicantsNum}>{job.applicants}</Text>{' '}
+                  applicant{job.applicants > 1 ? 's' : ''}
                 </Text>
               </View>
               {job.isNew ? (
                 <View style={styles.newBadge}>
-                  <Ionicons name="ellipse" size={6} color={colors.primary} style={{ marginRight: 4 }} />
+                  <Ionicons
+                    name="ellipse"
+                    size={6}
+                    color={colors.primary}
+                    style={{ marginRight: 4 }}
+                  />
                   <Text style={styles.newBadgeText}>New</Text>
                 </View>
               ) : (
@@ -103,7 +142,6 @@ export const EmployerDashboardScreen: React.FC = () => {
             </TouchableOpacity>
           ))}
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );

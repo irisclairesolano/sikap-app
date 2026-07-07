@@ -26,18 +26,27 @@ const AuthNavigator: React.FC<AuthNavigatorProps> = ({
   initialParams,
 }) => {
   return (
-    <Stack.Navigator
-      initialRouteName={initialRouteName}
-      screenOptions={{ headerShown: false }}
-    >
+    <Stack.Navigator initialRouteName={initialRouteName} screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="RegisterStep2" component={RegisterStep2Screen} />
       <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="OTPVerify" component={OTPVerifyScreen} initialParams={initialRouteName === 'OTPVerify' ? initialParams : undefined} />
-      <Stack.Screen name="IDUpload" component={IDUploadScreen} initialParams={initialRouteName === 'IDUpload' ? initialParams : undefined} />
-      <Stack.Screen name="PendingVerify" component={PendingVerifyScreen} initialParams={initialRouteName === 'PendingVerify' ? initialParams : undefined} />
+      <Stack.Screen
+        name="OTPVerify"
+        component={OTPVerifyScreen}
+        initialParams={initialRouteName === 'OTPVerify' ? initialParams : undefined}
+      />
+      <Stack.Screen
+        name="IDUpload"
+        component={IDUploadScreen}
+        initialParams={initialRouteName === 'IDUpload' ? initialParams : undefined}
+      />
+      <Stack.Screen
+        name="PendingVerify"
+        component={PendingVerifyScreen}
+        initialParams={initialRouteName === 'PendingVerify' ? initialParams : undefined}
+      />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
     </Stack.Navigator>

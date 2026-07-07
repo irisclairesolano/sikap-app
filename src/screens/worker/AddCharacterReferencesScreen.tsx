@@ -1,6 +1,16 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert, Modal } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  Modal,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -18,7 +28,7 @@ const AVATAR_COLORS = [colors.sky, colors.butter, colors.mint];
 export const AddCharacterReferencesScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const queryClient = useQueryClient();
-  
+
   const { data: profile } = useQuery({
     queryKey: ['profile'],
     queryFn: profileApi.getProfile,
@@ -102,7 +112,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     },
     onError: (err) => {
       console.error('Failed to save reference', err);
-    }
+    },
   });
 
   const deleteMutation = useMutation({
@@ -113,7 +123,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     },
     onError: (err) => {
       console.error('Failed to delete reference', err);
-    }
+    },
   });
 
   const handleCancel = () => {
@@ -140,20 +150,18 @@ export const AddCharacterReferencesScreen: React.FC = () => {
       message: 'Are you sure you want to delete this character reference?',
       buttons: [
         { text: 'Cancel', style: 'cancel', onPress: () => setAlertVisible(false) },
-        { 
-          text: 'Delete', 
+        {
+          text: 'Delete',
           style: 'destructive',
           onPress: () => {
             setAlertVisible(false);
             deleteMutation.mutate(id);
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
     setAlertVisible(true);
   };
-
-
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -162,13 +170,18 @@ export const AddCharacterReferencesScreen: React.FC = () => {
   const showForm = isAdding || references.length === 0;
 
   const getInitials = (n: string) => {
-    return n.split(' ').map(part => part.charAt(0)).slice(0, 2).join('').toUpperCase();
+    return n
+      .split(' ')
+      .map((part) => part.charAt(0))
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.appBar}>
@@ -181,27 +194,47 @@ export const AddCharacterReferencesScreen: React.FC = () => {
           <View style={{ width: 40 }} />
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           <Text style={styles.title}>
             Three people{'\n'}who can <Text style={styles.titleAccent}>vouch.</Text>
           </Text>
 
           <View style={styles.infoBanner}>
-            <Ionicons name="lock-closed" size={18} color={colors.mintDeep} style={{ marginTop: 2 }} />
+            <Ionicons
+              name="lock-closed"
+              size={18}
+              color={colors.mintDeep}
+              style={{ marginTop: 2 }}
+            />
             <Text style={styles.infoText}>
-              <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink }}>Reference contacts stay hidden</Text> until an employer formally shortlists you.
+              <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink }}>
+                Reference contacts stay hidden
+              </Text>{' '}
+              until an employer formally shortlists you.
             </Text>
           </View>
 
           {/* Add reference card at the top of main content */}
           {references.length < 3 && (
-            <TouchableOpacity style={styles.addButton} activeOpacity={0.7} onPress={() => setIsAdding(true)}>
+            <TouchableOpacity
+              style={styles.addButton}
+              activeOpacity={0.7}
+              onPress={() => setIsAdding(true)}
+            >
               <View style={styles.addIconCircle}>
                 <Ionicons name="add" size={22} color={colors.white} />
               </View>
               <Text style={styles.addTitle}>Add another reference</Text>
               <Text style={styles.addSubtitle}>
-                {3 - references.length === 3 ? 'Three slots remaining' : 3 - references.length === 2 ? 'Two slots remaining' : 'One slot remaining'}
+                {3 - references.length === 3
+                  ? 'Three slots remaining'
+                  : 3 - references.length === 2
+                    ? 'Two slots remaining'
+                    : 'One slot remaining'}
               </Text>
             </TouchableOpacity>
           )}
@@ -213,20 +246,32 @@ export const AddCharacterReferencesScreen: React.FC = () => {
 
               <View style={styles.listContainer}>
                 {references.map((ref, index) => (
-                  <TouchableOpacity 
-                    key={ref.id} 
+                  <TouchableOpacity
+                    key={ref.id}
                     style={styles.refCard}
                     activeOpacity={0.7}
                     onPress={() => handleEditPress(ref)}
                   >
-                    <View style={[styles.avatar, { backgroundColor: AVATAR_COLORS[index % AVATAR_COLORS.length] }]}>
+                    <View
+                      style={[
+                        styles.avatar,
+                        { backgroundColor: AVATAR_COLORS[index % AVATAR_COLORS.length] },
+                      ]}
+                    >
                       <Text style={styles.avatarText}>{getInitials(ref.name)}</Text>
                     </View>
                     <View style={styles.refDetails}>
                       <Text style={styles.refName}>{ref.name}</Text>
-                      <Text style={styles.refRole}>{ref.relationship} · {ref.phone}</Text>
+                      <Text style={styles.refRole}>
+                        {ref.relationship} · {ref.phone}
+                      </Text>
                     </View>
-                    <Ionicons name="pencil" size={18} color={colors.inkMuted} style={{ paddingHorizontal: 4 }} />
+                    <Ionicons
+                      name="pencil"
+                      size={18}
+                      color={colors.inkMuted}
+                      style={{ paddingHorizontal: 4 }}
+                    />
                   </TouchableOpacity>
                 ))}
               </View>
@@ -235,11 +280,11 @@ export const AddCharacterReferencesScreen: React.FC = () => {
         </ScrollView>
 
         <View style={styles.bottomBar}>
-          <Button 
-            label="Done" 
+          <Button
+            label="Done"
             size="lg"
             variant="soft"
-            fullWidth 
+            fullWidth
             onPress={() => navigation.goBack()}
           />
         </View>
@@ -251,21 +296,14 @@ export const AddCharacterReferencesScreen: React.FC = () => {
           animationType="slide"
           onRequestClose={handleCancel}
         >
-          <KeyboardAvoidingView 
-            style={{ flex: 1 }} 
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           >
-            <TouchableOpacity 
-              style={styles.modalOverlay} 
-              activeOpacity={1} 
-              onPress={handleCancel}
-            >
-              <View 
-                style={styles.modalContent} 
-                onStartShouldSetResponder={() => true}
-              >
+            <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={handleCancel}>
+              <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
                 <View style={styles.dragIndicator} />
-                
+
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalHeaderTitle}>
                     {editingReferenceId !== null ? 'Edit Reference' : 'Add Reference'}
@@ -275,7 +313,10 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                   </TouchableOpacity>
                 </View>
 
-                <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
                   <View style={{ gap: 16, paddingBottom: 24 }}>
                     <CustomInput
                       label="Full name"
@@ -305,26 +346,32 @@ export const AddCharacterReferencesScreen: React.FC = () => {
 
                 <View style={styles.modalFooter}>
                   {editingReferenceId !== null ? (
-                    <Button 
-                      label="Delete" 
+                    <Button
+                      label="Delete"
                       size="lg"
                       variant="outline"
                       onPress={() => handleDeletePress(editingReferenceId)}
                       style={{ flex: 1, borderColor: colors.error }}
-                      // textStyle will automatically be red since we pass outline, but we can override if needed. 
+                      // textStyle will automatically be red since we pass outline, but we can override if needed.
                       // Outline with error border is clear enough
                     />
                   ) : (
-                    <Button 
-                      label="Cancel" 
+                    <Button
+                      label="Cancel"
                       size="lg"
                       variant="outline"
                       onPress={handleCancel}
                       style={{ flex: 1 }}
                     />
                   )}
-                  <Button 
-                    label={saveMutation.isPending ? "Saving..." : (editingReferenceId !== null ? "Save changes" : "Save reference")} 
+                  <Button
+                    label={
+                      saveMutation.isPending
+                        ? 'Saving...'
+                        : editingReferenceId !== null
+                          ? 'Save changes'
+                          : 'Save reference'
+                    }
                     size="lg"
                     style={{ flex: 2 }}
                     loading={saveMutation.isPending}

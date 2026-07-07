@@ -32,88 +32,100 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   // Memoize municipality options
   const municipalityOptions = useMemo(() => MUNICIPALITIES, []);
 
-  const handleMunicipalitySelect = useCallback((municipality: string) => {
-    onMunicipalityChange(municipality);
-    onBarangayChange(''); // Reset barangay when municipality changes
-    setMunicipalityModalVisible(false);
-  }, [onMunicipalityChange, onBarangayChange]);
+  const handleMunicipalitySelect = useCallback(
+    (municipality: string) => {
+      onMunicipalityChange(municipality);
+      onBarangayChange(''); // Reset barangay when municipality changes
+      setMunicipalityModalVisible(false);
+    },
+    [onMunicipalityChange, onBarangayChange],
+  );
 
-  const handleBarangaySelect = useCallback((barangay: string) => {
-    onBarangayChange(barangay);
-    setBarangayModalVisible(false);
-  }, [onBarangayChange]);
+  const handleBarangaySelect = useCallback(
+    (barangay: string) => {
+      onBarangayChange(barangay);
+      setBarangayModalVisible(false);
+    },
+    [onBarangayChange],
+  );
 
   // Memoize modal content to prevent re-rendering
-  const renderMunicipalityModal = useMemo(() => (
-    <Modal
-      visible={municipalityModalVisible}
-      transparent
-      animationType="slide"
-      onRequestClose={() => setMunicipalityModalVisible(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Municipality</Text>
-            <TouchableOpacity onPress={() => setMunicipalityModalVisible(false)}>
-              <Ionicons name="close" size={24} color={colors.ink} />
-            </TouchableOpacity>
-          </View>
-          <ScrollView 
-            style={styles.optionsList}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {municipalityOptions.map((option) => (
-              <TouchableOpacity
-                key={option}
-                style={styles.optionItem}
-                onPress={() => handleMunicipalitySelect(option)}
-              >
-                <Text style={styles.optionText}>{option}</Text>
+  const renderMunicipalityModal = useMemo(
+    () => (
+      <Modal
+        visible={municipalityModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setMunicipalityModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Municipality</Text>
+              <TouchableOpacity onPress={() => setMunicipalityModalVisible(false)}>
+                <Ionicons name="close" size={24} color={colors.ink} />
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            </View>
+            <ScrollView
+              style={styles.optionsList}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {municipalityOptions.map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={styles.optionItem}
+                  onPress={() => handleMunicipalitySelect(option)}
+                >
+                  <Text style={styles.optionText}>{option}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
         </View>
-      </View>
-    </Modal>
-  ), [municipalityModalVisible, municipalityOptions, handleMunicipalitySelect]);
+      </Modal>
+    ),
+    [municipalityModalVisible, municipalityOptions, handleMunicipalitySelect],
+  );
 
   // Memoize barangay modal content
-  const renderBarangayModal = useMemo(() => (
-    <Modal
-      visible={barangayModalVisible}
-      transparent
-      animationType="slide"
-      onRequestClose={() => setBarangayModalVisible(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Barangay</Text>
-            <TouchableOpacity onPress={() => setBarangayModalVisible(false)}>
-              <Ionicons name="close" size={24} color={colors.ink} />
-            </TouchableOpacity>
-          </View>
-          <ScrollView 
-            style={styles.optionsList}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {barangayOptions.map((option) => (
-              <TouchableOpacity
-                key={option}
-                style={styles.optionItem}
-                onPress={() => handleBarangaySelect(option)}
-              >
-                <Text style={styles.optionText}>{option}</Text>
+  const renderBarangayModal = useMemo(
+    () => (
+      <Modal
+        visible={barangayModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setBarangayModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Barangay</Text>
+              <TouchableOpacity onPress={() => setBarangayModalVisible(false)}>
+                <Ionicons name="close" size={24} color={colors.ink} />
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            </View>
+            <ScrollView
+              style={styles.optionsList}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {barangayOptions.map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={styles.optionItem}
+                  onPress={() => handleBarangaySelect(option)}
+                >
+                  <Text style={styles.optionText}>{option}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
         </View>
-      </View>
-    </Modal>
-  ), [barangayModalVisible, barangayOptions, handleBarangaySelect]);
+      </Modal>
+    ),
+    [barangayModalVisible, barangayOptions, handleBarangaySelect],
+  );
 
   return (
     <View style={styles.container}>
@@ -121,31 +133,19 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       <View style={styles.pickerContainer}>
         <Text style={styles.label}>Municipality</Text>
         <TouchableOpacity
-          style={[
-            styles.pickerButton,
-            municipalityError && styles.pickerButtonError,
-          ]}
+          style={[styles.pickerButton, municipalityError && styles.pickerButtonError]}
           onPress={() => setMunicipalityModalVisible(true)}
         >
-          <Text
-            style={[
-              styles.pickerText,
-              !municipalityValue && styles.pickerPlaceholder,
-            ]}
-          >
+          <Text style={[styles.pickerText, !municipalityValue && styles.pickerPlaceholder]}>
             {municipalityValue || 'Select municipality'}
           </Text>
           <Ionicons name="chevron-down" size={20} color={colors.inkSoft} />
         </TouchableOpacity>
-        {municipalityError ? (
-          <Text style={styles.errorText}>{municipalityError}</Text>
-        ) : null}
-        
+        {municipalityError ? <Text style={styles.errorText}>{municipalityError}</Text> : null}
+
         {/* Show selected municipality when available */}
         {municipalityValue ? (
-          <Text style={styles.selectedValue}>
-            Selected: {municipalityValue}
-          </Text>
+          <Text style={styles.selectedValue}>Selected: {municipalityValue}</Text>
         ) : null}
       </View>
 
@@ -180,16 +180,10 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             color={municipalityValue ? colors.inkSoft : colors.inkFaint}
           />
         </TouchableOpacity>
-        {barangayError ? (
-          <Text style={styles.errorText}>{barangayError}</Text>
-        ) : null}
-        
+        {barangayError ? <Text style={styles.errorText}>{barangayError}</Text> : null}
+
         {/* Show selected barangay when available */}
-        {barangayValue ? (
-          <Text style={styles.selectedValue}>
-            Selected: {barangayValue}
-          </Text>
-        ) : null}
+        {barangayValue ? <Text style={styles.selectedValue}>Selected: {barangayValue}</Text> : null}
       </View>
 
       {/* Modals */}

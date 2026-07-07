@@ -16,7 +16,6 @@ const ForgotPasswordScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
-      
       {/* App Bar */}
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
@@ -32,19 +31,21 @@ const ForgotPasswordScreen: React.FC = () => {
         </View>
 
         <Text style={styles.title}>
-          Forgot{'\n'}<Text style={styles.titleItalic}>password?</Text>
+          Forgot{'\n'}
+          <Text style={styles.titleItalic}>password?</Text>
         </Text>
-        
+
         <Text style={styles.body}>
-          Password reset is currently disabled. Please contact support or use another login method if you've lost your credentials.
+          Password reset is currently disabled. Please contact support or use another login method
+          if you've lost your credentials.
         </Text>
 
         <View style={styles.footer}>
-          <Button 
-            label="Back to login" 
+          <Button
+            label="Back to login"
             size="lg"
-            fullWidth 
-            onPress={() => navigation.navigate('Login')} 
+            fullWidth
+            onPress={() => navigation.navigate('Login')}
           />
         </View>
       </View>

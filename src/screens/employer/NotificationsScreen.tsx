@@ -9,7 +9,10 @@ import { colors, fonts, shadows } from '../../theme';
 import { useNotifications } from '../../hooks/useNotifications';
 import { ActivityIndicator } from 'react-native';
 
-type NotificationsScreenNavigationProp = NativeStackNavigationProp<EmployerStackParamList, 'Notifications'>;
+type NotificationsScreenNavigationProp = NativeStackNavigationProp<
+  EmployerStackParamList,
+  'Notifications'
+>;
 
 export const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation<NotificationsScreenNavigationProp>();
@@ -45,24 +48,41 @@ export const NotificationsScreen: React.FC = () => {
 
         <View style={styles.notificationList}>
           {notifications.length === 0 ? (
-            <Text style={{ fontFamily: fonts.body, color: colors.inkSoft, textAlign: 'center', marginTop: 20 }}>
+            <Text
+              style={{
+                fontFamily: fonts.body,
+                color: colors.inkSoft,
+                textAlign: 'center',
+                marginTop: 20,
+              }}
+            >
               No notifications yet.
             </Text>
           ) : (
-            notifications.map(notif => {
+            notifications.map((notif) => {
               const isUnread = notif.read_at === null;
               const title = notif.data?.title || notif.type.replace('Notification', '');
               const message = notif.data?.message || 'You have a new notification.';
 
               return (
-                <View key={notif.id} style={[styles.notificationCard, isUnread && styles.unreadPrimary]}>
-                  <View style={[styles.iconBubble, { backgroundColor: isUnread ? colors.peach : colors.butter }]}>
+                <View
+                  key={notif.id}
+                  style={[styles.notificationCard, isUnread && styles.unreadPrimary]}
+                >
+                  <View
+                    style={[
+                      styles.iconBubble,
+                      { backgroundColor: isUnread ? colors.peach : colors.butter },
+                    ]}
+                  >
                     <Ionicons name="notifications" size={18} color={colors.primary} />
                   </View>
                   <View style={styles.notificationContent}>
                     <Text style={styles.notificationTitle}>{title}</Text>
                     <Text style={styles.notificationBody}>{message}</Text>
-                    <Text style={styles.notificationTime}>{new Date(notif.created_at).toLocaleDateString()}</Text>
+                    <Text style={styles.notificationTime}>
+                      {new Date(notif.created_at).toLocaleDateString()}
+                    </Text>
                   </View>
                 </View>
               );
@@ -76,31 +96,67 @@ export const NotificationsScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.paper },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
   iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerPill: { backgroundColor: colors.paperBright, paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, ...shadows.sm },
+  headerPill: {
+    backgroundColor: colors.paperBright,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    ...shadows.sm,
+  },
   headerPillText: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.inkMuted },
   markAllBtn: { padding: 8 },
   markAllText: { fontFamily: fonts.bodyBold, fontSize: 12, color: colors.primary },
   scrollContent: { padding: 20, paddingBottom: 40 },
-  eyebrow: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.inkSoft, textTransform: 'uppercase', letterSpacing: 1 },
+  eyebrow: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.inkSoft,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
   notificationList: { marginTop: 12, gap: 10 },
-  notificationCard: { 
-    backgroundColor: colors.paperBright, 
-    borderRadius: 12, 
-    padding: 14, 
-    flexDirection: 'row', 
-    alignItems: 'flex-start', 
-    gap: 12, 
-    ...shadows.sm 
+  notificationCard: {
+    backgroundColor: colors.paperBright,
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    ...shadows.sm,
   },
   unreadPrimary: { borderLeftWidth: 3, borderLeftColor: colors.primary },
   unreadMint: { borderLeftWidth: 3, borderLeftColor: colors.mintDeep },
-  iconBubble: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  iconBubble: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
   notificationContent: { flex: 1 },
   notificationTitle: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink },
-  notificationBody: { fontFamily: fonts.body, fontSize: 13, color: colors.ink, lineHeight: 18, marginTop: 4 },
-  notificationTime: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.inkSoft, marginTop: 8 },
+  notificationBody: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.ink,
+    lineHeight: 18,
+    marginTop: 4,
+  },
+  notificationTime: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 10,
+    color: colors.inkSoft,
+    marginTop: 8,
+  },
 });
 
 export default NotificationsScreen;

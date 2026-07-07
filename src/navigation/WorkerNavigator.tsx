@@ -7,21 +7,45 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { profileApi } from '../api/profile';
 
+import { JobFeedScreen } from '../screens/worker/JobFeedScreen';
+import { JobDetailsScreen } from '../screens/worker/JobDetailsScreen';
+import { ApplyScreen } from '../screens/worker/ApplyScreen';
+import { MyApplicationsScreen } from '../screens/worker/MyApplicationsScreen';
+import { HomeEmptyScreen } from '../screens/worker/HomeEmptyScreen';
+import { AddSkillsScreen } from '../screens/worker/AddSkillsScreen';
+import { AddWorkHistoryScreen } from '../screens/worker/AddWorkHistoryScreen';
+import { AddCharacterReferencesScreen } from '../screens/worker/AddCharacterReferencesScreen';
+import ApplicationDetailScreen from '../screens/worker/ApplicationDetailScreen';
+import ProfileScreen from '../screens/worker/ProfileScreen';
+import ReviewsScreen from '../screens/worker/ReviewsScreen';
+import NotificationsScreen from '../screens/worker/NotificationsScreen';
+import RateEmployerScreen from '../screens/worker/RateEmployerScreen';
+import EditProfileScreen from '../screens/common/EditProfileScreen';
+import SettingsScreen from '../screens/common/SettingsScreen';
+import ReportScreen from '../screens/common/ReportScreen';
+import { SavedJobsScreen } from '../screens/worker/SavedJobsScreen';
+
 export type WorkerStackParamList = {
   Home: undefined;
   HomeEmpty: undefined;
   AddSkills: undefined;
   AddWorkHistory: undefined;
   AddCharacterReferences: undefined;
-  Search: undefined;
+  SavedJobs: undefined;
   Applications: undefined;
   Profile: undefined;
   JobDetails: { id: number };
   Apply: { id: number };
-  ApplicationDetail: { applicationId: number; jobTitle: string; employerName: string; status: string; compensation?: string };
+  ApplicationDetail: {
+    applicationId: number;
+    jobTitle: string;
+    employerName: string;
+    status: string;
+    compensation?: string;
+  };
   AcceptHire: { id: number };
   HireReceipt: { id: number };
-  RateEmployer: { id: number };
+  RateEmployer: { id: number; employerName: string; jobTitle: string };
   Report: { id: number };
   EditProfile: undefined;
   Settings: undefined;
@@ -41,22 +65,6 @@ export type WorkerTabParamList = {
 const Tab = createBottomTabNavigator<WorkerTabParamList>();
 const Stack = createNativeStackNavigator<WorkerStackParamList>();
 
-import { JobFeedScreen } from '../screens/worker/JobFeedScreen';
-import { JobDetailsScreen } from '../screens/worker/JobDetailsScreen';
-import { ApplyScreen } from '../screens/worker/ApplyScreen';
-import { MyApplicationsScreen } from '../screens/worker/MyApplicationsScreen';
-import { HomeEmptyScreen } from '../screens/worker/HomeEmptyScreen';
-import { AddSkillsScreen } from '../screens/worker/AddSkillsScreen';
-import { AddWorkHistoryScreen } from '../screens/worker/AddWorkHistoryScreen';
-import { AddCharacterReferencesScreen } from '../screens/worker/AddCharacterReferencesScreen';
-import ApplicationDetailScreen from '../screens/worker/ApplicationDetailScreen';
-import ProfileScreen from '../screens/worker/ProfileScreen';
-import ReviewsScreen from '../screens/worker/ReviewsScreen';
-import NotificationsScreen from '../screens/worker/NotificationsScreen';
-import RateEmployerScreen from '../screens/worker/RateEmployerScreen';
-import EditProfileScreen from '../screens/common/EditProfileScreen';
-import SettingsScreen from '../screens/common/SettingsScreen';
-
 // Home Stack
 const FindStack: React.FC = () => {
   const { data: profile, isLoading } = useQuery({
@@ -66,7 +74,14 @@ const FindStack: React.FC = () => {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.paper }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: colors.paper,
+        }}
+      >
         <Text style={{ fontFamily: fonts.body, color: colors.inkMuted }}>Loading...</Text>
       </View>
     );
@@ -78,9 +93,9 @@ const FindStack: React.FC = () => {
   const isProfileComplete = hasSkills && hasHistory && hasRefs;
 
   return (
-    <Stack.Navigator 
-      screenOptions={{ headerShown: false }} 
-      initialRouteName={isProfileComplete ? "Home" : "HomeEmpty"}
+    <Stack.Navigator
+      screenOptions={{ headerShown: false }}
+      initialRouteName={isProfileComplete ? 'Home' : 'HomeEmpty'}
     >
       <Stack.Screen name="HomeEmpty" component={HomeEmptyScreen} />
       <Stack.Screen name="Home" component={JobFeedScreen} />
@@ -99,10 +114,10 @@ const FindStack: React.FC = () => {
   );
 };
 
-// Search Stack
-const SearchStack: React.FC = () => (
+// Saved Stack
+const SavedStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Search" component={SearchScreen} />
+    <Stack.Screen name="SavedJobs" component={SavedJobsScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="Apply" component={ApplyScreen} />
   </Stack.Navigator>
@@ -163,7 +178,7 @@ const WorkerNavigator: React.FC = () => {
     >
       <Tab.Screen name="Find" component={FindStack} />
       <Tab.Screen name="Mine" component={ApplicationsStack} />
-      <Tab.Screen name="Saved" component={SearchStack} />
+      <Tab.Screen name="Saved" component={SavedStack} />
       <Tab.Screen name="Me" component={ProfileStack} />
     </Tab.Navigator>
   );
@@ -171,11 +186,7 @@ const WorkerNavigator: React.FC = () => {
 
 // Placeholder screens
 
-const SearchScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Job Search</Text>
-  </View>
-);
+// Placeholder screens
 
 const AcceptHireScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -186,12 +197,6 @@ const AcceptHireScreen: React.FC = () => (
 const HireReceiptScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
     <Text>Hire Receipt</Text>
-  </View>
-);
-
-const ReportScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Report</Text>
   </View>
 );
 

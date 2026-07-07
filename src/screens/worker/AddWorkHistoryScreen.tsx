@@ -3,7 +3,16 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { profileApi } from '../../api/profile';
 import Button from '../../components/common/Button';
@@ -57,7 +66,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
     },
     onError: (err) => {
       console.error('Failed to save work experience', err);
-    }
+    },
   });
 
   const deleteMutation = useMutation({
@@ -68,7 +77,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
     },
     onError: (err) => {
       console.error('Failed to delete work experience', err);
-    }
+    },
   });
 
   const handleCancel = () => {
@@ -100,15 +109,15 @@ export const AddWorkHistoryScreen: React.FC = () => {
       message: 'Are you sure you want to delete this work experience?',
       buttons: [
         { text: 'Cancel', style: 'cancel', onPress: () => setAlertVisible(false) },
-        { 
-          text: 'Delete', 
+        {
+          text: 'Delete',
           style: 'destructive',
           onPress: () => {
             setAlertVisible(false);
             deleteMutation.mutate(id);
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
     setAlertVisible(true);
   };
@@ -136,21 +145,34 @@ export const AddWorkHistoryScreen: React.FC = () => {
           <View style={{ width: 40 }} />
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           <Text style={styles.title}>
             {editingExperienceId !== null ? (
-              <>Edit <Text style={styles.titleAccent}>job</Text>{'\n'}details.</>
+              <>
+                Edit <Text style={styles.titleAccent}>job</Text>
+                {'\n'}details.
+              </>
             ) : showForm ? (
-              <>Add a <Text style={styles.titleAccent}>recent</Text>{'\n'}job.</>
+              <>
+                Add a <Text style={styles.titleAccent}>recent</Text>
+                {'\n'}job.
+              </>
             ) : (
-              <>Your <Text style={styles.titleAccent}>work</Text>{'\n'}history.</>
+              <>
+                Your <Text style={styles.titleAccent}>work</Text>
+                {'\n'}history.
+              </>
             )}
           </Text>
           <Text style={styles.subtitle}>
-            {editingExperienceId !== null 
+            {editingExperienceId !== null
               ? 'Update the details of your previous job.'
-              : showForm 
-                ? 'You can add more later.' 
+              : showForm
+                ? 'You can add more later.'
                 : `${experiences.length} experience${experiences.length > 1 ? 's' : ''} added. Tap a card to edit or delete it.`}
           </Text>
 
@@ -160,13 +182,14 @@ export const AddWorkHistoryScreen: React.FC = () => {
                 const isSelected = selectedExperienceId === exp.id;
                 return (
                   <View key={exp.id} style={[styles.card, isSelected && styles.cardSelected]}>
-                    <TouchableOpacity 
-                      onPress={() => handleCardPress(exp.id)}
-                      activeOpacity={0.75}
-                    >
+                    <TouchableOpacity onPress={() => handleCardPress(exp.id)} activeOpacity={0.75}>
                       <View style={styles.cardMain}>
                         <View style={styles.cardIcon}>
-                          <Ionicons name="briefcase" size={20} color={isSelected ? colors.primaryDark : colors.inkMuted} />
+                          <Ionicons
+                            name="briefcase"
+                            size={20}
+                            color={isSelected ? colors.primaryDark : colors.inkMuted}
+                          />
                         </View>
                         <View style={styles.cardContent}>
                           <Text style={styles.cardTitle}>{exp.job_title}</Text>
@@ -181,14 +204,14 @@ export const AddWorkHistoryScreen: React.FC = () => {
 
                     {isSelected && (
                       <View style={styles.actionRow}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                           style={styles.actionButtonEdit}
                           onPress={() => handleEditPress(exp)}
                         >
                           <Ionicons name="create-outline" size={16} color={colors.primaryDark} />
                           <Text style={styles.actionTextEdit}>Edit</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                           style={styles.actionButtonDelete}
                           onPress={() => handleDeletePress(exp.id)}
                           disabled={deleteMutation.isPending}
@@ -256,16 +279,22 @@ export const AddWorkHistoryScreen: React.FC = () => {
           {showForm ? (
             <View style={{ flexDirection: 'row', gap: 12 }}>
               {experiences.length > 0 && (
-                <Button 
-                  label="Cancel" 
+                <Button
+                  label="Cancel"
                   size="lg"
                   variant="outline"
                   onPress={handleCancel}
                   style={{ flex: 1 }}
                 />
               )}
-              <Button 
-                label={saveMutation.isPending ? "Saving..." : (editingExperienceId !== null ? "Save changes" : "Save job")} 
+              <Button
+                label={
+                  saveMutation.isPending
+                    ? 'Saving...'
+                    : editingExperienceId !== null
+                      ? 'Save changes'
+                      : 'Save job'
+                }
                 size="lg"
                 style={{ flex: experiences.length > 0 ? 2 : 1 }}
                 loading={saveMutation.isPending}
@@ -274,11 +303,11 @@ export const AddWorkHistoryScreen: React.FC = () => {
               />
             </View>
           ) : (
-            <Button 
-              label="Done" 
+            <Button
+              label="Done"
               size="lg"
               variant="soft"
-              fullWidth 
+              fullWidth
               onPress={() => navigation.goBack()}
             />
           )}

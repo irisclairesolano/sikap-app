@@ -7,21 +7,28 @@ import { JobPost } from '../../types';
 interface JobCardProps {
   job: JobPost;
   onPress: () => void;
+  onSave?: () => void;
+  isSaved?: boolean;
 }
 
 const getCategoryStyles = (category: string) => {
   switch (category) {
-    case 'Construction': return { icon: 'hammer', bg: colors.peach, color: colors.primary };
-    case 'Domestic': return { icon: 'home', bg: colors.mint, color: colors.mintDeep };
-    case 'Agriculture': return { icon: 'leaf', bg: colors.paperCream, color: colors.inkSoft };
-    case 'Skilled Trade': return { icon: 'construct', bg: colors.sky, color: colors.skyDeep };
-    default: return { icon: 'briefcase', bg: colors.paperCream, color: colors.inkSoft };
+    case 'Construction':
+      return { icon: 'hammer', bg: colors.peach, color: colors.primary };
+    case 'Domestic':
+      return { icon: 'home', bg: colors.mint, color: colors.mintDeep };
+    case 'Agriculture':
+      return { icon: 'leaf', bg: colors.paperCream, color: colors.inkSoft };
+    case 'Skilled Trade':
+      return { icon: 'construct', bg: colors.sky, color: colors.skyDeep };
+    default:
+      return { icon: 'briefcase', bg: colors.paperCream, color: colors.inkSoft };
   }
 };
 
-export const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
+export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved }) => {
   // Mock badges logic
-  const isUrgent = job.duration_type === 'daily'; 
+  const isUrgent = job.duration_type === 'daily';
   const isVerified = job.employer?.verification_badge;
   const catStyles = getCategoryStyles(job.category);
 
@@ -48,11 +55,11 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
             )}
           </View>
         )}
-        
+
         <Text style={styles.jobTitle} numberOfLines={1}>
           {job.title}
         </Text>
-        
+
         <View style={styles.jobMeta}>
           <Ionicons name="location" size={11} color={colors.inkMuted} />
           <Text style={styles.metaText} numberOfLines={1}>
@@ -64,8 +71,25 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => {
       </View>
 
       <View style={styles.rightContent}>
-        <Text style={styles.payValue}>₱{job.compensation}</Text>
-        <Text style={styles.payUnit}>per {job.duration_type === 'daily' ? 'day' : 'project'}</Text>
+        {onSave && (
+          <TouchableOpacity
+            onPress={onSave}
+            style={styles.saveBtn}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons
+              name={isSaved ? 'bookmark' : 'bookmark-outline'}
+              size={20}
+              color={isSaved ? colors.primary : colors.inkSoft}
+            />
+          </TouchableOpacity>
+        )}
+        <View style={styles.payContainer}>
+          <Text style={styles.payValue}>₱{job.compensation}</Text>
+          <Text style={styles.payUnit}>
+            per {job.duration_type === 'daily' ? 'day' : 'project'}
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -147,8 +171,14 @@ const styles = StyleSheet.create({
   },
   rightContent: {
     alignItems: 'flex-end',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     paddingTop: 2,
+  },
+  saveBtn: {
+    marginBottom: 8,
+  },
+  payContainer: {
+    alignItems: 'flex-end',
   },
   payValue: {
     fontFamily: fonts.numericBold,

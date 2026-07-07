@@ -1,6 +1,16 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Switch } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Switch,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -8,10 +18,14 @@ import { colors, fonts } from '../../theme';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import CustomInput from '../../components/common/Input';
 import Button from '../../components/common/Button';
+import { useCreateJob } from '../../hooks/useEmployerJobs';
+import { useAlert } from '../../contexts/AlertContext';
 
 export const PostJobScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<EmployerStackParamList>>();
-  
+  const createJobMutation = useCreateJob();
+  const { showAlert } = useAlert();
+
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [location, setLocation] = useState('');
@@ -20,11 +34,53 @@ export const PostJobScreen: React.FC = () => {
   const [duration, setDuration] = useState('');
   const [description, setDescription] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [exactLocation, setExactLocation] = useState('');
+  const [toolsRequired, setToolsRequired] = useState('');
+
+  const handleSubmit = () => {
+    if (!title || !category || !location || !pay || !slots || !description) {
+      showAlert('Missing fields', 'Please fill in all the required fields before publishing.');
+      return;
+    }
+
+    const locParts = location.split(',');
+    const barangay = locParts[0]?.trim() || 'Zone 1';
+    const municipality = locParts[1]?.trim() || 'Bulan';
+
+    createJobMutation.mutate(
+      {
+        title,
+        description,
+        category,
+        barangay,
+        municipality,
+        duration_type: duration.toLowerCase().includes('project') ? 'project-based' : 'daily',
+        compensation: parseFloat(pay.replace(/[^0-9.]/g, '')),
+        slots: parseInt(slots, 10),
+        schedule_date: scheduleDate.toISOString().split('T')[0],
+        exact_location: exactLocation,
+        tools_required: toolsRequired,
+      },
+      {
+        onSuccess: () => {
+          showAlert('Job published!', 'Your job is now visible to workers.', [
+            { text: 'OK', onPress: () => navigation.goBack() },
+          ]);
+        },
+        onError: (err: any) => {
+          console.error('Job creation failed', err.response?.data || err);
+          showAlert('Error', err.response?.data?.message || 'Failed to publish job.');
+        },
+      },
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.appBar}>
@@ -37,9 +93,14 @@ export const PostJobScreen: React.FC = () => {
           <View style={{ width: 40 }} />
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           <Text style={styles.title}>
-            Post a{'\n'}<Text style={styles.titleAccent}>new job.</Text>
+            Post a{'\n'}
+            <Text style={styles.titleAccent}>new job.</Text>
           </Text>
 
           <View style={styles.formContainer}>
@@ -49,7 +110,7 @@ export const PostJobScreen: React.FC = () => {
               onChangeText={setTitle}
               placeholder="E.g. Carpenter wanted"
             />
-            
+
             {/* Using CustomInput for selects for now, ideally should be a picker component */}
             <CustomInput
               label="Category"
@@ -57,25 +118,31 @@ export const PostJobScreen: React.FC = () => {
               onChangeText={setCategory}
               placeholder="Construction"
               icon="construct-outline"
-              rightIcon={{ name: 'chevron-down', type: 'ionicon', onPress: () => {} }}
             />
-            
+
             <CustomInput
               label="Location"
               value={location}
               onChangeText={setLocation}
-              placeholder="Tinampo, Bulan"
+              placeholder="E.g. Tinampo, Bulan"
               icon="location-outline"
-              rightIcon={{ name: 'chevron-down', type: 'ionicon', onPress: () => {} }}
+            />
+
+            <CustomInput
+              label="Exact Location"
+              value={exactLocation}
+              onChangeText={setExactLocation}
+              placeholder="E.g. 123 Main St near Plaza"
+              icon="map-outline"
             />
 
             <View style={styles.row}>
               <View style={styles.col}>
                 <CustomInput
-                  label="Pay per day"
+                  label="Pay (PHP)"
                   value={pay}
                   onChangeText={setPay}
-                  placeholder="₱600"
+                  placeholder="600"
                   keyboardType="numeric"
                 />
               </View>
@@ -94,10 +161,51 @@ export const PostJobScreen: React.FC = () => {
               label="Duration"
               value={duration}
               onChangeText={setDuration}
-              placeholder="2-3 days"
+              placeholder="E.g. Daily or Project-based"
               icon="time-outline"
-              rightIcon={{ name: 'chevron-down', type: 'ionicon', onPress: () => {} }}
             />
+
+            <View>
+              <Text
+                style={{
+                  fontFamily: fonts.bodyBold,
+                  fontSize: 13,
+                  color: colors.inkSoft,
+                  marginBottom: 4,
+                }}
+              >
+                Schedule Date
+              </Text>
+              <TouchableOpacity
+                style={{
+                  borderWidth: 1,
+                  borderColor: colors.inkFaint,
+                  borderRadius: 12,
+                  padding: 14,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                }}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
+                <Text style={{ fontFamily: fonts.body, fontSize: 15, color: colors.ink }}>
+                  {scheduleDate.toLocaleDateString()}
+                </Text>
+              </TouchableOpacity>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={scheduleDate}
+                  mode="date"
+                  display="default"
+                  minimumDate={new Date()}
+                  onChange={(event, selectedDate) => {
+                    setShowDatePicker(false);
+                    if (selectedDate) setScheduleDate(selectedDate);
+                  }}
+                />
+              )}
+            </View>
 
             <CustomInput
               label="Description"
@@ -106,6 +214,14 @@ export const PostJobScreen: React.FC = () => {
               placeholder="Need help installing..."
               multiline
               icon="create-outline"
+            />
+
+            <CustomInput
+              label="Tools Required (Optional)"
+              value={toolsRequired}
+              onChangeText={setToolsRequired}
+              placeholder="E.g. Hammer, nails, saw"
+              icon="hammer-outline"
             />
 
             {/* Urgent Toggle */}
@@ -123,19 +239,18 @@ export const PostJobScreen: React.FC = () => {
                 value={isUrgent}
               />
             </View>
-
           </View>
 
-          <Button 
-            label="Publish job" 
+          <Button
+            label="Publish job"
             size="lg"
-            fullWidth 
+            fullWidth
             icon="arrow-forward"
             iconPosition="right"
-            onPress={() => navigation.goBack()}
+            loading={createJobMutation.isPending}
+            onPress={handleSubmit}
             style={{ marginTop: 24 }}
           />
-
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

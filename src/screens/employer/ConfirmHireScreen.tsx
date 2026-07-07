@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,9 +16,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
+import { useConfirmHire } from '../../hooks/useJobApplications';
+import { useAlert } from '../../contexts/AlertContext';
 
 type ConfirmHireScreenRouteProp = RouteProp<EmployerStackParamList, 'ConfirmHire'>;
-type ConfirmHireScreenNavigationProp = NativeStackNavigationProp<EmployerStackParamList, 'ConfirmHire'>;
+type ConfirmHireScreenNavigationProp = NativeStackNavigationProp<
+  EmployerStackParamList,
+  'ConfirmHire'
+>;
 
 const ConfirmHireScreen: React.FC = () => {
   const route = useRoute<ConfirmHireScreenRouteProp>();
@@ -17,15 +31,33 @@ const ConfirmHireScreen: React.FC = () => {
   const { applicantId, applicantName, jobTitle } = route.params;
 
   const [price, setPrice] = useState<string>('');
+  const confirmHireMutation = useConfirmHire();
+  const { showAlert } = useAlert();
 
   const handleConfirm = () => {
-    // Navigate back to dashboard and pretend it succeeded
-    navigation.popToTop();
+    confirmHireMutation.mutate(
+      { id: applicantId, price: parseFloat(price) },
+      {
+        onSuccess: () => {
+          showAlert(
+            'Hire Confirmed!',
+            `${applicantName} has been hired for ${jobTitle}. You can now view their contact details.`,
+            [{ text: 'OK', onPress: () => navigation.popToTop() }],
+          );
+        },
+        onError: (err: any) => {
+          showAlert('Error', err.response?.data?.message || 'Could not confirm hire.');
+        },
+      },
+    );
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <View style={styles.header}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
@@ -114,7 +146,8 @@ const ConfirmHireScreen: React.FC = () => {
                   <Text style={styles.nextNum}>1</Text>
                 </View>
                 <Text style={styles.nextText}>
-                  <Text style={styles.nextTextBold}>The slot locks.</Text> No other applicant can be confirmed.
+                  <Text style={styles.nextTextBold}>The slot locks.</Text> No other applicant can be
+                  confirmed.
                 </Text>
               </View>
               <View style={styles.nextItem}>
@@ -122,7 +155,10 @@ const ConfirmHireScreen: React.FC = () => {
                   <Text style={styles.nextNum}>2</Text>
                 </View>
                 <Text style={styles.nextText}>
-                  <Text style={styles.nextTextBold}>{applicantName.split(' ')[0]} has 24 hours to respond.</Text> They will get an SMS reminder.
+                  <Text style={styles.nextTextBold}>
+                    {applicantName.split(' ')[0]} has 24 hours to respond.
+                  </Text>{' '}
+                  They will get an SMS reminder.
                 </Text>
               </View>
               <View style={styles.nextItem}>
@@ -130,23 +166,24 @@ const ConfirmHireScreen: React.FC = () => {
                   <Text style={styles.nextNum}>3</Text>
                 </View>
                 <Text style={styles.nextText}>
-                  <Text style={styles.nextTextBold}>If they accept,</Text> a digital receipt is generated.
+                  <Text style={styles.nextTextBold}>If they accept,</Text> a digital receipt is
+                  generated.
                 </Text>
               </View>
             </View>
           </View>
-
         </ScrollView>
 
         <View style={styles.footer}>
-          <Button 
+          <Button
             label={`Confirm at ₱${price || '0'}`}
-            variant="primary" 
-            size="lg" 
-            fullWidth 
+            variant="primary"
+            size="lg"
+            fullWidth
             icon={<Ionicons name="lock-closed" size={18} color="white" />}
             onPress={handleConfirm}
             disabled={!price}
+            loading={confirmHireMutation.isPending}
           />
         </View>
       </KeyboardAvoidingView>

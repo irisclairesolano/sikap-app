@@ -9,10 +9,15 @@ export interface User {
   document_url: string | null;
   avatar_url?: string | null;
   verification_status: 'pending' | 'approved' | 'rejected' | 'correction_needed';
-  registration_status?: 'pending_email_verification' | 'pending_id_upload' | 'pending_review' | 'approved' | 'rejected';
+  registration_status?:
+    'pending_email_verification' | 'pending_id_upload' | 'pending_review' | 'approved' | 'rejected';
   verification_badge: boolean;
   is_suspended: boolean;
   reputation_score: number;
+  date_of_birth?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  expo_push_token?: string;
   worker_profile?: WorkerProfile;
   employer_profile?: EmployerProfile;
 }
@@ -29,15 +34,26 @@ export interface JobPost {
   slots: number;
   accepted_count: number;
   duration_type: string;
+  schedule_date?: string;
+  exact_location?: string;
+  tools_required?: string;
   status: 'open' | 'closed_in_progress' | 'completed' | 'cancelled';
   rating_window_expires_at: string | null;
   employer: User;
+  applications?: Application[];
 }
 
 export interface Application {
   id: number;
   job_post_id: number;
-  status: 'pending' | 'pending_negotiation' | 'employer_confirmed' | 'accepted' | 'rejected' | 'withdrawn' | 'completed';
+  status:
+    | 'pending'
+    | 'pending_negotiation'
+    | 'employer_confirmed'
+    | 'accepted'
+    | 'rejected'
+    | 'withdrawn'
+    | 'completed';
   cover_note: string | null;
   applied_at: string;
   final_agreed_price: number | null; // only at employer_confirmed or accepted
@@ -47,6 +63,8 @@ export interface Application {
   worker: {
     id: number;
     name: string;
+    first_name?: string;
+    last_name?: string;
     barangay: string;
     reputation_score: number;
     verification_badge: boolean;
@@ -55,6 +73,7 @@ export interface Application {
     character_references: CharacterReference[] | null; // null if not yet revealed
     phone: string | null; // null if not yet revealed
     email: null; // ALWAYS null — never shown
+    workerProfile?: WorkerProfile;
   };
 }
 

@@ -2,7 +2,7 @@ export type AuthStackParamList = {
   Splash: undefined;
   Welcome: undefined;
   Register: { role: 'worker' | 'employer' };
-  RegisterStep2: { 
+  RegisterStep2: {
     role: 'worker' | 'employer';
     name: string;
     email: string;

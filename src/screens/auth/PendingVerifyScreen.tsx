@@ -23,7 +23,6 @@ const PendingVerifyScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
-      
       {/* App Bar */}
       <View style={styles.appBar}>
         <View style={{ width: 40 }} />
@@ -38,11 +37,13 @@ const PendingVerifyScreen: React.FC = () => {
         </View>
 
         <Text style={styles.title}>
-          We're <Text style={styles.titleItalic}>checking</Text>{'\n'}your account.
+          We're <Text style={styles.titleItalic}>checking</Text>
+          {'\n'}your account.
         </Text>
-        
+
         <Text style={styles.body}>
-          Our admin team is reviewing your ID.{'\n'}This usually takes up to <Text style={styles.bodyBold}>48 hours</Text>.
+          Our admin team is reviewing your ID.{'\n'}This usually takes up to{' '}
+          <Text style={styles.bodyBold}>48 hours</Text>.
         </Text>
 
         <View style={styles.infoCard}>
@@ -50,26 +51,21 @@ const PendingVerifyScreen: React.FC = () => {
             <Ionicons name="mail" size={18} color={colors.primary} />
           </View>
           <Text style={styles.infoText}>
-            <Text style={styles.infoTextBold}>We'll email you</Text> as soon as your account is approved.
+            <Text style={styles.infoTextBold}>We'll email you</Text> as soon as your account is
+            approved.
           </Text>
         </View>
 
         <View style={styles.footer}>
-          <Button 
-            label="Need help? Contact us" 
-            variant="soft" 
-            fullWidth 
+          <Button
+            label="Need help? Contact us"
+            variant="soft"
+            fullWidth
             size="lg"
             onPress={() => {}} // Could open a mail client or intercom
           />
           <View style={{ height: 12 }} />
-          <Button 
-            label="Sign out" 
-            variant="ghost" 
-            fullWidth 
-            size="lg"
-            onPress={signOut} 
-          />
+          <Button label="Sign out" variant="ghost" fullWidth size="lg" onPress={signOut} />
         </View>
       </View>
     </View>

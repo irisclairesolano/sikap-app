@@ -1,13 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ApiClientError } from '../../api/client';
@@ -19,10 +13,7 @@ import { colors, fonts } from '../../theme';
 import { LoginRequest } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 
-type LoginScreenNavigationProp = NativeStackNavigationProp<
-  AuthStackParamList,
-  'Login'
->;
+type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
@@ -91,7 +82,6 @@ const LoginScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
         {/* App Bar */}
         <View style={styles.appBar}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
@@ -120,9 +110,7 @@ const LoginScreen: React.FC = () => {
             <Text style={styles.title}>
               Welcome <Text style={styles.titleItalic}>back.</Text>
             </Text>
-            <Text style={styles.subtitle}>
-              Sign in to manage your account.
-            </Text>
+            <Text style={styles.subtitle}>Sign in to manage your account.</Text>
           </View>
 
           {banner ? (
@@ -153,8 +141,8 @@ const LoginScreen: React.FC = () => {
                 }}
                 placeholder="Your password"
               />
-              <TouchableOpacity 
-                style={styles.forgotBtn} 
+              <TouchableOpacity
+                style={styles.forgotBtn}
                 onPress={() => navigation.navigate('ForgotPassword')}
               >
                 <Text style={styles.forgotText}>Forgot password?</Text>
@@ -178,7 +166,6 @@ const LoginScreen: React.FC = () => {
               <Text style={styles.createText}>Create an account</Text>
             </TouchableOpacity>
           </View>
-
         </KeyboardAwareScrollView>
       </View>
     </SafeAreaView>

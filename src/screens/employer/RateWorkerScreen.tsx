@@ -1,26 +1,40 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
+import { useSubmitReview } from '../../hooks/useReviews';
+import { useAlert } from '../../contexts/AlertContext';
 
-type RateWorkerScreenNavigationProp = NativeStackNavigationProp<EmployerStackParamList, 'RateWorker'>;
+type RateWorkerScreenRouteProp = RouteProp<EmployerStackParamList, 'RateWorker'>;
+type RateWorkerScreenNavigationProp = NativeStackNavigationProp<
+  EmployerStackParamList,
+  'RateWorker'
+>;
 
-const RatingCategory = ({ title, rating, onRate }: { title: string, rating: number, onRate: (val: number) => void }) => {
+const RatingCategory = ({
+  title,
+  rating,
+  onRate,
+}: {
+  title: string;
+  rating: number;
+  onRate: (val: number) => void;
+}) => {
   return (
     <View style={styles.ratingCard}>
       <Text style={styles.ratingTitle}>{title}</Text>
       <View style={styles.starsContainer}>
         {[1, 2, 3, 4, 5].map((star) => (
           <TouchableOpacity key={star} onPress={() => onRate(star)}>
-            <Ionicons 
-              name={star <= rating ? "star" : "star-outline"} 
-              size={26} 
-              color={star <= rating ? colors.gold : colors.inkLight} 
+            <Ionicons
+              name={star <= rating ? 'star' : 'star-outline'}
+              size={26}
+              color={star <= rating ? colors.gold : colors.inkLight}
             />
           </TouchableOpacity>
         ))}
@@ -31,18 +45,43 @@ const RatingCategory = ({ title, rating, onRate }: { title: string, rating: numb
 
 export const RateWorkerScreen: React.FC = () => {
   const navigation = useNavigation<RateWorkerScreenNavigationProp>();
-  
+  const route = useRoute<RateWorkerScreenRouteProp>();
+  const { id, workerName, jobTitle } = route.params; // this is the applicationId
+
   const [quality, setQuality] = useState(0);
   const [punctuality, setPunctuality] = useState(0);
   const [communication, setCommunication] = useState(0);
   const [behavior, setBehavior] = useState(0);
   const [note, setNote] = useState('');
 
+  const { mutate: submitReview, isPending } = useSubmitReview();
+  const { showAlert } = useAlert();
+
   const isFormValid = quality > 0 && punctuality > 0 && communication > 0 && behavior > 0;
 
   const handleSubmit = () => {
-    // In a real app, send to API
-    navigation.goBack();
+    submitReview(
+      {
+        applicationId: id,
+        payload: {
+          cat1: quality,
+          cat2: punctuality,
+          cat3: communication,
+          cat4: behavior,
+          comment: note,
+        },
+      },
+      {
+        onSuccess: () => {
+          showAlert('Success', 'Your review has been submitted.', [
+            { text: 'OK', onPress: () => navigation.goBack() },
+          ]);
+        },
+        onError: (err: any) => {
+          showAlert('Error', err.response?.data?.message || 'Failed to submit review.');
+        },
+      },
+    );
   };
 
   return (
@@ -61,11 +100,11 @@ export const RateWorkerScreen: React.FC = () => {
         {/* Worker Info */}
         <View style={styles.workerInfoCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>M</Text>
+            <Text style={styles.avatarText}>{workerName.charAt(0)}</Text>
           </View>
           <View style={styles.workerDetails}>
-            <Text style={styles.workerName}>Maria Santos</Text>
-            <Text style={styles.jobMeta}>Tile setter • 3 days</Text>
+            <Text style={styles.workerName}>{workerName}</Text>
+            <Text style={styles.jobMeta}>{jobTitle}</Text>
           </View>
         </View>
 
@@ -83,7 +122,12 @@ export const RateWorkerScreen: React.FC = () => {
             A note <Text style={styles.noteOptional}>(optional)</Text>
           </Text>
           <View style={styles.inputContainer}>
-            <Ionicons name="chatbubble-outline" size={20} color={colors.inkLight} style={styles.inputIcon} />
+            <Ionicons
+              name="chatbubble-outline"
+              size={20}
+              color={colors.inkLight}
+              style={styles.inputIcon}
+            />
             <TextInput
               style={styles.textInput}
               placeholder="Excellent work. Will hire again."
@@ -97,10 +141,11 @@ export const RateWorkerScreen: React.FC = () => {
 
         {/* Submit Button */}
         <View style={styles.submitContainer}>
-          <Button 
-            title="Submit rating" 
-            onPress={handleSubmit} 
-            disabled={!isFormValid}
+          <Button
+            title="Submit rating"
+            onPress={handleSubmit}
+            disabled={!isFormValid || isPending}
+            loading={isPending}
             style={styles.submitBtn}
           />
         </View>
@@ -111,22 +156,41 @@ export const RateWorkerScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.paper },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
   iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerPill: { backgroundColor: colors.paperBright, paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, ...shadows.sm },
+  headerPill: {
+    backgroundColor: colors.paperBright,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    ...shadows.sm,
+  },
   headerPillText: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.inkMuted },
   scrollContent: { padding: 20, paddingBottom: 40 },
-  workerInfoCard: { 
-    backgroundColor: colors.paperBright, 
-    borderRadius: 12, 
-    padding: 12, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 12, 
+  workerInfoCard: {
+    backgroundColor: colors.paperBright,
+    borderRadius: 12,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
     ...shadows.sm,
-    marginBottom: 14 
+    marginBottom: 14,
   },
-  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.peach, alignItems: 'center', justifyContent: 'center' },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.peach,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   avatarText: { fontFamily: fonts.bodyBold, fontSize: 18, color: colors.primaryDark },
   workerDetails: { flex: 1 },
   workerName: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink },
@@ -138,18 +202,25 @@ const styles = StyleSheet.create({
   noteField: { marginTop: 14 },
   noteLabel: { fontFamily: fonts.bodyBold, fontSize: 12, color: colors.ink, marginBottom: 6 },
   noteOptional: { fontFamily: fonts.body, color: colors.inkLight },
-  inputContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'flex-start', 
-    backgroundColor: colors.paperBright, 
-    borderRadius: 12, 
-    padding: 12, 
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: colors.paperBright,
+    borderRadius: 12,
+    padding: 12,
     minHeight: 80,
     borderWidth: 1,
-    borderColor: colors.inkFaint
+    borderColor: colors.inkFaint,
   },
   inputIcon: { marginTop: 2, marginRight: 8 },
-  textInput: { flex: 1, fontFamily: fonts.body, fontSize: 14, color: colors.ink, minHeight: 60, textAlignVertical: 'top' },
+  textInput: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.ink,
+    minHeight: 60,
+    textAlignVertical: 'top',
+  },
   submitContainer: { marginTop: 24 },
   submitBtn: { paddingVertical: 14 },
 });

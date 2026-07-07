@@ -28,24 +28,29 @@ export const AddSkillsScreen: React.FC = () => {
     },
     onError: (err) => {
       console.error('Failed to save skills', err);
-    }
+    },
   });
 
   const toggleSkill = (skill: Skill) => {
-    if (selectedSkills.find(s => s.id === skill.id)) {
-      setSelectedSkills(selectedSkills.filter(s => s.id !== skill.id));
+    if (selectedSkills.find((s) => s.id === skill.id)) {
+      setSelectedSkills(selectedSkills.filter((s) => s.id !== skill.id));
     } else {
       setSelectedSkills([...selectedSkills, skill]);
     }
   };
 
   const getSkillIcon = (skillName: string) => {
-    switch(skillName) {
-      case 'Carpentry': return 'hammer';
-      case 'Masonry': return 'construct';
-      case 'Painting': return 'brush';
-      case 'Plumbing': return 'water';
-      default: return 'checkmark-circle-outline';
+    switch (skillName) {
+      case 'Carpentry':
+        return 'hammer';
+      case 'Masonry':
+        return 'construct';
+      case 'Painting':
+        return 'brush';
+      case 'Plumbing':
+        return 'water';
+      default:
+        return 'checkmark-circle-outline';
     }
   };
 
@@ -69,15 +74,25 @@ export const AddSkillsScreen: React.FC = () => {
 
         <Text style={styles.sectionHeaderPrimary}>Selected · {selectedSkills.length}</Text>
         <View style={styles.chipContainer}>
-          {selectedSkills.map(skill => (
-            <TouchableOpacity 
-              key={skill.id} 
+          {selectedSkills.map((skill) => (
+            <TouchableOpacity
+              key={skill.id}
               style={[styles.chip, styles.chipSelected]}
               onPress={() => toggleSkill(skill)}
             >
-              <Ionicons name={getSkillIcon(skill.name) as any} size={14} color={colors.primaryDark} style={{ marginRight: 4 }} />
+              <Ionicons
+                name={getSkillIcon(skill.name) as any}
+                size={14}
+                color={colors.primaryDark}
+                style={{ marginRight: 4 }}
+              />
               <Text style={styles.chipTextSelected}>{skill.name}</Text>
-              <Ionicons name="close" size={14} color={colors.primaryDark} style={{ marginLeft: 4 }} />
+              <Ionicons
+                name="close"
+                size={14}
+                color={colors.primaryDark}
+                style={{ marginLeft: 4 }}
+              />
             </TouchableOpacity>
           ))}
           {selectedSkills.length === 0 && (
@@ -87,25 +102,27 @@ export const AddSkillsScreen: React.FC = () => {
 
         <Text style={styles.sectionHeader}>Suggested</Text>
         <View style={styles.chipContainer}>
-          {skills.filter(s => !selectedSkills.find(selected => selected.id === s.id)).map(skill => (
-            <TouchableOpacity 
-              key={skill.id} 
-              style={styles.chip}
-              onPress={() => toggleSkill(skill)}
-            >
-              <Text style={styles.chipText}>+ {skill.name}</Text>
-            </TouchableOpacity>
-          ))}
+          {skills
+            .filter((s) => !selectedSkills.find((selected) => selected.id === s.id))
+            .map((skill) => (
+              <TouchableOpacity
+                key={skill.id}
+                style={styles.chip}
+                onPress={() => toggleSkill(skill)}
+              >
+                <Text style={styles.chipText}>+ {skill.name}</Text>
+              </TouchableOpacity>
+            ))}
         </View>
       </ScrollView>
 
       <View style={styles.bottomBar}>
-        <Button 
-          label={saveMutation.isPending ? "Saving..." : "Next"} 
+        <Button
+          label={saveMutation.isPending ? 'Saving...' : 'Next'}
           size="lg"
-          fullWidth 
+          fullWidth
           loading={saveMutation.isPending}
-          onPress={() => saveMutation.mutate(selectedSkills.map(s => s.id))}
+          onPress={() => saveMutation.mutate(selectedSkills.map((s) => s.id))}
         />
       </View>
     </SafeAreaView>

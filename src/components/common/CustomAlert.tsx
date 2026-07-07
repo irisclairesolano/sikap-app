@@ -44,7 +44,10 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
                 variant={btn.style === 'cancel' ? 'outline' : 'primary'}
                 style={[
                   styles.button,
-                  btn.style === 'destructive' && { backgroundColor: colors.error, borderColor: colors.error },
+                  btn.style === 'destructive' && {
+                    backgroundColor: colors.error,
+                    borderColor: colors.error,
+                  },
                 ]}
                 onPress={() => {
                   btn.onPress?.();

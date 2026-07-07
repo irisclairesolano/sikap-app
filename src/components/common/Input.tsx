@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import {
-  KeyboardTypeOptions,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { KeyboardTypeOptions, StyleSheet, Text, View } from 'react-native';
 import { Input as RNEInput } from 'react-native-elements';
 import { colors, fonts } from '../../theme';
 
@@ -52,15 +47,14 @@ const CustomInput: React.FC<InputProps> = ({
   const [isFocused, setIsFocused] = useState(false);
 
   // Convert label to sentence case (if requested format is e.g. "FULL NAME")
-  const sentenceCaseLabel = label ? label.charAt(0).toUpperCase() + label.slice(1).toLowerCase() : '';
+  const sentenceCaseLabel = label
+    ? label.charAt(0).toUpperCase() + label.slice(1).toLowerCase()
+    : '';
 
   return (
     <View style={styles.wrap}>
       {label ? <Text style={styles.label}>{sentenceCaseLabel}</Text> : null}
-      <View style={[
-        styles.focusRing,
-        isFocused && styles.focusRingActive
-      ]}>
+      <View style={[styles.focusRing, isFocused && styles.focusRingActive]}>
         <RNEInput
           value={value}
           onChangeText={onChangeText}
@@ -72,7 +66,9 @@ const CustomInput: React.FC<InputProps> = ({
           maxLength={maxLength}
           keyboardType={keyboardType}
           editable={editable}
-          leftIcon={icon ? { type: 'ionicon', name: icon, color: colors.inkMuted, size: 20 } : undefined}
+          leftIcon={
+            icon ? { type: 'ionicon', name: icon, color: colors.inkMuted, size: 20 } : undefined
+          }
           rightIcon={rightIcon}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
@@ -87,6 +83,7 @@ const CustomInput: React.FC<InputProps> = ({
             isFocused && styles.inputContainerFocused,
             status === 'valid' && styles.containerValid,
             status === 'invalid' && styles.containerInvalid,
+            editable === false && styles.inputContainerDisabled,
           ]}
           containerStyle={styles.container}
           renderErrorMessage={false}
@@ -95,11 +92,13 @@ const CustomInput: React.FC<InputProps> = ({
       {error ? (
         <Text style={styles.error}>{error}</Text>
       ) : statusText ? (
-        <Text style={[
-          styles.statusText,
-          status === 'valid' && styles.statusTextValid,
-          status === 'invalid' && styles.statusTextInvalid,
-        ]}>
+        <Text
+          style={[
+            styles.statusText,
+            status === 'valid' && styles.statusTextValid,
+            status === 'invalid' && styles.statusTextInvalid,
+          ]}
+        >
           {statusText}
         </Text>
       ) : null}
@@ -178,6 +177,11 @@ const styles = StyleSheet.create({
   },
   containerInvalid: {
     borderColor: colors.error,
+  },
+  inputContainerDisabled: {
+    backgroundColor: colors.paperBright,
+    borderColor: 'transparent',
+    opacity: 0.7,
   },
   container: {
     paddingHorizontal: 0,

@@ -11,20 +11,24 @@ export const Avatar: React.FC<AvatarProps> = ({ name, size = 40 }) => {
   const initial = name ? name.charAt(0).toUpperCase() : '?';
 
   return (
-    <View style={[
-      styles.container,
-      {
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-      }
-    ]}>
-      <Text style={[
-        styles.text,
+    <View
+      style={[
+        styles.container,
         {
-          fontSize: size * 0.4,
-        }
-      ]}>
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+        },
+      ]}
+    >
+      <Text
+        style={[
+          styles.text,
+          {
+            fontSize: size * 0.4,
+          },
+        ]}
+      >
         {initial}
       </Text>
     </View>

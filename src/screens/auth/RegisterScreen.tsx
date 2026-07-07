@@ -2,12 +2,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Button from '../../components/common/Button';
@@ -27,7 +22,7 @@ const RegisterScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
 
   const [showPassword, setShowPassword] = useState(false);
-  
+
   // Validation states
   const [fieldStatus, setFieldStatus] = useState<Record<string, 'valid' | 'invalid' | null>>({});
   const [fieldStatusText, setFieldStatusText] = useState<Record<string, string>>({});
@@ -35,32 +30,40 @@ const RegisterScreen: React.FC = () => {
   const capitalizeName = (text: string): string => {
     return text
       .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   };
 
-  const validateName = (name: string): { status: 'valid' | 'invalid' | null, message: string } => {
+  const validateName = (name: string): { status: 'valid' | 'invalid' | null; message: string } => {
     if (!name) return { status: null, message: '' };
-    if (name.length < 2) return { status: 'invalid', message: 'Name must be at least 2 characters' };
-    if (!/^[a-zA-Z\s]+$/.test(name)) return { status: 'invalid', message: 'Name can only contain letters' };
+    if (name.length < 2)
+      return { status: 'invalid', message: 'Name must be at least 2 characters' };
+    if (!/^[a-zA-Z\s]+$/.test(name))
+      return { status: 'invalid', message: 'Name can only contain letters' };
     return { status: 'valid', message: '' };
   };
 
-  const validateEmail = (email: string): { status: 'valid' | 'invalid' | null, message: string } => {
+  const validateEmail = (
+    email: string,
+  ): { status: 'valid' | 'invalid' | null; message: string } => {
     if (!email) return { status: null, message: '' };
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) return { status: 'invalid', message: 'Invalid email format' };
     return { status: 'valid', message: '' };
   };
 
-  const validatePhone = (phone: string): { status: 'valid' | 'invalid' | null, message: string } => {
+  const validatePhone = (
+    phone: string,
+  ): { status: 'valid' | 'invalid' | null; message: string } => {
     if (!phone) return { status: null, message: '' };
     const phoneRegex = /^09\d{9}$/;
     if (!phoneRegex.test(phone)) return { status: 'invalid', message: 'Use format: 09XXXXXXXX' };
     return { status: 'valid', message: '' };
   };
 
-  const validatePassword = (password: string): { status: 'valid' | 'invalid' | null, message: string } => {
+  const validatePassword = (
+    password: string,
+  ): { status: 'valid' | 'invalid' | null; message: string } => {
     if (!password) return { status: null, message: '' };
     if (password.length < 8) return { status: 'invalid', message: 'At least 8 characters' };
     if (!/[a-z]/.test(password)) return { status: 'invalid', message: 'Include lowercase' };
@@ -86,7 +89,12 @@ const RegisterScreen: React.FC = () => {
     const pv = validatePhone(values.phone);
     const pwv = validatePassword(values.password);
 
-    if (nv.status === 'invalid' || ev.status === 'invalid' || pv.status === 'invalid' || pwv.status === 'invalid') {
+    if (
+      nv.status === 'invalid' ||
+      ev.status === 'invalid' ||
+      pv.status === 'invalid' ||
+      pwv.status === 'invalid'
+    ) {
       return; // form has errors
     }
 
@@ -121,125 +129,120 @@ const RegisterScreen: React.FC = () => {
         enableOnAndroid={true}
         extraScrollHeight={20}
       >
-          {/* Progress Bar */}
-          <View style={styles.progressBar}>
-            <View style={styles.progressActive} />
-            <View style={styles.progressInactive} />
-            <View style={styles.progressInactive} />
-            <View style={styles.progressInactive} />
-          </View>
+        {/* Progress Bar */}
+        <View style={styles.progressBar}>
+          <View style={styles.progressActive} />
+          <View style={styles.progressInactive} />
+          <View style={styles.progressInactive} />
+          <View style={styles.progressInactive} />
+        </View>
 
-          <Text style={styles.title}>
-            Tell us about{'\n'}your <Text style={styles.titleItalic}>identity.</Text>
-          </Text>
+        <Text style={styles.title}>
+          Tell us about{'\n'}your <Text style={styles.titleItalic}>identity.</Text>
+        </Text>
 
-          <View style={styles.form}>
-            <Controller
-              control={control}
-              name="name"
-              rules={{ required: 'Name is required' }}
-              render={({ field: { value, onChange }, fieldState }) => (
-                <Input
-                  label="Full Name"
-                  value={value}
-                  onChangeText={(text) => {
-                    const capitalized = capitalizeName(text);
-                    onChange(capitalized);
-                    const validation = validateName(capitalized);
-                    setFieldStatus(prev => ({ ...prev, name: validation.status }));
-                    setFieldStatusText(prev => ({ ...prev, name: validation.message }));
-                  }}
-                  error={fieldState.error?.message}
-                  status={fieldStatus.name as any}
-                  statusText={fieldStatusText.name}
-                  placeholder="Juan Dela Cruz"
-                />
-              )}
-            />
+        <View style={styles.form}>
+          <Controller
+            control={control}
+            name="name"
+            rules={{ required: 'Name is required' }}
+            render={({ field: { value, onChange }, fieldState }) => (
+              <Input
+                label="Full Name"
+                value={value}
+                onChangeText={(text) => {
+                  const capitalized = capitalizeName(text);
+                  onChange(capitalized);
+                  const validation = validateName(capitalized);
+                  setFieldStatus((prev) => ({ ...prev, name: validation.status }));
+                  setFieldStatusText((prev) => ({ ...prev, name: validation.message }));
+                }}
+                error={fieldState.error?.message}
+                status={fieldStatus.name as any}
+                statusText={fieldStatusText.name}
+                placeholder="Juan Dela Cruz"
+              />
+            )}
+          />
 
-            <Controller
-              control={control}
-              name="email"
-              rules={{ required: 'Email is required' }}
-              render={({ field: { value, onChange }, fieldState }) => (
-                <Input
-                  label="Email"
-                  value={value}
-                  onChangeText={(text) => {
-                    onChange(text);
-                    const validation = validateEmail(text);
-                    setFieldStatus(prev => ({ ...prev, email: validation.status }));
-                    setFieldStatusText(prev => ({ ...prev, email: validation.message }));
-                  }}
-                  keyboardType="email-address"
-                  error={fieldState.error?.message}
-                  placeholder="you@example.com"
-                  status={fieldStatus.email as any}
-                  statusText={fieldStatusText.email}
-                />
-              )}
-            />
+          <Controller
+            control={control}
+            name="email"
+            rules={{ required: 'Email is required' }}
+            render={({ field: { value, onChange }, fieldState }) => (
+              <Input
+                label="Email"
+                value={value}
+                onChangeText={(text) => {
+                  onChange(text);
+                  const validation = validateEmail(text);
+                  setFieldStatus((prev) => ({ ...prev, email: validation.status }));
+                  setFieldStatusText((prev) => ({ ...prev, email: validation.message }));
+                }}
+                keyboardType="email-address"
+                error={fieldState.error?.message}
+                placeholder="you@example.com"
+                status={fieldStatus.email as any}
+                statusText={fieldStatusText.email}
+              />
+            )}
+          />
 
-            <Controller
-              control={control}
-              name="phone"
-              rules={{ required: 'Phone is required' }}
-              render={({ field: { value, onChange }, fieldState }) => (
-                <Input
-                  label="Mobile Number"
-                  value={value}
-                  onChangeText={(text) => {
-                    onChange(text);
-                    const validation = validatePhone(text);
-                    setFieldStatus(prev => ({ ...prev, phone: validation.status }));
-                    setFieldStatusText(prev => ({ ...prev, phone: validation.message }));
-                  }}
-                  keyboardType="phone-pad"
-                  error={fieldState.error?.message}
-                  placeholder="09XXXXXXXXX"
-                  status={fieldStatus.phone as any}
-                  statusText={fieldStatusText.phone}
-                />
-              )}
-            />
+          <Controller
+            control={control}
+            name="phone"
+            rules={{ required: 'Phone is required' }}
+            render={({ field: { value, onChange }, fieldState }) => (
+              <Input
+                label="Mobile Number"
+                value={value}
+                onChangeText={(text) => {
+                  onChange(text);
+                  const validation = validatePhone(text);
+                  setFieldStatus((prev) => ({ ...prev, phone: validation.status }));
+                  setFieldStatusText((prev) => ({ ...prev, phone: validation.message }));
+                }}
+                keyboardType="phone-pad"
+                error={fieldState.error?.message}
+                placeholder="09XXXXXXXXX"
+                status={fieldStatus.phone as any}
+                statusText={fieldStatusText.phone}
+              />
+            )}
+          />
 
-            <Controller
-              control={control}
-              name="password"
-              rules={{ required: 'Password is required' }}
-              render={({ field: { value, onChange }, fieldState }) => (
-                <Input
-                  label="Password"
-                  value={value}
-                  onChangeText={(text) => {
-                    onChange(text);
-                    const validation = validatePassword(text);
-                    setFieldStatus(prev => ({ ...prev, password: validation.status }));
-                    setFieldStatusText(prev => ({ ...prev, password: validation.message }));
-                  }}
-                  secureTextEntry={!showPassword}
-                  rightIcon={{
-                    name: showPassword ? 'eye-off' : 'eye',
-                    type: 'ionicon',
-                    onPress: () => setShowPassword(!showPassword),
-                  }}
-                  error={fieldState.error?.message}
-                  status={fieldStatus.password as any}
-                  statusText={fieldStatusText.password}
-                />
-              )}
-            />
-          </View>
+          <Controller
+            control={control}
+            name="password"
+            rules={{ required: 'Password is required' }}
+            render={({ field: { value, onChange }, fieldState }) => (
+              <Input
+                label="Password"
+                value={value}
+                onChangeText={(text) => {
+                  onChange(text);
+                  const validation = validatePassword(text);
+                  setFieldStatus((prev) => ({ ...prev, password: validation.status }));
+                  setFieldStatusText((prev) => ({ ...prev, password: validation.message }));
+                }}
+                secureTextEntry={!showPassword}
+                rightIcon={{
+                  name: showPassword ? 'eye-off' : 'eye',
+                  type: 'ionicon',
+                  onPress: () => setShowPassword(!showPassword),
+                }}
+                error={fieldState.error?.message}
+                status={fieldStatus.password as any}
+                statusText={fieldStatusText.password}
+              />
+            )}
+          />
+        </View>
 
-          <View style={styles.footer}>
-            <Button
-              label="Next"
-              size="lg"
-              fullWidth
-              onPress={handleSubmit(onSubmit)}
-            />
-          </View>
-        </KeyboardAwareScrollView>
+        <View style={styles.footer}>
+          <Button label="Next" size="lg" fullWidth onPress={handleSubmit(onSubmit)} />
+        </View>
+      </KeyboardAwareScrollView>
     </View>
   );
 };

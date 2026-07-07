@@ -4,13 +4,13 @@ export const colors = {
   primaryDark: '#C9572D',
   primarySoft: '#FCD9C5',
   primaryTint: '#FFEADB',
-  
+
   // Text colors
   ink: '#2B1F15',
   inkSoft: '#4F3D2D',
   inkMuted: '#8C7B6A',
   inkLight: '#C2B5A4',
-  
+
   // Neutral colors
   inkFaint: '#E8DFCE',
   white: '#FFFFFF',
@@ -27,17 +27,17 @@ export const colors = {
   mintDeep: '#5A9168',
   sky: '#DCE9F2',
   skyDeep: '#5A8AA8',
-  
+
   // Status & semantic
   urgent: '#E8744A',
   urgentSoft: '#FFE0D2',
-  
+
   // Status colors
   success: '#6BA475',
   warning: '#E89C2D',
   error: '#C04830',
   gold: '#F4B73E',
-  
+
   // Backward compatible aliases
   textPrimary: '#2B1F15', // alias for ink
   textSecondary: '#4F3D2D', // alias for inkSoft

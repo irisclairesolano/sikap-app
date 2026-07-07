@@ -42,3 +42,33 @@ export const useWithdrawApplication = () => {
     },
   });
 };
+
+export const useAcceptOffer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ message: string }, Error, number>({
+    mutationFn: async (applicationId) => {
+      return apiClient<{ message: string }>(`/applications/${applicationId}/accept`, {
+        method: 'PATCH',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+    },
+  });
+};
+
+export const useRejectOffer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ message: string }, Error, number>({
+    mutationFn: async (applicationId) => {
+      return apiClient<{ message: string }>(`/applications/${applicationId}/reject`, {
+        method: 'PATCH',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+    },
+  });
+};
