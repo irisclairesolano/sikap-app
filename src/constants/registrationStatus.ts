@@ -6,4 +6,4 @@ export const RegistrationStatus = {
   REJECTED: 'rejected',
 } as const;
 
-export type RegistrationStatus = typeof RegistrationStatus[keyof typeof RegistrationStatus];
+export type RegistrationStatus = (typeof RegistrationStatus)[keyof typeof RegistrationStatus];

@@ -4,15 +4,9 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAlert } from '../../contexts/AlertContext';
 import { authApi } from '../../api/auth';
 import { ApiClientError } from '../../api/client';
 import Button from '../../components/common/Button';
@@ -30,6 +24,7 @@ const IDUploadScreen: React.FC = () => {
   const { userId, role } = route.params;
   const userRole = role ?? 'worker';
   const insets = useSafeAreaInsets();
+  const { showAlert } = useAlert();
   const [banner, setBanner] = useState('');
   const [selectedFile, setSelectedFile] = useState<any>(null);
   const [selectedSelfie, setSelectedSelfie] = useState<any>(null);
@@ -40,7 +35,7 @@ const IDUploadScreen: React.FC = () => {
       try {
         const token = await SecureStore.getItemAsync('auth_token');
         if (!token) {
-          Alert.alert('Authentication Required', 'Please log in again to continue.');
+          showAlert('Authentication Required', 'Please log in again to continue.');
           navigation.replace('Login');
         }
       } catch (error) {
@@ -105,7 +100,7 @@ const IDUploadScreen: React.FC = () => {
       if (!pick.canceled && pick.assets[0]) {
         const asset = pick.assets[0];
         if (asset.size && asset.size > MAX_SIZE_MB * 1024 * 1024) {
-          Alert.alert('File Too Large', `Please choose an image under ${MAX_SIZE_MB}MB.`);
+          showAlert('File Too Large', `Please choose an image under ${MAX_SIZE_MB}MB.`);
           return;
         }
         if (type === 'id') setSelectedFile(asset);
@@ -132,7 +127,10 @@ const IDUploadScreen: React.FC = () => {
   return (
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
       <View style={[styles.appBar, { paddingHorizontal: 26 }]}>
-        <TouchableOpacity onPress={() => navigation.navigate('Register', { role: userRole })} style={styles.iconBtn}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Register', { role: userRole })}
+          style={styles.iconBtn}
+        >
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.stepBadge}>
@@ -141,94 +139,101 @@ const IDUploadScreen: React.FC = () => {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.container}
         contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
         showsVerticalScrollIndicator={false}
       >
-
-      <View style={styles.progressBar}>
-        <View style={styles.progressActive} />
-        <View style={styles.progressActive} />
-        <View style={styles.progressActive} />
-        <View style={styles.progressActive} />
-      </View>
-
-      <Text style={styles.title}>
-        Verify your{'\n'}<Text style={styles.titleItalic}>identity.</Text>
-      </Text>
-      <Text style={styles.subtitle}>
-        Upload a government-issued ID.
-      </Text>
-
-      {banner ? (
-        <View style={styles.bannerError}>
-          <Text style={styles.bannerTextError}>{banner}</Text>
+        <View style={styles.progressBar}>
+          <View style={styles.progressActive} />
+          <View style={styles.progressActive} />
+          <View style={styles.progressActive} />
+          <View style={styles.progressActive} />
         </View>
-      ) : null}
 
-      {/* ID Upload Box */}
-      <TouchableOpacity 
-        style={styles.uploadArea} 
-        onPress={() => handleFileSelect('id')}
-        disabled={uploadMutation.isPending}
-      >
-        <View style={styles.cameraIconBox}>
-          <Ionicons name="camera" size={28} color={colors.white} />
-        </View>
-        <Text style={styles.uploadTitle}>
-          {selectedFile ? 'ID Uploaded ✓' : 'Take a photo of your ID'}
+        <Text style={styles.title}>
+          Verify your{'\n'}
+          <Text style={styles.titleItalic}>identity.</Text>
         </Text>
-        <Text style={styles.uploadSubtitle}>
-          {selectedFile ? `${selectedFile.name}` : "PhilSys • Driver's License • Voter's ID\nPRC • Postal ID"}
-        </Text>
-      </TouchableOpacity>
+        <Text style={styles.subtitle}>Upload a government-issued ID.</Text>
 
-      {/* Selfie Upload Box (Added for backend requirement) */}
-      <TouchableOpacity 
-        style={[styles.uploadArea, { marginTop: 16 }]} 
-        onPress={() => handleFileSelect('selfie')}
-        disabled={uploadMutation.isPending}
-      >
-        <View style={styles.cameraIconBox}>
-          <Ionicons name="person" size={24} color={colors.white} />
-        </View>
-        <Text style={styles.uploadTitle}>
-          {selectedSelfie ? 'Selfie Uploaded ✓' : 'Take a selfie holding your ID'}
-        </Text>
-        <Text style={styles.uploadSubtitle}>
-          {selectedSelfie ? `${selectedSelfie.name}` : "Please ensure your face and ID are clear."}
-        </Text>
-      </TouchableOpacity>
+        {banner ? (
+          <View style={styles.bannerError}>
+            <Text style={styles.bannerTextError}>{banner}</Text>
+          </View>
+        ) : null}
 
-      <View style={{ marginTop: 12 }}>
-        <Button 
-          label="Choose from gallery" 
-          variant="ghost"
+        {/* ID Upload Box */}
+        <TouchableOpacity
+          style={styles.uploadArea}
           onPress={() => handleFileSelect('id')}
-        />
-      </View>
+          disabled={uploadMutation.isPending}
+        >
+          <View style={styles.cameraIconBox}>
+            <Ionicons name="camera" size={28} color={colors.white} />
+          </View>
+          <Text style={styles.uploadTitle}>
+            {selectedFile ? 'ID Uploaded ✓' : 'Take a photo of your ID'}
+          </Text>
+          <Text style={styles.uploadSubtitle}>
+            {selectedFile
+              ? `${selectedFile.name}`
+              : "PhilSys • Driver's License • Voter's ID\nPRC • Postal ID"}
+          </Text>
+        </TouchableOpacity>
 
-      <View style={styles.privacyCard}>
-        <Ionicons name="shield-checkmark" size={18} color={colors.mintDeep} style={{ marginTop: 2 }} />
-        <Text style={styles.privacyText}>
-          <Text style={styles.privacyTextBold}>Your ID stays private. </Text>
-          Only the SIKAP admin can view it during verification.
-        </Text>
-      </View>
+        {/* Selfie Upload Box (Added for backend requirement) */}
+        <TouchableOpacity
+          style={[styles.uploadArea, { marginTop: 16 }]}
+          onPress={() => handleFileSelect('selfie')}
+          disabled={uploadMutation.isPending}
+        >
+          <View style={styles.cameraIconBox}>
+            <Ionicons name="person" size={24} color={colors.white} />
+          </View>
+          <Text style={styles.uploadTitle}>
+            {selectedSelfie ? 'Selfie Uploaded ✓' : 'Take a selfie holding your ID'}
+          </Text>
+          <Text style={styles.uploadSubtitle}>
+            {selectedSelfie
+              ? `${selectedSelfie.name}`
+              : 'Please ensure your face and ID are clear.'}
+          </Text>
+        </TouchableOpacity>
 
-      <View style={styles.footer}>
-        <Button
-          label={uploadMutation.isPending ? 'Submitting...' : 'Submit for review'}
-          size="lg"
-          fullWidth
-          disabled={!selectedFile || !selectedSelfie}
-          loading={uploadMutation.isPending}
-          onPress={handleSubmit}
-        />
-      </View>
-    </ScrollView>
-  </View>
+        <View style={{ marginTop: 12 }}>
+          <Button
+            label="Choose from gallery"
+            variant="ghost"
+            onPress={() => handleFileSelect('id')}
+          />
+        </View>
+
+        <View style={styles.privacyCard}>
+          <Ionicons
+            name="shield-checkmark"
+            size={18}
+            color={colors.mintDeep}
+            style={{ marginTop: 2 }}
+          />
+          <Text style={styles.privacyText}>
+            <Text style={styles.privacyTextBold}>Your ID stays private. </Text>
+            Only the SIKAP admin can view it during verification.
+          </Text>
+        </View>
+
+        <View style={styles.footer}>
+          <Button
+            label={uploadMutation.isPending ? 'Submitting...' : 'Submit for review'}
+            size="lg"
+            fullWidth
+            disabled={!selectedFile || !selectedSelfie}
+            loading={uploadMutation.isPending}
+            onPress={handleSubmit}
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 

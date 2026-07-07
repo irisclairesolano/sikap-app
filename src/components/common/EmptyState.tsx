@@ -18,17 +18,17 @@ interface EmptyStateProps {
   resetLabel?: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({ 
-  title, 
-  subtitle, 
-  icon, 
-  iconColor = colors.primary, 
-  iconBgColor = colors.primaryTint, 
-  actionLabel, 
+export const EmptyState: React.FC<EmptyStateProps> = ({
+  title,
+  subtitle,
+  icon,
+  iconColor = colors.primary,
+  iconBgColor = colors.primaryTint,
+  actionLabel,
   onAction,
   message,
   onReset,
-  resetLabel = "Show all"
+  resetLabel = 'Show all',
 }) => {
   if (message && !title) {
     return (

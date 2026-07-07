@@ -48,10 +48,10 @@ export const useAuth = () => {
     try {
       // Remove token from SecureStore
       await SecureStore.deleteItemAsync('auth_token');
-      
+
       // Clear all cached data
       queryClient.clear();
-      
+
       // Reset user data
       queryClient.setQueryData(['profile'], null);
     } catch (error) {
@@ -77,16 +77,16 @@ export const useAuth = () => {
     isAuthenticated,
     userRole,
     isVerified,
-    
+
     // Mutations
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,
     loginMutation,
     registerMutation,
-    
+
     // Actions
     logout,
-    
+
     // Refresh profile
     refetchProfile: () => queryClient.refetchQueries({ queryKey: ['profile'] }),
   };

@@ -16,13 +16,9 @@ export const Chip: React.FC<ChipProps> = ({ label, active, onPress, count }) => 
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <Text style={[styles.label, active && styles.labelActive]}>
-        {label}
-      </Text>
+      <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>
       {count !== undefined && count > 0 && (
-        <Text style={[styles.count, active && styles.countActive]}>
-          {count}
-        </Text>
+        <Text style={[styles.count, active && styles.countActive]}>{count}</Text>
       )}
     </TouchableOpacity>
   );

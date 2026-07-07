@@ -7,10 +7,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 
-type ReviewsScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'Reviews'>;
-
 import { ActivityIndicator } from 'react-native';
 import { useReviews } from '../../hooks/useReviews';
+
+type ReviewsScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'Reviews'>;
 
 export const ReviewsScreen: React.FC = () => {
   const navigation = useNavigation<ReviewsScreenNavigationProp>();
@@ -47,7 +47,12 @@ export const ReviewsScreen: React.FC = () => {
             <Text style={styles.scoreNumber}>{reputationScore.toFixed(1)}</Text>
             <View style={styles.starsRow}>
               {[1, 2, 3, 4, 5].map((s) => (
-                <Ionicons key={s} name={s <= Math.round(reputationScore) ? "star" : "star-outline"} size={12} color={colors.gold} />
+                <Ionicons
+                  key={s}
+                  name={s <= Math.round(reputationScore) ? 'star' : 'star-outline'}
+                  size={12}
+                  color={colors.gold}
+                />
               ))}
             </View>
             <Text style={styles.reviewsCount}>{reviewsCount} reviews</Text>
@@ -93,18 +98,16 @@ export const ReviewsScreen: React.FC = () => {
                   </View>
                   <View>
                     <Text style={styles.reviewerName}>{review.reviewer?.name}</Text>
-                    <Text style={styles.reviewMeta}>
-                      {review.reviewer_role}
-                    </Text>
+                    <Text style={styles.reviewMeta}>{review.reviewer_role}</Text>
                   </View>
                 </View>
                 <View style={styles.reviewStars}>
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <Ionicons 
-                      key={s} 
-                      name={s <= review.overall_rating ? "star" : "star-outline"} 
-                      size={12} 
-                      color={s <= review.overall_rating ? colors.gold : colors.inkLight} 
+                    <Ionicons
+                      key={s}
+                      name={s <= review.overall_rating ? 'star' : 'star-outline'}
+                      size={12}
+                      color={s <= review.overall_rating ? colors.gold : colors.inkLight}
                     />
                   ))}
                 </View>
@@ -120,32 +123,75 @@ export const ReviewsScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.paper },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
   iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerPill: { backgroundColor: colors.paperBright, paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, ...shadows.sm },
+  headerPill: {
+    backgroundColor: colors.paperBright,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    ...shadows.sm,
+  },
   headerPillText: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.inkMuted },
   scrollContent: { padding: 20, paddingBottom: 40 },
-  summaryCard: { backgroundColor: colors.peach, borderRadius: 20, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 16 },
+  summaryCard: {
+    backgroundColor: colors.peach,
+    borderRadius: 20,
+    padding: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
   scoreSection: { alignItems: 'center' },
   scoreNumber: { fontFamily: fonts.display, fontSize: 44, color: colors.ink, lineHeight: 48 },
   starsRow: { flexDirection: 'row', gap: 1, marginTop: 4 },
-  reviewsCount: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.primaryDark, marginTop: 4 },
+  reviewsCount: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 10,
+    color: colors.primaryDark,
+    marginTop: 4,
+  },
   distributionSection: { flex: 1, gap: 5 },
   distRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   distLabel: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.inkSoft, width: 8 },
   barBackground: { flex: 1, height: 4, backgroundColor: 'rgba(0,0,0,0.08)', borderRadius: 2 },
   barFill: { height: '100%', backgroundColor: colors.gold, borderRadius: 2 },
-  distCount: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.inkSoft, width: 12, textAlign: 'right' },
+  distCount: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 10,
+    color: colors.inkSoft,
+    width: 12,
+    textAlign: 'right',
+  },
   reviewsList: { marginTop: 14, gap: 10 },
   reviewCard: { backgroundColor: colors.paperBright, borderRadius: 16, padding: 14, ...shadows.sm },
   reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   reviewerInfo: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  avatar: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   avatarText: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink },
   reviewerName: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink },
   reviewMeta: { fontFamily: fonts.body, fontSize: 11, color: colors.inkSoft, marginTop: 2 },
   reviewStars: { flexDirection: 'row', gap: 1 },
-  reviewComment: { fontFamily: fonts.body, fontSize: 13, color: colors.ink, lineHeight: 20, marginTop: 10, fontStyle: 'italic' },
+  reviewComment: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.ink,
+    lineHeight: 20,
+    marginTop: 10,
+    fontStyle: 'italic',
+  },
 });
 
 export default ReviewsScreen;

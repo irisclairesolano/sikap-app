@@ -13,17 +13,17 @@ export const Wordmark: React.FC<WordmarkProps> = ({ size = 48 }) => {
   return (
     <View style={styles.container}>
       <Text style={[styles.text, { fontSize: size }]}>sikap</Text>
-      <View 
+      <View
         style={[
-          styles.dot, 
-          { 
-            width: dotSize, 
-            height: dotSize, 
+          styles.dot,
+          {
+            width: dotSize,
+            height: dotSize,
             borderRadius: dotSize / 2,
             marginLeft: dotOffset,
             marginBottom: dotSize * 0.5,
-          }
-        ]} 
+          },
+        ]}
       />
     </View>
   );

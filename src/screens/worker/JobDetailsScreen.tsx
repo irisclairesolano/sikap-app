@@ -1,4 +1,4 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { useJob } from '../../hooks/useJob';
+import { useSavedJobs, useToggleSaveJob } from '../../hooks/useSavedJobs';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { Avatar } from '../../components/common/Avatar';
@@ -18,8 +19,17 @@ export const JobDetailsScreen: React.FC = () => {
   const route = useRoute<JobDetailsRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const { id } = route.params;
+  const insets = useSafeAreaInsets();
 
   const { data: job, isLoading, isError, error } = useJob(id);
+  const { data: savedJobsData } = useSavedJobs();
+  const { mutate: toggleSave, isPending: isSaving } = useToggleSaveJob();
+
+  const isSaved = savedJobsData?.data?.some((j) => j.id === id) || false;
+
+  const handleToggleSave = () => {
+    toggleSave(id);
+  };
 
   if (isLoading) {
     return (
@@ -46,19 +56,23 @@ export const JobDetailsScreen: React.FC = () => {
   const isVerified = job.employer?.verification_badge;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       {/* App Bar */}
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
-        
+
         <View style={styles.postedChip}>
           <Text style={styles.postedText}>Posted 2h ago</Text>
         </View>
 
-        <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="bookmark-outline" size={24} color={colors.ink} />
+        <TouchableOpacity style={styles.iconButton} onPress={handleToggleSave} disabled={isSaving}>
+          <Ionicons
+            name={isSaved ? 'bookmark' : 'bookmark-outline'}
+            size={24}
+            color={isSaved ? colors.primary : colors.ink}
+          />
         </TouchableOpacity>
       </View>
 
@@ -104,10 +118,11 @@ export const JobDetailsScreen: React.FC = () => {
             </View>
             <Text style={styles.infoLabel}>Location</Text>
             <Text style={styles.infoValue} numberOfLines={2}>
-              {job.barangay},{'\n'}{job.municipality}
+              {job.barangay},{'\n'}
+              {job.municipality}
             </Text>
           </View>
-          
+
           <View style={styles.infoCard}>
             <View style={styles.infoIconBox}>
               <Ionicons name="people" size={20} color={colors.primaryDark} />
@@ -130,15 +145,20 @@ export const JobDetailsScreen: React.FC = () => {
           <Text style={styles.sectionTitle}>About the Employer</Text>
           <View style={styles.employerCard}>
             <Avatar name={job.employer?.name || 'Unknown'} size={48} />
-            
+
             <View style={styles.employerInfo}>
               <View style={styles.employerNameRow}>
                 <Text style={styles.employerName}>{job.employer?.name || 'Unknown'}</Text>
                 {job.employer?.verification_badge && (
-                  <Ionicons name="checkmark-circle" size={16} color={colors.mintDeep} style={{ marginLeft: 4 }} />
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={16}
+                    color={colors.mintDeep}
+                    style={{ marginLeft: 4 }}
+                  />
                 )}
               </View>
-              
+
               <View style={styles.employerStats}>
                 <Ionicons name="star" size={12} color={colors.gold} />
                 <Text style={styles.statText}>{job.employer?.reputation_score || 'New'}</Text>
@@ -148,13 +168,14 @@ export const JobDetailsScreen: React.FC = () => {
             </View>
           </View>
         </View>
-
       </ScrollView>
 
       {/* Bottom CTA */}
-      <View style={styles.bottomBar}>
-        <Button 
-          label="Apply for this job" 
+      <View
+        style={[styles.bottomBar, { paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 24 }]}
+      >
+        <Button
+          label="Apply for this job"
           size="lg"
           onPress={() => navigation.navigate('Apply', { id: job.id })}
           fullWidth

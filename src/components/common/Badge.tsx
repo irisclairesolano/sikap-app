@@ -34,9 +34,7 @@ export const Badge: React.FC<BadgeProps> = ({ label, variant, icon }) => {
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
-      {iconName && (
-        <Ionicons name={iconName} size={14} color={textColor} style={styles.icon} />
-      )}
+      {iconName && <Ionicons name={iconName} size={14} color={textColor} style={styles.icon} />}
       <Text style={[styles.text, { color: textColor }]}>{label}</Text>
     </View>
   );

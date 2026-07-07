@@ -11,11 +11,16 @@ interface ApplicationCardProps {
 
 const getCategoryStyles = (category: string) => {
   switch (category) {
-    case 'Construction': return { icon: 'hammer', bg: colors.peach, color: colors.primary };
-    case 'Domestic': return { icon: 'home', bg: colors.mint, color: colors.mintDeep };
-    case 'Agriculture': return { icon: 'leaf', bg: colors.paperCream, color: colors.inkSoft };
-    case 'Skilled Trade': return { icon: 'construct', bg: colors.sky, color: colors.skyDeep };
-    default: return { icon: 'briefcase', bg: colors.paperCream, color: colors.inkSoft };
+    case 'Construction':
+      return { icon: 'hammer', bg: colors.peach, color: colors.primary };
+    case 'Domestic':
+      return { icon: 'home', bg: colors.mint, color: colors.mintDeep };
+    case 'Agriculture':
+      return { icon: 'leaf', bg: colors.paperCream, color: colors.inkSoft };
+    case 'Skilled Trade':
+      return { icon: 'construct', bg: colors.sky, color: colors.skyDeep };
+    default:
+      return { icon: 'briefcase', bg: colors.paperCream, color: colors.inkSoft };
   }
 };
 
@@ -29,7 +34,7 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, o
   let badgeIcon: any = 'time-outline';
   let badgeBg: string = colors.paperCream;
   let badgeColor: string = colors.inkSoft;
-  
+
   if (status === 'accepted') {
     badgeLabel = 'Active';
     badgeIcon = 'play';
@@ -55,9 +60,9 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, o
   const isActive = status === 'accepted';
 
   return (
-    <TouchableOpacity 
-      style={[styles.jobCard, isActive && styles.activeCardBorder]} 
-      onPress={onPress} 
+    <TouchableOpacity
+      style={[styles.jobCard, isActive && styles.activeCardBorder]}
+      onPress={onPress}
       activeOpacity={0.7}
     >
       <View style={styles.topRow}>
@@ -65,8 +70,12 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, o
           <Ionicons name={catStyles.icon as any} size={20} color={catStyles.color} />
         </View>
         <View style={styles.jobText}>
-          <Text style={styles.jobTitle} numberOfLines={1}>{job.title}</Text>
-          <Text style={styles.bodySm} numberOfLines={1}>{job.employer?.name || 'Unknown'} · {job.municipality}</Text>
+          <Text style={styles.jobTitle} numberOfLines={1}>
+            {job.title}
+          </Text>
+          <Text style={styles.bodySm} numberOfLines={1}>
+            {job.employer?.name || 'Unknown'} · {job.municipality}
+          </Text>
         </View>
         <View style={[styles.badge, { backgroundColor: badgeBg }]}>
           <Ionicons name={badgeIcon} size={10} color={badgeColor} style={{ marginRight: 3 }} />
@@ -78,7 +87,10 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, o
         <View style={styles.activeInfoBox}>
           <Ionicons name="hourglass-outline" size={18} color={colors.mintDeep} />
           <View style={{ flex: 1, marginLeft: 10 }}>
-            <Text style={styles.activeDayText}>Day <Text style={styles.num}>1</Text> of <Text style={styles.num}>{job.slots || 1}</Text></Text>
+            <Text style={styles.activeDayText}>
+              Day <Text style={styles.num}>1</Text> of{' '}
+              <Text style={styles.num}>{job.slots || 1}</Text>
+            </Text>
             <Text style={styles.activeSubText}>In progress</Text>
           </View>
         </View>

@@ -1,9 +1,5 @@
 import { apiClient } from './client';
-import { 
-  User, 
-  WorkerExperience,
-  CharacterReference
-} from '../types';
+import { User, WorkerExperience, CharacterReference } from '../types';
 
 export const profileApi = {
   // Get current user profile
@@ -13,7 +9,9 @@ export const profileApi = {
   },
 
   // Update profile
-  updateProfile: async (data: Partial<User> & { bio?: string, availability_status?: string, description?: string }): Promise<any> => {
+  updateProfile: async (
+    data: Partial<User> & { bio?: string; availability_status?: string; description?: string },
+  ): Promise<any> => {
     const response = await apiClient<any>('/profile', {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -27,7 +25,7 @@ export const profileApi = {
     const filename = imageUri.split('/').pop() || 'avatar.jpg';
     const match = /\.(\w+)$/.exec(filename);
     const type = match ? `image/${match[1]}` : 'image/jpeg';
-    
+
     formData.append('avatar', {
       uri: imageUri,
       name: filename,
@@ -55,7 +53,27 @@ export const profileApi = {
       method: 'POST',
       body: JSON.stringify(experience),
     });
-    return response?.experience !== undefined ? response.experience : (response?.data !== undefined ? response.data : response);
+    return response?.experience !== undefined
+      ? response.experience
+      : response?.data !== undefined
+        ? response.data
+        : response;
+  },
+
+  // Update work experience
+  updateExperience: async (
+    experienceId: number,
+    experience: Omit<WorkerExperience, 'id'>,
+  ): Promise<WorkerExperience> => {
+    const response = await apiClient<any>(`/profile/experiences/${experienceId}`, {
+      method: 'PUT',
+      body: JSON.stringify(experience),
+    });
+    return response?.experience !== undefined
+      ? response.experience
+      : response?.data !== undefined
+        ? response.data
+        : response;
   },
 
   // Remove work experience
@@ -71,7 +89,11 @@ export const profileApi = {
       method: 'POST',
       body: JSON.stringify(reference),
     });
-    return response?.reference !== undefined ? response.reference : (response?.data !== undefined ? response.data : response);
+    return response?.reference !== undefined
+      ? response.reference
+      : response?.data !== undefined
+        ? response.data
+        : response;
   },
 
   // Remove character reference

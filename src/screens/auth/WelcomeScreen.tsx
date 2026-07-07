@@ -72,7 +72,7 @@ const WelcomeScreen: React.FC = () => {
             fullWidth
             onPress={() => navigateToRegister('employer')}
           />
-          
+
           <View style={styles.loginRow}>
             <Text style={styles.loginText}>Already have an account? </Text>
             <Text style={styles.loginLink} onPress={() => navigation.navigate('Login')}>
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 14,
     color: colors.primary,
-  }
+  },
 });
 
 export default WelcomeScreen;

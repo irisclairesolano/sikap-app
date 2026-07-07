@@ -1,9 +1,4 @@
-import {
-  LaravelLoginResponse,
-  LaravelOtpResponse,
-  LoginRequest,
-  RegisterRequest
-} from '../types';
+import { LaravelLoginResponse, LaravelOtpResponse, LoginRequest, RegisterRequest } from '../types';
 import { apiClient } from './client';
 
 export const authApi = {
@@ -16,13 +11,13 @@ export const authApi = {
         body: JSON.stringify(credentials),
       });
       console.log('🔍 API Login Response:', response);
-      
+
       // Return the exact backend response: { token, token_type, user }
       if (response && response.user) {
         console.log('🔍 Login successful:', response.user);
         return response;
       }
-      
+
       throw new Error('Invalid login response format');
     } catch (error) {
       console.log('🔍 API Login Error:', error);
@@ -39,13 +34,13 @@ export const authApi = {
         body: JSON.stringify(userData),
       });
       console.log('🔍 API Register Response:', response);
-      
+
       // Return the exact backend response: { message: string }
       if (response.message) {
         console.log('🔍 Registration initiated:', response.message);
         return response;
       }
-      
+
       throw new Error('Unexpected registration response format');
     } catch (error) {
       console.log('🔍 API Register Error:', error);
@@ -56,26 +51,29 @@ export const authApi = {
   verifyOtp: async (
     userId: number,
     otp: string,
-    email?: string
+    email?: string,
   ): Promise<{ message: string; user_id: number }> => {
     console.log('🔍 API Verify OTP Request:', { userId, otp, email });
     try {
       // Backend expects email instead of user_id
       const requestBody = email ? { email, otp } : { user_id: userId, otp };
       console.log('🔍 Request Body:', requestBody);
-      
+
       const response = await apiClient<LaravelOtpResponse>('/auth/verify-otp', {
         method: 'POST',
         body: JSON.stringify(requestBody),
       });
       console.log('🔍 API Verify OTP Response:', response);
-      
+
       // Return the exact backend response: { message: string, user_id: number }
       if (response && response.user_id) {
-        console.log('🔍 OTP verification successful:', { user_id: response.user_id, message: response.message });
+        console.log('🔍 OTP verification successful:', {
+          user_id: response.user_id,
+          message: response.message,
+        });
         return response;
       }
-      
+
       throw new Error('Invalid OTP response: user_id is required');
     } catch (error) {
       console.log('🔍 API Verify OTP Error:', error);
@@ -90,7 +88,7 @@ export const authApi = {
       // Backend expects email instead of user_id
       const requestBody = email ? { email } : { user_id: userId };
       console.log('🔍 Resend OTP Request Body:', requestBody);
-      
+
       const response = await apiClient('/auth/resend-otp', {
         method: 'POST',
         body: JSON.stringify(requestBody),

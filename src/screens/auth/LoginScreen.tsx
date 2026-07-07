@@ -1,14 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ApiClientError } from '../../api/client';
 import Button from '../../components/common/Button';
@@ -19,14 +13,10 @@ import { colors, fonts } from '../../theme';
 import { LoginRequest } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 
-type LoginScreenNavigationProp = NativeStackNavigationProp<
-  AuthStackParamList,
-  'Login'
->;
+type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const insets = useSafeAreaInsets();
   const { loginMutation } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -90,8 +80,8 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
-        
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
         {/* App Bar */}
         <View style={styles.appBar}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
@@ -102,7 +92,7 @@ const LoginScreen: React.FC = () => {
         </View>
 
         <KeyboardAwareScrollView
-          contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
+          contentContainerStyle={[styles.scroll, { paddingBottom: 32 }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           enableOnAndroid={true}
@@ -120,9 +110,7 @@ const LoginScreen: React.FC = () => {
             <Text style={styles.title}>
               Welcome <Text style={styles.titleItalic}>back.</Text>
             </Text>
-            <Text style={styles.subtitle}>
-              Sign in to manage your account.
-            </Text>
+            <Text style={styles.subtitle}>Sign in to manage your account.</Text>
           </View>
 
           {banner ? (
@@ -153,8 +141,8 @@ const LoginScreen: React.FC = () => {
                 }}
                 placeholder="Your password"
               />
-              <TouchableOpacity 
-                style={styles.forgotBtn} 
+              <TouchableOpacity
+                style={styles.forgotBtn}
                 onPress={() => navigation.navigate('ForgotPassword')}
               >
                 <Text style={styles.forgotText}>Forgot password?</Text>
@@ -178,13 +166,17 @@ const LoginScreen: React.FC = () => {
               <Text style={styles.createText}>Create an account</Text>
             </TouchableOpacity>
           </View>
-
         </KeyboardAwareScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.paper,
+  },
   flex: {
     flex: 1,
   },

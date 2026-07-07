@@ -33,7 +33,7 @@ const SplashScreen: React.FC = () => {
             duration: 600,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       );
 
       Animated.loop(Animated.parallel(animations)).start();

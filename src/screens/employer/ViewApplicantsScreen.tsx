@@ -1,27 +1,56 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../theme';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import Button from '../../components/common/Button';
+import { useJob } from '../../hooks/useJob';
+import { useJobApplications } from '../../hooks/useJobApplications';
 
-// Dummy data
-const JOB = { title: 'Carpenter wanted', location: 'Bulan', pay: 600, slots: 2 };
+type ViewApplicantsRouteProp = RouteProp<EmployerStackParamList, 'ViewApplicants'>;
 
-const APPLICANTS = [
-  { id: 1, name: 'Maria Santos', initials: 'M', verified: true, location: 'San Rafael, Bulan', distance: '2.1km', rating: 4.8, hires: 12, color: colors.peach },
-  { id: 2, name: 'Jose Bernardo', initials: 'J', verified: true, location: 'Aquino, Bulan', distance: '4km', rating: 4.6, hires: 22, color: colors.mint },
-  { id: 3, name: 'Antonio Cruz', initials: 'A', verified: false, location: 'San Vicente', distance: '6km', rating: 4.2, hires: 6, color: colors.butter },
-];
-
-const FILTERS = ['All · 5', 'New', 'Shortlisted', 'Hired'];
+const FILTERS = ['All', 'pending', 'employer_requested', 'employer_confirmed', 'rejected'];
 
 export const ViewApplicantsScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<EmployerStackParamList>>();
-  const [activeFilter, setActiveFilter] = useState(FILTERS[0]);
+  const route = useRoute<ViewApplicantsRouteProp>();
+  const { id: jobId } = route.params;
+
+  const [activeFilter, setActiveFilter] = useState('All');
+
+  const { data: job, isLoading: isJobLoading } = useJob(jobId);
+  const { data: applications = [], isLoading: isAppsLoading } = useJobApplications(jobId);
+
+  const filteredApps = applications.filter(
+    (app) => activeFilter === 'All' || app.status === activeFilter,
+  );
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'New';
+      case 'employer_requested':
+        return 'Shortlisted';
+      case 'employer_confirmed':
+        return 'Hired';
+      case 'rejected':
+        return 'Rejected';
+      case 'accepted':
+        return 'Accepted by Worker';
+      default:
+        return status;
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -35,81 +64,115 @@ export const ViewApplicantsScreen: React.FC = () => {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        <View style={styles.infoBanner}>
-          <Ionicons name="shield-checkmark" size={18} color={colors.primaryDark} style={{ marginTop: 2 }} />
-          <Text style={styles.infoText}>
-            <Text style={{ fontFamily: fonts.bodyBold, color: colors.primaryDark }}>Privacy Shield is active.</Text> Only public profile data is visible right now. Shortlist a worker to see their contact info.
-          </Text>
+      {isJobLoading || isAppsLoading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.infoBanner}>
+            <Ionicons
+              name="shield-checkmark"
+              size={18}
+              color={colors.primaryDark}
+              style={{ marginTop: 2 }}
+            />
+            <Text style={styles.infoText}>
+              <Text style={{ fontFamily: fonts.bodyBold, color: colors.primaryDark }}>
+                Privacy Shield is active.
+              </Text>{' '}
+              Only public profile data is visible right now. Shortlist a worker to see their contact
+              info.
+            </Text>
+          </View>
 
-        <View style={styles.jobSummary}>
-          <Text style={styles.jobTitle}>{JOB.title}</Text>
-          <Text style={styles.jobSubtitle}>{JOB.location} · ₱{JOB.pay}/day · {JOB.slots} slots</Text>
-        </View>
+          {job && (
+            <View style={styles.jobSummary}>
+              <Text style={styles.jobTitle}>{job.title}</Text>
+              <Text style={styles.jobSubtitle}>
+                {job.barangay}, {job.municipality} · ₱{job.compensation}/
+                {job.duration_type === 'daily' ? 'day' : 'project'} · {job.slots} slots
+              </Text>
+            </View>
+          )}
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterContainer}>
-          {FILTERS.map(filter => (
-            <TouchableOpacity 
-              key={filter} 
-              style={[styles.chip, activeFilter === filter && styles.chipActive]}
-              onPress={() => setActiveFilter(filter)}
-            >
-              <Text style={[styles.chipText, activeFilter === filter && styles.chipTextActive]}>{filter}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterContainer}
+          >
+            {FILTERS.map((filter) => (
+              <TouchableOpacity
+                key={filter}
+                style={[styles.chip, activeFilter === filter && styles.chipActive]}
+                onPress={() => setActiveFilter(filter)}
+              >
+                <Text style={[styles.chipText, activeFilter === filter && styles.chipTextActive]}>
+                  {filter === 'All' ? `All · ${applications.length}` : getStatusLabel(filter)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
 
-        <View style={styles.listContainer}>
-          {APPLICANTS.map((app, index) => (
-            <TouchableOpacity 
-              key={app.id} 
-              style={styles.applicantCard}
-              onPress={() => navigation.navigate('ApplicantDetail', { 
-                applicantId: app.id, 
-                applicantName: app.name, 
-                jobTitle: JOB.title, 
-                status: 'pending' 
-              })}
-              activeOpacity={0.7}
-            >
-              <View style={styles.cardTop}>
-                <View style={[styles.avatar, { backgroundColor: app.color }]}>
-                  <Text style={styles.avatarText}>{app.initials}</Text>
-                </View>
-                <View style={styles.applicantDetails}>
-                  <View style={styles.nameRow}>
-                    <Text style={styles.applicantName}>{app.name}</Text>
-                    {app.verified && (
-                      <Ionicons name="checkmark-circle" size={14} color={colors.mintDeep} style={{ marginLeft: 4 }} />
-                    )}
+          <View style={styles.listContainer}>
+            {filteredApps.map((app) => (
+              <TouchableOpacity
+                key={app.id}
+                style={styles.applicantCard}
+                onPress={() =>
+                  navigation.navigate('ApplicantDetail', {
+                    applicantId: app.id,
+                    applicantName: `${app.worker?.first_name || ''} ${app.worker?.last_name || ''}`,
+                    jobTitle: job?.title || '',
+                    status: app.status,
+                  })
+                }
+                activeOpacity={0.7}
+              >
+                <View style={styles.cardTop}>
+                  <View style={[styles.avatar, { backgroundColor: colors.peach }]}>
+                    <Text style={styles.avatarText}>
+                      {app.worker?.first_name?.charAt(0) || 'U'}
+                    </Text>
                   </View>
-                  <Text style={styles.applicantLocation}>{app.location} · {app.distance}</Text>
-                  
-                  <View style={styles.statsRow}>
-                    <View style={styles.statItem}>
-                      <Ionicons name="star" size={12} color={colors.gold} />
-                      <Text style={styles.statNum}>{app.rating}</Text>
+                  <View style={styles.applicantDetails}>
+                    <View style={styles.nameRow}>
+                      <Text style={styles.applicantName}>
+                        {app.worker?.first_name} {app.worker?.last_name}
+                      </Text>
+                      {app.worker?.workerProfile?.verified && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={14}
+                          color={colors.mintDeep}
+                          style={{ marginLeft: 4 }}
+                        />
+                      )}
                     </View>
-                    <Text style={styles.statText}><Text style={{fontFamily: fonts.numericBold}}>{app.hires}</Text> hires</Text>
+                    <Text style={styles.applicantLocation}>{getStatusLabel(app.status)}</Text>
                   </View>
                 </View>
-              </View>
+              </TouchableOpacity>
+            ))}
 
-              {/* Show primary action only on the first applicant for the mockup */}
-              {index === 0 && (
-                <Button 
-                  label="Send job request" 
-                  onPress={() => navigation.navigate('SendRequest', { id: app.id })}
-                  style={{ marginTop: 12 }}
-                />
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-
-      </ScrollView>
+            {filteredApps.length === 0 && (
+              <Text
+                style={{
+                  textAlign: 'center',
+                  marginTop: 20,
+                  color: colors.inkSoft,
+                  fontFamily: fonts.body,
+                }}
+              >
+                No applicants in this category.
+              </Text>
+            )}
+          </View>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };

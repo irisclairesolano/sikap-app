@@ -23,7 +23,7 @@ const OTPVerifyScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const { userId, email, role } = route.params;
   const insets = useSafeAreaInsets();
-  
+
   const [currentEmail, setCurrentEmail] = useState(email);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [newEmailInput, setNewEmailInput] = useState(email);
@@ -36,7 +36,7 @@ const OTPVerifyScreen: React.FC = () => {
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (countdown > 0) {
-      timer = setTimeout(() => setCountdown(c => c - 1), 1000);
+      timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
     }
     return () => clearTimeout(timer);
   }, [countdown]);
@@ -57,10 +57,12 @@ const OTPVerifyScreen: React.FC = () => {
     },
     onError: (err: unknown) => {
       if (err instanceof ApiClientError) {
-        if (err.status === 400) setBanner('Invalid verification code. Please check your email and try again.');
+        if (err.status === 400)
+          setBanner('Invalid verification code. Please check your email and try again.');
         else if (err.status === 404) setBanner('User not found. Please register again.');
         else if (err.status === 422) setBanner('Invalid OTP code. Please try again.');
-        else if (err.status === 429) setBanner('Too many attempts. Please wait and try again later.');
+        else if (err.status === 429)
+          setBanner('Too many attempts. Please wait and try again later.');
         else setBanner(err.message || 'Verification failed. Please try again.');
       } else if (err instanceof Error) {
         setBanner(`Error: ${err.message}`);
@@ -108,7 +110,6 @@ const OTPVerifyScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
-      
       {/* App Bar */}
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
@@ -127,125 +128,161 @@ const OTPVerifyScreen: React.FC = () => {
         enableOnAndroid={true}
         extraScrollHeight={20}
       >
-          <View style={styles.headerCentered}>
-            <View style={styles.iconBox}>
-              <Ionicons name="mail-open" size={28} color={colors.primary} />
-            </View>
+        <View style={styles.headerCentered}>
+          <View style={styles.iconBox}>
+            <Ionicons name="mail-open" size={28} color={colors.primary} />
+          </View>
 
-            <Text style={styles.title}>
-              Check your{'\n'}<Text style={styles.titleItalic}>inbox.</Text>
-            </Text>
-            
-            {isEditingEmail ? (
-              <View style={{ width: '100%', alignItems: 'center' }}>
-                <Text style={styles.subtitle}>Update your email address</Text>
-                <View style={{ width: '100%', marginTop: 12 }}>
-                  <Input
-                    value={newEmailInput}
-                    onChangeText={setNewEmailInput}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    placeholder="Enter new email"
-                  />
-                  <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 16, marginTop: 12 }}>
-                    <TouchableOpacity 
-                      onPress={() => { 
-                        setIsEditingEmail(false); 
-                        setNewEmailInput(currentEmail); 
+          <Text style={styles.title}>
+            Check your{'\n'}
+            <Text style={styles.titleItalic}>inbox.</Text>
+          </Text>
+
+          {isEditingEmail ? (
+            <View style={{ width: '100%', alignItems: 'center' }}>
+              <Text style={styles.subtitle}>Update your email address</Text>
+              <View style={{ width: '100%', marginTop: 12 }}>
+                <Input
+                  value={newEmailInput}
+                  onChangeText={setNewEmailInput}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  placeholder="Enter new email"
+                />
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    gap: 16,
+                    marginTop: 12,
+                  }}
+                >
+                  <TouchableOpacity
+                    onPress={() => {
+                      setIsEditingEmail(false);
+                      setNewEmailInput(currentEmail);
+                    }}
+                    style={{ paddingVertical: 4 }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: fonts.bodySemiBold,
+                        fontSize: 14,
+                        color: colors.inkMuted,
                       }}
-                      style={{ paddingVertical: 4 }}
                     >
-                      <Text style={{ fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.inkMuted }}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      onPress={() => updateEmailMutation.mutate(newEmailInput)}
-                      style={{ paddingVertical: 4, paddingHorizontal: 16, backgroundColor: colors.primary, borderRadius: 20 }}
-                    >
-                      <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.white }}>
-                        {updateEmailMutation.isPending ? 'Saving...' : 'Save Email'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            ) : (
-              <View style={{ alignItems: 'center' }}>
-                <Text style={styles.subtitle}>
-                  We sent a 6-digit code to
-                </Text>
-                
-                <View style={styles.emailRow}>
-                  <Text style={styles.emailText}>{currentEmail}</Text>
-                  <TouchableOpacity onPress={() => setIsEditingEmail(true)} style={{ padding: 4 }}>
-                    <Text style={styles.editLink}>Edit</Text>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => updateEmailMutation.mutate(newEmailInput)}
+                    style={{
+                      paddingVertical: 4,
+                      paddingHorizontal: 16,
+                      backgroundColor: colors.primary,
+                      borderRadius: 20,
+                    }}
+                  >
+                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.white }}>
+                      {updateEmailMutation.isPending ? 'Saving...' : 'Save Email'}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
-            )}
-          </View>
-
-          {banner ? (
-            <View style={styles.bannerError}>
-              <Text style={styles.bannerTextError}>{banner}</Text>
             </View>
-          ) : null}
+          ) : (
+            <View style={{ alignItems: 'center' }}>
+              <Text style={styles.subtitle}>We sent a 6-digit code to</Text>
 
-          <View style={styles.form}>
-            <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink, marginBottom: 8, marginLeft: 4 }}>6-digit code</Text>
-            <OtpInput
-              numberOfDigits={6}
-              focusColor={colors.primary}
-              focusStickBlinkingDuration={500}
-              onTextChange={(text) => setOtp(text)}
-              onFilled={(text) => {
-                setOtp(text);
-                // Optionally auto-submit here if you want
-              }}
-              theme={{
-                containerStyle: {
-                  gap: 8,
-                },
-                pinCodeContainerStyle: {
-                  backgroundColor: colors.white,
-                  borderColor: colors.inkLighter,
-                  borderWidth: 1,
-                  borderRadius: 12,
-                  flex: 1,
-                  height: 56,
-                },
-                pinCodeTextStyle: {
-                  fontFamily: fonts.bodyBold,
-                  color: colors.ink,
-                  fontSize: 22,
-                },
-                focusedPinCodeContainerStyle: {
-                  borderColor: colors.primary,
-                  borderWidth: 2,
-                }
-              }}
-            />
-          </View>
+              <View style={styles.emailRow}>
+                <Text style={styles.emailText}>{currentEmail}</Text>
+                <TouchableOpacity onPress={() => setIsEditingEmail(true)} style={{ padding: 4 }}>
+                  <Text style={styles.editLink}>Edit</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </View>
 
-          <View style={styles.footer}>
-            <Button
-              label={verifyMutation.isPending ? 'Verifying...' : 'Verify Code'}
-              size="lg"
-              fullWidth
-              loading={verifyMutation.isPending}
-              onPress={submit}
-            />
-            <View style={styles.buttonSpacing} />
-            <Button
-              label={resendMutation.isPending ? 'Sending...' : countdown > 0 ? `Resend code (${countdown}s)` : 'Resend code'}
-              variant="secondary"
-              size="lg"
-              fullWidth
-              disabled={countdown > 0}
-              loading={resendMutation.isPending}
-              onPress={() => resendMutation.mutate()}
-            />
+        {banner ? (
+          <View style={styles.bannerError}>
+            <Text style={styles.bannerTextError}>{banner}</Text>
           </View>
-        </KeyboardAwareScrollView>
+        ) : null}
+
+        <View style={styles.form}>
+          <Text
+            style={{
+              fontFamily: fonts.bodyBold,
+              fontSize: 13,
+              color: colors.ink,
+              marginBottom: 8,
+              marginLeft: 4,
+            }}
+          >
+            6-digit code
+          </Text>
+          <OtpInput
+            numberOfDigits={6}
+            focusColor={colors.primary}
+            focusStickBlinkingDuration={500}
+            onTextChange={(text) => setOtp(text)}
+            onFilled={(text) => {
+              setOtp(text);
+              // Optionally auto-submit here if you want
+            }}
+            theme={{
+              containerStyle: {
+                gap: 8,
+              },
+              pinCodeContainerStyle: {
+                backgroundColor: colors.white,
+                borderColor: colors.inkLight,
+                borderWidth: 1,
+                borderRadius: 12,
+                flex: 1,
+                height: 56,
+              },
+              pinCodeTextStyle: {
+                fontFamily: fonts.bodyBold,
+                color: colors.ink,
+                fontSize: 22,
+              },
+              focusedPinCodeContainerStyle: {
+                borderColor: colors.primary,
+                borderWidth: 2,
+              },
+            }}
+          />
+        </View>
+
+        <View style={styles.footer}>
+          <Button
+            label={verifyMutation.isPending ? 'Verifying...' : 'Verify Code'}
+            size="lg"
+            fullWidth
+            loading={verifyMutation.isPending}
+            onPress={submit}
+          />
+          <View style={styles.buttonSpacing} />
+          <Button
+            label={
+              resendMutation.isPending
+                ? 'Sending...'
+                : countdown > 0
+                  ? `Resend code (${countdown}s)`
+                  : 'Resend code'
+            }
+            variant="secondary"
+            size="lg"
+            fullWidth
+            disabled={countdown > 0}
+            loading={resendMutation.isPending}
+            onPress={() => resendMutation.mutate()}
+          />
+        </View>
+      </KeyboardAwareScrollView>
     </View>
   );
 };

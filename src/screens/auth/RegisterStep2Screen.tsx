@@ -2,15 +2,9 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Controller, useForm } from 'react-hook-form';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import { ApiClientError } from '../../api/client';
@@ -31,8 +25,16 @@ const RegisterStep2Screen: React.FC = () => {
   const insets = useSafeAreaInsets();
 
   const [banner, setBanner] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const { control, handleSubmit, setValue, watch, formState: { errors } } = useForm({
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
       municipality: '',
       barangay: '',
@@ -58,8 +60,12 @@ const RegisterStep2Screen: React.FC = () => {
     onError: (err: any) => {
       console.log('Register onError:', err);
       // Use structural check instead of instanceof which can fail in React Native
-      const isApiClientError = err && (err instanceof ApiClientError || err.name === 'ApiClientError' || typeof err.status === 'number');
-      
+      const isApiClientError =
+        err &&
+        (err instanceof ApiClientError ||
+          err.name === 'ApiClientError' ||
+          typeof err.status === 'number');
+
       if (isApiClientError) {
         if (err.status === 422) {
           if (err.errors) {
@@ -95,6 +101,7 @@ const RegisterStep2Screen: React.FC = () => {
       password_confirmation,
       municipality: values.municipality,
       barangay: values.barangay,
+      date_of_birth: dateOfBirth.toISOString().split('T')[0],
     };
 
     registerMutation.mutate(payload);
@@ -106,7 +113,6 @@ const RegisterStep2Screen: React.FC = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
-        
         {/* App Bar */}
         <View style={styles.appBar}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
@@ -134,9 +140,7 @@ const RegisterStep2Screen: React.FC = () => {
           <Text style={styles.title}>
             Where do{'\n'}you <Text style={styles.titleItalic}>live?</Text>
           </Text>
-          <Text style={styles.subtitle}>
-            We use your barangay to show you nearby jobs.
-          </Text>
+          <Text style={styles.subtitle}>We use your barangay to show you nearby jobs.</Text>
 
           {banner ? (
             <View style={styles.bannerError}>
@@ -153,6 +157,48 @@ const RegisterStep2Screen: React.FC = () => {
               municipalityError={errors.municipality?.message}
               barangayError={errors.barangay?.message}
             />
+
+            <View style={{ marginTop: 8 }}>
+              <Text
+                style={{
+                  fontFamily: fonts.bodyBold,
+                  fontSize: 13,
+                  color: colors.inkSoft,
+                  marginBottom: 6,
+                }}
+              >
+                Date of Birth
+              </Text>
+              <TouchableOpacity
+                style={{
+                  borderWidth: 1,
+                  borderColor: colors.inkFaint,
+                  borderRadius: 12,
+                  padding: 14,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                }}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
+                <Text style={{ fontFamily: fonts.body, fontSize: 15, color: colors.ink }}>
+                  {dateOfBirth.toLocaleDateString()}
+                </Text>
+              </TouchableOpacity>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={dateOfBirth}
+                  mode="date"
+                  display="default"
+                  maximumDate={new Date()}
+                  onChange={(event, selectedDate) => {
+                    setShowDatePicker(false);
+                    if (selectedDate) setDateOfBirth(selectedDate);
+                  }}
+                />
+              )}
+            </View>
           </View>
 
           <View style={styles.roleCard}>
@@ -165,7 +211,7 @@ const RegisterStep2Screen: React.FC = () => {
 
           <View style={styles.footer}>
             <Button
-              label={registerMutation.isPending ? "Creating account..." : "Next"}
+              label={registerMutation.isPending ? 'Creating account...' : 'Next'}
               size="lg"
               fullWidth
               loading={registerMutation.isPending}
