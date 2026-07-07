@@ -51,7 +51,7 @@ export const colors = {
     accepted: { bg: '#DCFCE7', text: '#6BA475' },
     completed: { bg: '#DCFCE7', text: '#6BA475' },
     rejected: { bg: '#FEE2E2', text: '#C04830' },
-    withdrawn: { bg: '#FEE2E2', text: '#C04830' },
+    withdrawn: { bg: '#FFEDD5', text: '#EA580C' }, // A little orange
     pending_negotiation: { bg: '#FFEADB', text: '#E8744A' },
     employer_confirmed: { bg: '#FFEADB', text: '#E8744A' },
   },

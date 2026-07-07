@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -25,6 +25,8 @@ const ApplicationDetailScreen: React.FC = () => {
   const { mutate: acceptOffer, isPending: isAccepting } = useAcceptOffer();
   const { mutate: rejectOffer, isPending: isRejecting } = useRejectOffer();
   const { showAlert } = useAlert();
+
+  const [isMenuVisible, setMenuVisible] = useState(false);
 
   const handleAccept = () => {
     acceptOffer(applicationId, {
@@ -53,19 +55,23 @@ const ApplicationDetailScreen: React.FC = () => {
   };
 
   const handleWithdraw = () => {
+    setMenuVisible(false);
     showAlert(
-      'Are you sure you want to withdraw?',
-      'Withdrawing means you are cancelling your interest in the job and the employer will be notified. This action cannot be undone.',
+      'Withdraw Application',
+      'Are you sure you want to withdraw? The employer will be notified, and this action cannot be undone.',
       [
         { text: 'No, continue', style: 'cancel' },
         {
-          text: 'Yes',
+          text: 'Yes, withdraw',
           style: 'destructive',
           onPress: () => {
             withdraw(applicationId, {
               onSuccess: () => {
                 navigation.goBack();
               },
+              onError: (err: any) => {
+                showAlert('Error', err.response?.data?.message || 'Could not withdraw application.');
+              }
             });
           },
         },
@@ -101,23 +107,36 @@ const ApplicationDetailScreen: React.FC = () => {
         </TouchableOpacity>
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>
-            {stage === 1
-              ? 'Application Tracking'
-              : stage === 2
-                ? 'Shortlisted'
-                : stage === 3
-                  ? 'Offer Received'
-                  : stage === 4
-                    ? 'Hired'
-                    : 'Completed'}
+            {status === 'withdrawn'
+              ? 'Withdrawn'
+              : stage === 1
+                ? 'Application Tracking'
+                : stage === 2
+                  ? 'Shortlisted'
+                  : stage === 3
+                    ? 'Offer Received'
+                    : stage === 4
+                      ? 'Hired'
+                      : 'Completed'}
           </Text>
         </View>
-        <TouchableOpacity style={styles.iconBtn}>
-          <Ionicons name="ellipsis-horizontal" size={24} color={colors.ink} />
-        </TouchableOpacity>
+        {status !== 'withdrawn' ? (
+          <TouchableOpacity style={styles.iconBtn} onPress={() => setMenuVisible(true)}>
+            <Ionicons name="ellipsis-horizontal" size={24} color={colors.ink} />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.iconBtn} /> // Spacer
+        )}
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {status === 'withdrawn' && (
+          <View style={styles.withdrawnNotice}>
+            <Ionicons name="information-circle" size={20} color={colors.warning} />
+            <Text style={styles.withdrawnNoticeText}>You have withdrawn your application for this job.</Text>
+          </View>
+        )}
+
         {/* 4-Stage Tracker */}
         <View style={styles.stages}>
           <View style={stage >= 1 ? styles.stageActive : styles.stage}>
@@ -424,6 +443,20 @@ const ApplicationDetailScreen: React.FC = () => {
           />
         )}
       </View>
+      <Modal visible={isMenuVisible} transparent animationType="fade">
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setMenuVisible(false)}
+        >
+          <View style={styles.menuContainer}>
+            <TouchableOpacity style={styles.menuOption} onPress={handleWithdraw}>
+              <Ionicons name="close-circle-outline" size={20} color={colors.error} />
+              <Text style={[styles.menuOptionText, { color: colors.error }]}>Withdraw Application</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -591,6 +624,48 @@ const styles = StyleSheet.create({
     backgroundColor: colors.paper,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+  },
+  withdrawnNotice: {
+    backgroundColor: '#FFF8F0',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 20,
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
+  withdrawnNoticeText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.warning,
+    flex: 1,
+  },
+  menuContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    marginTop: 60,
+    marginRight: 16,
+    width: 220,
+    ...shadows.md,
+  },
+  menuOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  menuOptionText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
+    color: colors.ink,
   },
 });
 

@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView, Image, TextInput, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -24,20 +24,31 @@ const CATEGORIES = [
   'Craft',
 ];
 
+const LOCATIONS = ['Anywhere', 'Same Barangay', 'Same Municipality'];
+
 export const JobFeedScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const [activeCategory, setActiveCategory] = useState('All');
+  const [locationFilter, setLocationFilter] = useState('Anywhere');
+  const [searchInput, setSearchInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isFilterModalVisible, setFilterModalVisible] = useState(false);
   const { user } = useAuth();
 
-  const { data, isLoading, isError, error, refetch } = useJobs();
+  const filters = useMemo(() => {
+    return {
+      search: searchQuery || undefined,
+      category: activeCategory,
+      barangay: locationFilter === 'Same Barangay' ? user?.barangay : undefined,
+      municipality: locationFilter === 'Same Municipality' ? user?.municipality : undefined,
+    };
+  }, [searchQuery, activeCategory, locationFilter, user]);
+
+  const { data, isLoading, isError, error, refetch } = useJobs(filters);
   const { data: savedJobsData } = useSavedJobs();
   const { mutate: toggleSave } = useToggleSaveJob();
 
-  const filteredJobs = useMemo(() => {
-    if (!data?.data) return [];
-    if (activeCategory === 'All') return data.data;
-    return data.data.filter((job) => job.category === activeCategory);
-  }, [data, activeCategory]);
+  const jobsList = data?.data || [];
 
   const handleJobPress = (id: number) => {
     navigation.navigate('JobDetails', { id });
@@ -55,9 +66,20 @@ export const JobFeedScreen: React.FC = () => {
     <View style={styles.header}>
       <View style={styles.appBar}>
         <View style={styles.appBarLeft}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{getInitial(user?.name || 'Worker')}</Text>
-          </View>
+          {user?.avatar_url ? (
+            <Image 
+              source={{ 
+                uri: user.avatar_url.startsWith('http')
+                  ? user.avatar_url
+                  : `${process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '')}${user.avatar_url}`
+              }} 
+              style={styles.avatarImage} 
+            />
+          ) : (
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{getInitial(user?.name || 'Worker')}</Text>
+            </View>
+          )}
           <View>
             <Text style={styles.greetingSmall}>Hi,</Text>
             <Text style={styles.greetingName}>
@@ -65,13 +87,40 @@ export const JobFeedScreen: React.FC = () => {
             </Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity 
+          style={styles.iconButton} 
+          onPress={() => navigation.navigate('Notifications')}
+        >
           <Ionicons name="notifications-outline" size={24} color={colors.ink} />
         </TouchableOpacity>
       </View>
 
+      <View style={styles.searchRow}>
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color={colors.inkMuted} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search jobs..."
+            placeholderTextColor={colors.inkMuted}
+            value={searchInput}
+            onChangeText={setSearchInput}
+            onSubmitEditing={() => setSearchQuery(searchInput)}
+            returnKeyType="search"
+          />
+          {searchInput.length > 0 && (
+            <TouchableOpacity onPress={() => { setSearchInput(''); setSearchQuery(''); }}>
+              <Ionicons name="close-circle" size={18} color={colors.inkMuted} />
+            </TouchableOpacity>
+          )}
+        </View>
+        <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModalVisible(true)}>
+          <Ionicons name="options-outline" size={24} color={colors.ink} />
+          {locationFilter !== 'Anywhere' && <View style={styles.filterActiveDot} />}
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.headline}>
-        <Text style={styles.count}>{filteredJobs.length}</Text> jobs{' '}
+        <Text style={styles.count}>{jobsList.length}</Text> jobs{' '}
         <Text style={styles.accent}>nearby.</Text>
       </Text>
 
@@ -118,7 +167,7 @@ export const JobFeedScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <FlatList
-        data={filteredJobs}
+        data={jobsList}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <JobCard
@@ -135,6 +184,27 @@ export const JobFeedScreen: React.FC = () => {
         onRefresh={refetch}
         showsVerticalScrollIndicator={false}
       />
+
+      <Modal visible={isFilterModalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Filter by Location</Text>
+            {LOCATIONS.map((loc) => (
+              <TouchableOpacity 
+                key={loc} 
+                style={styles.modalOption}
+                onPress={() => { setLocationFilter(loc); setFilterModalVisible(false); }}
+              >
+                <Text style={[styles.modalOptionText, locationFilter === loc && styles.modalOptionActive]}>{loc}</Text>
+                {locationFilter === loc && <Ionicons name="checkmark" size={20} color={colors.primary} />}
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setFilterModalVisible(false)}>
+              <Text style={styles.modalCloseText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -163,9 +233,60 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.peach,
+    backgroundColor: colors.mint,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.inkFaint,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 12,
+  },
+  searchContainer: {
+    flex: 1,
+    height: 44, // Made taller to prevent overlapping
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 15,
+    color: colors.ink,
+  },
+  filterBtn: {
+    width: 44,
+    height: 44, // Made taller to match
+    borderRadius: 12,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
+  filterActiveDot: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
   },
   avatarText: {
     fontFamily: fonts.bodyBold,
@@ -211,7 +332,54 @@ const styles = StyleSheet.create({
   filterScroll: {
     paddingHorizontal: 20,
     gap: 8,
-    paddingBottom: 4,
+    paddingRight: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  modalTitle: {
+    fontFamily: fonts.h3,
+    fontSize: 18,
+    color: colors.ink,
+    marginBottom: 16,
+  },
+  modalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.inkFaint,
+  },
+  modalOptionText: {
+    fontFamily: fonts.body,
+    fontSize: 16,
+    color: colors.inkSoft,
+  },
+  modalOptionActive: {
+    fontFamily: fonts.bodyBold,
+    color: colors.primary,
+  },
+  modalCloseBtn: {
+    marginTop: 24,
+    alignItems: 'center',
+    paddingVertical: 12,
+    backgroundColor: colors.paperCream,
+    borderRadius: 12,
+  },
+  modalCloseText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
+    color: colors.ink,
   },
   chip: {
     paddingHorizontal: 16,

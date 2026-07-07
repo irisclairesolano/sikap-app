@@ -32,14 +32,14 @@ export const ProfileScreen: React.FC = () => {
   const worker = {
     name: user.name,
     location: `${user.barangay}, ${user.municipality}`,
-    tier: 'Tier 1', // TODO: Implement tier logic
     verified: user.verification_status === 'approved',
     reputation: user.reputation_score,
     ratings: 0, // TODO: Implement ratings count
     jobsDone: 0, // TODO: Implement jobs done
-    onTime: '100%', // TODO: Implement on time calculation
     memberSince: 'New', // TODO: Implement member since calculation based on created_at
     skills: user.worker_profile?.skills || [],
+    bio: user.worker_profile?.bio || '',
+    experiences: user.worker_profile?.experiences || [],
     recentReview: null as null | { employer: string; stars: number; comment: string }, // TODO: Implement recent review fetch
   };
 
@@ -111,7 +111,7 @@ export const ProfileScreen: React.FC = () => {
             </Text>
             <View style={styles.verifiedBadge}>
               <Text style={styles.verifiedBadgeText}>
-                {worker.verified ? 'Verified' : 'Unverified'} • {worker.tier}
+                {worker.verified ? 'Verified' : 'Unverified'}
               </Text>
             </View>
           </View>
@@ -145,13 +145,49 @@ export const ProfileScreen: React.FC = () => {
             <Text style={[styles.statValue, { color: colors.mintDeep }]}>{worker.jobsDone}</Text>
             <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Jobs done</Text>
           </View>
-          <View style={[styles.statBox, { backgroundColor: colors.butter }]}>
-            <Text style={[styles.statValue, { color: colors.ink }]}>{worker.onTime}</Text>
-            <Text style={[styles.statLabel, { color: colors.inkSoft }]}>On time</Text>
-          </View>
           <View style={[styles.statBox, { backgroundColor: colors.sky }]}>
             <Text style={[styles.statValue, { color: colors.skyDeep }]}>{worker.memberSince}</Text>
             <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Member</Text>
+          </View>
+        </View>
+
+        {/* About Me */}
+        {worker.bio ? (
+          <View style={styles.skillsSection}>
+            <Text style={styles.sectionEyebrow}>About Me</Text>
+            <Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, marginTop: 10, lineHeight: 22 }}>
+              {worker.bio}
+            </Text>
+          </View>
+        ) : null}
+
+        {/* Work History */}
+        <View style={styles.skillsSection}>
+          <View style={styles.reviewHeader}>
+            <Text style={styles.sectionEyebrow}>Work History</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AddWorkHistory' as any)}>
+              <Text style={styles.viewAllText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ marginTop: 10, gap: 12 }}>
+            {!worker.experiences || worker.experiences.length === 0 ? (
+              <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
+                No work history added yet.
+              </Text>
+            ) : (
+              worker.experiences.map((exp) => (
+                <View key={exp.id} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.butter, alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name="briefcase" size={18} color={colors.inkSoft} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>{exp.job_title}</Text>
+                    <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.ink }}>{exp.company}</Text>
+                    <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}>{exp.duration}</Text>
+                  </View>
+                </View>
+              ))
+            )}
           </View>
         </View>
 
@@ -187,6 +223,37 @@ export const ProfileScreen: React.FC = () => {
                   </View>
                 );
               })
+            )}
+          </View>
+        </View>
+
+        {/* Character References */}
+        <View style={styles.reviewSection}>
+          <View style={styles.reviewHeader}>
+            <Text style={styles.sectionEyebrow}>Character References</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('CharacterReferences' as any)}>
+              <Text style={styles.viewAllText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ marginTop: 10, gap: 12 }}>
+            {!user.worker_profile?.references || user.worker_profile.references.length === 0 ? (
+              <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
+                No references added yet.
+              </Text>
+            ) : (
+              user.worker_profile.references.map((ref) => (
+                <View key={ref.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.paperBright, alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name="person" size={18} color={colors.inkSoft} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>{ref.name}</Text>
+                    <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}>
+                      {ref.relationship} • {ref.phone ? ref.phone.replace(/(\d{4})\d{4}(\d{3})/, '$1 ••• $2') : ''}
+                    </Text>
+                  </View>
+                </View>
+              ))
             )}
           </View>
         </View>

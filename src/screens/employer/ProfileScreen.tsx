@@ -19,7 +19,6 @@ export const ProfileScreen: React.FC = () => {
   const employer = {
     name: 'Juan Reyes',
     location: 'San Rafael, Bulan',
-    tier: 'Tier 2',
     verified: true,
     reputation: 4.8,
     ratings: 9,
@@ -64,7 +63,7 @@ export const ProfileScreen: React.FC = () => {
             </Text>
             <View style={styles.verifiedBadge}>
               <Text style={styles.verifiedBadgeText}>
-                {employer.verified ? 'Verified' : 'Unverified'} • {employer.tier}
+                {employer.verified ? 'Verified' : 'Unverified'}
               </Text>
             </View>
           </View>

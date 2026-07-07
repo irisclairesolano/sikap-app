@@ -33,7 +33,21 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
   const catStyles = getCategoryStyles(job.category);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity 
+      style={[
+        styles.card, 
+        job.is_applied && styles.cardApplied,
+        job.is_withdrawn && styles.cardWithdrawn
+      ]} 
+      onPress={onPress} 
+      activeOpacity={0.7}
+    >
+      {job.is_applied && (
+        <View style={styles.appliedCorner} />
+      )}
+      {job.is_withdrawn && (
+        <View style={styles.withdrawnCorner} />
+      )}
       <View style={[styles.jobIcon, { backgroundColor: catStyles.bg }]}>
         <Ionicons name={catStyles.icon as any} size={20} color={catStyles.color} />
       </View>
@@ -109,6 +123,38 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 2,
     elevation: 1, // var(--shadow-sm) equivalent
+  },
+  cardApplied: {
+    borderColor: colors.mintDeep,
+    borderWidth: 1, // thinner border
+    backgroundColor: '#F7FCF9', // subtle green tint
+  },
+  cardWithdrawn: {
+    borderColor: colors.warning,
+    borderWidth: 1,
+    backgroundColor: '#FFF8F0', // subtle orange tint
+  },
+  appliedCorner: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 20,
+    height: 20,
+    backgroundColor: colors.mintDeep,
+    borderTopRightRadius: 14,
+    borderBottomLeftRadius: 14,
+    zIndex: 10,
+  },
+  withdrawnCorner: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 20,
+    height: 20,
+    backgroundColor: colors.warning,
+    borderTopRightRadius: 14,
+    borderBottomLeftRadius: 14,
+    zIndex: 10,
   },
   jobIcon: {
     width: 44,

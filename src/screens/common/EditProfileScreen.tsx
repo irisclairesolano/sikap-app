@@ -18,8 +18,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { colors, fonts, shadows } from '../../theme';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
-import CustomAlert from '../../components/common/CustomAlert';
 import { useAuth } from '../../hooks/useAuth';
+import { useAlert } from '../../contexts/AlertContext';
 import { profileApi } from '../../api/profile';
 
 export const EditProfileScreen: React.FC = () => {
@@ -47,12 +47,7 @@ export const EditProfileScreen: React.FC = () => {
     user?.emergency_contact_phone || '',
   );
 
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertConfig, setAlertConfig] = useState({
-    title: '',
-    message: '',
-    onPress: undefined as (() => void) | undefined,
-  });
+  const { showAlert } = useAlert();
 
   const isVerified = user?.verification_status === 'approved';
 
@@ -143,23 +138,12 @@ export const EditProfileScreen: React.FC = () => {
       await profileApi.updateProfile(updateData);
       await refetchProfile();
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      setAlertConfig({
-        title: 'Profile Saved',
-        message: 'Your changes have been saved successfully.',
-        onPress: () => {
-          setAlertVisible(false);
-          navigation.goBack();
-        },
-      });
-      setAlertVisible(true);
+      showAlert('Profile Saved', 'Your changes have been saved successfully.', [
+        { text: 'OK', onPress: () => navigation.goBack() }
+      ]);
     } catch (err: any) {
       console.error(err);
-      setAlertConfig({
-        title: 'Save Failed',
-        message: err.message || 'We could not save your changes.',
-        onPress: undefined,
-      });
-      setAlertVisible(true);
+      showAlert('Save Failed', err.message || 'We could not save your changes.');
     } finally {
       setIsSaving(false);
     }
@@ -334,25 +318,6 @@ export const EditProfileScreen: React.FC = () => {
           style={{ marginTop: 24 }}
         />
       </ScrollView>
-
-      <CustomAlert
-        visible={alertVisible}
-        title={alertConfig.title}
-        message={alertConfig.message}
-        onRequestClose={() => {
-          setAlertVisible(false);
-          if (alertConfig.onPress) alertConfig.onPress();
-        }}
-        buttons={[
-          {
-            text: 'Okay',
-            onPress: () => {
-              setAlertVisible(false);
-              if (alertConfig.onPress) alertConfig.onPress();
-            },
-          },
-        ]}
-      />
     </SafeAreaView>
   );
 };

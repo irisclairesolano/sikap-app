@@ -55,6 +55,23 @@ export const JobDetailsScreen: React.FC = () => {
   const isUrgent = job.duration_type === 'daily';
   const isVerified = job.employer?.verification_badge;
 
+  const getRelativeTime = (dateString?: string) => {
+    if (!dateString) return 'Just now';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `Posted ${diffInMinutes}m ago`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `Posted ${diffInHours}h ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `Posted ${diffInDays}d ago`;
+    const diffInMonths = Math.floor(diffInDays / 30);
+    return `Posted ${diffInMonths}mo ago`;
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       {/* App Bar */}
@@ -64,7 +81,7 @@ export const JobDetailsScreen: React.FC = () => {
         </TouchableOpacity>
 
         <View style={styles.postedChip}>
-          <Text style={styles.postedText}>Posted 2h ago</Text>
+          <Text style={styles.postedText}>{getRelativeTime(job.created_at)}</Text>
         </View>
 
         <TouchableOpacity style={styles.iconButton} onPress={handleToggleSave} disabled={isSaving}>

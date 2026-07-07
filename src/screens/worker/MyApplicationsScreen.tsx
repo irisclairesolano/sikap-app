@@ -24,6 +24,7 @@ const FILTERS = ['Active', 'Pending', 'Completed', 'Withdrawn'];
 
 export const MyApplicationsScreen: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('Active');
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
 
   const { data, isLoading, isError, error, refetch, isRefetching } = useMyApplications('All'); // Fetch all, we'll filter client-side for simplicity right now
@@ -38,6 +39,10 @@ export const MyApplicationsScreen: React.FC = () => {
       return app.status === 'completed' || app.status === 'rejected';
     if (activeFilter === 'Withdrawn') return app.status === 'withdrawn';
     return true;
+  }).sort((a, b) => {
+    const timeA = new Date(a.created_at).getTime();
+    const timeB = new Date(b.created_at).getTime();
+    return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
   });
 
   const getCount = (filterName: string) => {
@@ -73,9 +78,17 @@ export const MyApplicationsScreen: React.FC = () => {
           <Text style={styles.greetingSmall}>Your jobs</Text>
           <Text style={styles.headline}>My Applications</Text>
         </View>
-        <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="filter-outline" size={24} color={colors.ink} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
+            {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
+          </Text>
+          <TouchableOpacity 
+            style={styles.iconButton}
+            onPress={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+          >
+            <Ionicons name={sortOrder === 'desc' ? "arrow-down-outline" : "arrow-up-outline"} size={20} color={colors.ink} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView

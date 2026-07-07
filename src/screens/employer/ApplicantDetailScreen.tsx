@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -23,6 +23,12 @@ const ApplicantDetailScreen: React.FC = () => {
 
   const jobRequestMutation = useJobRequest();
   const { showAlert } = useAlert();
+  const [isMenuVisible, setMenuVisible] = useState(false);
+
+  const handleReport = () => {
+    setMenuVisible(false);
+    navigation.navigate('Report' as any, { id: applicantId, type: 'user' });
+  };
 
   const isShortlisted =
     status === 'employer_requested' || status === 'accepted' || status === 'employer_confirmed';
@@ -59,7 +65,7 @@ const ApplicantDetailScreen: React.FC = () => {
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>Applicant profile</Text>
         </View>
-        <TouchableOpacity style={styles.iconBtn}>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => setMenuVisible(true)}>
           <Ionicons name="ellipsis-horizontal" size={24} color={colors.ink} />
         </TouchableOpacity>
       </View>
@@ -206,6 +212,21 @@ const ApplicantDetailScreen: React.FC = () => {
           />
         )}
       </View>
+
+      <Modal visible={isMenuVisible} transparent animationType="fade">
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setMenuVisible(false)}
+        >
+          <View style={styles.menuContainer}>
+            <TouchableOpacity style={styles.menuOption} onPress={handleReport}>
+              <Ionicons name="flag-outline" size={20} color={colors.error} />
+              <Text style={[styles.menuOptionText, { color: colors.error }]}>Report Applicant</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -437,6 +458,31 @@ const styles = StyleSheet.create({
     backgroundColor: colors.paper,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+  },
+  menuContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    marginTop: 60,
+    marginRight: 16,
+    width: 220,
+    ...shadows.md,
+  },
+  menuOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  menuOptionText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
+    color: colors.ink,
   },
 });
 

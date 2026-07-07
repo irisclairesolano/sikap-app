@@ -6,6 +6,12 @@ export const applicationsApi = {
     return apiClient<Application[]>(`/jobs/${jobId}/applications`);
   },
 
+  withdraw: async (applicationId: number) => {
+    return apiClient<{ message: string }>(`/applications/${applicationId}`, {
+      method: 'DELETE',
+    });
+  },
+
   jobRequest: async (applicationId: number) => {
     return apiClient<{ message: string }>(`/applications/${applicationId}/request`, {
       method: 'POST',

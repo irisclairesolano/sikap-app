@@ -86,8 +86,6 @@ export const SettingsScreen: React.FC = () => {
               title="Edit Profile"
               onPress={() => navigation.navigate('EditProfile')}
             />
-            <View style={styles.divider} />
-            <SettingRow icon="shield-checkmark-outline" title="Verification Status" />
           </View>
         </View>
 
@@ -108,14 +106,6 @@ export const SettingsScreen: React.FC = () => {
               type="toggle"
               value={locationEnabled}
               onToggle={setLocationEnabled}
-            />
-            <View style={styles.divider} />
-            <SettingRow
-              icon="moon-outline"
-              title="Dark Mode"
-              type="toggle"
-              value={darkModeEnabled}
-              onToggle={setDarkModeEnabled}
             />
           </View>
         </View>

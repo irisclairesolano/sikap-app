@@ -41,6 +41,8 @@ export interface JobPost {
   rating_window_expires_at: string | null;
   employer: User;
   applications?: Application[];
+  is_applied?: boolean;
+  is_withdrawn?: boolean;
 }
 
 export interface Application {

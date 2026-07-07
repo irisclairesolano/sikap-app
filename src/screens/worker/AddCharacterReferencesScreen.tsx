@@ -19,7 +19,7 @@ import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import Button from '../../components/common/Button';
 import CustomInput from '../../components/common/Input';
-import CustomAlert from '../../components/common/CustomAlert';
+import { useAlert } from '../../contexts/AlertContext';
 import { profileApi } from '../../api/profile';
 
 // Colors for avatars
@@ -54,8 +54,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
   const [editingReferenceId, setEditingReferenceId] = useState<number | null>(null);
   const [phoneError, setPhoneError] = useState<string | undefined>(undefined);
 
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertConfig, setAlertConfig] = useState<any>({ title: '', message: '', buttons: [] });
+  const { showAlert } = useAlert();
 
   const validatePhone = (value: string) => {
     if (!value) {
@@ -145,22 +144,14 @@ export const AddCharacterReferencesScreen: React.FC = () => {
   };
 
   const handleDeletePress = (id: number) => {
-    setAlertConfig({
-      title: 'Delete Reference',
-      message: 'Are you sure you want to delete this character reference?',
-      buttons: [
-        { text: 'Cancel', style: 'cancel', onPress: () => setAlertVisible(false) },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            setAlertVisible(false);
-            deleteMutation.mutate(id);
-          },
-        },
-      ],
-    });
-    setAlertVisible(true);
+    showAlert('Delete Reference', 'Are you sure you want to delete this character reference?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => deleteMutation.mutate(id),
+      },
+    ]);
   };
 
   const handleBackPress = () => {
@@ -383,14 +374,6 @@ export const AddCharacterReferencesScreen: React.FC = () => {
             </TouchableOpacity>
           </KeyboardAvoidingView>
         </Modal>
-
-        <CustomAlert
-          visible={alertVisible}
-          title={alertConfig.title}
-          message={alertConfig.message}
-          buttons={alertConfig.buttons}
-          onRequestClose={() => setAlertVisible(false)}
-        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

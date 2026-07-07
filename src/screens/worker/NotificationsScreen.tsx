@@ -67,9 +67,25 @@ export const NotificationsScreen: React.FC = () => {
               const message = notif.data?.message || 'You have a new notification.';
 
               return (
-                <View
+                <TouchableOpacity
                   key={notif.id}
                   style={[styles.notificationCard, isUnread && styles.unreadPrimary]}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    let parsedData = notif.data;
+                    if (typeof parsedData === 'string') {
+                      try { parsedData = JSON.parse(parsedData); } catch (e) {}
+                    }
+                    
+                    const appId = parsedData?.application_id || parsedData?.applicationId;
+                    const jobId = parsedData?.job_id || parsedData?.jobId;
+                    
+                    if (appId) {
+                      navigation.navigate('ApplicationDetail' as any, { applicationId: appId });
+                    } else if (jobId) {
+                      navigation.navigate('JobDetails' as any, { id: jobId });
+                    }
+                  }}
                 >
                   <View
                     style={[
@@ -86,7 +102,7 @@ export const NotificationsScreen: React.FC = () => {
                       {new Date(notif.created_at).toLocaleDateString()}
                     </Text>
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })
           )}
