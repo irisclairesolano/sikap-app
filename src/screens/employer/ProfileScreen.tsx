@@ -6,6 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
+import { useAuth } from '../../hooks/useAuth';
 
 type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
   EmployerStackParamList,
@@ -14,23 +15,20 @@ type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<EmployerProfileScreenNavigationProp>();
+  const { user } = useAuth();
 
-  // Dummy employer data
+  // Employer data mixed with real
   const employer = {
-    name: 'Juan Reyes',
-    location: 'San Rafael, Bulan',
-    verified: true,
-    reputation: 4.8,
-    ratings: 9,
-    activeJobs: 3,
-    hired: 12,
-    totalPaid: '₱24,800',
-    memberSince: '1y',
-    recentReview: {
-      worker: 'Maria Santos',
-      stars: 5,
-      comment: '"Clear instructions, paid on time. Excellent employer."',
-    },
+    name: user ? `${user.first_name} ${user.last_name}` : 'Unknown',
+    location: user ? `${user.barangay || ''}, ${user.municipality || ''}` : 'Unknown',
+    verified: user?.verification_badge || false,
+    reputation: user?.reputation_score || 0,
+    ratings: 0,
+    activeJobs: 0,
+    hired: 0,
+    totalPaid: '₱0',
+    memberSince: 'New',
+    recentReview: null,
   };
 
   return (
