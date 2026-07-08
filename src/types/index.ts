@@ -27,13 +27,16 @@ export interface JobPost {
   reference_number: string; // e.g. "SIKAP-2025-00042"
   title: string;
   description: string;
-  category: string;
+  categories: string[];
   barangay: string;
   municipality: string;
   compensation: number;
   slots: number;
   accepted_count: number;
-  duration_type: string;
+  duration: number;
+  duration_unit: string;
+  photos?: string[];
+  video_url?: string;
   schedule_date?: string;
   exact_location?: string;
   tools_required?: string;

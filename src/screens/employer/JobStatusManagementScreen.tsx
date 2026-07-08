@@ -39,10 +39,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                 navigation.navigate('MyJobs');
               },
               onError: (err: any) => {
-                showAlert(
-                  'Error',
-                  err.response?.data?.message || 'Could not mark job as complete.',
-                );
+                showAlert('Error', err.message || 'Could not mark job as complete.');
               },
             });
           },
@@ -63,7 +60,7 @@ export const JobStatusManagementScreen: React.FC = () => {
               navigation.navigate('MyJobs');
             },
             onError: (err: any) => {
-              showAlert('Error', err.response?.data?.message || 'Could not delete job.');
+              showAlert('Error', err.message || 'Could not delete job.');
             },
           });
         },

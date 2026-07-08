@@ -51,7 +51,7 @@ export const ReportScreen: React.FC = () => {
           );
         },
         onError: (err: any) => {
-          showAlert('Error', err.response?.data?.message || 'Failed to submit report.');
+          showAlert('Error', err.message || 'Failed to submit report.');
         },
       },
     );

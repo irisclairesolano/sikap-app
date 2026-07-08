@@ -28,6 +28,7 @@ const IDUploadScreen: React.FC = () => {
   const [banner, setBanner] = useState('');
   const [selectedFile, setSelectedFile] = useState<any>(null);
   const [selectedSelfie, setSelectedSelfie] = useState<any>(null);
+  const [selectedBusinessDocs, setSelectedBusinessDocs] = useState<any[]>([]);
   const MAX_SIZE_MB = 5;
 
   useEffect(() => {
@@ -65,6 +66,16 @@ const IDUploadScreen: React.FC = () => {
         } as unknown as Blob);
       }
 
+      if (userRole === 'employer' && selectedBusinessDocs.length > 0) {
+        selectedBusinessDocs.forEach((doc, index) => {
+          form.append('business_documents[]', {
+            uri: doc.uri,
+            name: doc.name ?? `business-doc-${index}.pdf`,
+            type: doc.mimeType ?? 'application/pdf',
+          } as unknown as Blob);
+        });
+      }
+
       await authApi.uploadId(form);
     },
     onSuccess: async () => {
@@ -89,22 +100,46 @@ const IDUploadScreen: React.FC = () => {
     },
   });
 
-  const handleFileSelect = async (type: 'id' | 'selfie') => {
+  const handleFileSelect = async (type: 'id' | 'selfie' | 'business') => {
     setBanner('');
     try {
+      const isBusiness = type === 'business';
       const pick = await DocumentPicker.getDocumentAsync({
-        type: ['image/*'],
+        type: isBusiness ? ['image/*', 'application/pdf'] : ['image/*'],
         copyToCacheDirectory: true,
+        multiple: isBusiness,
       });
 
-      if (!pick.canceled && pick.assets[0]) {
-        const asset = pick.assets[0];
-        if (asset.size && asset.size > MAX_SIZE_MB * 1024 * 1024) {
-          showAlert('File Too Large', `Please choose an image under ${MAX_SIZE_MB}MB.`);
-          return;
+      if (!pick.canceled && pick.assets) {
+        if (isBusiness) {
+          if (pick.assets.length > 3) {
+            showAlert('Too Many Files', 'You can only upload up to 3 business documents.');
+            return;
+          }
+
+          let hasLargeFile = false;
+          const validFiles = pick.assets.filter((asset) => {
+            if (asset.size && asset.size > MAX_SIZE_MB * 1024 * 1024) {
+              hasLargeFile = true;
+              return false;
+            }
+            return true;
+          });
+
+          if (hasLargeFile) {
+            showAlert('File Too Large', `One or more files exceed the ${MAX_SIZE_MB}MB limit.`);
+          }
+
+          setSelectedBusinessDocs(validFiles.slice(0, 3));
+        } else {
+          const asset = pick.assets[0];
+          if (asset && asset.size && asset.size > MAX_SIZE_MB * 1024 * 1024) {
+            showAlert('File Too Large', `Please choose an image under ${MAX_SIZE_MB}MB.`);
+            return;
+          }
+          if (type === 'id') setSelectedFile(asset);
+          else if (type === 'selfie') setSelectedSelfie(asset);
         }
-        if (type === 'id') setSelectedFile(asset);
-        else setSelectedSelfie(asset);
       }
     } catch (error) {
       console.log('File selection error:', error);
@@ -116,21 +151,19 @@ const IDUploadScreen: React.FC = () => {
       setBanner('Please upload your government ID to continue.');
       return;
     }
-    // We only enforce selfie if the previous implementation did, but we'll enforce it to be safe
-    if (!selectedSelfie) {
+
+    if (userRole === 'worker' && !selectedSelfie) {
       setBanner('Please also upload a selfie holding your ID to continue.');
       return;
     }
+
     uploadMutation.mutate();
   };
 
   return (
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
       <View style={[styles.appBar, { paddingHorizontal: 26 }]}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.iconBtn}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.stepBadge}>
@@ -200,6 +233,28 @@ const IDUploadScreen: React.FC = () => {
               : 'Please ensure your face and ID are clear.'}
           </Text>
         </TouchableOpacity>
+
+        {userRole === 'employer' && (
+          <TouchableOpacity
+            style={[styles.uploadArea, { marginTop: 16 }]}
+            onPress={() => handleFileSelect('business')}
+            disabled={uploadMutation.isPending}
+          >
+            <View style={styles.cameraIconBox}>
+              <Ionicons name="document-text" size={24} color={colors.white} />
+            </View>
+            <Text style={styles.uploadTitle}>
+              {selectedBusinessDocs.length > 0
+                ? `${selectedBusinessDocs.length} Document(s) Selected ✓`
+                : 'Upload Business Document (Optional)'}
+            </Text>
+            <Text style={styles.uploadSubtitle}>
+              {selectedBusinessDocs.length > 0
+                ? selectedBusinessDocs.map((doc) => doc.name).join('\n')
+                : 'DTI / SEC / TIN Document (Max 3 files, PDF/Image)'}
+            </Text>
+          </TouchableOpacity>
+        )}
 
         <View style={{ marginTop: 12 }}>
           <Button

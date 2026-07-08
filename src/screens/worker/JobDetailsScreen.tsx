@@ -52,7 +52,7 @@ export const JobDetailsScreen: React.FC = () => {
     );
   }
 
-  const isUrgent = job.duration_type === 'daily';
+  const isUrgent = false; // Mock for now
   const isVerified = job.employer?.verification_badge;
 
   const getRelativeTime = (dateString?: string) => {
@@ -60,7 +60,7 @@ export const JobDetailsScreen: React.FC = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diffInSeconds < 60) return 'Just now';
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     if (diffInMinutes < 60) return `Posted ${diffInMinutes}m ago`;
@@ -117,13 +117,13 @@ export const JobDetailsScreen: React.FC = () => {
         <Text style={styles.title}>{job.title}</Text>
 
         {/* Peach Pay Card Hero */}
-        <View style={styles.payCard}>
-          <View style={styles.payRow}>
-            <Text style={styles.paySymbol}>₱</Text>
+        <View style={styles.payContainer}>
+          <View style={styles.payHeader}>
+            <Text style={styles.payCurrency}>₱</Text>
             <Text style={styles.payValue}>{job.compensation}</Text>
           </View>
           <Text style={styles.payPeriod}>
-            per {job.duration_type === 'daily' ? 'day' : 'project'}
+            per {job.duration} {job.duration_unit}
           </Text>
         </View>
 
@@ -135,7 +135,6 @@ export const JobDetailsScreen: React.FC = () => {
             </View>
             <Text style={styles.infoLabel}>Location</Text>
             <Text style={styles.infoValue} numberOfLines={2}>
-              {job.barangay},{'\n'}
               {job.municipality}
             </Text>
           </View>

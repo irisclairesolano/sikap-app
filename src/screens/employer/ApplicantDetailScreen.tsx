@@ -47,7 +47,7 @@ const ApplicantDetailScreen: React.FC = () => {
         );
       },
       onError: (err: any) => {
-        showAlert('Error', err.response?.data?.message || 'Could not shortlist applicant.');
+        showAlert('Error', err.message || 'Could not shortlist applicant.');
       },
     });
   };
@@ -214,9 +214,9 @@ const ApplicantDetailScreen: React.FC = () => {
       </View>
 
       <Modal visible={isMenuVisible} transparent animationType="fade">
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
           onPress={() => setMenuVisible(false)}
         >
           <View style={styles.menuContainer}>

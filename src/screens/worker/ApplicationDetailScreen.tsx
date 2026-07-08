@@ -36,7 +36,7 @@ const ApplicationDetailScreen: React.FC = () => {
         ]);
       },
       onError: (err: any) => {
-        showAlert('Error', err.response?.data?.message || 'Could not accept offer.');
+        showAlert('Error', err.message || 'Could not accept offer.');
       },
     });
   };
@@ -49,7 +49,7 @@ const ApplicationDetailScreen: React.FC = () => {
         ]);
       },
       onError: (err: any) => {
-        showAlert('Error', err.response?.data?.message || 'Could not reject offer.');
+        showAlert('Error', err.message || 'Could not reject offer.');
       },
     });
   };
@@ -70,8 +70,8 @@ const ApplicationDetailScreen: React.FC = () => {
                 navigation.goBack();
               },
               onError: (err: any) => {
-                showAlert('Error', err.response?.data?.message || 'Could not withdraw application.');
-              }
+                showAlert('Error', err.message || 'Could not withdraw application.');
+              },
             });
           },
         },
@@ -133,7 +133,9 @@ const ApplicationDetailScreen: React.FC = () => {
         {status === 'withdrawn' && (
           <View style={styles.withdrawnNotice}>
             <Ionicons name="information-circle" size={20} color={colors.warning} />
-            <Text style={styles.withdrawnNoticeText}>You have withdrawn your application for this job.</Text>
+            <Text style={styles.withdrawnNoticeText}>
+              You have withdrawn your application for this job.
+            </Text>
           </View>
         )}
 
@@ -444,15 +446,17 @@ const ApplicationDetailScreen: React.FC = () => {
         )}
       </View>
       <Modal visible={isMenuVisible} transparent animationType="fade">
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
           onPress={() => setMenuVisible(false)}
         >
           <View style={styles.menuContainer}>
             <TouchableOpacity style={styles.menuOption} onPress={handleWithdraw}>
               <Ionicons name="close-circle-outline" size={20} color={colors.error} />
-              <Text style={[styles.menuOptionText, { color: colors.error }]}>Withdraw Application</Text>
+              <Text style={[styles.menuOptionText, { color: colors.error }]}>
+                Withdraw Application
+              </Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
