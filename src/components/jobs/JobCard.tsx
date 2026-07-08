@@ -31,18 +31,19 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
   const isUrgent = job.duration_type === 'daily';
   const isVerified = job.employer?.verification_badge;
   const catStyles = getCategoryStyles(job.category);
+  const isApplied = job.is_applied && !job.is_withdrawn;
 
   return (
     <TouchableOpacity 
       style={[
         styles.card, 
-        job.is_applied && styles.cardApplied,
+        isApplied && styles.cardApplied,
         job.is_withdrawn && styles.cardWithdrawn
       ]} 
       onPress={onPress} 
       activeOpacity={0.7}
     >
-      {job.is_applied && (
+      {isApplied && (
         <View style={styles.appliedCorner} />
       )}
       {job.is_withdrawn && (
@@ -137,23 +138,23 @@ const styles = StyleSheet.create({
   appliedCorner: {
     position: 'absolute',
     top: 0,
-    right: 0,
+    left: 0,
     width: 20,
     height: 20,
     backgroundColor: colors.mintDeep,
-    borderTopRightRadius: 14,
-    borderBottomLeftRadius: 14,
+    borderTopLeftRadius: 14,
+    borderBottomRightRadius: 14,
     zIndex: 10,
   },
   withdrawnCorner: {
     position: 'absolute',
     top: 0,
-    right: 0,
+    left: 0,
     width: 20,
     height: 20,
     backgroundColor: colors.warning,
-    borderTopRightRadius: 14,
-    borderBottomLeftRadius: 14,
+    borderTopLeftRadius: 14,
+    borderBottomRightRadius: 14,
     zIndex: 10,
   },
   jobIcon: {

@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flex: 1,
-    height: 44, // Made taller to prevent overlapping
+    height: 52, // Made taller to prevent overlapping
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
@@ -270,8 +270,8 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   filterBtn: {
-    width: 44,
-    height: 44, // Made taller to match
+    width: 52,
+    height: 52, // Made taller to match
     borderRadius: 12,
     backgroundColor: colors.white,
     alignItems: 'center',

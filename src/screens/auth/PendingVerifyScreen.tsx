@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, AppState } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../../components/common/Button';
@@ -15,6 +15,32 @@ type NavProp = NativeStackNavigationProp<AuthStackParamList, 'PendingVerify'>;
 const PendingVerifyScreen: React.FC = () => {
   const navigation = useNavigation<NavProp>();
   const insets = useSafeAreaInsets();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const appState = useRef(AppState.currentState);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        handleRefresh();
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    // Adding a small delay just to show the spinner briefly
+    await new Promise(resolve => setTimeout(resolve, 500));
+    notifyAuthChanged();
+    setIsRefreshing(false);
+  };
 
   const signOut = async () => {
     await SecureStore.deleteItemAsync('auth_token').catch(() => {});
@@ -57,6 +83,15 @@ const PendingVerifyScreen: React.FC = () => {
         </View>
 
         <View style={styles.footer}>
+          <Button
+            label={isRefreshing ? "Checking..." : "Refresh Status"}
+            variant="solid"
+            fullWidth
+            size="lg"
+            onPress={handleRefresh}
+            disabled={isRefreshing}
+          />
+          <View style={{ height: 12 }} />
           <Button
             label="Need help? Contact us"
             variant="soft"

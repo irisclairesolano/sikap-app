@@ -40,8 +40,8 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>Public profile</Text>
         </View>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('EditProfile')}>
-          <Ionicons name="create-outline" size={24} color={colors.ink} />
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Settings')}>
+          <Ionicons name="settings-outline" size={24} color={colors.ink} />
         </TouchableOpacity>
       </View>
 

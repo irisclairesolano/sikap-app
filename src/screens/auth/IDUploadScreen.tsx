@@ -5,7 +5,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
 import { authApi } from '../../api/auth';
 import { ApiClientError } from '../../api/client';
@@ -128,7 +128,7 @@ const IDUploadScreen: React.FC = () => {
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
       <View style={[styles.appBar, { paddingHorizontal: 26 }]}>
         <TouchableOpacity
-          onPress={() => navigation.navigate('Register', { role: userRole })}
+          onPress={() => navigation.goBack()}
           style={styles.iconBtn}
         >
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
