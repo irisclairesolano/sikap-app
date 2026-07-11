@@ -69,6 +69,33 @@ export const useAuth = () => {
   // Check if user is verified
   const isVerified = user?.verification_status === 'approved';
 
+  // Switch Role mutation
+  const switchRoleMutation = useMutation({
+    mutationFn: authApi.switchRole,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['profile'], data.user);
+      queryClient.invalidateQueries();
+      notifyAuthChanged();
+    },
+    onError: (error) => {
+      console.error('Switch Role error:', error);
+    },
+  });
+
+  // Onboard Role mutation
+  const onboardRoleMutation = useMutation({
+    mutationFn: (params: { targetRole: 'worker' | 'employer'; data: any }) => 
+      profileApi.onboardRole(params.targetRole, params.data),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['profile'], data.user);
+      queryClient.invalidateQueries();
+      notifyAuthChanged();
+    },
+    onError: (error) => {
+      console.error('Onboard Role error:', error);
+    },
+  });
+
   return {
     // User data
     user,
@@ -83,6 +110,10 @@ export const useAuth = () => {
     register: registerMutation.mutateAsync,
     loginMutation,
     registerMutation,
+    switchRole: switchRoleMutation.mutateAsync,
+    isSwitchingRole: switchRoleMutation.isPending,
+    onboardRole: onboardRoleMutation.mutateAsync,
+    isOnboardingRole: onboardRoleMutation.isPending,
 
     // Actions
     logout,

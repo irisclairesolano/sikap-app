@@ -41,7 +41,7 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
               <Button
                 key={index}
                 label={btn.text}
-                variant={btn.style === 'cancel' ? 'outline' : 'primary'}
+                variant={btn.style === 'cancel' ? 'ghost' : 'primary'}
                 style={[
                   styles.button,
                   btn.style === 'destructive' && {

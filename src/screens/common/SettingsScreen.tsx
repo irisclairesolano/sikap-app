@@ -8,6 +8,7 @@ import { colors, fonts, shadows } from '../../theme';
 import * as SecureStore from 'expo-secure-store';
 import { useQueryClient } from '@tanstack/react-query';
 import { notifyAuthChanged } from '../../store/authEvents';
+import { useAuth } from '../../hooks/useAuth';
 
 const SettingRow = ({
   icon,
@@ -50,6 +51,8 @@ export const SettingsScreen: React.FC = () => {
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
+  const { userRole, switchRole } = useAuth();
+
   const handleLogout = () => {
     showAlert('Log Out', 'Are you sure you want to log out?', [
       {
@@ -63,6 +66,20 @@ export const SettingsScreen: React.FC = () => {
       },
       { text: 'Cancel', style: 'cancel' },
     ]);
+  };
+
+  const handleSwitchRole = async () => {
+    try {
+      const response = await switchRole();
+      if (response.needs_onboarding) {
+        navigation.navigate('RoleOnboarding', { targetRole: response.new_role });
+      } else {
+        // Just reload the app navigator state
+        notifyAuthChanged();
+      }
+    } catch (e) {
+      showAlert('Error', 'Failed to switch roles.');
+    }
   };
 
   return (
@@ -85,6 +102,12 @@ export const SettingsScreen: React.FC = () => {
               icon="person-outline"
               title="Edit Profile"
               onPress={() => navigation.navigate('EditProfile')}
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              icon="swap-horizontal-outline"
+              title={userRole === 'worker' ? 'Log in as Employer' : 'Log in as Worker'}
+              onPress={handleSwitchRole}
             />
           </View>
         </View>

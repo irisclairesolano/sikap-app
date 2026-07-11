@@ -6,6 +6,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
+import { profileApi } from '../../api/profile';
+import { useQuery } from '@tanstack/react-query';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { useAuth } from '../../hooks/useAuth';
 
 type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
@@ -15,20 +18,35 @@ type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<EmployerProfileScreenNavigationProp>();
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
+
+  const { data: user, isLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: profileApi.getProfile,
+  });
+
+  if (isLoading || (!user && !authUser)) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+        <LoadingSpinner />
+      </SafeAreaView>
+    );
+  }
+
+  const profileUser = user || authUser;
 
   // Employer data mixed with real
   const employer = {
-    name: user ? `${user.first_name} ${user.last_name}` : 'Unknown',
-    location: user ? `${user.barangay || ''}, ${user.municipality || ''}` : 'Unknown',
-    verified: user?.verification_badge || false,
-    reputation: user?.reputation_score || 0,
-    ratings: 0,
-    activeJobs: 0,
-    hired: 0,
-    totalPaid: '₱0',
+    name: profileUser?.name || 'Unknown',
+    location: profileUser ? `${profileUser.barangay || ''}, ${profileUser.municipality || ''}` : 'Unknown',
+    verified: profileUser?.verification_badge || false,
+    reputation: profileUser?.reputation_score || 0,
+    ratings: profileUser?.employer_profile?.ratings_count || 0,
+    activeJobs: profileUser?.employer_profile?.active_jobs || 0,
+    hired: profileUser?.employer_profile?.total_hired || 0,
+    totalPaid: `₱${profileUser?.employer_profile?.total_spent || 0}`,
     memberSince: 'New',
-    recentReview: null,
+    recentReview: null, // TODO: Fetch real recent review if needed
   };
 
   return (

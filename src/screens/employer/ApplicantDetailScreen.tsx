@@ -21,7 +21,6 @@ const ApplicantDetailScreen: React.FC = () => {
   const navigation = useNavigation<ApplicantDetailScreenNavigationProp>();
   const { applicantId, jobTitle, applicantName, status } = route.params;
 
-  const jobRequestMutation = useJobRequest();
   const { showAlert } = useAlert();
   const [isMenuVisible, setMenuVisible] = useState(false);
 
@@ -37,23 +36,16 @@ const ApplicantDetailScreen: React.FC = () => {
   const isPending = status === 'pending';
   const isCompleted = status === 'completed';
 
-  const handleShortlist = () => {
-    jobRequestMutation.mutate(applicantId, {
-      onSuccess: () => {
-        showAlert(
-          'Shortlisted!',
-          `${applicantName} has been shortlisted. Waiting for their acceptance.`,
-          [{ text: 'OK', onPress: () => navigation.goBack() }],
-        );
-      },
-      onError: (err: any) => {
-        showAlert('Error', err.message || 'Could not shortlist applicant.');
-      },
-    });
-  };
-
   const navigateToConfirmHire = () => {
     navigation.navigate('ConfirmHire', { applicantId, applicantName, jobTitle });
+  };
+
+  const navigateToSendRequest = () => {
+    navigation.navigate('SendRequest', { id: applicantId, applicantName, jobTitle });
+  };
+
+  const navigateToCancelHire = () => {
+    navigation.navigate('CancelHire', { id: applicantId, applicantName, jobTitle });
   };
 
   return (
@@ -115,7 +107,7 @@ const ApplicantDetailScreen: React.FC = () => {
         </View>
 
         {/* Contact Info (Requires Shortlist & Confirmed) */}
-        {!isConfirmed ? (
+        {status === 'pending' || status === 'withdrawn' ? (
           <View style={styles.privacyShield}>
             <View style={styles.shieldHeader}>
               <View style={styles.shieldIcon}>
@@ -139,7 +131,7 @@ const ApplicantDetailScreen: React.FC = () => {
               <View>
                 <Text style={styles.shieldTitle}>Contact details unlocked</Text>
                 <Text style={[styles.shieldSub, { color: colors.mintDeep }]}>
-                  You can now talk outside the app
+                  You can now review their references
                 </Text>
               </View>
             </View>
@@ -171,31 +163,51 @@ const ApplicantDetailScreen: React.FC = () => {
 
       {/* Fixed Bottom Action */}
       <View style={styles.footer}>
-        {isPending && (
+        {status === 'pending' && (
           <Button
             label="Shortlist Applicant"
             variant="primary"
             size="lg"
             fullWidth
-            loading={jobRequestMutation.isPending}
-            onPress={handleShortlist}
+            onPress={navigateToSendRequest}
             icon={<Ionicons name="star" size={18} color="white" />}
           />
         )}
-        {isAccepted && (
-          <Button
-            label="Proceed to Confirm Hire"
-            variant="primary"
-            size="lg"
-            fullWidth
-            icon={<Ionicons name="arrow-forward" size={18} color="white" />}
-            onPress={navigateToConfirmHire}
-          />
+        {status === 'pending_negotiation' && (
+          <View style={{ gap: 12 }}>
+            <Button
+              label="Proceed to Confirm Hire"
+              variant="primary"
+              size="lg"
+              fullWidth
+              icon={<Ionicons name="arrow-forward" size={18} color="white" />}
+              onPress={navigateToConfirmHire}
+            />
+            <Button
+              label="Cancel Hire"
+              variant="ghost"
+              size="base"
+              fullWidth
+              onPress={navigateToCancelHire}
+            />
+          </View>
         )}
-        {status === 'employer_requested' && (
-          <Button label="Waiting for worker..." variant="outline" size="lg" fullWidth disabled />
+        {status === 'employer_confirmed' && (
+          <View style={{ gap: 12 }}>
+            <Button label="Waiting for worker..." variant="outline" size="lg" fullWidth disabled />
+            <Button
+              label="Cancel Hire"
+              variant="ghost"
+              size="base"
+              fullWidth
+              onPress={navigateToCancelHire}
+            />
+          </View>
         )}
-        {isCompleted && (
+        {status === 'accepted' && (
+          <Button label="Job is in progress" variant="outline" size="lg" fullWidth disabled />
+        )}
+        {status === 'completed' && (
           <Button
             label="Rate Worker"
             variant="primary"

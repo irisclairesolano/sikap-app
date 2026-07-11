@@ -23,7 +23,9 @@ import RateEmployerScreen from '../screens/worker/RateEmployerScreen';
 import EditProfileScreen from '../screens/common/EditProfileScreen';
 import SettingsScreen from '../screens/common/SettingsScreen';
 import ReportScreen from '../screens/common/ReportScreen';
+import RoleOnboardingScreen from '../screens/common/RoleOnboardingScreen';
 import { SavedJobsScreen } from '../screens/worker/SavedJobsScreen';
+import AcceptHireScreen from '../screens/worker/AcceptHireScreen';
 
 export type WorkerStackParamList = {
   Home: undefined;
@@ -43,16 +45,17 @@ export type WorkerStackParamList = {
     status: string;
     compensation?: string;
   };
-  AcceptHire: { id: number };
+  AcceptHire: { id: number; jobTitle: string; employerName: string; offeredPrice?: string };
   HireReceipt: { id: number };
   RateEmployer: { id: number; employerName: string; jobTitle: string };
   Report: { id: number };
   EditProfile: undefined;
   Settings: undefined;
-  Reviews: undefined;
   Notifications: undefined;
+  RoleOnboarding: { targetRole: 'worker' | 'employer' };
   WorkHistory: undefined;
   CharacterReferences: undefined;
+  Reviews: undefined;
 };
 
 export type WorkerTabParamList = {
@@ -129,7 +132,6 @@ const ApplicationsStack: React.FC = () => (
     <Stack.Screen name="Applications" component={MyApplicationsScreen} />
     <Stack.Screen name="ApplicationDetail" component={ApplicationDetailScreen} />
     <Stack.Screen name="AcceptHire" component={AcceptHireScreen} />
-    <Stack.Screen name="HireReceipt" component={HireReceiptScreen} />
     <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} />
@@ -147,6 +149,7 @@ const ProfileStack: React.FC = () => (
     <Stack.Screen name="WorkHistory" component={WorkHistoryScreen} />
     <Stack.Screen name="AddWorkHistory" component={AddWorkHistoryScreen} />
     <Stack.Screen name="CharacterReferences" component={AddCharacterReferencesScreen} />
+    <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
   </Stack.Navigator>
 );
 
@@ -183,22 +186,6 @@ const WorkerNavigator: React.FC = () => {
     </Tab.Navigator>
   );
 };
-
-// Placeholder screens
-
-// Placeholder screens
-
-const AcceptHireScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Accept Hire</Text>
-  </View>
-);
-
-const HireReceiptScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Hire Receipt</Text>
-  </View>
-);
 
 const WorkHistoryScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

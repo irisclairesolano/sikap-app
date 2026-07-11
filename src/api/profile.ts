@@ -102,4 +102,22 @@ export const profileApi = {
       method: 'DELETE',
     });
   },
+
+  // Onboard new role
+  onboardRole: async (
+    targetRole: 'worker' | 'employer',
+    data: any
+  ): Promise<{ message: string; user: User }> => {
+    const isFormData = data instanceof FormData;
+    
+    if (isFormData) {
+      data.append('target_role', targetRole);
+    }
+
+    const response = await apiClient<any>('/profile/onboard-role', {
+      method: 'POST',
+      body: isFormData ? data : JSON.stringify({ ...data, target_role: targetRole }),
+    });
+    return response;
+  },
 };

@@ -22,37 +22,8 @@ const ApplicationDetailScreen: React.FC = () => {
   const { applicationId, jobTitle, employerName, status, compensation } = route.params;
 
   const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawApplication();
-  const { mutate: acceptOffer, isPending: isAccepting } = useAcceptOffer();
-  const { mutate: rejectOffer, isPending: isRejecting } = useRejectOffer();
   const { showAlert } = useAlert();
-
   const [isMenuVisible, setMenuVisible] = useState(false);
-
-  const handleAccept = () => {
-    acceptOffer(applicationId, {
-      onSuccess: () => {
-        showAlert('Offer Accepted!', `You have accepted the offer for ${jobTitle}.`, [
-          { text: 'OK', onPress: () => navigation.popToTop() },
-        ]);
-      },
-      onError: (err: any) => {
-        showAlert('Error', err.message || 'Could not accept offer.');
-      },
-    });
-  };
-
-  const handleReject = () => {
-    rejectOffer(applicationId, {
-      onSuccess: () => {
-        showAlert('Offer Rejected', `You have rejected the offer for ${jobTitle}.`, [
-          { text: 'OK', onPress: () => navigation.popToTop() },
-        ]);
-      },
-      onError: (err: any) => {
-        showAlert('Error', err.message || 'Could not reject offer.');
-      },
-    });
-  };
 
   const handleWithdraw = () => {
     setMenuVisible(false);
@@ -407,27 +378,21 @@ const ApplicationDetailScreen: React.FC = () => {
           />
         )}
         {stage === 3 && (
-          <View style={{ gap: 12 }}>
-            <Button
-              label="Accept and start"
-              variant="primary"
-              size="lg"
-              fullWidth
-              icon={<Ionicons name="checkmark" size={18} color="white" />}
-              onPress={handleAccept}
-              loading={isAccepting}
-              disabled={isRejecting}
-            />
-            <Button
-              label="Reject offer"
-              variant="ghost"
-              size="base"
-              fullWidth
-              onPress={handleReject}
-              loading={isRejecting}
-              disabled={isAccepting}
-            />
-          </View>
+          <Button
+            label="Review Offer"
+            variant="primary"
+            size="lg"
+            fullWidth
+            icon={<Ionicons name="arrow-forward" size={18} color="white" />}
+            onPress={() =>
+              navigation.navigate('AcceptHire', {
+                id: applicationId,
+                jobTitle,
+                employerName,
+                offeredPrice: compensation,
+              })
+            }
+          />
         )}
         {stage === 4 && (
           <Button label="Job is in progress" variant="ghost" size="lg" fullWidth disabled />
@@ -658,7 +623,7 @@ const styles = StyleSheet.create({
     marginTop: 60,
     marginRight: 16,
     width: 220,
-    ...shadows.md,
+    ...shadows.base,
   },
   menuOption: {
     flexDirection: 'row',
