@@ -193,4 +193,10 @@ const WorkHistoryScreen: React.FC = () => (
   </View>
 );
 
+const HireReceiptScreen: React.FC = () => (
+  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <Text>Hire Receipt</Text>
+  </View>
+);
+
 export default WorkerNavigator;

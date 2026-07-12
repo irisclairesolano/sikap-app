@@ -26,7 +26,7 @@ const MarkCompleteScreen: React.FC = () => {
         showAlert(
           'Job Completed!',
           `The job "${jobTitle}" has been successfully marked as completed. You can now leave a rating for the worker(s).`,
-          [{ text: 'OK', onPress: () => navigation.navigate('MyJobs') }]
+          [{ text: 'OK', onPress: () => navigation.navigate('RateWorkerList', { jobId: id, jobTitle }) }]
         );
       },
       onError: (err: any) => {

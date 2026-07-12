@@ -9,6 +9,7 @@ import { EmployerDashboardScreen } from '../screens/employer/EmployerDashboardSc
 import ProfileScreen from '../screens/employer/ProfileScreen';
 import NotificationsScreen from '../screens/employer/NotificationsScreen';
 import RateWorkerScreen from '../screens/employer/RateWorkerScreen';
+import RateWorkerListScreen from '../screens/employer/RateWorkerListScreen';
 import MyJobsScreen from '../screens/employer/MyJobsScreen';
 import JobStatusManagementScreen from '../screens/employer/JobStatusManagementScreen';
 import EditProfileScreen from '../screens/common/EditProfileScreen';
@@ -42,6 +43,7 @@ export type EmployerStackParamList = {
   ConfirmHire: { applicantId: number; applicantName: string; jobTitle: string };
   CancelHire: { id: number; applicantName: string; jobTitle: string };
   MarkComplete: { id: number; jobTitle: string };
+  RateWorkerList: { jobId: number; jobTitle: string };
   RateWorker: { id: number; workerName: string; jobTitle: string };
   Report: { id: number };
   EditProfile: undefined;
@@ -76,6 +78,7 @@ const HomeStack: React.FC = () => (
     <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
     <Stack.Screen name="CancelHire" component={CancelHireScreen} />
     <Stack.Screen name="MarkComplete" component={MarkCompleteScreen} />
+    <Stack.Screen name="RateWorkerList" component={RateWorkerListScreen} />
     <Stack.Screen name="RateWorker" component={RateWorkerScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
   </Stack.Navigator>
@@ -90,6 +93,7 @@ const MyJobsStack: React.FC = () => (
     <Stack.Screen name="ViewApplicants" component={ViewApplicantsScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
     <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
+    <Stack.Screen name="RateWorkerList" component={RateWorkerListScreen} />
     <Stack.Screen name="RateWorker" component={RateWorkerScreen} />
     <Stack.Screen name="SendRequest" component={SendRequestScreen} />
     <Stack.Screen name="CancelHire" component={CancelHireScreen} />
@@ -147,5 +151,11 @@ const EmployerNavigator: React.FC = () => {
     </Tab.Navigator>
   );
 };
+
+const JobDetailsScreen: React.FC = () => (
+  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <Text>Job Details</Text>
+  </View>
+);
 
 export default EmployerNavigator;
