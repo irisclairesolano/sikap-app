@@ -1,6 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView, Image, TextInput, Modal } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView, TextInput, Modal } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -50,9 +51,18 @@ export const JobFeedScreen: React.FC = () => {
 
   const jobsList = data?.data || [];
 
-  const handleJobPress = (id: number) => {
+  const handleJobPress = useCallback((id: number) => {
     navigation.navigate('JobDetails', { id });
-  };
+  }, [navigation]);
+
+  const renderJobItem = useCallback(({ item }: { item: any }) => (
+    <JobCard
+      job={item}
+      onPress={() => handleJobPress(item.id)}
+      isSaved={isSaved(item.id)}
+      onSave={() => toggleSave(item.id)}
+    />
+  ), [handleJobPress, isSaved, toggleSave]);
 
   const getInitial = (name?: string) => {
     return name ? name.charAt(0).toUpperCase() : 'M';
@@ -169,14 +179,11 @@ export const JobFeedScreen: React.FC = () => {
       <FlatList
         data={jobsList}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <JobCard
-            job={item}
-            onPress={() => handleJobPress(item.id)}
-            isSaved={isSaved(item.id)}
-            onSave={() => toggleSave(item.id)}
-          />
-        )}
+        renderItem={renderJobItem}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={<EmptyState message={`No jobs found for ${activeCategory}.`} />}
         contentContainerStyle={styles.listContent}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -57,7 +57,7 @@ export const MyApplicationsScreen: React.FC = () => {
     }).length;
   };
 
-  const handlePressCard = (application: Application) => {
+  const handlePressCard = useCallback((application: Application) => {
     if (application.status === 'withdrawn') {
       return;
     }
@@ -69,7 +69,11 @@ export const MyApplicationsScreen: React.FC = () => {
       status: application.status,
       compensation: application.final_agreed_price?.toString(),
     });
-  };
+  }, [navigation]);
+
+  const renderAppCard = useCallback(({ item }: { item: Application }) => (
+    <ApplicationCard application={item} onPress={() => handlePressCard(item)} />
+  ), [handlePressCard]);
 
   const renderHeader = () => (
     <View style={styles.header}>
@@ -127,9 +131,11 @@ export const MyApplicationsScreen: React.FC = () => {
         <FlatList
           data={filteredApps}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <ApplicationCard application={item} onPress={() => handlePressCard(item)} />
-          )}
+          renderItem={renderAppCard}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl

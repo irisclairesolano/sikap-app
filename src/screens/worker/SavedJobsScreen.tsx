@@ -1,5 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -18,9 +18,18 @@ export const SavedJobsScreen: React.FC = () => {
   const { mutate: toggleSave } = useToggleSaveJob();
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
-  const handleJobPress = (id: number) => {
+  const handleJobPress = useCallback((id: number) => {
     navigation.navigate('JobDetails', { id });
-  };
+  }, [navigation]);
+
+  const renderJobItem = useCallback(({ item }: { item: any }) => (
+    <JobCard
+      job={item}
+      onPress={() => handleJobPress(item.id)}
+      isSaved={true}
+      onSave={() => toggleSave(item.id)}
+    />
+  ), [handleJobPress, toggleSave]);
 
   const renderHeader = () => (
     <View style={styles.header}>
@@ -71,14 +80,11 @@ export const SavedJobsScreen: React.FC = () => {
       <FlatList
         data={jobsList}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <JobCard
-            job={item}
-            onPress={() => handleJobPress(item.id)}
-            isSaved={true}
-            onSave={() => toggleSave(item.id)}
-          />
-        )}
+        renderItem={renderJobItem}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={<EmptyState message="You haven't saved any jobs yet." />}
         contentContainerStyle={styles.listContent}

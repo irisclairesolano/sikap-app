@@ -1,9 +1,9 @@
 import { apiClient } from './client';
 
 export interface SubmitReportPayload {
-  reported_user_id?: number;
-  job_post_id?: number;
-  reason: string;
+  reportable_type: 'user' | 'job_post' | 'application';
+  reportable_id: number;
+  type: 'harassment' | 'fake_account' | 'inappropriate_job' | 'other';
   description: string;
 }
 

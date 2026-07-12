@@ -35,11 +35,17 @@ export const ReportScreen: React.FC = () => {
   const handleSubmit = () => {
     if (!selectedReason) return;
 
+    // Map UI reason to backend enum
+    let mappedType: 'harassment' | 'fake_account' | 'inappropriate_job' | 'other' = 'other';
+    if (selectedReason === 'Harassment') mappedType = 'harassment';
+    if (selectedReason === 'Scam or Fraud' || selectedReason === 'Spam') mappedType = 'fake_account';
+    if (selectedReason === 'Inappropriate Behavior') mappedType = 'inappropriate_job';
+
     submitReport(
       {
-        reported_user_id: type === 'user' ? id : undefined,
-        job_post_id: type === 'job' ? id : undefined,
-        reason: selectedReason,
+        reportable_type: type === 'job' ? 'job_post' : 'user',
+        reportable_id: id,
+        type: mappedType,
         description,
       },
       {
