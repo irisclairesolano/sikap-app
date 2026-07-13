@@ -8,6 +8,7 @@ import { colors, fonts, shadows } from '../../theme';
 import * as SecureStore from 'expo-secure-store';
 import { useQueryClient } from '@tanstack/react-query';
 import { notifyAuthChanged } from '../../store/authEvents';
+import { useAuth } from '../../hooks/useAuth';
 
 const SettingRow = ({
   icon,
@@ -50,9 +51,10 @@ export const SettingsScreen: React.FC = () => {
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
+  const { userRole, switchRole } = useAuth();
+
   const handleLogout = () => {
     showAlert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
       {
         text: 'Log Out',
         style: 'destructive',
@@ -62,7 +64,22 @@ export const SettingsScreen: React.FC = () => {
           notifyAuthChanged();
         },
       },
+      { text: 'Cancel', style: 'cancel' },
     ]);
+  };
+
+  const handleSwitchRole = async () => {
+    try {
+      const response = await switchRole();
+      if (response.needs_onboarding) {
+        navigation.navigate('RoleOnboarding', { targetRole: response.new_role });
+      } else {
+        // Just reload the app navigator state
+        notifyAuthChanged();
+      }
+    } catch (e) {
+      showAlert('Error', 'Failed to switch roles.');
+    }
   };
 
   return (
@@ -87,7 +104,11 @@ export const SettingsScreen: React.FC = () => {
               onPress={() => navigation.navigate('EditProfile')}
             />
             <View style={styles.divider} />
-            <SettingRow icon="shield-checkmark-outline" title="Verification Status" />
+            <SettingRow
+              icon="swap-horizontal-outline"
+              title={userRole === 'worker' ? 'Log in as Employer' : 'Log in as Worker'}
+              onPress={handleSwitchRole}
+            />
           </View>
         </View>
 
@@ -108,14 +129,6 @@ export const SettingsScreen: React.FC = () => {
               type="toggle"
               value={locationEnabled}
               onToggle={setLocationEnabled}
-            />
-            <View style={styles.divider} />
-            <SettingRow
-              icon="moon-outline"
-              title="Dark Mode"
-              type="toggle"
-              value={darkModeEnabled}
-              onToggle={setDarkModeEnabled}
             />
           </View>
         </View>

@@ -83,7 +83,7 @@ export const RateEmployerScreen: React.FC = () => {
           ]);
         },
         onError: (err: any) => {
-          showAlert('Error', err.response?.data?.message || 'Failed to submit review.');
+          showAlert('Error', err.message || 'Failed to submit review.');
         },
       },
     );

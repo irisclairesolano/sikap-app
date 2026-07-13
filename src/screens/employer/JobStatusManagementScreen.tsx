@@ -19,36 +19,13 @@ type JobStatusScreenNavigationProp = NativeStackNavigationProp<
 export const JobStatusManagementScreen: React.FC = () => {
   const route = useRoute<JobStatusScreenRouteProp>();
   const navigation = useNavigation<JobStatusScreenNavigationProp>();
-  const { id } = route.params;
+  const { id, job } = route.params;
 
-  const { mutate: markComplete, isPending: isCompleting } = useMarkJobComplete();
   const { mutate: deleteJob, isPending: isDeleting } = useDeleteJob();
   const { showAlert } = useAlert();
 
   const handleMarkComplete = () => {
-    showAlert(
-      'Mark as Complete',
-      'Are you sure you want to mark this job as complete? This will notify the hired worker(s) and allow you to rate them.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          onPress: () => {
-            markComplete(id, {
-              onSuccess: () => {
-                navigation.navigate('MyJobs');
-              },
-              onError: (err: any) => {
-                showAlert(
-                  'Error',
-                  err.response?.data?.message || 'Could not mark job as complete.',
-                );
-              },
-            });
-          },
-        },
-      ],
-    );
+    navigation.navigate('MarkComplete', { id, jobTitle: job?.title || 'Job' });
   };
 
   const handleCancelJob = () => {
@@ -63,7 +40,7 @@ export const JobStatusManagementScreen: React.FC = () => {
               navigation.navigate('MyJobs');
             },
             onError: (err: any) => {
-              showAlert('Error', err.response?.data?.message || 'Could not delete job.');
+              showAlert('Error', err.message || 'Could not delete job.');
             },
           });
         },

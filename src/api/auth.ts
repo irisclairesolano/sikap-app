@@ -138,4 +138,14 @@ export const authApi = {
     console.log('🔍 API Check Status Response:', response);
     return response;
   },
+
+  // Switch role between worker and employer
+  switchRole: async (): Promise<{ new_role: string; needs_onboarding: boolean; user: User }> => {
+    console.log('🔍 API Switch Role Request');
+    const response = await apiClient<{ new_role: string; needs_onboarding: boolean; user: User }>('/auth/switch-role', {
+      method: 'POST',
+    });
+    console.log('🔍 API Switch Role Response:', response);
+    return response;
+  },
 };

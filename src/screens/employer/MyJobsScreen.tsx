@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -31,7 +31,7 @@ export const MyJobsScreen: React.FC = () => {
     activeTab === 'Active' ? job.status === 'open' : job.status !== 'open',
   );
 
-  const renderJobCard = ({ item }: { item: JobPost }) => (
+  const renderJobCard = useCallback(({ item }: { item: JobPost }) => (
     <TouchableOpacity
       style={styles.jobCard}
       onPress={() => navigation.navigate('JobDetails', { id: item.id })}
@@ -55,7 +55,7 @@ export const MyJobsScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
-  );
+  ), [navigation]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -116,6 +116,10 @@ export const MyJobsScreen: React.FC = () => {
           data={filteredJobs}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderJobCard}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />

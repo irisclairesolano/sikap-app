@@ -11,15 +11,20 @@ import {
   Platform,
   Switch,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as ImagePicker from 'expo-image-picker';
 import { colors, fonts } from '../../theme';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import CustomInput from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import { useCreateJob } from '../../hooks/useEmployerJobs';
 import { useAlert } from '../../contexts/AlertContext';
+import LocationPicker from '../../components/common/LocationPicker';
+
+const DURATION_UNITS = ['Hours', 'Days', 'Weeks', 'Months'];
 
 export const PostJobScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<EmployerStackParamList>>();
@@ -27,11 +32,20 @@ export const PostJobScreen: React.FC = () => {
   const { showAlert } = useAlert();
 
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('');
-  const [location, setLocation] = useState('');
+
+  // Category tags
+  const [currentCategory, setCurrentCategory] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
+
+  const [municipality, setMunicipality] = useState('');
+  const [barangay, setBarangay] = useState('');
   const [pay, setPay] = useState('');
   const [slots, setSlots] = useState('');
+
+  // Duration
   const [duration, setDuration] = useState('');
+  const [durationUnit, setDurationUnit] = useState('Days');
+
   const [description, setDescription] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
   const [scheduleDate, setScheduleDate] = useState(new Date());
@@ -39,42 +53,110 @@ export const PostJobScreen: React.FC = () => {
   const [exactLocation, setExactLocation] = useState('');
   const [toolsRequired, setToolsRequired] = useState('');
 
+  // Media
+  const [photos, setPhotos] = useState<ImagePicker.ImagePickerAsset[]>([]);
+  const [video, setVideo] = useState<ImagePicker.ImagePickerAsset | null>(null);
+
+  const addCategory = () => {
+    const trimmed = currentCategory.trim();
+    if (trimmed && !categories.includes(trimmed)) {
+      setCategories([...categories, trimmed]);
+    }
+    setCurrentCategory('');
+  };
+
+  const removeCategory = (index: number) => {
+    setCategories(categories.filter((_, i) => i !== index));
+  };
+
+  const pickPhotos = async () => {
+    if (photos.length >= 5) {
+      showAlert('Limit reached', 'You can only upload up to 5 photos.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: true,
+      selectionLimit: 5 - photos.length,
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setPhotos([...photos, ...result.assets].slice(0, 5));
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos(photos.filter((_, i) => i !== index));
+  };
+
+  const pickVideo = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['videos'],
+      allowsMultipleSelection: false,
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setVideo(result.assets[0]);
+    }
+  };
+
   const handleSubmit = () => {
-    if (!title || !category || !location || !pay || !slots || !description) {
+    if (
+      !title ||
+      categories.length === 0 ||
+      !barangay ||
+      !municipality ||
+      !pay ||
+      !slots ||
+      !description ||
+      !duration
+    ) {
       showAlert('Missing fields', 'Please fill in all the required fields before publishing.');
       return;
     }
 
-    const locParts = location.split(',');
-    const barangay = locParts[0]?.trim() || 'Zone 1';
-    const municipality = locParts[1]?.trim() || 'Bulan';
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('categories', JSON.stringify(categories));
+    formData.append('barangay', barangay);
+    formData.append('municipality', municipality);
+    formData.append('compensation', pay.replace(/[^0-9.]/g, ''));
+    formData.append('slots', slots);
+    formData.append('description', description);
+    formData.append('duration', duration);
+    formData.append('duration_unit', durationUnit);
+    formData.append('schedule_date', scheduleDate.toISOString().split('T')[0]);
 
-    createJobMutation.mutate(
-      {
-        title,
-        description,
-        category,
-        barangay,
-        municipality,
-        duration_type: duration.toLowerCase().includes('project') ? 'project-based' : 'daily',
-        compensation: parseFloat(pay.replace(/[^0-9.]/g, '')),
-        slots: parseInt(slots, 10),
-        schedule_date: scheduleDate.toISOString().split('T')[0],
-        exact_location: exactLocation,
-        tools_required: toolsRequired,
+    if (exactLocation) formData.append('exact_location', exactLocation);
+    if (toolsRequired) formData.append('tools_required', toolsRequired);
+
+    photos.forEach((photo, index) => {
+      formData.append('photos[]', {
+        uri: photo.uri,
+        name: photo.fileName || `photo_${index}.jpg`,
+        type: photo.mimeType || 'image/jpeg',
+      } as any);
+    });
+
+    if (video) {
+      formData.append('video', {
+        uri: video.uri,
+        name: video.fileName || 'video.mp4',
+        type: video.mimeType || 'video/mp4',
+      } as any);
+    }
+
+    createJobMutation.mutate(formData, {
+      onSuccess: () => {
+        showAlert('Job published!', 'Your job is now visible to workers.', [
+          { text: 'OK', onPress: () => navigation.goBack() },
+        ]);
       },
-      {
-        onSuccess: () => {
-          showAlert('Job published!', 'Your job is now visible to workers.', [
-            { text: 'OK', onPress: () => navigation.goBack() },
-          ]);
-        },
-        onError: (err: any) => {
-          console.error('Job creation failed', err.response?.data || err);
-          showAlert('Error', err.response?.data?.message || 'Failed to publish job.');
-        },
+      onError: (err: any) => {
+        console.error('Job creation failed', err);
+        showAlert('Error', err.message || 'Failed to publish job.');
       },
-    );
+    });
   };
 
   return (
@@ -105,27 +187,48 @@ export const PostJobScreen: React.FC = () => {
 
           <View style={styles.formContainer}>
             <CustomInput
-              label="Job title"
+              label="Job title *"
               value={title}
               onChangeText={setTitle}
               placeholder="E.g. Carpenter wanted"
             />
 
-            {/* Using CustomInput for selects for now, ideally should be a picker component */}
-            <CustomInput
-              label="Category"
-              value={category}
-              onChangeText={setCategory}
-              placeholder="Construction"
-              icon="construct-outline"
-            />
+            {/* Categories */}
+            <View>
+              <CustomInput
+                label="Categories *"
+                value={currentCategory}
+                onChangeText={setCurrentCategory}
+                placeholder="Type and press space to add"
+                icon="pricetag-outline"
+                onSubmitEditing={addCategory}
+                onKeyPress={({ nativeEvent }) => {
+                  if (nativeEvent.key === ' ') {
+                    addCategory();
+                  }
+                }}
+              />
+              {categories.length > 0 && (
+                <View style={styles.chipContainer}>
+                  {categories.map((cat, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      style={styles.chip}
+                      onPress={() => removeCategory(idx)}
+                    >
+                      <Text style={styles.chipText}>{cat}</Text>
+                      <Ionicons name="close-circle" size={16} color={colors.primary} />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
 
-            <CustomInput
-              label="Location"
-              value={location}
-              onChangeText={setLocation}
-              placeholder="E.g. Tinampo, Bulan"
-              icon="location-outline"
+            <LocationPicker
+              municipalityValue={municipality}
+              barangayValue={barangay}
+              onMunicipalityChange={setMunicipality}
+              onBarangayChange={setBarangay}
             />
 
             <CustomInput
@@ -139,7 +242,7 @@ export const PostJobScreen: React.FC = () => {
             <View style={styles.row}>
               <View style={styles.col}>
                 <CustomInput
-                  label="Pay (PHP)"
+                  label="Pay (PHP) *"
                   value={pay}
                   onChangeText={setPay}
                   placeholder="600"
@@ -148,7 +251,7 @@ export const PostJobScreen: React.FC = () => {
               </View>
               <View style={styles.col}>
                 <CustomInput
-                  label="Slots"
+                  label="Slots *"
                   value={slots}
                   onChangeText={setSlots}
                   placeholder="2"
@@ -157,41 +260,48 @@ export const PostJobScreen: React.FC = () => {
               </View>
             </View>
 
-            <CustomInput
-              label="Duration"
-              value={duration}
-              onChangeText={setDuration}
-              placeholder="E.g. Daily or Project-based"
-              icon="time-outline"
-            />
+            <View style={styles.row}>
+              <View style={{ flex: 1 }}>
+                <CustomInput
+                  label="Duration *"
+                  value={duration}
+                  onChangeText={setDuration}
+                  placeholder="E.g. 5"
+                  keyboardType="numeric"
+                  icon="time-outline"
+                />
+              </View>
+              <View style={{ flex: 1.2 }}>
+                <Text style={styles.label}>Unit *</Text>
+                <View style={styles.unitSelector}>
+                  {DURATION_UNITS.map((unit) => (
+                    <TouchableOpacity
+                      key={unit}
+                      style={[styles.unitBtn, durationUnit === unit && styles.unitBtnActive]}
+                      onPress={() => setDurationUnit(unit)}
+                    >
+                      <Text
+                        style={[
+                          styles.unitBtnText,
+                          durationUnit === unit && styles.unitBtnTextActive,
+                        ]}
+                      >
+                        {unit}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </View>
 
             <View>
-              <Text
-                style={{
-                  fontFamily: fonts.bodyBold,
-                  fontSize: 13,
-                  color: colors.inkSoft,
-                  marginBottom: 4,
-                }}
-              >
-                Schedule Date
-              </Text>
+              <Text style={styles.label}>Schedule Date *</Text>
               <TouchableOpacity
-                style={{
-                  borderWidth: 1,
-                  borderColor: colors.inkFaint,
-                  borderRadius: 12,
-                  padding: 14,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 12,
-                }}
+                style={styles.datePickerBtn}
                 onPress={() => setShowDatePicker(true)}
               >
                 <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
-                <Text style={{ fontFamily: fonts.body, fontSize: 15, color: colors.ink }}>
-                  {scheduleDate.toLocaleDateString()}
-                </Text>
+                <Text style={styles.datePickerText}>{scheduleDate.toLocaleDateString()}</Text>
               </TouchableOpacity>
               {showDatePicker && (
                 <DateTimePicker
@@ -208,7 +318,7 @@ export const PostJobScreen: React.FC = () => {
             </View>
 
             <CustomInput
-              label="Description"
+              label="Description *"
               value={description}
               onChangeText={setDescription}
               placeholder="Need help installing..."
@@ -223,6 +333,65 @@ export const PostJobScreen: React.FC = () => {
               placeholder="E.g. Hammer, nails, saw"
               icon="hammer-outline"
             />
+
+            {/* Media Uploads */}
+            <View style={styles.mediaSection}>
+              <Text style={styles.label}>Photos & Video (Optional)</Text>
+
+              <View style={styles.mediaRow}>
+                <TouchableOpacity style={styles.mediaBtn} onPress={pickPhotos}>
+                  <Ionicons name="image-outline" size={24} color={colors.primary} />
+                  <Text style={styles.mediaBtnText}>Add Photos</Text>
+                  <Text style={styles.mediaBtnSub}>{photos.length}/5</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.mediaBtn} onPress={pickVideo}>
+                  <Ionicons name="videocam-outline" size={24} color={colors.primary} />
+                  <Text style={styles.mediaBtnText}>{video ? 'Change Video' : 'Add Video'}</Text>
+                  <Text style={styles.mediaBtnSub}>{video ? '1/1' : '0/1'}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {photos.length > 0 && (
+                <ScrollView
+                  horizontal
+                  style={styles.previewScroll}
+                  showsHorizontalScrollIndicator={false}
+                >
+                  {photos.map((p, idx) => (
+                    <View key={idx} style={styles.previewWrapper}>
+                      <Image source={{ uri: p.uri }} style={styles.previewImg} />
+                      <TouchableOpacity
+                        style={styles.removeMediaBtn}
+                        onPress={() => removePhoto(idx)}
+                      >
+                        <Ionicons name="close" size={16} color={colors.white} />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </ScrollView>
+              )}
+
+              {video && (
+                <View style={styles.previewWrapper}>
+                  <View
+                    style={[
+                      styles.previewImg,
+                      {
+                        backgroundColor: colors.ink,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      },
+                    ]}
+                  >
+                    <Ionicons name="play" size={24} color={colors.white} />
+                  </View>
+                  <TouchableOpacity style={styles.removeMediaBtn} onPress={() => setVideo(null)}>
+                    <Ionicons name="close" size={16} color={colors.white} />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
 
             {/* Urgent Toggle */}
             <View style={styles.urgentCard}>
@@ -310,7 +479,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     marginTop: 24,
-    gap: 12,
+    gap: 16,
   },
   row: {
     flexDirection: 'row',
@@ -318,6 +487,131 @@ const styles = StyleSheet.create({
   },
   col: {
     flex: 1,
+  },
+  label: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.inkSoft,
+    marginBottom: 6,
+  },
+  datePickerBtn: {
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: colors.white,
+  },
+  datePickerText: {
+    fontFamily: fonts.body,
+    fontSize: 15,
+    color: colors.ink,
+  },
+  chipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primaryFaint,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 4,
+  },
+  chipText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.primary,
+  },
+  unitSelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  unitBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    backgroundColor: colors.white,
+  },
+  unitBtnActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  unitBtnText: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkSoft,
+  },
+  unitBtnTextActive: {
+    color: colors.white,
+    fontFamily: fonts.bodyBold,
+  },
+  mediaSection: {
+    padding: 16,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
+  mediaRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  mediaBtn: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: colors.paper,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    borderStyle: 'dashed',
+  },
+  mediaBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.primary,
+    marginTop: 8,
+  },
+  mediaBtnSub: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkSoft,
+    marginTop: 2,
+  },
+  previewScroll: {
+    marginTop: 16,
+  },
+  previewWrapper: {
+    position: 'relative',
+    marginRight: 12,
+    marginTop: 16,
+  },
+  previewImg: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+  },
+  removeMediaBtn: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: colors.error,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   urgentCard: {
     backgroundColor: colors.butter,

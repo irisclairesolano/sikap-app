@@ -9,16 +9,21 @@ import { EmployerDashboardScreen } from '../screens/employer/EmployerDashboardSc
 import ProfileScreen from '../screens/employer/ProfileScreen';
 import NotificationsScreen from '../screens/employer/NotificationsScreen';
 import RateWorkerScreen from '../screens/employer/RateWorkerScreen';
+import RateWorkerListScreen from '../screens/employer/RateWorkerListScreen';
 import MyJobsScreen from '../screens/employer/MyJobsScreen';
 import JobStatusManagementScreen from '../screens/employer/JobStatusManagementScreen';
 import EditProfileScreen from '../screens/common/EditProfileScreen';
 import SettingsScreen from '../screens/common/SettingsScreen';
 import ReportScreen from '../screens/common/ReportScreen';
+import RoleOnboardingScreen from '../screens/common/RoleOnboardingScreen';
 
 import { PostJobScreen } from '../screens/employer/PostJobScreen';
 import { ViewApplicantsScreen } from '../screens/employer/ViewApplicantsScreen';
 import ApplicantDetailScreen from '../screens/employer/ApplicantDetailScreen';
 import ConfirmHireScreen from '../screens/employer/ConfirmHireScreen';
+import SendRequestScreen from '../screens/employer/SendRequestScreen';
+import CancelHireScreen from '../screens/employer/CancelHireScreen';
+import MarkCompleteScreen from '../screens/employer/MarkCompleteScreen';
 
 export type EmployerStackParamList = {
   Home: undefined;
@@ -34,19 +39,21 @@ export type EmployerStackParamList = {
     emergencyContactName?: string;
     emergencyContactPhone?: string;
   };
-  SendRequest: { id: number };
+  SendRequest: { id: number; applicantName: string; jobTitle: string };
   ConfirmHire: { applicantId: number; applicantName: string; jobTitle: string };
-  CancelHire: { id: number };
-  MarkComplete: { id: number };
+  CancelHire: { id: number; applicantName: string; jobTitle: string };
+  MarkComplete: { id: number; jobTitle: string };
+  RateWorkerList: { jobId: number; jobTitle: string };
   RateWorker: { id: number; workerName: string; jobTitle: string };
   Report: { id: number };
   EditProfile: undefined;
   Settings: undefined;
   Reviews: undefined;
   MyJobs: undefined;
-  JobStatusManagement: { id: number };
+  JobStatusManagement: { id: number; job?: any };
   Notifications: undefined;
   Profile: undefined;
+  RoleOnboarding: { targetRole: 'worker' | 'employer' };
 };
 
 export type EmployerTabParamList = {
@@ -71,6 +78,7 @@ const HomeStack: React.FC = () => (
     <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
     <Stack.Screen name="CancelHire" component={CancelHireScreen} />
     <Stack.Screen name="MarkComplete" component={MarkCompleteScreen} />
+    <Stack.Screen name="RateWorkerList" component={RateWorkerListScreen} />
     <Stack.Screen name="RateWorker" component={RateWorkerScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
   </Stack.Navigator>
@@ -81,14 +89,15 @@ const MyJobsStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="MyJobs" component={MyJobsScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
+    <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
     <Stack.Screen name="ViewApplicants" component={ViewApplicantsScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
-    <Stack.Screen name="SendRequest" component={SendRequestScreen} />
     <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
+    <Stack.Screen name="RateWorkerList" component={RateWorkerListScreen} />
+    <Stack.Screen name="RateWorker" component={RateWorkerScreen} />
+    <Stack.Screen name="SendRequest" component={SendRequestScreen} />
     <Stack.Screen name="CancelHire" component={CancelHireScreen} />
     <Stack.Screen name="MarkComplete" component={MarkCompleteScreen} />
-    <Stack.Screen name="RateWorker" component={RateWorkerScreen} />
-    <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
   </Stack.Navigator>
 );
 
@@ -105,7 +114,7 @@ const ProfileStack: React.FC = () => (
     <Stack.Screen name="Profile" component={ProfileScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
-    <Stack.Screen name="Reviews" component={ReviewsScreen} />
+    <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
   </Stack.Navigator>
 );
 
@@ -146,36 +155,6 @@ const EmployerNavigator: React.FC = () => {
 const JobDetailsScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
     <Text>Job Details</Text>
-  </View>
-);
-
-const SendRequestScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Send Request</Text>
-  </View>
-);
-
-const CancelHireScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Cancel Hire</Text>
-  </View>
-);
-
-const MarkCompleteScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Mark Complete</Text>
-  </View>
-);
-
-const HireReceiptScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Hire Receipt</Text>
-  </View>
-);
-
-const ReviewsScreen: React.FC = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Reviews</Text>
   </View>
 );
 

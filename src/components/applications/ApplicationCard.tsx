@@ -50,18 +50,28 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, o
     badgeIcon = 'checkmark-circle';
     badgeBg = colors.inkFaint;
     badgeColor = colors.inkMuted;
-  } else if (status === 'rejected' || status === 'withdrawn') {
+  } else if (status === 'rejected') {
     badgeLabel = 'Closed';
     badgeIcon = 'close-circle';
     badgeBg = colors.inkFaint;
     badgeColor = colors.inkMuted;
+  } else if (status === 'withdrawn') {
+    badgeLabel = 'Withdrawn';
+    badgeIcon = 'close-circle';
+    badgeBg = colors.warningSoft || '#FFF8F0';
+    badgeColor = colors.warning;
   }
 
   const isActive = status === 'accepted';
+  const isWithdrawn = status === 'withdrawn';
 
   return (
     <TouchableOpacity
-      style={[styles.jobCard, isActive && styles.activeCardBorder]}
+      style={[
+        styles.jobCard,
+        isActive && styles.activeCardBorder,
+        isWithdrawn && styles.withdrawnCardBorder,
+      ]}
       onPress={onPress}
       activeOpacity={0.7}
     >
@@ -125,9 +135,14 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   activeCardBorder: {
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: colors.mintDeep,
-    padding: 16, // match the HTML mockup
+    padding: 13,
+  },
+  withdrawnCardBorder: {
+    borderWidth: 1,
+    borderColor: colors.warning,
+    padding: 13,
   },
   topRow: {
     flexDirection: 'row',

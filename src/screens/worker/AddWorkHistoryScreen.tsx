@@ -18,7 +18,7 @@ import { profileApi } from '../../api/profile';
 import Button from '../../components/common/Button';
 import { DatePickerModal } from '../../components/common/DatePickerModal';
 import CustomInput from '../../components/common/Input';
-import CustomAlert from '../../components/common/CustomAlert';
+import { useAlert } from '../../contexts/AlertContext';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts } from '../../theme';
 
@@ -43,8 +43,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
   const [selectedExperienceId, setSelectedExperienceId] = useState<number | null>(null);
   const [editingExperienceId, setEditingExperienceId] = useState<number | null>(null);
 
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertConfig, setAlertConfig] = useState<any>({ title: '', message: '', buttons: [] });
+  const { showAlert } = useAlert();
 
   const saveMutation = useMutation({
     mutationFn: () => {
@@ -103,23 +102,16 @@ export const AddWorkHistoryScreen: React.FC = () => {
     setIsAdding(true);
   };
 
-  const handleDeletePress = (id: number) => {
-    setAlertConfig({
-      title: 'Delete Job History',
-      message: 'Are you sure you want to delete this work experience?',
-      buttons: [
-        { text: 'Cancel', style: 'cancel', onPress: () => setAlertVisible(false) },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            setAlertVisible(false);
-            deleteMutation.mutate(id);
-          },
-        },
-      ],
-    });
-    setAlertVisible(true);
+  const handleDeleteExperience = (id: number) => {
+    setSelectedExperienceId(id);
+    showAlert('Delete Work History', 'Are you sure you want to delete this experience?', [
+      { text: 'Cancel', style: 'cancel' },
+      { 
+        text: 'Delete', 
+        style: 'destructive', 
+        onPress: () => deleteMutation.mutate(id)
+      }
+    ]);
   };
 
   const handleBackPress = () => {
@@ -213,7 +205,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={styles.actionButtonDelete}
-                          onPress={() => handleDeletePress(exp.id)}
+                          onPress={() => handleDeleteExperience(exp.id)}
                           disabled={deleteMutation.isPending}
                         >
                           <Ionicons name="trash-outline" size={16} color={colors.error} />
@@ -321,14 +313,6 @@ export const AddWorkHistoryScreen: React.FC = () => {
           onConfirm={(text) => setDuration(text)}
         />
       )}
-
-      <CustomAlert
-        visible={alertVisible}
-        title={alertConfig.title}
-        message={alertConfig.message}
-        buttons={alertConfig.buttons}
-        onRequestClose={() => setAlertVisible(false)}
-      />
     </SafeAreaView>
   );
 };

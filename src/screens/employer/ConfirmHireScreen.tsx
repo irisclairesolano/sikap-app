@@ -46,7 +46,7 @@ const ConfirmHireScreen: React.FC = () => {
           );
         },
         onError: (err: any) => {
-          showAlert('Error', err.response?.data?.message || 'Could not confirm hire.');
+          showAlert('Error', err.message || 'Could not confirm hire.');
         },
       },
     );

@@ -55,7 +55,7 @@ const RegisterStep2Screen: React.FC = () => {
     onSuccess: (data: any) => {
       setBanner('');
       const userId = data?.user?.id || 1;
-      navigation.replace('OTPVerify', { userId, email, role });
+      navigation.navigate('OTPVerify', { userId, email, role });
     },
     onError: (err: any) => {
       console.log('Register onError:', err);

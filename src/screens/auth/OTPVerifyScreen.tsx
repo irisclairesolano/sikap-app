@@ -49,7 +49,7 @@ const OTPVerifyScreen: React.FC = () => {
         if ('token' in response && response.token) {
           await SecureStore.setItemAsync('auth_token', String(response.token));
         }
-        navigation.replace('IDUpload' as any, { userId: response.user_id, role } as any);
+        navigation.navigate('IDUpload' as any, { userId: response.user_id, role } as any);
         return;
       }
       setBanner('OTP verified. Please log in to continue.');

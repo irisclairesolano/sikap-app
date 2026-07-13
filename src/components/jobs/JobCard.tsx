@@ -28,12 +28,23 @@ const getCategoryStyles = (category: string) => {
 
 export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved }) => {
   // Mock badges logic
-  const isUrgent = job.duration_type === 'daily';
+  const isUrgent = false; // Mock logic
   const isVerified = job.employer?.verification_badge;
   const catStyles = getCategoryStyles(job.category);
+  const isApplied = job.is_applied && !job.is_withdrawn;
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={[
+        styles.card,
+        isApplied && styles.cardApplied,
+        job.is_withdrawn && styles.cardWithdrawn,
+      ]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      {isApplied && <View style={styles.appliedCorner} />}
+      {job.is_withdrawn && <View style={styles.withdrawnCorner} />}
       <View style={[styles.jobIcon, { backgroundColor: catStyles.bg }]}>
         <Ionicons name={catStyles.icon as any} size={20} color={catStyles.color} />
       </View>
@@ -109,6 +120,38 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 2,
     elevation: 1, // var(--shadow-sm) equivalent
+  },
+  cardApplied: {
+    borderColor: colors.mintDeep,
+    borderWidth: 1, // thinner border
+    backgroundColor: '#F7FCF9', // subtle green tint
+  },
+  cardWithdrawn: {
+    borderColor: colors.warning,
+    borderWidth: 1,
+    backgroundColor: '#FFF8F0', // subtle orange tint
+  },
+  appliedCorner: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 32,
+    height: 32,
+    backgroundColor: colors.mintDeep,
+    borderTopLeftRadius: 14,
+    borderBottomRightRadius: 32,
+    zIndex: 10,
+  },
+  withdrawnCorner: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 32,
+    height: 32,
+    backgroundColor: colors.warning,
+    borderTopLeftRadius: 14,
+    borderBottomRightRadius: 32,
+    zIndex: 10,
   },
   jobIcon: {
     width: 44,
