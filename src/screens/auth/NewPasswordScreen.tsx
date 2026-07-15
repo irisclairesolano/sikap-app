@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import Button from '../../components/common/Button';
@@ -10,38 +10,47 @@ import Input from '../../components/common/Input';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 
-type NavProp = NativeStackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
+type NavProp = NativeStackNavigationProp<AuthStackParamList, 'NewPassword'>;
+type RouteType = RouteProp<AuthStackParamList, 'NewPassword'>;
 
-const ForgotPasswordScreen: React.FC = () => {
+const NewPasswordScreen: React.FC = () => {
   const navigation = useNavigation<NavProp>();
+  const route = useRoute<RouteType>();
   const insets = useSafeAreaInsets();
-  
-  const [email, setEmail] = useState('');
+
+  const { resetToken } = route.params;
+
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSendOTP = async () => {
-    if (!email) {
-      setError('Email is required');
+  const handleReset = async () => {
+    if (!password || !confirmPassword) {
+      setError('Please fill in both fields.');
       return;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email');
+    
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
       return;
     }
     
     setError('');
     setLoading(true);
+    
     try {
-      await authApi.forgotPassword(email);
-      // Even if user not found, we might want to navigate to OTP screen for security,
-      // but backend returns 404 for UX as per our implementation.
-      navigation.navigate('ResetOTPVerify', { email });
+      await authApi.resetPassword(resetToken, password, confirmPassword);
+      Alert.alert('Success', 'Your password has been reset. You can now log in.', [
+        { text: 'OK', onPress: () => navigation.navigate('Login') }
+      ]);
     } catch (err: any) {
-      // If the backend returns 404, we can still show a generic message or the error.
-      Alert.alert('Notice', 'If an account exists with this email, an OTP has been sent.');
-      navigation.navigate('ResetOTPVerify', { email });
+      setError(err.message || 'Failed to reset password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -59,42 +68,47 @@ const ForgotPasswordScreen: React.FC = () => {
       </View>
 
       <View style={styles.content}>
-        <View style={styles.iconBox}>
-          <Ionicons name="lock-closed" size={32} color={colors.primary} />
-        </View>
-
         <Text style={styles.title}>
-          Forgot{'\n'}
-          <Text style={styles.titleItalic}>password?</Text>
+          New{'\n'}
+          <Text style={styles.titleItalic}>password</Text>
         </Text>
 
         <Text style={styles.body}>
-          Enter the email address associated with your account, and we'll send you an OTP to reset your password.
+          Please enter your new password below. Make sure it's secure.
         </Text>
 
-        <Input
-          label="Email Address"
-          placeholder="e.g. juan@example.com"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={(val) => {
-            setEmail(val);
-            setError('');
-          }}
-          error={error}
-        />
+        <View style={styles.formSpace}>
+          <Input
+            label="New Password"
+            placeholder="••••••••"
+            secureTextEntry
+            value={password}
+            onChangeText={(val) => {
+              setPassword(val);
+              setError('');
+            }}
+          />
+
+          <View style={{ height: 16 }} />
+
+          <Input
+            label="Confirm Password"
+            placeholder="••••••••"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={(val) => {
+              setConfirmPassword(val);
+              setError('');
+            }}
+            error={error}
+          />
+        </View>
 
         <View style={styles.footer}>
           {loading ? (
             <ActivityIndicator size="large" color={colors.primary} />
           ) : (
-            <Button
-              label="Send OTP"
-              size="lg"
-              fullWidth
-              onPress={handleSendOTP}
-            />
+            <Button label="Reset Password" size="lg" fullWidth onPress={handleReset} />
           )}
         </View>
       </View>
@@ -123,16 +137,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 28,
-    paddingTop: 24,
-  },
-  iconBox: {
-    width: 64,
-    height: 64,
-    backgroundColor: colors.peach,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
+    paddingTop: 12,
   },
   title: {
     fontFamily: fonts.display,
@@ -141,7 +146,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: colors.ink,
     letterSpacing: -0.9,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   titleItalic: {
     fontFamily: fonts.displayItalic,
@@ -154,9 +159,12 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: 24,
   },
+  formSpace: {
+    marginBottom: 24,
+  },
   footer: {
-    marginTop: 24,
+    marginTop: 12,
   },
 });
 
-export default ForgotPasswordScreen;
+export default NewPasswordScreen;

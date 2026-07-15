@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import Button from '../../components/common/Button';
@@ -10,40 +10,49 @@ import Input from '../../components/common/Input';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 
-type NavProp = NativeStackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
+type NavProp = NativeStackNavigationProp<AuthStackParamList, 'ResetOTPVerify'>;
+type RouteType = RouteProp<AuthStackParamList, 'ResetOTPVerify'>;
 
-const ForgotPasswordScreen: React.FC = () => {
+const ResetOTPVerifyScreen: React.FC = () => {
   const navigation = useNavigation<NavProp>();
+  const route = useRoute<RouteType>();
   const insets = useSafeAreaInsets();
-  
-  const [email, setEmail] = useState('');
+
+  const { email } = route.params;
+
+  const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSendOTP = async () => {
-    if (!email) {
-      setError('Email is required');
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email');
+  const handleVerify = async () => {
+    if (otp.length !== 6) {
+      setError('Please enter a 6-digit OTP.');
       return;
     }
     
     setError('');
     setLoading(true);
+    
     try {
-      await authApi.forgotPassword(email);
-      // Even if user not found, we might want to navigate to OTP screen for security,
-      // but backend returns 404 for UX as per our implementation.
-      navigation.navigate('ResetOTPVerify', { email });
+      const res = await authApi.verifyResetOtp(email, otp);
+      if (res.reset_token) {
+        navigation.navigate('NewPassword', { resetToken: res.reset_token });
+      } else {
+        setError('Verification failed. Please try again.');
+      }
     } catch (err: any) {
-      // If the backend returns 404, we can still show a generic message or the error.
-      Alert.alert('Notice', 'If an account exists with this email, an OTP has been sent.');
-      navigation.navigate('ResetOTPVerify', { email });
+      setError(err.message || 'Failed to verify OTP. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      await authApi.forgotPassword(email);
+      Alert.alert('Sent', 'A new OTP has been sent to your email.');
+    } catch (err: any) {
+      Alert.alert('Notice', 'A new OTP has been sent if the email exists.');
     }
   };
 
@@ -59,27 +68,23 @@ const ForgotPasswordScreen: React.FC = () => {
       </View>
 
       <View style={styles.content}>
-        <View style={styles.iconBox}>
-          <Ionicons name="lock-closed" size={32} color={colors.primary} />
-        </View>
-
         <Text style={styles.title}>
-          Forgot{'\n'}
-          <Text style={styles.titleItalic}>password?</Text>
+          Check{'\n'}
+          <Text style={styles.titleItalic}>your email</Text>
         </Text>
 
         <Text style={styles.body}>
-          Enter the email address associated with your account, and we'll send you an OTP to reset your password.
+          We sent a 6-digit verification code to <Text style={styles.emailText}>{email}</Text>. Please enter it below to reset your password.
         </Text>
 
         <Input
-          label="Email Address"
-          placeholder="e.g. juan@example.com"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
+          label="Verification Code (OTP)"
+          placeholder="000000"
+          keyboardType="number-pad"
+          maxLength={6}
+          value={otp}
           onChangeText={(val) => {
-            setEmail(val);
+            setOtp(val.replace(/[^0-9]/g, ''));
             setError('');
           }}
           error={error}
@@ -89,13 +94,12 @@ const ForgotPasswordScreen: React.FC = () => {
           {loading ? (
             <ActivityIndicator size="large" color={colors.primary} />
           ) : (
-            <Button
-              label="Send OTP"
-              size="lg"
-              fullWidth
-              onPress={handleSendOTP}
-            />
+            <Button label="Verify Code" size="lg" fullWidth onPress={handleVerify} />
           )}
+
+          <TouchableOpacity style={styles.resendBtn} onPress={handleResend}>
+            <Text style={styles.resendText}>Didn't receive a code? Resend</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -123,16 +127,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 28,
-    paddingTop: 24,
-  },
-  iconBox: {
-    width: 64,
-    height: 64,
-    backgroundColor: colors.peach,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
+    paddingTop: 12,
   },
   title: {
     fontFamily: fonts.display,
@@ -141,7 +136,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: colors.ink,
     letterSpacing: -0.9,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   titleItalic: {
     fontFamily: fonts.displayItalic,
@@ -154,9 +149,23 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: 24,
   },
+  emailText: {
+    fontFamily: fonts.bodyMedium,
+    color: colors.ink,
+  },
   footer: {
+    marginTop: 12,
+  },
+  resendBtn: {
     marginTop: 24,
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  resendText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 14,
+    color: colors.primary,
   },
 });
 
-export default ForgotPasswordScreen;
+export default ResetOTPVerifyScreen;
