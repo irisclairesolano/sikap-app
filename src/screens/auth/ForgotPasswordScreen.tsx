@@ -15,7 +15,7 @@ type NavProp = NativeStackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
 const ForgotPasswordScreen: React.FC = () => {
   const navigation = useNavigation<NavProp>();
   const insets = useSafeAreaInsets();
-  
+
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ const ForgotPasswordScreen: React.FC = () => {
       setError('Please enter a valid email');
       return;
     }
-    
+
     setError('');
     setLoading(true);
     try {
@@ -69,7 +69,8 @@ const ForgotPasswordScreen: React.FC = () => {
         </Text>
 
         <Text style={styles.body}>
-          Enter the email address associated with your account, and we'll send you an OTP to reset your password.
+          Enter the email address associated with your account, and we'll send you an OTP to reset
+          your password.
         </Text>
 
         <Input
@@ -89,12 +90,7 @@ const ForgotPasswordScreen: React.FC = () => {
           {loading ? (
             <ActivityIndicator size="large" color={colors.primary} />
           ) : (
-            <Button
-              label="Send OTP"
-              size="lg"
-              fullWidth
-              onPress={handleSendOTP}
-            />
+            <Button label="Send OTP" size="lg" fullWidth onPress={handleSendOTP} />
           )}
         </View>
       </View>

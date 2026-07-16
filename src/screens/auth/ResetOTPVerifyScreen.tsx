@@ -29,10 +29,10 @@ const ResetOTPVerifyScreen: React.FC = () => {
       setError('Please enter a 6-digit OTP.');
       return;
     }
-    
+
     setError('');
     setLoading(true);
-    
+
     try {
       const res = await authApi.verifyResetOtp(email, otp);
       if (res.reset_token) {
@@ -74,7 +74,8 @@ const ResetOTPVerifyScreen: React.FC = () => {
         </Text>
 
         <Text style={styles.body}>
-          We sent a 6-digit verification code to <Text style={styles.emailText}>{email}</Text>. Please enter it below to reset your password.
+          We sent a 6-digit verification code to <Text style={styles.emailText}>{email}</Text>.
+          Please enter it below to reset your password.
         </Text>
 
         <Input

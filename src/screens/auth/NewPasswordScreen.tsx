@@ -30,24 +30,24 @@ const NewPasswordScreen: React.FC = () => {
       setError('Please fill in both fields.');
       return;
     }
-    
+
     if (password.length < 8) {
       setError('Password must be at least 8 characters.');
       return;
     }
-    
+
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
-    
+
     setError('');
     setLoading(true);
-    
+
     try {
       await authApi.resetPassword(resetToken, password, confirmPassword);
       Alert.alert('Success', 'Your password has been reset. You can now log in.', [
-        { text: 'OK', onPress: () => navigation.navigate('Login') }
+        { text: 'OK', onPress: () => navigation.navigate('Login') },
       ]);
     } catch (err: any) {
       setError(err.message || 'Failed to reset password. Please try again.');

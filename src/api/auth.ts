@@ -142,9 +142,12 @@ export const authApi = {
   // Switch role between worker and employer
   switchRole: async (): Promise<{ new_role: string; needs_onboarding: boolean; user: any }> => {
     console.log('🔍 API Switch Role Request');
-    const response = await apiClient<{ new_role: string; needs_onboarding: boolean; user: any }>('/auth/switch-role', {
-      method: 'POST',
-    });
+    const response = await apiClient<{ new_role: string; needs_onboarding: boolean; user: any }>(
+      '/auth/switch-role',
+      {
+        method: 'POST',
+      },
+    );
     console.log('🔍 API Switch Role Response:', response);
     return response;
   },
@@ -159,17 +162,27 @@ export const authApi = {
     return response;
   },
 
-  verifyResetOtp: async (email: string, otp: string): Promise<{ message: string; reset_token: string }> => {
+  verifyResetOtp: async (
+    email: string,
+    otp: string,
+  ): Promise<{ message: string; reset_token: string }> => {
     console.log('🔍 API Verify Reset OTP Request:', { email, otp });
-    const response = await apiClient<{ message: string; reset_token: string }>('/auth/verify-reset-otp', {
-      method: 'POST',
-      body: JSON.stringify({ email, otp }),
-    });
+    const response = await apiClient<{ message: string; reset_token: string }>(
+      '/auth/verify-reset-otp',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, otp }),
+      },
+    );
     console.log('🔍 API Verify Reset OTP Response:', response);
     return response;
   },
 
-  resetPassword: async (resetToken: string, password: string, passwordConfirmation: string): Promise<{ message: string }> => {
+  resetPassword: async (
+    resetToken: string,
+    password: string,
+    passwordConfirmation: string,
+  ): Promise<{ message: string }> => {
     console.log('🔍 API Reset Password Request');
     const response = await apiClient<{ message: string }>('/auth/reset-password', {
       method: 'POST',
@@ -183,4 +196,3 @@ export const authApi = {
     return response;
   },
 };
-
