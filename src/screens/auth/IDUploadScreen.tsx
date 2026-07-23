@@ -2,6 +2,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -46,34 +47,54 @@ const IDUploadScreen: React.FC = () => {
     checkAuthToken();
   }, [userId, userRole, navigation]);
 
+  const compressImage = async (uri: string) => {
+    try {
+      const manipResult = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 1200 } }],
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG },
+      );
+      return manipResult.uri;
+    } catch (error) {
+      console.log('Compression error, using original', error);
+      return uri;
+    }
+  };
+
   const uploadMutation = useMutation({
     mutationFn: async () => {
       const form = new FormData();
       form.append('user_id', userId.toString());
       form.append('role', userRole);
 
+      const idUri = await compressImage(selectedFile.uri);
       form.append('id_file', {
-        uri: selectedFile.uri,
+        uri: idUri,
         name: selectedFile.name ?? 'government-id.jpg',
-        type: selectedFile.mimeType ?? 'image/jpeg',
+        type: 'image/jpeg',
       } as unknown as Blob);
 
       if (selectedSelfie) {
+        const selfieUri = await compressImage(selectedSelfie.uri);
         form.append('selfie_file', {
-          uri: selectedSelfie.uri,
+          uri: selfieUri,
           name: selectedSelfie.name ?? 'selfie.jpg',
-          type: selectedSelfie.mimeType ?? 'image/jpeg',
+          type: 'image/jpeg',
         } as unknown as Blob);
       }
 
       if (userRole === 'employer' && selectedBusinessDocs.length > 0) {
-        selectedBusinessDocs.forEach((doc, index) => {
+        for (let index = 0; index < selectedBusinessDocs.length; index++) {
+          const doc = selectedBusinessDocs[index];
+          const isImage = doc.mimeType?.startsWith('image/');
+          const finalUri = isImage ? await compressImage(doc.uri) : doc.uri;
+
           form.append('business_documents[]', {
-            uri: doc.uri,
-            name: doc.name ?? `business-doc-${index}.pdf`,
-            type: doc.mimeType ?? 'application/pdf',
+            uri: finalUri,
+            name: doc.name ?? `business-doc-${index}.${isImage ? 'jpg' : 'pdf'}`,
+            type: isImage ? 'image/jpeg' : (doc.mimeType ?? 'application/pdf'),
           } as unknown as Blob);
-        });
+        }
       }
 
       await authApi.uploadId(form);

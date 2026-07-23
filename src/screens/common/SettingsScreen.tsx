@@ -55,6 +55,7 @@ export const SettingsScreen: React.FC = () => {
 
   const handleLogout = () => {
     showAlert('Log Out', 'Are you sure you want to log out?', [
+      { text: 'Cancel', style: 'cancel' },
       {
         text: 'Log Out',
         style: 'destructive',
@@ -64,7 +65,6 @@ export const SettingsScreen: React.FC = () => {
           notifyAuthChanged();
         },
       },
-      { text: 'Cancel', style: 'cancel' },
     ]);
   };
 

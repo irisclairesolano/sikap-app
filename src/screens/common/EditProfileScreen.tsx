@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { colors, fonts, shadows } from '../../theme';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
@@ -67,7 +68,17 @@ export const EditProfileScreen: React.FC = () => {
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const uri = result.assets[0].uri;
-      uploadAvatar(uri);
+      try {
+        const manipResult = await ImageManipulator.manipulateAsync(
+          uri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG },
+        );
+        uploadAvatar(manipResult.uri);
+      } catch (error) {
+        console.log('Compression error, using original', error);
+        uploadAvatar(uri);
+      }
     }
   };
 
@@ -139,7 +150,7 @@ export const EditProfileScreen: React.FC = () => {
       await refetchProfile();
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       showAlert('Profile Saved', 'Your changes have been saved successfully.', [
-        { text: 'OK', onPress: () => navigation.goBack() }
+        { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (err: any) {
       console.error(err);

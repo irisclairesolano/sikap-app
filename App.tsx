@@ -26,7 +26,16 @@ import {
 } from '@expo-google-fonts/manrope';
 import { View, ActivityIndicator } from 'react-native';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export default function App() {
   const [fontsLoaded] = useFonts({
