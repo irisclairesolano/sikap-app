@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   withdrawnCardBorder: {
     borderWidth: 1,
-    borderColor: colors.warning,
+    borderColor: '#EA580C', // Explicitly strong orange
     padding: 13,
   },
   topRow: {

@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7FCF9', // subtle green tint
   },
   cardWithdrawn: {
-    borderColor: colors.warning,
+    borderColor: '#EA580C', // Explicitly strong orange
     borderWidth: 1,
     backgroundColor: '#FFF8F0', // subtle orange tint
   },
