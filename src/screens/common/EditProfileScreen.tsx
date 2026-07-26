@@ -121,20 +121,24 @@ export const EditProfileScreen: React.FC = () => {
     try {
       setIsSaving(true);
       const updateData: any = {
-        barangay,
-        municipality,
-        date_of_birth: dateOfBirth.toISOString().split('T')[0],
-        emergency_contact_name: emergencyContactName,
-        emergency_contact_phone: emergencyContactPhone,
+        barangay: barangay || undefined,
+        municipality: municipality || undefined,
+        date_of_birth: dateOfBirth ? dateOfBirth.toISOString().split('T')[0] : undefined,
+        emergency_contact_name: emergencyContactName || undefined,
+        emergency_contact_phone: emergencyContactPhone || undefined,
         bio: user?.role === 'worker' ? bio : undefined,
         description: user?.role === 'employer' ? bio : undefined,
       };
 
-      if (!isVerified) {
+      if (!isVerified && name) {
         updateData.name = name;
       }
 
-      await profileApi.updateProfile(updateData);
+      const res = await profileApi.updateProfile(updateData);
+      if (res?.user) {
+        await SecureStore.setItemAsync('user_profile', JSON.stringify(res.user));
+        queryClient.setQueryData(['profile'], res.user);
+      }
       await refetchProfile();
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       showAlert('Profile Saved', 'Your changes have been saved successfully.', [
