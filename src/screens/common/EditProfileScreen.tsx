@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -142,17 +144,26 @@ export const EditProfileScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="close" size={24} color={colors.ink} />
-        </TouchableOpacity>
-        <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>Edit Profile</Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="close" size={24} color={colors.ink} />
+          </TouchableOpacity>
+          <View style={styles.headerPill}>
+            <Text style={styles.headerPillText}>Edit Profile</Text>
+          </View>
+          <View style={{ width: 40 }} />
         </View>
-        <View style={{ width: 40 }} />
-      </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
         <View style={styles.avatarSection}>
           <TouchableOpacity
             style={styles.avatarContainer}
@@ -309,6 +320,7 @@ export const EditProfileScreen: React.FC = () => {
           style={{ marginTop: 24 }}
         />
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
