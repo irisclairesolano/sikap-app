@@ -18,6 +18,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import * as SecureStore from 'expo-secure-store';
 import { colors, fonts, shadows } from '../../theme';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
@@ -87,7 +88,12 @@ export const EditProfileScreen: React.FC = () => {
   const uploadAvatar = async (uri: string) => {
     try {
       setIsUploading(true);
-      await profileApi.uploadAvatar(uri);
+      const res = await profileApi.uploadAvatar(uri);
+      if (res?.avatar_url && user) {
+        const updatedUser = { ...user, avatar_url: res.avatar_url };
+        await SecureStore.setItemAsync('user_profile', JSON.stringify(updatedUser));
+        queryClient.setQueryData(['profile'], updatedUser);
+      }
       await refetchProfile();
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       showAlert('Looking Good!', 'Your profile picture was updated successfully.');

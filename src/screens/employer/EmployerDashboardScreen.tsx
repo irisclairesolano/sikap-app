@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -28,28 +29,34 @@ export const EmployerDashboardScreen: React.FC = () => {
 
   const [activeJobs, setActiveJobs] = useState<JobPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchJobs = async () => {
+    try {
+      const res = await jobsApi.getMyJobs();
+      const jobsList = res?.data || [];
+      const active = jobsList.filter(
+        (j: JobPost) => (j.status as string) === 'open' || (j.status as string) === 'in_progress',
+      );
+      setActiveJobs(active);
+    } catch (error) {
+      console.log('Error fetching jobs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
-      const fetchJobs = async () => {
-        try {
-          const res = await jobsApi.getMyJobs();
-          // Filter to show only open/active jobs
-          const jobsList = res?.data || [];
-          const active = jobsList.filter(
-            (j: JobPost) => (j.status as string) === 'open' || (j.status as string) === 'in_progress',
-          );
-          setActiveJobs(active);
-        } catch (error) {
-          console.log('Error fetching jobs:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
-
       fetchJobs();
     }, []),
   );
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchJobs();
+    setRefreshing(false);
+  };
 
   if (loading) {
     return (
@@ -83,7 +90,17 @@ export const EmployerDashboardScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+          />
+        }
+      >
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={[styles.statCard, { backgroundColor: colors.peach }]}>

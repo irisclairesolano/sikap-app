@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import { profileApi } from '../../api/profile';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -20,8 +21,10 @@ type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<EmployerProfileScreenNavigationProp>();
-  const { user: authUser } = useAuth();
+  const { user: authUser, refetchProfile } = useAuth();
+  const queryClient = useQueryClient();
   const { data: jobsResponse } = useEmployerJobs();
+  const [refreshing, setRefreshing] = useState(false);
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -58,6 +61,19 @@ export const ProfileScreen: React.FC = () => {
     recentReview: null, // TODO: Fetch real recent review if needed
   };
 
+  const getAvatarUrl = () => {
+    if (!profileUser?.avatar_url) return null;
+    if (profileUser.avatar_url.startsWith('http')) return profileUser.avatar_url;
+    return `${process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '')}${profileUser.avatar_url}`;
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries();
+    await refetchProfile();
+    setRefreshing(false);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
@@ -70,11 +86,24 @@ export const ProfileScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+          />
+        }
+      >
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{employer.name.charAt(0)}</Text>
+            {getAvatarUrl() ? (
+              <Image source={{ uri: getAvatarUrl()! }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>{employer.name.charAt(0)}</Text>
+            )}
           </View>
           <View style={styles.profileInfo}>
             <View style={styles.nameRow}>
@@ -200,7 +229,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.sky,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
+  avatarImage: { width: 64, height: 64, borderRadius: 32 },
   avatarText: { fontFamily: fonts.bodyBold, fontSize: 24, color: colors.ink },
   profileInfo: { flex: 1 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
