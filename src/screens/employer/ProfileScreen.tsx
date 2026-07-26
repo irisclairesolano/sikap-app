@@ -64,8 +64,14 @@ export const ProfileScreen: React.FC = () => {
 
   const getAvatarUrl = () => {
     if (!profileUser?.avatar_url) return null;
-    if (profileUser.avatar_url.startsWith('http')) return profileUser.avatar_url;
-    return `${process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '')}${profileUser.avatar_url}`;
+    let url = profileUser.avatar_url;
+    if (url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) {
+      const apiBase = (process.env.EXPO_PUBLIC_API_URL || '').replace(/\/api.*$/, '');
+      url = url.replace(/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, apiBase);
+    }
+    if (url.startsWith('http')) return url;
+    const apiBase = (process.env.EXPO_PUBLIC_API_URL || '').replace(/\/api.*$/, '');
+    return `${apiBase}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
   const handleRefresh = async () => {

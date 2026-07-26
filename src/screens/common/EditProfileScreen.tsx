@@ -39,6 +39,7 @@ export const EditProfileScreen: React.FC = () => {
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [localAvatarUri, setLocalAvatarUri] = useState<string | null>(null);
 
   const [dateOfBirth, setDateOfBirth] = useState(
     user?.date_of_birth ? new Date(user.date_of_birth) : new Date('1990-01-01'),
@@ -56,9 +57,16 @@ export const EditProfileScreen: React.FC = () => {
   const isVerified = user?.verification_status === 'approved';
 
   const getAvatarUrl = () => {
+    if (localAvatarUri) return localAvatarUri;
     if (!user?.avatar_url) return null;
-    if (user.avatar_url.startsWith('http')) return user.avatar_url;
-    return `${process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '')}${user.avatar_url}`;
+    let url = user.avatar_url;
+    if (url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) {
+      const apiBase = (process.env.EXPO_PUBLIC_API_URL || '').replace(/\/api.*$/, '');
+      url = url.replace(/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, apiBase);
+    }
+    if (url.startsWith('http')) return url;
+    const apiBase = (process.env.EXPO_PUBLIC_API_URL || '').replace(/\/api.*$/, '');
+    return `${apiBase}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
   const handlePickAvatar = async () => {
@@ -71,6 +79,7 @@ export const EditProfileScreen: React.FC = () => {
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const uri = result.assets[0].uri;
+      setLocalAvatarUri(uri);
       try {
         const manipResult = await ImageManipulator.manipulateAsync(
           uri,
@@ -99,6 +108,7 @@ export const EditProfileScreen: React.FC = () => {
       showAlert('Looking Good!', 'Your profile picture was updated successfully.');
     } catch (err: any) {
       console.error(err);
+      setLocalAvatarUri(null);
       showAlert('Upload Failed', err.message || 'We could not upload your profile picture.');
     } finally {
       setIsUploading(false);
