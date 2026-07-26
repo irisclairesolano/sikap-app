@@ -180,7 +180,11 @@ export const JobFeedScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.safeArea}>
         {renderHeader()}
-        <LoadingSpinner />
+        <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>
+          <JobCardSkeleton />
+          <JobCardSkeleton />
+          <JobCardSkeleton />
+        </View>
       </SafeAreaView>
     );
   }

@@ -8,60 +8,16 @@ import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { useSavedJobs, useToggleSaveJob } from '../../hooks/useSavedJobs';
 import { JobCard } from '../../components/jobs/JobCard';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { ErrorBanner } from '../../components/common/ErrorBanner';
-import { EmptyState } from '../../components/common/EmptyState';
-
-export const SavedJobsScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
-  const { data, isLoading, isError, error, refetch } = useSavedJobs();
-  const { mutate: toggleSave } = useToggleSaveJob();
-  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
-
-  const handleJobPress = useCallback((id: number) => {
-    navigation.navigate('JobDetails', { id });
-  }, [navigation]);
-
-  const renderJobItem = useCallback(({ item }: { item: any }) => (
-    <JobCard
-      job={item}
-      onPress={() => handleJobPress(item.id)}
-      isSaved={true}
-      onSave={() => toggleSave(item.id)}
-    />
-  ), [handleJobPress, toggleSave]);
-
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={styles.headline}>Saved Jobs</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingRight: 20 }}>
-          <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
-            {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
-          </Text>
-          <TouchableOpacity 
-            style={{ padding: 4 }}
-            onPress={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
-          >
-            <Ionicons name={sortOrder === 'desc' ? "arrow-down-outline" : "arrow-up-outline"} size={20} color={colors.ink} />
-          </TouchableOpacity>
-        </View>
-      </View>
-      <Text style={styles.subtitle}>Jobs you've bookmarked for later.</Text>
-    </View>
-  );
-
-  const jobsList = [...(data?.data || [])].sort((a, b) => {
-    const timeA = new Date(a.created_at).getTime();
-    const timeB = new Date(b.created_at).getTime();
-    return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
-  });
+import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.safeArea}>
         {renderHeader()}
-        <LoadingSpinner />
+        <View style={{ paddingHorizontal: 20 }}>
+          <JobCardSkeleton />
+          <JobCardSkeleton />
+        </View>
       </SafeAreaView>
     );
   }

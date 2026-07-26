@@ -20,6 +20,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { jobsApi } from '../../api/jobs';
 import { JobPost } from '../../types';
 
+import { DashboardSkeleton } from '../../components/common/SkeletonLoader';
+
 export const EmployerDashboardScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<EmployerStackParamList>>();
   const { user } = useAuthCheck();
@@ -48,6 +50,14 @@ export const EmployerDashboardScreen: React.FC = () => {
       fetchJobs();
     }, []),
   );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <DashboardSkeleton />
+      </SafeAreaView>
+    );
+  }
 
   const getInitial = (name?: string) => (name ? name.charAt(0).toUpperCase() : 'E');
 
