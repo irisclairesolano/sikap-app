@@ -44,6 +44,7 @@ export const ProfileScreen: React.FC = () => {
   // Employer data mixed with real
   const employer = {
     name: profileUser?.name || 'Unknown',
+    bio: profileUser?.employer_profile?.description || profileUser?.worker_profile?.bio || '',
     location: profileUser
       ? `${profileUser.barangay || ''}, ${profileUser.municipality || ''}`
       : 'Unknown',
@@ -93,7 +94,12 @@ export const ProfileScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Reputation Card */}
+        {!!employer.bio && (
+          <View style={styles.bioCard}>
+            <Text style={styles.bioTitle}>About</Text>
+            <Text style={styles.bioText}>{employer.bio}</Text>
+          </View>
+        )}
         <View style={[styles.reputationCard, { backgroundColor: colors.sky }]}>
           <Text style={styles.reputationEyebrow}>Reputation</Text>
           <View style={styles.reputationRow}>
@@ -283,6 +289,27 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     marginTop: 4,
     fontStyle: 'italic',
+  },
+  bioCard: {
+    backgroundColor: colors.paperBright,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    ...shadows.sm,
+  },
+  bioTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.inkSoft,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  bioText: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.ink,
+    lineHeight: 20,
   },
 });
 

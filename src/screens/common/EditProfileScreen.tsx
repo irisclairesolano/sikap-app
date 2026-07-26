@@ -115,11 +115,11 @@ export const EditProfileScreen: React.FC = () => {
       const updateData: any = {
         barangay,
         municipality,
-        bio: user?.role === 'worker' ? bio : undefined,
-        description: user?.role === 'employer' ? bio : undefined,
         date_of_birth: dateOfBirth.toISOString().split('T')[0],
         emergency_contact_name: emergencyContactName,
         emergency_contact_phone: emergencyContactPhone,
+        bio: user?.role === 'worker' ? bio : undefined,
+        description: user?.role === 'employer' ? bio : undefined,
       };
 
       if (!isVerified) {
