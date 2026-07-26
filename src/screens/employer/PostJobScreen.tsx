@@ -1,30 +1,38 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Switch,
-} from 'react-native';
-import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { colors, fonts } from '../../theme';
-import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
-import CustomInput from '../../components/common/Input';
+import React, { useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/common/Button';
-import { useCreateJob } from '../../hooks/useEmployerJobs';
-import { useAlert } from '../../contexts/AlertContext';
+import CustomInput from '../../components/common/Input';
 import LocationPicker from '../../components/common/LocationPicker';
+import { useAlert } from '../../contexts/AlertContext';
+import { useCreateJob } from '../../hooks/useEmployerJobs';
+import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
+import { colors, fonts } from '../../theme';
 
 const DURATION_UNITS = ['Hours', 'Days', 'Weeks', 'Months'];
+const DEFAULT_CATEGORIES = [
+  'Construction',
+  'Domestic',
+  'Agriculture',
+  'Skilled Trade',
+  'Transport',
+  'Craft',
+];
 
 export const PostJobScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<EmployerStackParamList>>();
@@ -36,6 +44,7 @@ export const PostJobScreen: React.FC = () => {
   // Category tags
   const [currentCategory, setCurrentCategory] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
+  const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
 
   const [municipality, setMunicipality] = useState('');
   const [barangay, setBarangay] = useState('');
@@ -57,12 +66,17 @@ export const PostJobScreen: React.FC = () => {
   const [photos, setPhotos] = useState<ImagePicker.ImagePickerAsset[]>([]);
   const [video, setVideo] = useState<ImagePicker.ImagePickerAsset | null>(null);
 
+  const filteredSuggestions = DEFAULT_CATEGORIES.filter(
+    (cat) => !categories.includes(cat) && cat.toLowerCase().includes(currentCategory.toLowerCase()),
+  );
+
   const addCategory = () => {
     const trimmed = currentCategory.trim();
     if (trimmed && !categories.includes(trimmed)) {
       setCategories([...categories, trimmed]);
     }
     setCurrentCategory('');
+    setShowCategorySuggestions(false);
   };
 
   const removeCategory = (index: number) => {
@@ -101,30 +115,56 @@ export const PostJobScreen: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (
-      !title ||
-      categories.length === 0 ||
-      !barangay ||
-      !municipality ||
-      !pay ||
-      !slots ||
-      !description ||
-      !duration
-    ) {
-      showAlert('Missing fields', 'Please fill in all the required fields before publishing.');
+    // Automatically add currentCategory if the user forgot to press enter/space
+    let finalCategories = [...categories];
+    const trimmedCategory = currentCategory.trim();
+    if (trimmedCategory && !finalCategories.includes(trimmedCategory)) {
+      finalCategories.push(trimmedCategory);
+      setCategories(finalCategories);
+      setCurrentCategory('');
+    }
+
+    console.log('📋 Validating job post fields:', {
+      title: title ? 'filled' : 'empty',
+      categories: finalCategories,
+      barangay: barangay ? 'filled' : 'empty',
+      municipality: municipality ? 'filled' : 'empty',
+      pay: pay ? 'filled' : 'empty',
+      slots: slots ? 'filled' : 'empty',
+      description: description ? 'filled' : 'empty',
+      duration: duration ? 'filled' : 'empty',
+    });
+
+    const missingFields = [];
+    if (!title) missingFields.push('Job Title');
+    if (finalCategories.length === 0) missingFields.push('Categories');
+    if (!barangay) missingFields.push('Barangay');
+    if (!municipality) missingFields.push('Municipality');
+    if (!pay) missingFields.push('Pay');
+    if (!slots) missingFields.push('Slots');
+    if (!description) missingFields.push('Description');
+
+    if (missingFields.length > 0) {
+      console.log('⚠️ Missing fields:', missingFields);
+      showAlert(
+        'Missing fields',
+        `Please fill in all the required fields: ${missingFields.join(', ')}`,
+      );
       return;
     }
 
     const formData = new FormData();
     formData.append('title', title);
-    formData.append('categories', JSON.stringify(categories));
+    formData.append('categories', JSON.stringify(finalCategories));
     formData.append('barangay', barangay);
     formData.append('municipality', municipality);
     formData.append('compensation', pay.replace(/[^0-9.]/g, ''));
     formData.append('slots', slots);
     formData.append('description', description);
-    formData.append('duration', duration);
-    formData.append('duration_unit', durationUnit);
+    if (duration) {
+      formData.append('duration', duration);
+      formData.append('duration_unit', durationUnit);
+    }
     formData.append('schedule_date', scheduleDate.toISOString().split('T')[0]);
 
     if (exactLocation) formData.append('exact_location', exactLocation);
@@ -194,20 +234,65 @@ export const PostJobScreen: React.FC = () => {
             />
 
             {/* Categories */}
-            <View>
+            <View style={{ zIndex: 10 }}>
               <CustomInput
                 label="Categories *"
                 value={currentCategory}
-                onChangeText={setCurrentCategory}
-                placeholder="Type and press space to add"
+                onChangeText={(text) => {
+                  setCurrentCategory(text);
+                  setShowCategorySuggestions(true);
+                }}
+                onFocus={() => setShowCategorySuggestions(true)}
+                placeholder="Type tag or select suggestion..."
                 icon="pricetag-outline"
                 onSubmitEditing={addCategory}
-                onKeyPress={({ nativeEvent }) => {
-                  if (nativeEvent.key === ' ') {
+                onKeyPress={(e: any) => {
+                  if (e.nativeEvent?.key === ' ') {
                     addCategory();
                   }
                 }}
               />
+
+              {showCategorySuggestions &&
+                (filteredSuggestions.length > 0 || currentCategory.trim().length > 0) && (
+                  <View style={styles.dropdownContainer}>
+                    <ScrollView keyboardShouldPersistTaps="always" style={{ maxHeight: 200 }}>
+                      {filteredSuggestions.map((cat) => (
+                        <TouchableOpacity
+                          key={cat}
+                          style={styles.dropdownItem}
+                          onPress={() => {
+                            setCategories([...categories, cat]);
+                            setCurrentCategory('');
+                            setShowCategorySuggestions(false);
+                          }}
+                        >
+                          <Text style={styles.dropdownItemText}>{cat}</Text>
+                          <Ionicons name="add-circle-outline" size={18} color={colors.primary} />
+                        </TouchableOpacity>
+                      ))}
+                      {currentCategory.trim().length > 0 &&
+                        !categories.includes(currentCategory.trim()) &&
+                        !DEFAULT_CATEGORIES.includes(currentCategory.trim()) && (
+                          <TouchableOpacity
+                            style={[styles.dropdownItem, { backgroundColor: colors.primaryTint }]}
+                            onPress={addCategory}
+                          >
+                            <Text
+                              style={[
+                                styles.dropdownItemText,
+                                { fontFamily: fonts.bodyBold, color: colors.primary },
+                              ]}
+                            >
+                              Add "{currentCategory.trim()}"
+                            </Text>
+                            <Ionicons name="add-circle" size={18} color={colors.primary} />
+                          </TouchableOpacity>
+                        )}
+                    </ScrollView>
+                  </View>
+                )}
+
               {categories.length > 0 && (
                 <View style={styles.chipContainer}>
                   {categories.map((cat, idx) => (
@@ -263,7 +348,7 @@ export const PostJobScreen: React.FC = () => {
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
                 <CustomInput
-                  label="Duration *"
+                  label="Duration (Optional)"
                   value={duration}
                   onChangeText={setDuration}
                   placeholder="E.g. 5"
@@ -272,7 +357,7 @@ export const PostJobScreen: React.FC = () => {
                 />
               </View>
               <View style={{ flex: 1.2 }}>
-                <Text style={styles.label}>Unit *</Text>
+                <Text style={styles.label}>Unit (Optional)</Text>
                 <View style={styles.unitSelector}>
                   {DURATION_UNITS.map((unit) => (
                     <TouchableOpacity
@@ -528,6 +613,33 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 13,
     color: colors.primary,
+  },
+  dropdownContainer: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    borderRadius: 12,
+    marginTop: 4,
+    marginBottom: 8,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.paper,
+  },
+  dropdownItemText: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.ink,
   },
   unitSelector: {
     flexDirection: 'row',

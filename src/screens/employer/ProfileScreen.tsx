@@ -11,6 +11,8 @@ import { useQuery } from '@tanstack/react-query';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { useAuth } from '../../hooks/useAuth';
 
+import { useEmployerJobs } from '../../hooks/useEmployerJobs';
+
 type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
   EmployerStackParamList,
   'Profile'
@@ -19,6 +21,7 @@ type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<EmployerProfileScreenNavigationProp>();
   const { user: authUser } = useAuth();
+  const { data: jobsResponse } = useEmployerJobs();
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -34,15 +37,20 @@ export const ProfileScreen: React.FC = () => {
   }
 
   const profileUser = user || authUser;
+  const activeJobsCount = (jobsResponse?.data || []).filter(
+    (j) => j.status === 'open' || j.status === 'in_progress',
+  ).length;
 
   // Employer data mixed with real
   const employer = {
     name: profileUser?.name || 'Unknown',
-    location: profileUser ? `${profileUser.barangay || ''}, ${profileUser.municipality || ''}` : 'Unknown',
+    location: profileUser
+      ? `${profileUser.barangay || ''}, ${profileUser.municipality || ''}`
+      : 'Unknown',
     verified: profileUser?.verification_badge || false,
     reputation: profileUser?.reputation_score || 0,
     ratings: profileUser?.employer_profile?.ratings_count || 0,
-    activeJobs: profileUser?.employer_profile?.active_jobs || 0,
+    activeJobs: activeJobsCount || profileUser?.employer_profile?.active_jobs || 0,
     hired: profileUser?.employer_profile?.total_hired || 0,
     totalPaid: `₱${profileUser?.employer_profile?.total_spent || 0}`,
     memberSince: 'New',

@@ -1,6 +1,15 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView, TextInput, Modal } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  Modal,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -34,7 +43,7 @@ export const JobFeedScreen: React.FC = () => {
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
-  const { user } = useAuth();
+  const { user } = useAuthCheck();
 
   const filters = useMemo(() => {
     return {
@@ -51,18 +60,24 @@ export const JobFeedScreen: React.FC = () => {
 
   const jobsList = data?.data || [];
 
-  const handleJobPress = useCallback((id: number) => {
-    navigation.navigate('JobDetails', { id });
-  }, [navigation]);
+  const handleJobPress = useCallback(
+    (id: number) => {
+      navigation.navigate('JobDetails', { id });
+    },
+    [navigation],
+  );
 
-  const renderJobItem = useCallback(({ item }: { item: any }) => (
-    <JobCard
-      job={item}
-      onPress={() => handleJobPress(item.id)}
-      isSaved={isSaved(item.id)}
-      onSave={() => toggleSave(item.id)}
-    />
-  ), [handleJobPress, isSaved, toggleSave]);
+  const renderJobItem = useCallback(
+    ({ item }: { item: any }) => (
+      <JobCard
+        job={item}
+        onPress={() => handleJobPress(item.id)}
+        isSaved={isSaved(item.id)}
+        onSave={() => toggleSave(item.id)}
+      />
+    ),
+    [handleJobPress, isSaved, toggleSave],
+  );
 
   const getInitial = (name?: string) => {
     return name ? name.charAt(0).toUpperCase() : 'M';
@@ -77,13 +92,13 @@ export const JobFeedScreen: React.FC = () => {
       <View style={styles.appBar}>
         <View style={styles.appBarLeft}>
           {user?.avatar_url ? (
-            <Image 
-              source={{ 
+            <Image
+              source={{
                 uri: user.avatar_url.startsWith('http')
                   ? user.avatar_url
-                  : `${process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '')}${user.avatar_url}`
-              }} 
-              style={styles.avatarImage} 
+                  : `${process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '')}${user.avatar_url}`,
+              }}
+              style={styles.avatarImage}
             />
           ) : (
             <View style={styles.avatar}>
@@ -97,8 +112,8 @@ export const JobFeedScreen: React.FC = () => {
             </Text>
           </View>
         </View>
-        <TouchableOpacity 
-          style={styles.iconButton} 
+        <TouchableOpacity
+          style={styles.iconButton}
           onPress={() => navigation.navigate('Notifications')}
         >
           <Ionicons name="notifications-outline" size={24} color={colors.ink} />
@@ -118,7 +133,12 @@ export const JobFeedScreen: React.FC = () => {
             returnKeyType="search"
           />
           {searchInput.length > 0 && (
-            <TouchableOpacity onPress={() => { setSearchInput(''); setSearchQuery(''); }}>
+            <TouchableOpacity
+              onPress={() => {
+                setSearchInput('');
+                setSearchQuery('');
+              }}
+            >
               <Ionicons name="close-circle" size={18} color={colors.inkMuted} />
             </TouchableOpacity>
           )}
@@ -197,16 +217,31 @@ export const JobFeedScreen: React.FC = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Filter by Location</Text>
             {LOCATIONS.map((loc) => (
-              <TouchableOpacity 
-                key={loc} 
+              <TouchableOpacity
+                key={loc}
                 style={styles.modalOption}
-                onPress={() => { setLocationFilter(loc); setFilterModalVisible(false); }}
+                onPress={() => {
+                  setLocationFilter(loc);
+                  setFilterModalVisible(false);
+                }}
               >
-                <Text style={[styles.modalOptionText, locationFilter === loc && styles.modalOptionActive]}>{loc}</Text>
-                {locationFilter === loc && <Ionicons name="checkmark" size={20} color={colors.primary} />}
+                <Text
+                  style={[
+                    styles.modalOptionText,
+                    locationFilter === loc && styles.modalOptionActive,
+                  ]}
+                >
+                  {loc}
+                </Text>
+                {locationFilter === loc && (
+                  <Ionicons name="checkmark" size={20} color={colors.primary} />
+                )}
               </TouchableOpacity>
             ))}
-            <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setFilterModalVisible(false)}>
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => setFilterModalVisible(false)}
+            >
               <Text style={styles.modalCloseText}>Close</Text>
             </TouchableOpacity>
           </View>

@@ -1,12 +1,19 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../theme';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuthCheck } from '../../hooks/useAuthCheck';
 import Button from '../../components/common/Button';
 
 import { useFocusEffect } from '@react-navigation/native';
@@ -15,8 +22,8 @@ import { JobPost } from '../../types';
 
 export const EmployerDashboardScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<EmployerStackParamList>>();
-  const { user } = useAuth();
-  
+  const { user } = useAuthCheck();
+
   const [activeJobs, setActiveJobs] = useState<JobPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +33,10 @@ export const EmployerDashboardScreen: React.FC = () => {
         try {
           const res = await jobsApi.getMyJobs();
           // Filter to show only open/active jobs
-          const active = res.data.data.filter((j: JobPost) => j.status === 'open' || j.status === 'in_progress');
+          const jobsList = res?.data || [];
+          const active = jobsList.filter(
+            (j: JobPost) => j.status === 'open' || j.status === 'in_progress',
+          );
           setActiveJobs(active);
         } catch (error) {
           console.log('Error fetching jobs:', error);
@@ -34,9 +44,9 @@ export const EmployerDashboardScreen: React.FC = () => {
           setLoading(false);
         }
       };
-      
+
       fetchJobs();
-    }, [])
+    }, []),
   );
 
   const getInitial = (name?: string) => (name ? name.charAt(0).toUpperCase() : 'E');
@@ -55,7 +65,10 @@ export const EmployerDashboardScreen: React.FC = () => {
             </Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Notifications')}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => navigation.navigate('Notifications')}
+        >
           <Ionicons name="notifications-outline" size={24} color={colors.ink} />
         </TouchableOpacity>
       </View>
@@ -64,7 +77,9 @@ export const EmployerDashboardScreen: React.FC = () => {
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={[styles.statCard, { backgroundColor: colors.peach }]}>
-            <Text style={[styles.statNum, { color: colors.primaryDark }]}>{loading ? '-' : activeJobs.length}</Text>
+            <Text style={[styles.statNum, { color: colors.primaryDark }]}>
+              {loading ? '-' : activeJobs.length}
+            </Text>
             <Text style={[styles.statLabel, { color: colors.primaryDark }]}>Active jobs</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.mint }]}>
@@ -107,7 +122,10 @@ export const EmployerDashboardScreen: React.FC = () => {
 
         <View style={styles.listContainer}>
           {/* Step 1: Review */}
-          <TouchableOpacity style={[styles.actionCard, { borderColor: colors.urgentSoft }]} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={[styles.actionCard, { borderColor: colors.urgentSoft }]}
+            activeOpacity={0.7}
+          >
             <View style={[styles.actionIconBox, { backgroundColor: colors.urgentSoft }]}>
               <Ionicons name="people" size={24} color={colors.urgent} />
             </View>
@@ -119,7 +137,10 @@ export const EmployerDashboardScreen: React.FC = () => {
           </TouchableOpacity>
 
           {/* Step 2: Finalize Hire */}
-          <TouchableOpacity style={[styles.actionCard, { borderColor: colors.butter }]} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={[styles.actionCard, { borderColor: colors.butter }]}
+            activeOpacity={0.7}
+          >
             <View style={[styles.actionIconBox, { backgroundColor: colors.butter }]}>
               <Ionicons name="hand-right" size={24} color={colors.ink} />
             </View>
@@ -131,7 +152,10 @@ export const EmployerDashboardScreen: React.FC = () => {
           </TouchableOpacity>
 
           {/* Step 3: Mark Complete */}
-          <TouchableOpacity style={[styles.actionCard, { borderColor: colors.mint }]} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={[styles.actionCard, { borderColor: colors.mint }]}
+            activeOpacity={0.7}
+          >
             <View style={[styles.actionIconBox, { backgroundColor: colors.mint }]}>
               <Ionicons name="checkmark-done" size={24} color={colors.mintDeep} />
             </View>
@@ -143,7 +167,10 @@ export const EmployerDashboardScreen: React.FC = () => {
           </TouchableOpacity>
 
           {/* Step 4: Rate Worker */}
-          <TouchableOpacity style={[styles.actionCard, { borderColor: colors.sky }]} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={[styles.actionCard, { borderColor: colors.sky }]}
+            activeOpacity={0.7}
+          >
             <View style={[styles.actionIconBox, { backgroundColor: colors.sky }]}>
               <Ionicons name="star" size={24} color={colors.skyDeep} />
             </View>
@@ -156,7 +183,7 @@ export const EmployerDashboardScreen: React.FC = () => {
         </View>
 
         <Text style={[styles.sectionHeader, { marginTop: 32 }]}>Recent applicants</Text>
-        
+
         <View style={styles.listContainer}>
           <TouchableOpacity style={styles.applicantCard} activeOpacity={0.7}>
             <View style={styles.applicantAvatar}>
@@ -177,7 +204,7 @@ export const EmployerDashboardScreen: React.FC = () => {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.applicantCard} activeOpacity={0.7}>
-            <View style={[styles.applicantAvatar, { backgroundColor: colors.peach }]} >
+            <View style={[styles.applicantAvatar, { backgroundColor: colors.peach }]}>
               <Text style={[styles.applicantAvatarText, { color: colors.primaryDark }]}>A</Text>
             </View>
             <View style={styles.jobDetails}>
