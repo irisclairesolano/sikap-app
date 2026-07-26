@@ -37,7 +37,7 @@ export const EmployerDashboardScreen: React.FC = () => {
           // Filter to show only open/active jobs
           const jobsList = res?.data || [];
           const active = jobsList.filter(
-            (j: JobPost) => j.status === 'open' || j.status === 'in_progress',
+            (j: JobPost) => (j.status as string) === 'open' || (j.status as string) === 'in_progress',
           );
           setActiveJobs(active);
         } catch (error) {
@@ -126,8 +126,8 @@ export const EmployerDashboardScreen: React.FC = () => {
         {/* Real Dynamic Action Required */}
         {(() => {
           const allApps = activeJobs.flatMap((j) => (j.applications || []).map((app) => ({ ...app, jobTitle: j.title, jobId: j.id })));
-          const pendingApps = allApps.filter((a) => a.status === 'pending');
-          const hiredApps = allApps.filter((a) => a.status === 'hired');
+          const pendingApps = allApps.filter((a) => (a.status as string) === 'pending' || (a.status as string) === 'pending_negotiation');
+          const hiredApps = allApps.filter((a) => (a.status as string) === 'hired' || (a.status as string) === 'accepted');
 
           return (
             <>

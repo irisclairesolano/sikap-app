@@ -22,7 +22,8 @@ import { JobCard } from '../../components/jobs/JobCard';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { EmptyState } from '../../components/common/EmptyState';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuthCheck } from '../../hooks/useAuthCheck';
+import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 
 const CATEGORIES = [
   'All',
@@ -60,6 +61,13 @@ export const JobFeedScreen: React.FC = () => {
 
   const jobsList = data?.data || [];
 
+  const isSaved = useCallback(
+    (id: number) => {
+      return savedJobsData?.data?.some((job) => job.id === id) || false;
+    },
+    [savedJobsData],
+  );
+
   const handleJobPress = useCallback(
     (id: number) => {
       navigation.navigate('JobDetails', { id });
@@ -81,10 +89,6 @@ export const JobFeedScreen: React.FC = () => {
 
   const getInitial = (name?: string) => {
     return name ? name.charAt(0).toUpperCase() : 'M';
-  };
-
-  const isSaved = (id: number) => {
-    return savedJobsData?.data?.some((job) => job.id === id) || false;
   };
 
   const renderHeader = () => (

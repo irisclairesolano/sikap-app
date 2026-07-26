@@ -88,20 +88,10 @@ export const EditProfileScreen: React.FC = () => {
       await profileApi.uploadAvatar(uri);
       await refetchProfile();
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      setAlertConfig({
-        title: 'Looking Good!',
-        message: 'Your profile picture was updated successfully.',
-        onPress: undefined,
-      });
-      setAlertVisible(true);
+      showAlert('Looking Good!', 'Your profile picture was updated successfully.');
     } catch (err: any) {
       console.error(err);
-      setAlertConfig({
-        title: 'Upload Failed',
-        message: err.message || 'We could not upload your profile picture.',
-        onPress: undefined,
-      });
-      setAlertVisible(true);
+      showAlert('Upload Failed', err.message || 'We could not upload your profile picture.');
     } finally {
       setIsUploading(false);
     }
@@ -111,21 +101,11 @@ export const EditProfileScreen: React.FC = () => {
     if (user?.role === 'worker') {
       const phoneRegex = /^09\d{9}$/;
       if (emergencyContactPhone && !phoneRegex.test(emergencyContactPhone)) {
-        setAlertConfig({
-          title: 'Invalid Phone Number',
-          message: 'Emergency contact phone must start with 09 and be exactly 11 digits long.',
-          onPress: undefined,
-        });
-        setAlertVisible(true);
+        showAlert('Invalid Phone Number', 'Emergency contact phone must start with 09 and be exactly 11 digits long.');
         return;
       }
       if (emergencyContactPhone && emergencyContactPhone === user.phone) {
-        setAlertConfig({
-          title: 'Invalid Phone Number',
-          message: 'Emergency contact phone cannot be your own phone number.',
-          onPress: undefined,
-        });
-        setAlertVisible(true);
+        showAlert('Invalid Phone Number', 'Emergency contact phone cannot be your own phone number.');
         return;
       }
     }

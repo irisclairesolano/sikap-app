@@ -5,7 +5,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { colors, fonts, shadows } from '../../theme';
-import { Button } from '../../components/common/Button';
+import Button from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { useAlert } from '../../contexts/AlertContext';
 import { notifyAuthChanged } from '../../store/authEvents';
