@@ -10,6 +10,7 @@ import { colors, fonts, shadows } from '../../theme';
 import { profileApi } from '../../api/profile';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { RefreshableContainer } from '../../components/common/RefreshableContainer';
 import { useAuth } from '../../hooks/useAuth';
 
 import { useEmployerJobs } from '../../hooks/useEmployerJobs';
@@ -86,15 +87,9 @@ export const ProfileScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
+      <RefreshableContainer
+        onRefresh={handleRefresh}
         contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.primary}
-          />
-        }
       >
         {/* Profile Header */}
         <View style={styles.profileHeader}>
@@ -197,7 +192,7 @@ export const ProfileScreen: React.FC = () => {
             </View>
           </View>
         )}
-      </ScrollView>
+      </RefreshableContainer>
     </SafeAreaView>
   );
 };

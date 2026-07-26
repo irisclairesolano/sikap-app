@@ -9,6 +9,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import { profileApi } from '../../api/profile';
+import { RefreshableContainer } from '../../components/common/RefreshableContainer';
 import { useAuth } from '../../hooks/useAuth';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'Profile'>;

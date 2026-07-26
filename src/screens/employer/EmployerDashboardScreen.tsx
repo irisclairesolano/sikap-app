@@ -22,6 +22,7 @@ import { jobsApi } from '../../api/jobs';
 import { JobPost } from '../../types';
 
 import { DashboardSkeleton } from '../../components/common/SkeletonLoader';
+import { RefreshableContainer } from '../../components/common/RefreshableContainer';
 
 export const EmployerDashboardScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<EmployerStackParamList>>();
@@ -90,16 +91,10 @@ export const EmployerDashboardScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
+      <RefreshableContainer
+        onRefresh={fetchJobs}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.primary}
-          />
-        }
       >
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
@@ -248,7 +243,7 @@ export const EmployerDashboardScreen: React.FC = () => {
             </>
           );
         })()}
-      </ScrollView>
+      </RefreshableContainer>
     </SafeAreaView>
   );
 };
