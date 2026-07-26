@@ -122,19 +122,23 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.reputationCard}>
           <Text style={styles.reputationEyebrow}>Reputation</Text>
           <View style={styles.reputationRow}>
-            <Text style={styles.reputationScore}>{worker.reputation}</Text>
+            <Text style={styles.reputationScore}>{worker.ratings > 0 ? worker.reputation : 'N/A'}</Text>
             <View style={styles.reputationStars}>
-              <View style={styles.starsRow}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Ionicons
-                    key={star}
-                    name="star"
-                    size={14}
-                    color={star <= Math.round(worker.reputation) ? colors.gold : colors.inkFaint}
-                  />
-                ))}
-              </View>
-              <Text style={styles.reputationCount}>{worker.ratings} ratings</Text>
+              {worker.ratings > 0 ? (
+                <View style={styles.starsRow}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Ionicons
+                      key={star}
+                      name="star"
+                      size={14}
+                      color={star <= Math.round(worker.reputation) ? colors.gold : colors.inkFaint}
+                    />
+                  ))}
+                </View>
+              ) : null}
+              <Text style={styles.reputationCount}>
+                {worker.ratings > 0 ? `${worker.ratings} ratings` : 'No ratings yet'}
+              </Text>
             </View>
           </View>
           <Text style={styles.reputationTagline}>Your score travels with you.</Text>
