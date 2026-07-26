@@ -73,7 +73,10 @@ export const useAuth = () => {
   // Switch Role mutation
   const switchRoleMutation = useMutation({
     mutationFn: authApi.switchRole,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      if (data?.user) {
+        await SecureStore.setItemAsync('user_profile', JSON.stringify(data.user));
+      }
       queryClient.setQueryData(['profile'], data.user);
       queryClient.invalidateQueries();
       notifyAuthChanged();
@@ -87,7 +90,10 @@ export const useAuth = () => {
   const onboardRoleMutation = useMutation({
     mutationFn: (params: { targetRole: 'worker' | 'employer'; data: any }) =>
       profileApi.onboardRole(params.targetRole, params.data),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      if (data?.user) {
+        await SecureStore.setItemAsync('user_profile', JSON.stringify(data.user));
+      }
       queryClient.setQueryData(['profile'], data.user);
       queryClient.invalidateQueries();
       notifyAuthChanged();
