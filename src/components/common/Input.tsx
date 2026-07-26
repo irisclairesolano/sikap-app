@@ -24,6 +24,10 @@ export type InputProps = {
     type?: string;
     onPress: () => void;
   };
+  onFocus?: () => void;
+  onBlur?: () => void;
+  onSubmitEditing?: () => void;
+  onKeyPress?: (e: any) => void;
 };
 
 const CustomInput: React.FC<InputProps> = ({
@@ -43,6 +47,10 @@ const CustomInput: React.FC<InputProps> = ({
   statusText,
   icon,
   rightIcon,
+  onFocus,
+  onBlur,
+  onSubmitEditing,
+  onKeyPress,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -70,8 +78,16 @@ const CustomInput: React.FC<InputProps> = ({
             icon ? { type: 'ionicon', name: icon, color: colors.inkMuted, size: 20 } : undefined
           }
           rightIcon={rightIcon}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onFocus={() => {
+            setIsFocused(true);
+            if (onFocus) onFocus();
+          }}
+          onBlur={() => {
+            setIsFocused(false);
+            if (onBlur) onBlur();
+          }}
+          onSubmitEditing={onSubmitEditing}
+          onKeyPress={onKeyPress}
           inputStyle={[
             styles.input,
             multiline && styles.inputMultiline,

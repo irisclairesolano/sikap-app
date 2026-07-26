@@ -113,113 +113,114 @@ export const EmployerDashboardScreen: React.FC = () => {
           style={{ marginTop: 24 }}
         />
 
-        <View style={styles.actionHeader}>
-          <Text style={styles.sectionHeader}>Action required</Text>
-          <View style={styles.badgeCount}>
-            <Text style={styles.badgeCountText}>4</Text>
-          </View>
-        </View>
+        {/* Real Dynamic Action Required */}
+        {(() => {
+          const allApps = activeJobs.flatMap((j) => (j.applications || []).map((app) => ({ ...app, jobTitle: j.title, jobId: j.id })));
+          const pendingApps = allApps.filter((a) => a.status === 'pending');
+          const hiredApps = allApps.filter((a) => a.status === 'hired');
 
-        <View style={styles.listContainer}>
-          {/* Step 1: Review */}
-          <TouchableOpacity
-            style={[styles.actionCard, { borderColor: colors.urgentSoft }]}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.actionIconBox, { backgroundColor: colors.urgentSoft }]}>
-              <Ionicons name="people" size={24} color={colors.urgent} />
-            </View>
-            <View style={styles.jobDetails}>
-              <Text style={styles.jobTitle}>Review new applicants</Text>
-              <Text style={styles.jobSubtitle}>3 people applied for "House painter"</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
-          </TouchableOpacity>
-
-          {/* Step 2: Finalize Hire */}
-          <TouchableOpacity
-            style={[styles.actionCard, { borderColor: colors.butter }]}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.actionIconBox, { backgroundColor: colors.butter }]}>
-              <Ionicons name="hand-right" size={24} color={colors.ink} />
-            </View>
-            <View style={styles.jobDetails}>
-              <Text style={styles.jobTitle}>Finalize hire & price</Text>
-              <Text style={styles.jobSubtitle}>Confirm agreement with Mario Santos</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
-          </TouchableOpacity>
-
-          {/* Step 3: Mark Complete */}
-          <TouchableOpacity
-            style={[styles.actionCard, { borderColor: colors.mint }]}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.actionIconBox, { backgroundColor: colors.mint }]}>
-              <Ionicons name="checkmark-done" size={24} color={colors.mintDeep} />
-            </View>
-            <View style={styles.jobDetails}>
-              <Text style={styles.jobTitle}>Mark job as completed</Text>
-              <Text style={styles.jobSubtitle}>Is the "Fence Repair" finished?</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
-          </TouchableOpacity>
-
-          {/* Step 4: Rate Worker */}
-          <TouchableOpacity
-            style={[styles.actionCard, { borderColor: colors.sky }]}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.actionIconBox, { backgroundColor: colors.sky }]}>
-              <Ionicons name="star" size={24} color={colors.skyDeep} />
-            </View>
-            <View style={styles.jobDetails}>
-              <Text style={styles.jobTitle}>Rate & review worker</Text>
-              <Text style={styles.jobSubtitle}>Leave a review for Anna Dimaculangan</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
-          </TouchableOpacity>
-        </View>
-
-        <Text style={[styles.sectionHeader, { marginTop: 32 }]}>Recent applicants</Text>
-
-        <View style={styles.listContainer}>
-          <TouchableOpacity style={styles.applicantCard} activeOpacity={0.7}>
-            <View style={styles.applicantAvatar}>
-              <Text style={styles.applicantAvatarText}>M</Text>
-              <View style={styles.onlineBadge} />
-            </View>
-            <View style={styles.jobDetails}>
-              <Text style={styles.jobTitle}>Mario Santos</Text>
-              <Text style={styles.jobSubtitle}>Applied for Carpenter wanted</Text>
-              <View style={styles.ratingRow}>
-                <Ionicons name="star" size={12} color={colors.gold} />
-                <Text style={styles.ratingText}>4.9 (24 jobs)</Text>
+          return (
+            <>
+              <View style={styles.actionHeader}>
+                <Text style={styles.sectionHeader}>Action required</Text>
+                <View style={styles.badgeCount}>
+                  <Text style={styles.badgeCountText}>{pendingApps.length + hiredApps.length}</Text>
+                </View>
               </View>
-            </View>
-            <View style={styles.timeTag}>
-              <Text style={styles.timeTagText}>2h ago</Text>
-            </View>
-          </TouchableOpacity>
 
-          <TouchableOpacity style={styles.applicantCard} activeOpacity={0.7}>
-            <View style={[styles.applicantAvatar, { backgroundColor: colors.peach }]}>
-              <Text style={[styles.applicantAvatarText, { color: colors.primaryDark }]}>A</Text>
-            </View>
-            <View style={styles.jobDetails}>
-              <Text style={styles.jobTitle}>Anna Dimaculangan</Text>
-              <Text style={styles.jobSubtitle}>Applied for House painter</Text>
-              <View style={styles.ratingRow}>
-                <Ionicons name="star" size={12} color={colors.gold} />
-                <Text style={styles.ratingText}>5.0 (12 jobs)</Text>
+              <View style={styles.listContainer}>
+                {pendingApps.length > 0 ? (
+                  <TouchableOpacity
+                    style={[styles.actionCard, { borderColor: colors.urgentSoft }]}
+                    activeOpacity={0.7}
+                    onPress={() => navigation.navigate('ViewApplicants', { id: pendingApps[0].jobId })}
+                  >
+                    <View style={[styles.actionIconBox, { backgroundColor: colors.urgentSoft }]}>
+                      <Ionicons name="people" size={24} color={colors.urgent} />
+                    </View>
+                    <View style={styles.jobDetails}>
+                      <Text style={styles.jobTitle}>Review new applicants</Text>
+                      <Text style={styles.jobSubtitle}>
+                        {pendingApps.length} applicant(s) waiting for review
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
+                  </TouchableOpacity>
+                ) : null}
+
+                {hiredApps.length > 0 ? (
+                  <TouchableOpacity
+                    style={[styles.actionCard, { borderColor: colors.mint }]}
+                    activeOpacity={0.7}
+                    onPress={() => navigation.navigate('MyJobs')}
+                  >
+                    <View style={[styles.actionIconBox, { backgroundColor: colors.mint }]}>
+                      <Ionicons name="checkmark-done" size={24} color={colors.mintDeep} />
+                    </View>
+                    <View style={styles.jobDetails}>
+                      <Text style={styles.jobTitle}>Active hired workers</Text>
+                      <Text style={styles.jobSubtitle}>{hiredApps.length} job(s) currently in progress</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
+                  </TouchableOpacity>
+                ) : null}
+
+                {pendingApps.length === 0 && hiredApps.length === 0 ? (
+                  <View style={[styles.actionCard, { borderColor: colors.inkFaint }]}>
+                    <View style={[styles.actionIconBox, { backgroundColor: colors.paperBright }]}>
+                      <Ionicons name="checkmark-circle-outline" size={24} color={colors.mintDeep} />
+                    </View>
+                    <View style={styles.jobDetails}>
+                      <Text style={styles.jobTitle}>All caught up!</Text>
+                      <Text style={styles.jobSubtitle}>No pending actions required right now</Text>
+                    </View>
+                  </View>
+                ) : null}
               </View>
-            </View>
-            <View style={styles.timeTag}>
-              <Text style={styles.timeTagText}>5h ago</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+
+              {/* Real Dynamic Recent Applicants */}
+              <Text style={[styles.sectionHeader, { marginTop: 32 }]}>Recent applicants</Text>
+
+              <View style={styles.listContainer}>
+                {allApps.length === 0 ? (
+                  <View style={[styles.applicantCard, { justifyContent: 'center', paddingVertical: 20 }]}>
+                    <Ionicons name="people-outline" size={28} color={colors.inkLight} style={{ marginRight: 12 }} />
+                    <View style={styles.jobDetails}>
+                      <Text style={styles.jobTitle}>No applicants yet</Text>
+                      <Text style={styles.jobSubtitle}>Applicants will appear here when workers apply</Text>
+                    </View>
+                  </View>
+                ) : (
+                  allApps.slice(0, 3).map((app, index) => (
+                    <TouchableOpacity
+                      key={app.id || index}
+                      style={styles.applicantCard}
+                      activeOpacity={0.7}
+                      onPress={() => navigation.navigate('ViewApplicants', { id: app.jobId })}
+                    >
+                      <View style={styles.applicantAvatar}>
+                        <Text style={styles.applicantAvatarText}>
+                          {(app.worker?.name || 'W').charAt(0).toUpperCase()}
+                        </Text>
+                      </View>
+                      <View style={styles.jobDetails}>
+                        <Text style={styles.jobTitle}>{app.worker?.name || 'Worker Applicant'}</Text>
+                        <Text style={styles.jobSubtitle}>Applied for {app.jobTitle}</Text>
+                        <View style={styles.ratingRow}>
+                          <Ionicons name="star" size={12} color={colors.gold} />
+                          <Text style={styles.ratingText}>
+                            {app.worker?.reputation_score || 5.0} • {app.status}
+                          </Text>
+                        </View>
+                      </View>
+                      <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
+                    </TouchableOpacity>
+                  ))
+                )}
+              </View>
+            </>
+          );
+        })()}
       </ScrollView>
     </SafeAreaView>
   );

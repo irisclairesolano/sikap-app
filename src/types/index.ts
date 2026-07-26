@@ -35,6 +35,7 @@ export interface JobPost {
   accepted_count: number;
   duration: number;
   duration_unit: string;
+  duration_type?: string;
   photos?: string[];
   video_url?: string;
   schedule_date?: string;
@@ -42,6 +43,8 @@ export interface JobPost {
   tools_required?: string;
   status: 'open' | 'closed_in_progress' | 'completed' | 'cancelled';
   rating_window_expires_at: string | null;
+  created_at?: string;
+  updated_at?: string;
   employer: User;
   applications?: Application[];
   is_applied?: boolean;

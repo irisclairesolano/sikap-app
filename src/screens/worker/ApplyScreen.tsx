@@ -90,7 +90,7 @@ export const ApplyScreen: React.FC = () => {
     );
   }
 
-  const catStyles = getCategoryStyles(job.category);
+  const catStyles = getCategoryStyles(job.categories?.[0] || 'Other');
 
   // INLINE SUCCESS STATE (Matches Screen 15 structure for Stage 1)
   if (isSuccess) {

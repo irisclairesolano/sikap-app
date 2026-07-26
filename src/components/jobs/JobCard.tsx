@@ -30,7 +30,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
   // Mock badges logic
   const isUrgent = false; // Mock logic
   const isVerified = job.employer?.verification_badge;
-  const catStyles = getCategoryStyles(job.category);
+  const catStyles = getCategoryStyles(job.categories?.[0] || 'Other');
   const isApplied = job.is_applied && !job.is_withdrawn;
 
   return (

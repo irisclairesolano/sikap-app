@@ -97,7 +97,7 @@ export const JobDetailsScreen: React.FC = () => {
         {/* Category & Badges */}
         <View style={styles.badgesRow}>
           <View style={styles.categoryChip}>
-            <Text style={styles.categoryText}>{job.category}</Text>
+            <Text style={styles.categoryText}>{job.categories?.join(', ') || 'Other'}</Text>
           </View>
           {isUrgent && (
             <View style={[styles.badge, styles.badgeUrgent]}>
@@ -117,9 +117,9 @@ export const JobDetailsScreen: React.FC = () => {
         <Text style={styles.title}>{job.title}</Text>
 
         {/* Peach Pay Card Hero */}
-        <View style={styles.payContainer}>
-          <View style={styles.payHeader}>
-            <Text style={styles.payCurrency}>₱</Text>
+        <View style={styles.payCard}>
+          <View style={styles.payRow}>
+            <Text style={styles.paySymbol}>₱</Text>
             <Text style={styles.payValue}>{job.compensation}</Text>
           </View>
           <Text style={styles.payPeriod}>
