@@ -9,12 +9,14 @@ import AuthNavigator from './AuthNavigator';
 import { AuthStackParamList } from './authTypes';
 import EmployerNavigator from './EmployerNavigator';
 import WorkerNavigator from './WorkerNavigator';
+import RoleOnboardingScreen from '../screens/common/RoleOnboardingScreen';
 import { colors, fonts } from '../theme';
 
 export type RootStackParamList = {
   Auth: undefined;
   Worker: undefined;
   Employer: undefined;
+  RoleOnboarding: { targetRole: 'worker' | 'employer' };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -122,9 +124,22 @@ const RootNavigator: React.FC = () => {
     );
   }
 
+  const needsOnboarding =
+    (user.role === 'worker' &&
+      (!user.has_worker_profile ||
+        !user.worker_profile ||
+        (user.worker_profile.skills || []).length === 0)) ||
+    (user.role === 'employer' && (!user.has_employer_profile || !user.employer_profile));
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {user.role === 'worker' ? (
+      {needsOnboarding ? (
+        <Stack.Screen
+          name="RoleOnboarding"
+          component={RoleOnboardingScreen}
+          initialParams={{ targetRole: user.role }}
+        />
+      ) : user.role === 'worker' ? (
         <Stack.Screen name="Worker" component={WorkerNavigator} />
       ) : user.role === 'employer' ? (
         <Stack.Screen name="Employer" component={EmployerNavigator} />

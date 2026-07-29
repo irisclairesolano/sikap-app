@@ -1,30 +1,29 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useNavigation } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
+import { Image } from 'expo-image';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as ImagePicker from 'expo-image-picker';
+import * as SecureStore from 'expo-secure-store';
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { useQueryClient } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
-import * as SecureStore from 'expo-secure-store';
-import { colors, fonts, shadows } from '../../theme';
-import Input from '../../components/common/Input';
-import Button from '../../components/common/Button';
-import { useAuth } from '../../hooks/useAuth';
-import { useAlert } from '../../contexts/AlertContext';
 import { profileApi } from '../../api/profile';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import { useAlert } from '../../contexts/AlertContext';
+import { useAuth } from '../../hooks/useAuth';
+import { colors, fonts, shadows } from '../../theme';
 
 export const EditProfileScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -119,11 +118,17 @@ export const EditProfileScreen: React.FC = () => {
     if (user?.role === 'worker') {
       const phoneRegex = /^09\d{9}$/;
       if (emergencyContactPhone && !phoneRegex.test(emergencyContactPhone)) {
-        showAlert('Invalid Phone Number', 'Emergency contact phone must start with 09 and be exactly 11 digits long.');
+        showAlert(
+          'Invalid Phone Number',
+          'Emergency contact phone must start with 09 and be exactly 11 digits long.',
+        );
         return;
       }
       if (emergencyContactPhone && emergencyContactPhone === user.phone) {
-        showAlert('Invalid Phone Number', 'Emergency contact phone cannot be your own phone number.');
+        showAlert(
+          'Invalid Phone Number',
+          'Emergency contact phone cannot be your own phone number.',
+        );
         return;
       }
     }
@@ -184,162 +189,162 @@ export const EditProfileScreen: React.FC = () => {
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
-        <View style={styles.avatarSection}>
-          <TouchableOpacity
-            style={styles.avatarContainer}
-            onPress={handlePickAvatar}
-            disabled={isUploading}
-          >
-            {isUploading ? (
-              <ActivityIndicator color={colors.primary} />
-            ) : getAvatarUrl() ? (
-              <Image source={{ uri: getAvatarUrl()! }} style={styles.avatarImage} />
-            ) : (
-              <Text style={styles.avatarText}>{name ? name.charAt(0) : 'U'}</Text>
-            )}
-            <View style={styles.editAvatarBtn}>
-              <Ionicons name="camera" size={14} color={colors.paperBright} />
-            </View>
-          </TouchableOpacity>
-          <Text style={styles.avatarHint}>Tap to change photo</Text>
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Full Name</Text>
-          <Input
-            value={name}
-            onChangeText={setName}
-            placeholder="Juan Reyes"
-            editable={!isVerified}
-          />
-          {isVerified && (
-            <Text style={styles.helperText}>Verified accounts cannot change their name.</Text>
-          )}
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Barangay</Text>
-          <Input value={barangay} onChangeText={setBarangay} placeholder="Barangay" />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Municipality</Text>
-          <Input value={municipality} onChangeText={setMunicipality} placeholder="Municipality" />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Date of Birth</Text>
-          <TouchableOpacity
-            style={{
-              borderWidth: 1,
-              borderColor: isVerified ? 'transparent' : colors.inkFaint,
-              borderRadius: 12,
-              padding: 14,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 12,
-              backgroundColor: isVerified ? colors.paperBright : 'transparent',
-              opacity: isVerified ? 0.7 : 1,
-            }}
-            onPress={() => !isVerified && setShowDatePicker(true)}
-            activeOpacity={isVerified ? 1 : 0.2}
-          >
-            <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
-            <Text
-              style={{
-                fontFamily: fonts.body,
-                fontSize: 15,
-                color: isVerified ? colors.inkMuted : colors.ink,
-              }}
+          <View style={styles.avatarSection}>
+            <TouchableOpacity
+              style={styles.avatarContainer}
+              onPress={handlePickAvatar}
+              disabled={isUploading}
             >
-              {dateOfBirth.toLocaleDateString()}
-            </Text>
-          </TouchableOpacity>
-          {isVerified && (
-            <Text style={styles.helperText}>
-              Verified accounts cannot change their date of birth.
-            </Text>
-          )}
-          {showDatePicker && !isVerified && (
-            <DateTimePicker
-              value={dateOfBirth}
-              mode="date"
-              display="default"
-              maximumDate={new Date()}
-              onChange={(event, selectedDate) => {
-                setShowDatePicker(false);
-                if (selectedDate) setDateOfBirth(selectedDate);
-              }}
-            />
-          )}
-        </View>
-
-        {user?.role === 'worker' && (
-          <>
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Emergency Contact Name</Text>
-              <Input
-                value={emergencyContactName}
-                onChangeText={setEmergencyContactName}
-                placeholder="Juan Dela Cruz"
-              />
-            </View>
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Emergency Contact Phone</Text>
-              <Input
-                value={emergencyContactPhone}
-                onChangeText={(text) => {
-                  // Strict length formatting (digits only, max 11)
-                  const formatted = text.replace(/[^0-9]/g, '').slice(0, 11);
-                  setEmergencyContactPhone(formatted);
-                }}
-                placeholder="09XXXXXXXXX"
-                keyboardType="phone-pad"
-                maxLength={11}
-                status={
-                  emergencyContactPhone.length === 0
-                    ? null
-                    : emergencyContactPhone === user?.phone
-                      ? 'invalid'
-                      : /^09\d{9}$/.test(emergencyContactPhone)
-                        ? 'valid'
-                        : 'invalid'
-                }
-                statusText={
-                  emergencyContactPhone.length > 0 && emergencyContactPhone === user?.phone
-                    ? 'Cannot be your own number.'
-                    : emergencyContactPhone.length > 0 && !/^09\d{9}$/.test(emergencyContactPhone)
-                      ? 'Must start with 09 and be 11 digits long.'
-                      : ''
-                }
-              />
-              <Text style={styles.helperText}>
-                Only revealed to employers when you start a job.
-              </Text>
-            </View>
-          </>
-        )}
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Bio / Description</Text>
-          <View style={styles.textAreaContainer}>
-            <Input
-              value={bio}
-              onChangeText={setBio}
-              placeholder="Tell others about yourself..."
-              multiline={true}
-              numberOfLines={4}
-            />
+              {isUploading ? (
+                <ActivityIndicator color={colors.primary} />
+              ) : getAvatarUrl() ? (
+                <Image source={{ uri: getAvatarUrl()! }} style={styles.avatarImage} />
+              ) : (
+                <Text style={styles.avatarText}>{name ? name.charAt(0) : 'U'}</Text>
+              )}
+              <View style={styles.editAvatarBtn}>
+                <Ionicons name="camera" size={14} color={colors.paperBright} />
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.avatarHint}>Tap to change photo</Text>
           </View>
-        </View>
 
-        <Button
-          title={isSaving ? 'Saving...' : 'Save changes'}
-          onPress={handleSave}
-          disabled={isSaving}
-          style={{ marginTop: 24 }}
-        />
-      </ScrollView>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Full Name</Text>
+            <Input
+              value={name}
+              onChangeText={setName}
+              placeholder="Juan Reyes"
+              editable={!isVerified}
+            />
+            {isVerified && (
+              <Text style={styles.helperText}>Verified accounts cannot change their name.</Text>
+            )}
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Barangay</Text>
+            <Input value={barangay} onChangeText={setBarangay} placeholder="Barangay" />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Municipality</Text>
+            <Input value={municipality} onChangeText={setMunicipality} placeholder="Municipality" />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Date of Birth</Text>
+            <TouchableOpacity
+              style={{
+                borderWidth: 1,
+                borderColor: isVerified ? 'transparent' : colors.inkFaint,
+                borderRadius: 12,
+                padding: 14,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 12,
+                backgroundColor: isVerified ? colors.paperBright : 'transparent',
+                opacity: isVerified ? 0.7 : 1,
+              }}
+              onPress={() => !isVerified && setShowDatePicker(true)}
+              activeOpacity={isVerified ? 1 : 0.2}
+            >
+              <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
+              <Text
+                style={{
+                  fontFamily: fonts.body,
+                  fontSize: 15,
+                  color: isVerified ? colors.inkMuted : colors.ink,
+                }}
+              >
+                {dateOfBirth.toLocaleDateString()}
+              </Text>
+            </TouchableOpacity>
+            {isVerified && (
+              <Text style={styles.helperText}>
+                Verified accounts cannot change their date of birth.
+              </Text>
+            )}
+            {showDatePicker && !isVerified && (
+              <DateTimePicker
+                value={dateOfBirth}
+                mode="date"
+                display="default"
+                maximumDate={new Date()}
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) setDateOfBirth(selectedDate);
+                }}
+              />
+            )}
+          </View>
+
+          {user?.role === 'worker' && (
+            <>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Emergency Contact Name</Text>
+                <Input
+                  value={emergencyContactName}
+                  onChangeText={setEmergencyContactName}
+                  placeholder="Juan Dela Cruz"
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Emergency Contact Phone</Text>
+                <Input
+                  value={emergencyContactPhone}
+                  onChangeText={(text) => {
+                    // Strict length formatting (digits only, max 11)
+                    const formatted = text.replace(/[^0-9]/g, '').slice(0, 11);
+                    setEmergencyContactPhone(formatted);
+                  }}
+                  placeholder="09XXXXXXXXX"
+                  keyboardType="phone-pad"
+                  maxLength={11}
+                  status={
+                    emergencyContactPhone.length === 0
+                      ? null
+                      : emergencyContactPhone === user?.phone
+                        ? 'invalid'
+                        : /^09\d{9}$/.test(emergencyContactPhone)
+                          ? 'valid'
+                          : 'invalid'
+                  }
+                  statusText={
+                    emergencyContactPhone.length > 0 && emergencyContactPhone === user?.phone
+                      ? 'Cannot be your own number.'
+                      : emergencyContactPhone.length > 0 && !/^09\d{9}$/.test(emergencyContactPhone)
+                        ? 'Must start with 09 and be 11 digits long.'
+                        : ''
+                  }
+                />
+                <Text style={styles.helperText}>
+                  Only revealed to employers when you start a job.
+                </Text>
+              </View>
+            </>
+          )}
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Bio / Description</Text>
+            <View style={styles.textAreaContainer}>
+              <Input
+                value={bio}
+                onChangeText={setBio}
+                placeholder="Tell others about yourself..."
+                multiline={true}
+                numberOfLines={4}
+              />
+            </View>
+          </View>
+
+          <Button
+            title={isSaving ? 'Saving...' : 'Save changes'}
+            onPress={handleSave}
+            disabled={isSaving}
+            style={{ marginTop: 24 }}
+          />
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

@@ -20,6 +20,8 @@ export interface User {
   expo_push_token?: string;
   worker_profile?: WorkerProfile;
   employer_profile?: EmployerProfile;
+  has_worker_profile?: boolean;
+  has_employer_profile?: boolean;
 }
 
 export interface JobPost {
