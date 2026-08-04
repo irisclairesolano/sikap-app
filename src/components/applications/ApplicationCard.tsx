@@ -43,8 +43,8 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, o
   } else if (status === 'employer_confirmed') {
     badgeLabel = 'Offer';
     badgeIcon = 'alert-circle';
-    badgeBg = '#FEE2E2'; // urgent light red
-    badgeColor = '#DC2626'; // urgent dark red
+    badgeBg = colors.status.rejected.bg; // use rejected status light background
+    badgeColor = colors.status.rejected.text; // use rejected status dark text
   } else if (status === 'completed') {
     badgeLabel = 'Done';
     badgeIcon = 'checkmark-circle';
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   withdrawnCardBorder: {
     borderWidth: 1,
-    borderColor: '#EA580C', // Explicitly strong orange
+    borderColor: colors.status.withdrawn.text, // use themed withdrawn status text color
     padding: 13,
   },
   topRow: {

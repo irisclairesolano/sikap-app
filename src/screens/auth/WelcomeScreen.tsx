@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   },
   heroCard: {
     backgroundColor: colors.peach,
-    borderRadius: 28,
+    borderRadius: 12,
     paddingTop: 32,
     paddingHorizontal: 24,
     paddingBottom: 28,

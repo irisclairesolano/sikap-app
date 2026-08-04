@@ -101,8 +101,8 @@ export const JobDetailsScreen: React.FC = () => {
           </View>
           {isUrgent && (
             <View style={[styles.badge, styles.badgeUrgent]}>
-              <Ionicons name="flame" size={10} color="#DC2626" />
-              <Text style={[styles.badgeText, { color: '#DC2626' }]}>URGENT</Text>
+              <Ionicons name="flame" size={10} color={colors.error} />
+              <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
             </View>
           )}
           {isVerified && (
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   badgeUrgent: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: colors.status.rejected.bg,
   },
   badgeVerified: {
     backgroundColor: colors.mint,

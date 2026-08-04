@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEE2E2', // error tint
+    backgroundColor: colors.status.rejected.bg, // use themed error background tint
     padding: 12,
     borderRadius: 8,
     margin: 16,
