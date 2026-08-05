@@ -17,6 +17,7 @@ import { useMyApplications } from '../../hooks/useMyApplications';
 import { ApplicationCard } from '../../components/applications/ApplicationCard';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
+import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 import { Application } from '../../types';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 
@@ -126,7 +127,10 @@ export const MyApplicationsScreen: React.FC = () => {
       )}
 
       {isLoading && !isRefetching ? (
-        <LoadingSpinner />
+        <View style={{ paddingHorizontal: 20 }}>
+          <JobCardSkeleton />
+          <JobCardSkeleton />
+        </View>
       ) : (
         <FlatList
           data={filteredApps}

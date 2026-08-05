@@ -1,45 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { colors, fonts } from '../../theme';
+import { Image } from 'react-native';
 
 interface WordmarkProps {
   size?: number;
 }
 
 export const Wordmark: React.FC<WordmarkProps> = ({ size = 48 }) => {
-  const dotSize = size * 0.25; // Scale dot based on text size (e.g., 16px for 64px text)
-  const dotOffset = size * -0.04; // e.g., -2.5px for 64px
+  // Height is size, width is scaled proportionally (approx 3.5 times the height)
+  const height = size;
+  const width = size * 3.5;
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.text, { fontSize: size }]}>sikap</Text>
-      <View
-        style={[
-          styles.dot,
-          {
-            width: dotSize,
-            height: dotSize,
-            borderRadius: dotSize / 2,
-            marginLeft: dotOffset,
-            marginBottom: dotSize * 0.5,
-          },
-        ]}
-      />
-    </View>
+    <Image
+      source={require('../../../assets/logo/04_Wordmark.png')}
+      style={{ width, height }}
+      resizeMode="contain"
+    />
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  text: {
-    fontFamily: fonts.display, // Using Fraunces
-    color: colors.ink,
-    letterSpacing: -0.04 * 48, // Will be overridden somewhat but it's fine
-  },
-  dot: {
-    backgroundColor: colors.primary,
-  },
-});

@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     height: 12,
   },
   bannerError: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: colors.status.rejected.bg,
     borderColor: colors.error,
     borderWidth: 1,
     borderRadius: 10,

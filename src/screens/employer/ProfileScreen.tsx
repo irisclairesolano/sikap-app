@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,9 +8,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import { profileApi } from '../../api/profile';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { RefreshableContainer } from '../../components/common/RefreshableContainer';
 import { useAuth } from '../../hooks/useAuth';
+
+import { useEmployerJobs } from '../../hooks/useEmployerJobs';
 
 type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
   EmployerStackParamList,
@@ -18,7 +22,10 @@ type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<EmployerProfileScreenNavigationProp>();
-  const { user: authUser } = useAuth();
+  const { user: authUser, refetchProfile } = useAuth();
+  const queryClient = useQueryClient();
+  const { data: jobsResponse } = useEmployerJobs();
+  const [refreshing, setRefreshing] = useState(false);
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -34,19 +41,44 @@ export const ProfileScreen: React.FC = () => {
   }
 
   const profileUser = user || authUser;
+  const activeJobsCount = (jobsResponse?.data || []).filter(
+    (j) => j.status === 'open' || j.status === 'in_progress',
+  ).length;
 
   // Employer data mixed with real
   const employer = {
     name: profileUser?.name || 'Unknown',
-    location: profileUser ? `${profileUser.barangay || ''}, ${profileUser.municipality || ''}` : 'Unknown',
+    bio: profileUser?.employer_profile?.description || profileUser?.worker_profile?.bio || '',
+    location: profileUser
+      ? `${profileUser.barangay || ''}, ${profileUser.municipality || ''}`
+      : 'Unknown',
     verified: profileUser?.verification_badge || false,
     reputation: profileUser?.reputation_score || 0,
     ratings: profileUser?.employer_profile?.ratings_count || 0,
-    activeJobs: profileUser?.employer_profile?.active_jobs || 0,
+    activeJobs: activeJobsCount || profileUser?.employer_profile?.active_jobs || 0,
     hired: profileUser?.employer_profile?.total_hired || 0,
     totalPaid: `₱${profileUser?.employer_profile?.total_spent || 0}`,
     memberSince: 'New',
     recentReview: null, // TODO: Fetch real recent review if needed
+  };
+
+  const getAvatarUrl = () => {
+    if (!profileUser?.avatar_url) return null;
+    let url = profileUser.avatar_url;
+    if (url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) {
+      const apiBase = (process.env.EXPO_PUBLIC_API_URL || '').replace(/\/api.*$/, '');
+      url = url.replace(/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, apiBase);
+    }
+    if (url.startsWith('http')) return url;
+    const apiBase = (process.env.EXPO_PUBLIC_API_URL || '').replace(/\/api.*$/, '');
+    return `${apiBase}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries();
+    await refetchProfile();
+    setRefreshing(false);
   };
 
   return (
@@ -61,11 +93,18 @@ export const ProfileScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <RefreshableContainer
+        onRefresh={handleRefresh}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{employer.name.charAt(0)}</Text>
+            {getAvatarUrl() ? (
+              <Image source={{ uri: getAvatarUrl()! }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>{employer.name.charAt(0)}</Text>
+            )}
           </View>
           <View style={styles.profileInfo}>
             <View style={styles.nameRow}>
@@ -85,24 +124,31 @@ export const ProfileScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Reputation Card */}
+        {!!employer.bio && (
+          <View style={styles.bioCard}>
+            <Text style={styles.bioTitle}>About</Text>
+            <Text style={styles.bioText}>{employer.bio}</Text>
+          </View>
+        )}
         <View style={[styles.reputationCard, { backgroundColor: colors.sky }]}>
           <Text style={styles.reputationEyebrow}>Reputation</Text>
           <View style={styles.reputationRow}>
-            <Text style={styles.reputationScore}>{employer.reputation}</Text>
+            <Text style={styles.reputationScore}>{employer.ratings > 0 ? employer.reputation : 'N/A'}</Text>
             <View style={styles.reputationStars}>
-              <View style={styles.starsRow}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Ionicons
-                    key={star}
-                    name="star"
-                    size={14}
-                    color={star <= Math.round(employer.reputation) ? colors.gold : colors.inkFaint}
-                  />
-                ))}
-              </View>
+              {employer.ratings > 0 ? (
+                <View style={styles.starsRow}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Ionicons
+                      key={star}
+                      name="star"
+                      size={14}
+                      color={star <= Math.round(employer.reputation) ? colors.gold : colors.inkFaint}
+                    />
+                  ))}
+                </View>
+              ) : null}
               <Text style={[styles.reputationCount, { color: colors.skyDeep }]}>
-                {employer.ratings} ratings
+                {employer.ratings > 0 ? `${employer.ratings} ratings` : 'No ratings yet'}
               </Text>
             </View>
           </View>
@@ -152,7 +198,7 @@ export const ProfileScreen: React.FC = () => {
             </View>
           </View>
         )}
-      </ScrollView>
+      </RefreshableContainer>
     </SafeAreaView>
   );
 };
@@ -184,7 +230,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.sky,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
+  avatarImage: { width: 64, height: 64, borderRadius: 32 },
   avatarText: { fontFamily: fonts.bodyBold, fontSize: 24, color: colors.ink },
   profileInfo: { flex: 1 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -273,6 +321,27 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     marginTop: 4,
     fontStyle: 'italic',
+  },
+  bioCard: {
+    backgroundColor: colors.paperBright,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    ...shadows.sm,
+  },
+  bioTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.inkSoft,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  bioText: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.ink,
+    lineHeight: 20,
   },
 });
 

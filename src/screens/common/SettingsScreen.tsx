@@ -68,18 +68,34 @@ export const SettingsScreen: React.FC = () => {
     ]);
   };
 
-  const handleSwitchRole = async () => {
-    try {
-      const response = await switchRole();
-      if (response.needs_onboarding) {
-        navigation.navigate('RoleOnboarding', { targetRole: response.new_role });
-      } else {
-        // Just reload the app navigator state
-        notifyAuthChanged();
-      }
-    } catch (e) {
-      showAlert('Error', 'Failed to switch roles.');
-    }
+  const handleSwitchRole = () => {
+    const isTargetWorker = userRole === 'employer';
+    const title = isTargetWorker ? 'Switch to Worker Mode' : 'Switch to Employer Mode';
+    const message = isTargetWorker
+      ? 'You are about to log in as a Worker. This mode lets you browse local job postings, apply for jobs, and manage bookmarked jobs.\n\nIf your worker profile is missing skills data, you will be guided through a quick setup first.'
+      : 'You are about to log in as an Employer. This mode lets you post job listings, review applicants, and hire workers.';
+
+    showAlert(title, message, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Continue',
+        onPress: async () => {
+          try {
+            const response = await switchRole();
+            if (response?.user) {
+              await SecureStore.setItemAsync('user_profile', JSON.stringify(response.user));
+            }
+            if (response?.needs_onboarding) {
+              navigation.navigate('RoleOnboarding', { targetRole: response.new_role });
+            } else {
+              notifyAuthChanged();
+            }
+          } catch (e) {
+            showAlert('Error', 'Failed to switch roles.');
+          }
+        },
+      },
+    ]);
   };
 
   return (

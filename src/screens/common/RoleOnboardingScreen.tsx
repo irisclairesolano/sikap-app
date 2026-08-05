@@ -5,7 +5,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { colors, fonts, shadows } from '../../theme';
-import { Button } from '../../components/common/Button';
+import Button from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { useAlert } from '../../contexts/AlertContext';
 import { notifyAuthChanged } from '../../store/authEvents';
@@ -17,8 +17,29 @@ export const RoleOnboardingScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { targetRole } = route.params;
-  const { onboardRole, isOnboardingRole, user } = useAuth();
+  const { onboardRole, isOnboardingRole, user, switchRole } = useAuth();
   const { showAlert } = useAlert();
+
+  const handleCancel = async () => {
+    showAlert(
+      'Cancel Setup?',
+      `Are you sure you want to cancel setup? This will switch your role back to ${user?.role === 'worker' ? 'Employer' : 'Worker'} Mode.`,
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes, Switch Back',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await switchRole();
+            } catch (e) {
+              showAlert('Error', 'Failed to switch roles.');
+            }
+          },
+        },
+      ],
+    );
+  };
 
   const [selectedBusinessDocs, setSelectedBusinessDocs] = useState<any[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
@@ -106,9 +127,17 @@ export const RoleOnboardingScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.cancelBtn}
+          onPress={handleCancel}
+          disabled={isOnboardingRole}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+        </TouchableOpacity>
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>Almost There</Text>
         </View>
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -165,15 +194,10 @@ export const RoleOnboardingScreen: React.FC = () => {
             })}
           </View>
         )}
-
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button
-          label="Complete Setup"
-          onPress={handleComplete}
-          isLoading={isOnboardingRole}
-        />
+        <Button label="Complete Setup" onPress={handleComplete} isLoading={isOnboardingRole} />
       </View>
     </SafeAreaView>
   );
@@ -184,10 +208,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 12,
   },
+  cancelBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   headerPill: {
     backgroundColor: colors.paperBright,
     paddingVertical: 6,

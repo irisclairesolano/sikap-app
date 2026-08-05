@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   withdrawnNotice: {
-    backgroundColor: '#FFF8F0',
+    backgroundColor: colors.status.pending.bg,
     borderRadius: 12,
     padding: 14,
     marginBottom: 20,

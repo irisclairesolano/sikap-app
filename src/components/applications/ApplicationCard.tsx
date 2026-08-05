@@ -26,7 +26,7 @@ const getCategoryStyles = (category: string) => {
 
 export const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, onPress }) => {
   const { job, status } = application;
-  const catStyles = getCategoryStyles(job.category);
+  const catStyles = getCategoryStyles(job.categories?.[0] || 'Other');
 
   // Derive simple badge content based on status
   // Statuses: pending, employer_confirmed, accepted, completed, rejected, withdrawn
@@ -43,8 +43,8 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, o
   } else if (status === 'employer_confirmed') {
     badgeLabel = 'Offer';
     badgeIcon = 'alert-circle';
-    badgeBg = '#FEE2E2'; // urgent light red
-    badgeColor = '#DC2626'; // urgent dark red
+    badgeBg = colors.status.rejected.bg; // use rejected status light background
+    badgeColor = colors.status.rejected.text; // use rejected status dark text
   } else if (status === 'completed') {
     badgeLabel = 'Done';
     badgeIcon = 'checkmark-circle';
@@ -58,8 +58,8 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, o
   } else if (status === 'withdrawn') {
     badgeLabel = 'Withdrawn';
     badgeIcon = 'close-circle';
-    badgeBg = colors.warningSoft || '#FFF8F0';
-    badgeColor = colors.warning;
+    badgeBg = colors.status.withdrawn.bg;
+    badgeColor = colors.status.withdrawn.text;
   }
 
   const isActive = status === 'accepted';
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   withdrawnCardBorder: {
     borderWidth: 1,
-    borderColor: '#EA580C', // Explicitly strong orange
+    borderColor: colors.status.withdrawn.text, // use themed withdrawn status text color
     padding: 13,
   },
   topRow: {

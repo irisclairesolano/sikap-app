@@ -17,6 +17,7 @@ import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { useEmployerJobs } from '../../hooks/useEmployerJobs';
 import { JobPost } from '../../types';
+import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 
 type MyJobsNavigationProp = NativeStackNavigationProp<EmployerStackParamList, 'MyJobs'>;
 
@@ -89,8 +90,9 @@ export const MyJobsScreen: React.FC = () => {
       </View>
 
       {isLoading ? (
-        <View style={styles.emptyState}>
-          <ActivityIndicator size="large" color={colors.primary} />
+        <View style={{ padding: 20 }}>
+          <JobCardSkeleton />
+          <JobCardSkeleton />
         </View>
       ) : isError ? (
         <View style={styles.emptyState}>

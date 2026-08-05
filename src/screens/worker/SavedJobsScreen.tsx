@@ -1,6 +1,6 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -8,7 +8,7 @@ import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { useSavedJobs, useToggleSaveJob } from '../../hooks/useSavedJobs';
 import { JobCard } from '../../components/jobs/JobCard';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { EmptyState } from '../../components/common/EmptyState';
 
@@ -18,18 +18,24 @@ export const SavedJobsScreen: React.FC = () => {
   const { mutate: toggleSave } = useToggleSaveJob();
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
-  const handleJobPress = useCallback((id: number) => {
-    navigation.navigate('JobDetails', { id });
-  }, [navigation]);
+  const handleJobPress = useCallback(
+    (id: number) => {
+      navigation.navigate('JobDetails', { id });
+    },
+    [navigation],
+  );
 
-  const renderJobItem = useCallback(({ item }: { item: any }) => (
-    <JobCard
-      job={item}
-      onPress={() => handleJobPress(item.id)}
-      isSaved={true}
-      onSave={() => toggleSave(item.id)}
-    />
-  ), [handleJobPress, toggleSave]);
+  const renderJobItem = useCallback(
+    ({ item }: { item: any }) => (
+      <JobCard
+        job={item}
+        onPress={() => handleJobPress(item.id)}
+        isSaved={true}
+        onSave={() => toggleSave(item.id)}
+      />
+    ),
+    [handleJobPress, toggleSave],
+  );
 
   const renderHeader = () => (
     <View style={styles.header}>
@@ -39,11 +45,15 @@ export const SavedJobsScreen: React.FC = () => {
           <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
             {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{ padding: 4 }}
-            onPress={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+            onPress={() => setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
           >
-            <Ionicons name={sortOrder === 'desc' ? "arrow-down-outline" : "arrow-up-outline"} size={20} color={colors.ink} />
+            <Ionicons
+              name={sortOrder === 'desc' ? 'arrow-down-outline' : 'arrow-up-outline'}
+              size={20}
+              color={colors.ink}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -52,8 +62,8 @@ export const SavedJobsScreen: React.FC = () => {
   );
 
   const jobsList = [...(data?.data || [])].sort((a, b) => {
-    const timeA = new Date(a.created_at).getTime();
-    const timeB = new Date(b.created_at).getTime();
+    const timeA = new Date(a.created_at || 0).getTime();
+    const timeB = new Date(b.created_at || 0).getTime();
     return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
   });
 
@@ -61,7 +71,10 @@ export const SavedJobsScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.safeArea}>
         {renderHeader()}
-        <LoadingSpinner />
+        <View style={{ paddingHorizontal: 20 }}>
+          <JobCardSkeleton />
+          <JobCardSkeleton />
+        </View>
       </SafeAreaView>
     );
   }

@@ -1,21 +1,24 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import { profileApi } from '../../api/profile';
+import { RefreshableContainer } from '../../components/common/RefreshableContainer';
 import { useAuth } from '../../hooks/useAuth';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'Profile'>;
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  const { user: authUser } = useAuth();
+  const { user: authUser, refetchProfile } = useAuth();
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -49,6 +52,25 @@ export const ProfileScreen: React.FC = () => {
   const hasRefs = (user?.worker_profile?.references?.length || 0) > 0;
   const isProfileComplete = hasSkills && hasHistory && hasRefs;
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries();
+    await refetchProfile();
+    setRefreshing(false);
+  };
+
+  const getAvatarUrl = () => {
+    if (!user?.avatar_url) return null;
+    let url = user.avatar_url;
+    if (url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) {
+      const apiBase = (process.env.EXPO_PUBLIC_API_URL || '').replace(/\/api.*$/, '');
+      url = url.replace(/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, apiBase);
+    }
+    if (url.startsWith('http')) return url;
+    const apiBase = (process.env.EXPO_PUBLIC_API_URL || '').replace(/\/api.*$/, '');
+    return `${apiBase}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
@@ -61,7 +83,16 @@ export const ProfileScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+          />
+        }
+      >
         {!isProfileComplete && (
           <TouchableOpacity
             style={styles.setupBanner}
@@ -87,13 +118,9 @@ export const ProfileScreen: React.FC = () => {
           onPress={() => navigation.navigate('EditProfile')}
         >
           <View style={styles.avatarContainer}>
-            {user.avatar_url ? (
+            {getAvatarUrl() ? (
               <Image
-                source={{
-                  uri: user.avatar_url.startsWith('http')
-                    ? user.avatar_url
-                    : `${process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '')}${user.avatar_url}`,
-                }}
+                source={{ uri: getAvatarUrl()! }}
                 style={styles.avatarImage}
               />
             ) : (
@@ -122,19 +149,23 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.reputationCard}>
           <Text style={styles.reputationEyebrow}>Reputation</Text>
           <View style={styles.reputationRow}>
-            <Text style={styles.reputationScore}>{worker.reputation}</Text>
+            <Text style={styles.reputationScore}>{worker.ratings > 0 ? worker.reputation : 'N/A'}</Text>
             <View style={styles.reputationStars}>
-              <View style={styles.starsRow}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Ionicons
-                    key={star}
-                    name="star"
-                    size={14}
-                    color={star <= Math.round(worker.reputation) ? colors.gold : colors.inkFaint}
-                  />
-                ))}
-              </View>
-              <Text style={styles.reputationCount}>{worker.ratings} ratings</Text>
+              {worker.ratings > 0 ? (
+                <View style={styles.starsRow}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Ionicons
+                      key={star}
+                      name="star"
+                      size={14}
+                      color={star <= Math.round(worker.reputation) ? colors.gold : colors.inkFaint}
+                    />
+                  ))}
+                </View>
+              ) : null}
+              <Text style={styles.reputationCount}>
+                {worker.ratings > 0 ? `${worker.ratings} ratings` : 'No ratings yet'}
+              </Text>
             </View>
           </View>
           <Text style={styles.reputationTagline}>Your score travels with you.</Text>

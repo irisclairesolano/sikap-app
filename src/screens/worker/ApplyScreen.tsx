@@ -90,7 +90,7 @@ export const ApplyScreen: React.FC = () => {
     );
   }
 
-  const catStyles = getCategoryStyles(job.category);
+  const catStyles = getCategoryStyles(job.categories?.[0] || 'Other');
 
   // INLINE SUCCESS STATE (Matches Screen 15 structure for Stage 1)
   if (isSuccess) {
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
   },
   shieldStatusNever: {
-    backgroundColor: '#DEF7EC', // custom very light mint
+    backgroundColor: colors.status.accepted.bg, // use themed success background tint
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 100,

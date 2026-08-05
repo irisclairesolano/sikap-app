@@ -30,7 +30,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
   // Mock badges logic
   const isUrgent = false; // Mock logic
   const isVerified = job.employer?.verification_badge;
-  const catStyles = getCategoryStyles(job.category);
+  const catStyles = getCategoryStyles(job.categories?.[0] || 'Other');
   const isApplied = job.is_applied && !job.is_withdrawn;
 
   return (
@@ -54,8 +54,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
           <View style={styles.jobBadges}>
             {isUrgent && (
               <View style={[styles.badge, styles.badgeUrgent]}>
-                <Ionicons name="flame" size={10} color="#DC2626" />
-                <Text style={[styles.badgeText, { color: '#DC2626' }]}>URGENT</Text>
+                <Ionicons name="flame" size={10} color={colors.error} />
+                <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
               </View>
             )}
             {isVerified && (
@@ -124,12 +124,12 @@ const styles = StyleSheet.create({
   cardApplied: {
     borderColor: colors.mintDeep,
     borderWidth: 1, // thinner border
-    backgroundColor: '#F7FCF9', // subtle green tint
+    backgroundColor: colors.status.accepted.bg, // subtle green tint
   },
   cardWithdrawn: {
-    borderColor: '#EA580C', // Explicitly strong orange
+    borderColor: colors.status.withdrawn.text, // use themed withdrawn text color
     borderWidth: 1,
-    backgroundColor: '#FFF8F0', // subtle orange tint
+    backgroundColor: colors.status.withdrawn.bg, // use themed withdrawn background tint
   },
   appliedCorner: {
     position: 'absolute',
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5, // 0.05em
   },
   badgeUrgent: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: colors.status.rejected.bg,
   },
   badgeVerified: {
     backgroundColor: colors.mint,

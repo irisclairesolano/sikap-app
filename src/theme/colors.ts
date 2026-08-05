@@ -2,8 +2,8 @@ export const colors = {
   // Primary palette (Terracotta)
   primary: '#E8744A',
   primaryDark: '#C9572D',
-  primarySoft: '#FCD9C5',
-  primaryTint: '#FFEADB',
+  primarySoft: '#FFB6C1',
+  primaryTint: '#DDA0DD',
 
   // Text colors
   ink: '#2B1F15',
@@ -19,41 +19,41 @@ export const colors = {
   paperBright: '#FFFFFF',
 
   // Accents
-  peach: '#FCE4D2',
+  peach: '#FFB6C1',
   peachBright: '#FFCCA8',
-  butter: '#FFE9B0',
+  butter: '#F0E68C',
   butterBright: '#FFD66B',
-  mint: '#D8EBDC',
-  mintDeep: '#5A9168',
-  sky: '#DCE9F2',
-  skyDeep: '#5A8AA8',
+  mint: '#90EE90',
+  mintDeep: '#3E7648',
+  sky: '#87CEEB',
+  skyDeep: '#3B718F',
 
   // Status & semantic
   urgent: '#E8744A',
   urgentSoft: '#FFE0D2',
 
   // Status colors
-  success: '#6BA475',
-  warning: '#E89C2D',
-  error: '#C04830',
+  success: '#3E7648',
+  warning: '#A88414',
+  error: '#B82E1E',
   gold: '#F4B73E',
 
   // Backward compatible aliases
   textPrimary: '#2B1F15', // alias for ink
   textSecondary: '#4F3D2D', // alias for inkSoft
-  primaryLight: '#FCD9C5', // alias for primarySoft
+  primaryLight: '#FFB6C1', // alias for primarySoft
   border: '#E8DFCE', // alias for inkFaint
   primaryBg: '#E8744A', // alias for primary
-  primaryBG: '#FFEADB', // alias for primaryTint
+  primaryBG: '#DDA0DD', // alias for primaryTint
   // End of aliases
   status: {
-    pending: { bg: '#FEF3C7', text: '#E89C2D' },
-    accepted: { bg: '#DCFCE7', text: '#6BA475' },
-    completed: { bg: '#DCFCE7', text: '#6BA475' },
-    rejected: { bg: '#FEE2E2', text: '#C04830' },
-    withdrawn: { bg: '#FFEDD5', text: '#EA580C' }, // A little orange
-    pending_negotiation: { bg: '#FFEADB', text: '#E8744A' },
-    employer_confirmed: { bg: '#FFEADB', text: '#E8744A' },
+    pending: { bg: '#F0E68C', text: '#8A731F' },
+    accepted: { bg: '#90EE90', text: '#2C5A34' },
+    completed: { bg: '#90EE90', text: '#2C5A34' },
+    rejected: { bg: '#FFB6C1', text: '#9B2C24' },
+    withdrawn: { bg: '#FFEADB', text: '#EA580C' }, // A little orange
+    pending_negotiation: { bg: '#DDA0DD', text: '#6D2C6D' },
+    employer_confirmed: { bg: '#DDA0DD', text: '#6D2C6D' },
   },
 } as const;
 

@@ -23,12 +23,21 @@ export const useAuthCheck = () => {
           return;
         }
 
+        // Instant local cache restore
+        const cachedUserStr = await SecureStore.getItemAsync('user_profile');
+        if (cachedUserStr && !cancelled) {
+          try {
+            setUser(JSON.parse(cachedUserStr));
+          } catch (e) {}
+        }
+
         const response = await apiClient<User>('/profile');
-        if (!cancelled) setUser(response);
+        if (!cancelled) {
+          setUser(response);
+          await SecureStore.setItemAsync('user_profile', JSON.stringify(response));
+        }
       } catch (error: any) {
         if (!cancelled) {
-          // Only clear the user state, do NOT delete the token.
-          // apiClient handles deleting the token automatically on 401 Unauthorized.
           setUser(null);
         }
       } finally {
