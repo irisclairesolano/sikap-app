@@ -113,11 +113,11 @@ const PendingVerifyScreen: React.FC = () => {
             disabled={isRefreshing}
           />
           <View style={{ height: 12 }} />
-          <Button label="Sign out" variant="ghost" fullWidth size="lg" onPress={signOut} />
+          <Button label="Sign out" variant="soft" fullWidth size="lg" onPress={signOut} />
           <View style={{ height: 12 }} />
           <Button
             label="Need help? Contact us"
-            variant="soft"
+            variant="ghost"
             fullWidth
             size="lg"
             onPress={handleContactUs}
