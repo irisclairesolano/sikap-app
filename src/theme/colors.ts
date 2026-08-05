@@ -1,7 +1,7 @@
 export const colors = {
-  // Primary palette (Terracotta)
-  primary: '#E8744A',
-  primaryDark: '#C9572D',
+  // Primary palette (Plum Soft UI)
+  primary: '#DDA0DD',
+  primaryDark: '#8A4E8A',
   primarySoft: '#FFB6C1',
   primaryTint: '#DDA0DD',
 
@@ -43,7 +43,7 @@ export const colors = {
   textSecondary: '#4F3D2D', // alias for inkSoft
   primaryLight: '#FFB6C1', // alias for primarySoft
   border: '#E8DFCE', // alias for inkFaint
-  primaryBg: '#E8744A', // alias for primary
+  primaryBg: '#DDA0DD', // alias for primary
   primaryBG: '#DDA0DD', // alias for primaryTint
   // End of aliases
   status: {
