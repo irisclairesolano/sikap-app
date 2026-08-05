@@ -12,6 +12,7 @@ import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 import { LoginRequest } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
+import { Wordmark } from '../../components/common/Wordmark';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -99,8 +100,7 @@ const LoginScreen: React.FC = () => {
           extraScrollHeight={20}
         >
           <View style={styles.brandRow}>
-            <Text style={styles.brandText}>sikap</Text>
-            <View style={styles.brandDot} />
+            <Wordmark size={28} />
           </View>
 
           <View style={styles.header}>
@@ -204,23 +204,8 @@ const styles = StyleSheet.create({
   },
   brandRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
     marginBottom: 28,
-  },
-  brandText: {
-    fontFamily: fonts.display,
-    fontSize: 28,
-    fontWeight: '900',
-    color: colors.ink,
-    letterSpacing: -0.84,
-  },
-  brandDot: {
-    width: 8,
-    height: 8,
-    backgroundColor: colors.primary,
-    borderRadius: 4,
-    marginLeft: -2,
-    marginBottom: 8,
   },
   header: {
     marginBottom: 28,
