@@ -19,11 +19,8 @@ const PendingVerifyScreen: React.FC = () => {
   const appState = useRef(AppState.currentState);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
         handleRefresh();
       }
       appState.current = nextAppState;
@@ -37,7 +34,7 @@ const PendingVerifyScreen: React.FC = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     // Adding a small delay just to show the spinner briefly
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     notifyAuthChanged();
     setIsRefreshing(false);
   };
@@ -84,8 +81,8 @@ const PendingVerifyScreen: React.FC = () => {
 
         <View style={styles.footer}>
           <Button
-            label={isRefreshing ? "Checking..." : "Refresh Status"}
-            variant="solid"
+            label={isRefreshing ? 'Checking...' : 'Refresh Status'}
+            variant="primary"
             fullWidth
             size="lg"
             onPress={handleRefresh}
