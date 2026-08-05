@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, AppState } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, AppState, Linking } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../../components/common/Button';
@@ -42,6 +42,30 @@ const PendingVerifyScreen: React.FC = () => {
   const signOut = async () => {
     await SecureStore.deleteItemAsync('auth_token').catch(() => {});
     notifyAuthChanged();
+  };
+
+  const handleContactUs = async () => {
+    const email = 'support@sikap.ph';
+    const subject = encodeURIComponent('SIKAP Account Help');
+    const body = encodeURIComponent(
+      'Hello SIKAP Team,\n\nI need help with my account verification.',
+    );
+
+    const gmailUrl = `googlegmail:///co?to=${email}&subject=${subject}&body=${body}`;
+    const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
+
+    try {
+      const canOpenGmail = await Linking.canOpenURL('googlegmail://');
+      if (canOpenGmail) {
+        await Linking.openURL(gmailUrl);
+      } else {
+        await Linking.openURL(mailtoUrl);
+      }
+    } catch (error) {
+      Linking.openURL(mailtoUrl).catch(() => {
+        alert('Could not open mail client. Please contact support@sikap.ph');
+      });
+    }
   };
 
   return (
@@ -89,15 +113,15 @@ const PendingVerifyScreen: React.FC = () => {
             disabled={isRefreshing}
           />
           <View style={{ height: 12 }} />
+          <Button label="Sign out" variant="ghost" fullWidth size="lg" onPress={signOut} />
+          <View style={{ height: 12 }} />
           <Button
             label="Need help? Contact us"
             variant="soft"
             fullWidth
             size="lg"
-            onPress={() => {}} // Could open a mail client or intercom
+            onPress={handleContactUs}
           />
-          <View style={{ height: 12 }} />
-          <Button label="Sign out" variant="ghost" fullWidth size="lg" onPress={signOut} />
         </View>
       </View>
     </View>
