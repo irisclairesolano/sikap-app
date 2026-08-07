@@ -14,6 +14,7 @@ import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { OtpInput } from 'react-native-otp-entry';
+import { notifyAuthChanged } from '../../store/authEvents';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'OTPVerify'>;
 type RouteProps = RouteProp<AuthStackParamList, 'OTPVerify'>;
@@ -70,6 +71,7 @@ const OTPVerifyScreen: React.FC = () => {
         if ('token' in response && response.token) {
           await SecureStore.setItemAsync('auth_token', String(response.token));
         }
+        notifyAuthChanged();
         navigation.navigate('IDUpload' as any, { userId: response.user_id, role } as any);
         return;
       }

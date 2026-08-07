@@ -135,7 +135,7 @@ const RootNavigator: React.FC = () => {
 
     return (
       <AuthNavigator
-        key={`pending-${user.id}`}
+        key={`pending-${user.id}-${status}`}
         initialRouteName={gateStart}
         initialParams={params}
       />
