@@ -2,8 +2,8 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation } from '@tanstack/react-query';
 import * as SecureStore from 'expo-secure-store';
-import React, { useState, useEffect } from 'react';
-import { Platform, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { Platform, StyleSheet, Text, View, TouchableOpacity, AppState } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
@@ -32,14 +32,35 @@ const OTPVerifyScreen: React.FC = () => {
   const [banner, setBanner] = useState('');
 
   const [countdown, setCountdown] = useState(59);
+  const targetTimeRef = useRef<number>(Date.now() + 59 * 1000);
+
+  const startTimer = (seconds: number) => {
+    targetTimeRef.current = Date.now() + seconds * 1000;
+    setCountdown(seconds);
+  };
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let interval: NodeJS.Timeout;
     if (countdown > 0) {
-      timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+      interval = setInterval(() => {
+        const remaining = Math.max(0, Math.round((targetTimeRef.current - Date.now()) / 1000));
+        setCountdown(remaining);
+      }, 1000);
     }
-    return () => clearTimeout(timer);
+    return () => clearInterval(interval);
   }, [countdown]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        const remaining = Math.max(0, Math.round((targetTimeRef.current - Date.now()) / 1000));
+        setCountdown(remaining);
+      }
+    });
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const verifyMutation = useMutation({
     mutationFn: (code: string) => authApi.verifyOtp(userId, code, currentEmail),
@@ -76,7 +97,7 @@ const OTPVerifyScreen: React.FC = () => {
     mutationFn: () => authApi.resendOtp(userId, currentEmail),
     onSuccess: () => {
       setBanner('');
-      setCountdown(59); // Reset countdown
+      startTimer(59); // Reset countdown
     },
     onError: (err: unknown) => {
       const msg = err instanceof ApiClientError ? err.message : 'Could not resend code';
@@ -90,7 +111,7 @@ const OTPVerifyScreen: React.FC = () => {
       setBanner('');
       setCurrentEmail(newEmailInput);
       setIsEditingEmail(false);
-      setCountdown(59); // Start a new countdown assuming the backend resent the OTP
+      startTimer(59); // Start a new countdown assuming the backend resent the OTP
     },
     onError: (err: unknown) => {
       const msg = err instanceof ApiClientError ? err.message : 'Could not update email';
