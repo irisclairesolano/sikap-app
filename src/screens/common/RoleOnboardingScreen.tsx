@@ -9,9 +9,11 @@ import Button from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { useAlert } from '../../contexts/AlertContext';
 import { notifyAuthChanged } from '../../store/authEvents';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { Skill } from '../../types';
+import Input from '../../components/common/Input';
+import { skillsApi } from '../../api/skills';
 
 export const RoleOnboardingScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -43,7 +45,49 @@ export const RoleOnboardingScreen: React.FC = () => {
 
   const [selectedBusinessDocs, setSelectedBusinessDocs] = useState<any[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
+  const [customSkill, setCustomSkill] = useState('');
+  const [customSkillError, setCustomSkillError] = useState('');
+  const [customSkillsList, setCustomSkillsList] = useState<Skill[]>([]);
   const MAX_SIZE_MB = 5;
+
+  const createSkillMutation = useMutation({
+    mutationFn: (name: string) => skillsApi.createSkill(name),
+    onSuccess: (newSkill) => {
+      if (newSkill && newSkill.id) {
+        if (!customSkillsList.find((s) => s.id === newSkill.id)) {
+          setCustomSkillsList((prev) => [...prev, newSkill]);
+        }
+        if (!selectedSkills.includes(newSkill.id)) {
+          setSelectedSkills((prev) => [...prev, newSkill.id]);
+        }
+      }
+      setCustomSkill('');
+      setCustomSkillError('');
+    },
+    onError: (err: any) => {
+      console.error('Failed to create skill', err);
+      setCustomSkillError(err.message || 'Failed to add custom skill');
+    },
+  });
+
+  const handleAddCustomSkill = () => {
+    const trimmed = customSkill.trim();
+    if (!trimmed) return;
+
+    const existing =
+      skills.find((s) => s.name.toLowerCase() === trimmed.toLowerCase()) ||
+      customSkillsList.find((s) => s.name.toLowerCase() === trimmed.toLowerCase());
+
+    if (existing) {
+      if (!selectedSkills.includes(existing.id)) {
+        setSelectedSkills((prev) => [...prev, existing.id]);
+      }
+      setCustomSkill('');
+      return;
+    }
+
+    createSkillMutation.mutate(trimmed);
+  };
 
   const { data: skills = [] } = useQuery({
     queryKey: ['skills'],
@@ -177,21 +221,53 @@ export const RoleOnboardingScreen: React.FC = () => {
         )}
 
         {targetRole === 'worker' && (
-          <View style={styles.skillsContainer}>
-            {skills.map((skill) => {
-              const isSelected = selectedSkills.includes(skill.id);
-              return (
+          <View>
+            <View style={styles.skillsContainer}>
+              {[...skills, ...customSkillsList].map((skill) => {
+                const isSelected = selectedSkills.includes(skill.id);
+                return (
+                  <TouchableOpacity
+                    key={skill.id}
+                    style={[styles.skillChip, isSelected && styles.skillChipSelected]}
+                    onPress={() => handleToggleSkill(skill.id)}
+                  >
+                    <Text style={[styles.skillText, isSelected && styles.skillTextSelected]}>
+                      {skill.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <View style={{ marginTop: 28 }}>
+              <Text style={styles.sectionHeader}>Or type a custom skill</Text>
+              <View style={styles.customInputRow}>
+                <View style={{ flex: 1 }}>
+                  <Input
+                    placeholder="e.g. Wood Carving, Hilot Massage"
+                    value={customSkill}
+                    onChangeText={(text) => {
+                      setCustomSkill(text);
+                      setCustomSkillError('');
+                    }}
+                    error={customSkillError}
+                  />
+                </View>
                 <TouchableOpacity
-                  key={skill.id}
-                  style={[styles.skillChip, isSelected && styles.skillChipSelected]}
-                  onPress={() => handleToggleSkill(skill.id)}
+                  style={[
+                    styles.addButton,
+                    (!customSkill.trim() || createSkillMutation.isPending) &&
+                      styles.addButtonDisabled,
+                  ]}
+                  onPress={handleAddCustomSkill}
+                  disabled={!customSkill.trim() || createSkillMutation.isPending}
                 >
-                  <Text style={[styles.skillText, isSelected && styles.skillTextSelected]}>
-                    {skill.name}
+                  <Text style={styles.addButtonText}>
+                    {createSkillMutation.isPending ? '...' : '+ Add'}
                   </Text>
                 </TouchableOpacity>
-              );
-            })}
+              </View>
+            </View>
           </View>
         )}
       </ScrollView>
@@ -301,6 +377,36 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
+  },
+  sectionHeader: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
+    color: colors.ink,
+    marginBottom: 8,
+  },
+  customInputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginTop: 4,
+  },
+  addButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    height: 56,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+  },
+  addButtonDisabled: {
+    backgroundColor: colors.inkFaint,
+    opacity: 0.5,
+  },
+  addButtonText: {
+    color: colors.white,
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
   },
 });
 

@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
-import { Text, View, TouchableOpacity } from 'react-native';
+import { Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useAuthCheck } from '../hooks/useAuthCheck';
 import { useAuth } from '../hooks/useAuth';
 import { usePushNotifications } from '../hooks/usePushNotifications';
@@ -84,8 +84,26 @@ const RootNavigator: React.FC = () => {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Loading...</Text>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: colors.paper,
+        }}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text
+          style={{
+            marginTop: 16,
+            fontFamily: fonts.bodySemiBold,
+            fontSize: 14,
+            color: colors.inkMuted,
+            letterSpacing: 0.5,
+          }}
+        >
+          Loading SIKAP...
+        </Text>
       </View>
     );
   }

@@ -28,6 +28,7 @@ const IDUploadScreen: React.FC = () => {
   const { showAlert } = useAlert();
   const [banner, setBanner] = useState('');
   const [selectedFile, setSelectedFile] = useState<any>(null);
+  const [selectedFileBack, setSelectedFileBack] = useState<any>(null);
   const [selectedSelfie, setSelectedSelfie] = useState<any>(null);
   const [selectedBusinessDocs, setSelectedBusinessDocs] = useState<any[]>([]);
   const MAX_SIZE_MB = 5;
@@ -71,6 +72,13 @@ const IDUploadScreen: React.FC = () => {
       form.append('id_file', {
         uri: idUri,
         name: selectedFile.name ?? 'government-id.jpg',
+        type: 'image/jpeg',
+      } as unknown as Blob);
+
+      const backUri = await compressImage(selectedFileBack.uri);
+      form.append('id_back_file', {
+        uri: backUri,
+        name: selectedFileBack.name ?? 'government-id-back.jpg',
         type: 'image/jpeg',
       } as unknown as Blob);
 
@@ -121,7 +129,7 @@ const IDUploadScreen: React.FC = () => {
     },
   });
 
-  const handleFileSelect = async (type: 'id' | 'selfie' | 'business') => {
+  const handleFileSelect = async (type: 'id' | 'back' | 'selfie' | 'business') => {
     setBanner('');
     try {
       const isBusiness = type === 'business';
@@ -159,6 +167,7 @@ const IDUploadScreen: React.FC = () => {
             return;
           }
           if (type === 'id') setSelectedFile(asset);
+          else if (type === 'back') setSelectedFileBack(asset);
           else if (type === 'selfie') setSelectedSelfie(asset);
         }
       }
@@ -168,8 +177,8 @@ const IDUploadScreen: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (!selectedFile) {
-      setBanner('Please upload your government ID to continue.');
+    if (!selectedFile || !selectedFileBack) {
+      setBanner('Please upload both front and back of your government ID to continue.');
       return;
     }
 
@@ -227,12 +236,29 @@ const IDUploadScreen: React.FC = () => {
             <Ionicons name="camera" size={28} color={colors.white} />
           </View>
           <Text style={styles.uploadTitle}>
-            {selectedFile ? 'ID Uploaded ✓' : 'Take a photo of your ID'}
+            {selectedFile ? 'ID Front Uploaded ✓' : 'Take a photo of your ID (Front)'}
           </Text>
           <Text style={styles.uploadSubtitle}>
             {selectedFile
               ? `${selectedFile.name}`
               : "PhilSys • Driver's License • Voter's ID\nPRC • Postal ID"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Back of ID Upload Box */}
+        <TouchableOpacity
+          style={[styles.uploadArea, { marginTop: 16 }]}
+          onPress={() => handleFileSelect('back')}
+          disabled={uploadMutation.isPending}
+        >
+          <View style={styles.cameraIconBox}>
+            <Ionicons name="camera" size={28} color={colors.white} />
+          </View>
+          <Text style={styles.uploadTitle}>
+            {selectedFileBack ? 'ID Back Uploaded ✓' : 'Take a photo of your ID (Back)'}
+          </Text>
+          <Text style={styles.uploadSubtitle}>
+            {selectedFileBack ? `${selectedFileBack.name}` : 'Back side of your ID'}
           </Text>
         </TouchableOpacity>
 
@@ -303,7 +329,9 @@ const IDUploadScreen: React.FC = () => {
             label={uploadMutation.isPending ? 'Submitting...' : 'Submit for review'}
             size="lg"
             fullWidth
-            disabled={!selectedFile || !selectedSelfie}
+            disabled={
+              !selectedFile || !selectedFileBack || (userRole === 'worker' && !selectedSelfie)
+            }
             loading={uploadMutation.isPending}
             onPress={handleSubmit}
           />

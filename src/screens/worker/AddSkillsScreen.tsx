@@ -7,6 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
 
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { skillsApi, Skill } from '../../api/skills';
@@ -15,6 +16,8 @@ import { profileApi } from '../../api/profile';
 export const AddSkillsScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
+  const [customSkill, setCustomSkill] = useState('');
+  const [customSkillError, setCustomSkillError] = useState('');
 
   const { data: skills = [] } = useQuery({
     queryKey: ['skills'],
@@ -30,6 +33,43 @@ export const AddSkillsScreen: React.FC = () => {
       console.error('Failed to save skills', err);
     },
   });
+
+  const createSkillMutation = useMutation({
+    mutationFn: (name: string) => skillsApi.createSkill(name),
+    onSuccess: (newSkill) => {
+      if (newSkill && newSkill.id) {
+        if (!selectedSkills.find((s) => s.id === newSkill.id)) {
+          setSelectedSkills([...selectedSkills, newSkill]);
+        }
+      }
+      setCustomSkill('');
+      setCustomSkillError('');
+    },
+    onError: (err: any) => {
+      console.error('Failed to create skill', err);
+      setCustomSkillError(err.message || 'Failed to add custom skill');
+    },
+  });
+
+  const handleAddCustomSkill = () => {
+    const trimmed = customSkill.trim();
+    if (!trimmed) return;
+
+    // Check if already selected or suggested
+    const existing =
+      skills.find((s) => s.name.toLowerCase() === trimmed.toLowerCase()) ||
+      selectedSkills.find((s) => s.name.toLowerCase() === trimmed.toLowerCase());
+
+    if (existing) {
+      if (!selectedSkills.find((s) => s.id === existing.id)) {
+        setSelectedSkills([...selectedSkills, existing]);
+      }
+      setCustomSkill('');
+      return;
+    }
+
+    createSkillMutation.mutate(trimmed);
+  };
 
   const toggleSkill = (skill: Skill) => {
     if (selectedSkills.find((s) => s.id === skill.id)) {
@@ -113,6 +153,33 @@ export const AddSkillsScreen: React.FC = () => {
                 <Text style={styles.chipText}>+ {skill.name}</Text>
               </TouchableOpacity>
             ))}
+        </View>
+
+        <Text style={styles.sectionHeader}>Custom Skill</Text>
+        <View style={styles.customInputRow}>
+          <View style={{ flex: 1 }}>
+            <Input
+              placeholder="Type custom skill e.g., Wood Carver"
+              value={customSkill}
+              onChangeText={(text) => {
+                setCustomSkill(text);
+                setCustomSkillError('');
+              }}
+              error={customSkillError}
+            />
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.addButton,
+              (!customSkill.trim() || createSkillMutation.isPending) && styles.addButtonDisabled,
+            ]}
+            onPress={handleAddCustomSkill}
+            disabled={!customSkill.trim() || createSkillMutation.isPending}
+          >
+            <Text style={styles.addButtonText}>
+              {createSkillMutation.isPending ? '...' : '+ Add'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -246,6 +313,30 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 32,
     backgroundColor: colors.paper,
+  },
+  customInputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginTop: 4,
+  },
+  addButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    height: 56,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+  },
+  addButtonDisabled: {
+    backgroundColor: colors.inkFaint,
+    opacity: 0.5,
+  },
+  addButtonText: {
+    color: colors.white,
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
   },
 });
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { colors, fonts } from '../theme';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -85,7 +85,18 @@ const FindStack: React.FC = () => {
           backgroundColor: colors.paper,
         }}
       >
-        <Text style={{ fontFamily: fonts.body, color: colors.inkMuted }}>Loading...</Text>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text
+          style={{
+            marginTop: 16,
+            fontFamily: fonts.bodySemiBold,
+            fontSize: 14,
+            color: colors.inkMuted,
+            letterSpacing: 0.5,
+          }}
+        >
+          Loading your profile...
+        </Text>
       </View>
     );
   }

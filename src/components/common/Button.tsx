@@ -128,12 +128,14 @@ const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: 16,
+    paddingVertical: 15,
     paddingHorizontal: 22,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   contentRow: {
     flexDirection: 'row',
@@ -141,7 +143,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   lg: {
-    paddingVertical: 18,
+    paddingVertical: 16,
     paddingHorizontal: 26,
   },
   fullWidth: {
@@ -152,9 +154,11 @@ const styles = StyleSheet.create({
   },
   primaryBg: {
     backgroundColor: colors.primary,
+    borderColor: colors.primaryDark,
   },
   secondaryBg: {
-    backgroundColor: colors.white, // Soft variant
+    backgroundColor: colors.white,
+    borderColor: 'rgba(13, 27, 61, 0.08)', // Soft UI border outline
   },
   outlineBg: {
     backgroundColor: 'transparent',
@@ -166,9 +170,11 @@ const styles = StyleSheet.create({
   },
   dangerBg: {
     backgroundColor: colors.error,
+    borderColor: colors.error,
   },
   softBg: {
     backgroundColor: colors.primaryTint,
+    borderColor: 'rgba(13, 27, 61, 0.05)',
   },
   label: {
     fontFamily: fonts.bodyBold,
@@ -181,7 +187,7 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   labelSecondary: {
-    color: colors.ink,
+    color: colors.primary, // Navy text for high contrast on white bg
   },
   labelOutline: {
     color: colors.primary,
