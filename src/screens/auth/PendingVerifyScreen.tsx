@@ -79,10 +79,10 @@ const PendingVerifyScreen: React.FC = () => {
               <Text
                 style={[
                   styles.titleItalic,
-                  { color: colors.status.rejected.text, fontSize: 44, textTransform: 'uppercase' },
+                  { color: colors.status.rejected.text, fontSize: 30, textTransform: 'lowercase' },
                 ]}
               >
-                REJECTED
+                rejected
               </Text>
             </>
           ) : (
@@ -95,7 +95,7 @@ const PendingVerifyScreen: React.FC = () => {
 
         <Text style={styles.body}>
           {isRejected ? (
-            'Unfortunately, we could not verify your government ID. Please register again to resubmit clearer photos.'
+            'Unfortunately, we could not verify your government ID. This usually happens if the photo was blurry, too dark, or did not match the required ID type. Please register again to resubmit clearer photos.'
           ) : (
             <>
               Our admin team is reviewing your ID.{'\n'}This usually takes up to{' '}
