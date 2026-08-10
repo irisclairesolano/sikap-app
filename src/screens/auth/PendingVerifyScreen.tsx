@@ -47,28 +47,8 @@ const PendingVerifyScreen: React.FC = () => {
     notifyAuthChanged();
   };
 
-  const handleContactUs = async () => {
-    const email = 'support@sikap.ph';
-    const subject = encodeURIComponent('SIKAP Account Help');
-    const body = encodeURIComponent(
-      'Hello SIKAP Team,\n\nI need help with my account verification.',
-    );
-
-    const gmailUrl = `googlegmail:///co?to=${email}&subject=${subject}&body=${body}`;
-    const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
-
-    try {
-      const canOpenGmail = await Linking.canOpenURL('googlegmail://');
-      if (canOpenGmail) {
-        await Linking.openURL(gmailUrl);
-      } else {
-        await Linking.openURL(mailtoUrl);
-      }
-    } catch (error) {
-      Linking.openURL(mailtoUrl).catch(() => {
-        alert('Could not open mail client. Please contact support@sikap.ph');
-      });
-    }
+  const handleContactUs = () => {
+    navigation.navigate('ContactSupport');
   };
 
   return (

@@ -11,6 +11,7 @@ import OTPVerifyScreen from '../screens/auth/OTPVerifyScreen';
 import PendingVerifyScreen from '../screens/auth/PendingVerifyScreen';
 import ResetOTPVerifyScreen from '../screens/auth/ResetOTPVerifyScreen';
 import NewPasswordScreen from '../screens/auth/NewPasswordScreen';
+import ContactSupportScreen from '../screens/auth/ContactSupportScreen';
 import HomeScreen from '../screens/HomeScreen';
 import { AuthStackParamList } from './authTypes';
 
@@ -49,6 +50,7 @@ const AuthNavigator: React.FC<AuthNavigatorProps> = ({
         component={PendingVerifyScreen}
         initialParams={initialRouteName === 'PendingVerify' ? initialParams : undefined}
       />
+      <Stack.Screen name="ContactSupport" component={ContactSupportScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       <Stack.Screen name="ResetOTPVerify" component={ResetOTPVerifyScreen} />
       <Stack.Screen name="NewPassword" component={NewPasswordScreen} />

@@ -14,6 +14,7 @@ export type AuthStackParamList = {
   OTPVerify: { userId: number; email: string; role: 'worker' | 'employer' };
   IDUpload: { userId: number; role: 'worker' | 'employer' };
   PendingVerify: undefined;
+  ContactSupport: undefined;
   ForgotPassword: undefined;
   ResetOTPVerify: { email: string };
   NewPassword: { resetToken: string };
