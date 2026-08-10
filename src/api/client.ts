@@ -1,8 +1,13 @@
 import * as SecureStore from 'expo-secure-store';
 
+import { Alert } from 'react-native';
+
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 console.log('🔗 API Base URL:', BASE_URL);
+if (__DEV__) {
+  Alert.alert('Debug API URL', `The app is currently connecting to:\n\n${BASE_URL}`);
+}
 
 export class ApiClientError extends Error {
   readonly status: number;
