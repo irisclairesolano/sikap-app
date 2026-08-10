@@ -59,7 +59,9 @@ const LoginScreen: React.FC = () => {
               // notifyAuthChanged() will trigger AuthNavigator re-render and go to Dashboard
               break;
             case 'rejected':
-              setBanner('Your application was rejected. Please contact support.');
+              setBanner(
+                'Your previous application was rejected. Please register again with your email to resubmit.',
+              );
               break;
             default:
               break;
