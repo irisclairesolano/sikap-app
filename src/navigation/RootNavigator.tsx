@@ -127,10 +127,12 @@ const RootNavigator: React.FC = () => {
     } else if (status === 'pending_id_upload' || (!status && !user.document_url)) {
       gateStart = 'IDUpload';
       params = { userId: user.id, role: user.role || 'worker' };
-    } else if (status === 'pending_review' || (!status && user.document_url)) {
+    } else if (
+      status === 'pending_review' ||
+      status === 'rejected' ||
+      (!status && user.document_url)
+    ) {
       gateStart = 'PendingVerify';
-    } else if (status === 'rejected') {
-      gateStart = 'Login';
     }
 
     return (

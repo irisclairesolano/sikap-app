@@ -9,6 +9,7 @@ import { AuthStackParamList } from '../../navigation/authTypes';
 import { notifyAuthChanged } from '../../store/authEvents';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuthCheck } from '../../hooks/useAuthCheck';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'PendingVerify'>;
 
@@ -17,6 +18,8 @@ const PendingVerifyScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const appState = useRef(AppState.currentState);
+  const { user } = useAuthCheck();
+  const isRejected = user?.registration_status === 'rejected';
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
@@ -73,47 +76,83 @@ const PendingVerifyScreen: React.FC = () => {
       {/* App Bar */}
       <View style={styles.appBar}>
         <View style={{ width: 40 }} />
-        <TouchableOpacity style={styles.iconBtn}>
+        <TouchableOpacity style={styles.iconBtn} onPress={handleContactUs}>
           <Ionicons name="help-circle-outline" size={26} color={colors.ink} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
-        <View style={styles.iconWrapper}>
-          <Ionicons name="hourglass-outline" size={48} color={colors.primaryDark} />
+        <View
+          style={[styles.iconWrapper, isRejected && { backgroundColor: colors.status.rejected.bg }]}
+        >
+          <Ionicons
+            name={isRejected ? 'close-circle-outline' : 'hourglass-outline'}
+            size={48}
+            color={isRejected ? colors.status.rejected.text : colors.primaryDark}
+          />
         </View>
 
         <Text style={styles.title}>
-          We're <Text style={styles.titleItalic}>checking</Text>
-          {'\n'}your account.
+          {isRejected ? (
+            <>
+              Your ID was{' '}
+              <Text style={[styles.titleItalic, { color: colors.status.rejected.text }]}>
+                rejected
+              </Text>
+              .
+            </>
+          ) : (
+            <>
+              We're <Text style={styles.titleItalic}>checking</Text>
+              {'\n'}your account.
+            </>
+          )}
         </Text>
 
         <Text style={styles.body}>
-          Our admin team is reviewing your ID.{'\n'}This usually takes up to{' '}
-          <Text style={styles.bodyBold}>48 hours</Text>.
+          {isRejected ? (
+            'Unfortunately, we could not verify your government ID. Please register again to resubmit clearer photos.'
+          ) : (
+            <>
+              Our admin team is reviewing your ID.{'\n'}This usually takes up to{' '}
+              <Text style={styles.bodyBold}>48 hours</Text>.
+            </>
+          )}
         </Text>
 
-        <View style={styles.infoCard}>
-          <View style={styles.infoIconBox}>
-            <Ionicons name="mail" size={18} color={colors.primary} />
+        {!isRejected && (
+          <View style={styles.infoCard}>
+            <View style={styles.infoIconBox}>
+              <Ionicons name="mail" size={18} color={colors.primary} />
+            </View>
+            <Text style={styles.infoText}>
+              <Text style={styles.infoTextBold}>We'll email you</Text> as soon as your account is
+              approved.
+            </Text>
           </View>
-          <Text style={styles.infoText}>
-            <Text style={styles.infoTextBold}>We'll email you</Text> as soon as your account is
-            approved.
-          </Text>
-        </View>
+        )}
 
         <View style={styles.footer}>
+          {!isRejected && (
+            <>
+              <Button
+                label={isRefreshing ? 'Checking...' : 'Refresh Status'}
+                variant="primary"
+                fullWidth
+                size="lg"
+                onPress={handleRefresh}
+                disabled={isRefreshing}
+              />
+              <View style={{ height: 12 }} />
+            </>
+          )}
           <Button
-            label={isRefreshing ? 'Checking...' : 'Refresh Status'}
-            variant="primary"
+            label={isRejected ? 'Register Again' : 'Sign out'}
+            variant={isRejected ? 'primary' : 'soft'}
             fullWidth
             size="lg"
-            onPress={handleRefresh}
-            disabled={isRefreshing}
+            onPress={signOut}
           />
-          <View style={{ height: 12 }} />
-          <Button label="Sign out" variant="soft" fullWidth size="lg" onPress={signOut} />
           <View style={{ height: 12 }} />
           <Button
             label="Need help? Contact us"
