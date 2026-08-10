@@ -226,6 +226,21 @@ const IDUploadScreen: React.FC = () => {
           </View>
         ) : null}
 
+        <View
+          style={[
+            styles.privacyCard,
+            { backgroundColor: colors.butterBright, marginTop: 0, marginBottom: 16 },
+          ]}
+        >
+          <Ionicons name="alert-circle" size={18} color={colors.gold} style={{ marginTop: 2 }} />
+          <Text style={[styles.privacyText, { color: colors.ink }]}>
+            <Text style={styles.privacyTextBold}>Photo Guidelines: </Text>
+            Ensure your ID and face are well-lit, not blurry, and all text is clearly readable.
+            Unclear photos will be{' '}
+            <Text style={{ color: colors.error, fontFamily: fonts.bodyBold }}>rejected</Text>.
+          </Text>
+        </View>
+
         {/* ID Upload Box */}
         <TouchableOpacity
           style={styles.uploadArea}

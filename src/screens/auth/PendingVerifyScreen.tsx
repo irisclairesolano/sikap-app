@@ -86,8 +86,8 @@ const PendingVerifyScreen: React.FC = () => {
           style={[styles.iconWrapper, isRejected && { backgroundColor: colors.status.rejected.bg }]}
         >
           <Ionicons
-            name={isRejected ? 'close-circle-outline' : 'hourglass-outline'}
-            size={48}
+            name={isRejected ? 'alert-circle' : 'hourglass-outline'}
+            size={54}
             color={isRejected ? colors.status.rejected.text : colors.primaryDark}
           />
         </View>
@@ -95,11 +95,15 @@ const PendingVerifyScreen: React.FC = () => {
         <Text style={styles.title}>
           {isRejected ? (
             <>
-              Your ID was{' '}
-              <Text style={[styles.titleItalic, { color: colors.status.rejected.text }]}>
-                rejected
+              Your ID was{'\n'}
+              <Text
+                style={[
+                  styles.titleItalic,
+                  { color: colors.status.rejected.text, fontSize: 44, textTransform: 'uppercase' },
+                ]}
+              >
+                REJECTED
               </Text>
-              .
             </>
           ) : (
             <>
