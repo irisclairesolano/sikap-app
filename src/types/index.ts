@@ -11,6 +11,7 @@ export interface User {
   verification_status: 'pending' | 'approved' | 'rejected' | 'correction_needed';
   registration_status?:
     'pending_email_verification' | 'pending_id_upload' | 'pending_review' | 'approved' | 'rejected';
+  rejection_reason?: string;
   verification_badge: boolean;
   is_suspended: boolean;
   reputation_score: number;

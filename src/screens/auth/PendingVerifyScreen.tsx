@@ -95,7 +95,11 @@ const PendingVerifyScreen: React.FC = () => {
 
         <Text style={styles.body}>
           {isRejected ? (
-            'Unfortunately, we could not verify your government ID. This usually happens if the photo was blurry, too dark, or did not match the required ID type. Please register again to resubmit clearer photos.'
+            user?.rejection_reason ? (
+              `Unfortunately, your ID was rejected: ${user.rejection_reason}. Please register again to resubmit clearer photos.`
+            ) : (
+              'Unfortunately, we could not verify your government ID. This usually happens if the photo was blurry, too dark, or did not match the required ID type. Please register again to resubmit clearer photos.'
+            )
           ) : (
             <>
               Our admin team is reviewing your ID.{'\n'}This usually takes up to{' '}
