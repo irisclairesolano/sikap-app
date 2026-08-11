@@ -5,7 +5,7 @@ import { useAlert } from '../../contexts/AlertContext';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, shadows } from '../../theme';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../../utils/storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { notifyAuthChanged } from '../../store/authEvents';
 import { useAuth } from '../../hooks/useAuth';

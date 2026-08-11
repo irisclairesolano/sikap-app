@@ -74,6 +74,13 @@ const RegisterStep2Screen: React.FC = () => {
           } else {
             setBanner('Validation failed. Please check your information and try again.');
           }
+        } else if (err.status === 409) {
+          setBanner(
+            'Your email is already registered. Redirecting to login so you can resume your application...',
+          );
+          setTimeout(() => {
+            navigation.navigate('Login');
+          }, 2500);
         } else {
           setBanner(err.message || 'Registration failed. Please try again.');
         }
@@ -169,34 +176,60 @@ const RegisterStep2Screen: React.FC = () => {
               >
                 Date of Birth
               </Text>
-              <TouchableOpacity
-                style={{
-                  borderWidth: 1,
-                  borderColor: colors.inkFaint,
-                  borderRadius: 12,
-                  padding: 14,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 12,
-                }}
-                onPress={() => setShowDatePicker(true)}
-              >
-                <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
-                <Text style={{ fontFamily: fonts.body, fontSize: 15, color: colors.ink }}>
-                  {dateOfBirth.toLocaleDateString()}
-                </Text>
-              </TouchableOpacity>
-              {showDatePicker && (
-                <DateTimePicker
-                  value={dateOfBirth}
-                  mode="date"
-                  display="default"
-                  maximumDate={new Date()}
-                  onChange={(event, selectedDate) => {
-                    setShowDatePicker(false);
-                    if (selectedDate) setDateOfBirth(selectedDate);
+              {Platform.OS === 'web' ? (
+                <input
+                  type="date"
+                  value={dateOfBirth.toISOString().split('T')[0]}
+                  max={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setDateOfBirth(new Date(e.target.value));
+                    }
+                  }}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: colors.inkFaint,
+                    borderRadius: 12,
+                    padding: 14,
+                    fontFamily: 'inherit',
+                    fontSize: 15,
+                    width: '100%',
+                    color: colors.ink,
+                    backgroundColor: 'transparent',
                   }}
                 />
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={{
+                      borderWidth: 1,
+                      borderColor: colors.inkFaint,
+                      borderRadius: 12,
+                      padding: 14,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 12,
+                    }}
+                    onPress={() => setShowDatePicker(true)}
+                  >
+                    <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
+                    <Text style={{ fontFamily: fonts.body, fontSize: 15, color: colors.ink }}>
+                      {dateOfBirth.toLocaleDateString()}
+                    </Text>
+                  </TouchableOpacity>
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={dateOfBirth}
+                      mode="date"
+                      display="default"
+                      maximumDate={new Date()}
+                      onChange={(event, selectedDate) => {
+                        setShowDatePicker(false);
+                        if (selectedDate) setDateOfBirth(selectedDate);
+                      }}
+                    />
+                  )}
+                </>
               )}
             </View>
           </View>

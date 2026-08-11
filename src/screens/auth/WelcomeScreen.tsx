@@ -9,7 +9,7 @@ import { Wordmark } from '../../components/common/Wordmark';
 import Button from '../../components/common/Button';
 import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../../utils/storage';
 import { notifyAuthChanged } from '../../store/authEvents';
 
 type WelcomeScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Welcome'>;

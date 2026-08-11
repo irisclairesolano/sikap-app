@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../utils/storage';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -7,12 +7,19 @@ console.log('🔗 API Base URL:', BASE_URL);
 export class ApiClientError extends Error {
   readonly status: number;
   readonly errors?: Record<string, string[]>;
+  readonly metadata?: Record<string, any>;
 
-  constructor(message: string, status: number, errors?: Record<string, string[]>) {
+  constructor(
+    message: string,
+    status: number,
+    errors?: Record<string, string[]>,
+    metadata?: Record<string, any>,
+  ) {
     super(message);
     this.name = 'ApiClientError';
     this.status = status;
     this.errors = errors;
+    this.metadata = metadata;
   }
 }
 
@@ -115,7 +122,12 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
       );
       errBody.message = 'Failed to parse server response';
     }
-    throw new ApiClientError(errBody.message ?? 'Something went wrong', res.status, errBody.errors);
+    throw new ApiClientError(
+      errBody.message ?? 'Something went wrong',
+      res.status,
+      errBody.errors,
+      errBody,
+    );
   }
 
   // Log successful response before parsing

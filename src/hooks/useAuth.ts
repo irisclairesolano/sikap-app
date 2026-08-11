@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../utils/storage';
 import { authApi } from '../api/auth';
 import { profileApi } from '../api/profile';
 import { notifyAuthChanged } from '../store/authEvents';

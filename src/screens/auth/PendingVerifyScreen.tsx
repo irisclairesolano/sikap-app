@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, AppState, Linking } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../../utils/storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../../components/common/Button';
 import { AuthStackParamList } from '../../navigation/authTypes';
@@ -93,13 +93,13 @@ const PendingVerifyScreen: React.FC = () => {
           )}
         </Text>
 
-        <Text style={styles.body}>
+        <Text style={[styles.body, isRejected && { textAlign: 'left', fontSize: 14 }]}>
           {isRejected ? (
-            user?.rejection_reason ? (
-              `Unfortunately, your ID was rejected: ${user.rejection_reason}. Please register again to resubmit clearer photos.`
-            ) : (
-              'Unfortunately, we could not verify your government ID. This usually happens if the photo was blurry, too dark, or did not match the required ID type. Please register again to resubmit clearer photos.'
-            )
+            'The submitted ID could not be verified due to one or more of the following issues:\n\n' +
+            '• The image was blurry, cropped, or not fully visible.\n' +
+            '• The ID details did not match the information provided in your profile.\n' +
+            '• The document type is not supported or expired.\n\n' +
+            'Please re-submit a valid government-issued ID with clear, complete details. Ensure the photo is sharp, all corners are visible, and the document is current.'
           ) : (
             <>
               Our admin team is reviewing your ID.{'\n'}This usually takes up to{' '}

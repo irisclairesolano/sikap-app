@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../utils/storage';
 import { apiClient } from '../api/client';
 import { subscribeAuthChanged } from '../store/authEvents';
 import { User } from '../types';

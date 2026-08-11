@@ -59,9 +59,10 @@ const LoginScreen: React.FC = () => {
               // notifyAuthChanged() will trigger AuthNavigator re-render and go to Dashboard
               break;
             case 'rejected':
-              setBanner(
-                'Your previous application was rejected. Please register again with your email to resubmit.',
-              );
+              // Instead of just showing banner, navigate to Welcome so they can register
+              // or navigate to PendingVerify if RootNavigator hasn't caught it yet
+              setBanner('Your previous application was rejected.');
+              navigation.navigate('Welcome');
               break;
             default:
               break;
@@ -74,6 +75,14 @@ const LoginScreen: React.FC = () => {
       },
       onError: (err: unknown) => {
         if (err instanceof ApiClientError) {
+          if (
+            err.metadata?.registration_status === 'rejected' ||
+            err.message.includes('registration was rejected')
+          ) {
+            setBanner('Your previous application was rejected. Please register again.');
+            navigation.navigate('Welcome');
+            return;
+          }
           setBanner(err.message === 'UNAUTHORIZED' ? 'Invalid credentials.' : err.message);
           return;
         }
