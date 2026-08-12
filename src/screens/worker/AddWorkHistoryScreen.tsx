@@ -38,10 +38,10 @@ export const AddWorkHistoryScreen: React.FC = () => {
   const [employer, setEmployer] = useState('');
   const [duration, setDuration] = useState('');
   const [description, setDescription] = useState('');
-  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 
   const [selectedExperienceId, setSelectedExperienceId] = useState<number | null>(null);
   const [editingExperienceId, setEditingExperienceId] = useState<number | null>(null);
+  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
 
   const { showAlert } = useAlert();
 
@@ -106,11 +106,11 @@ export const AddWorkHistoryScreen: React.FC = () => {
     setSelectedExperienceId(id);
     showAlert('Delete Work History', 'Are you sure you want to delete this experience?', [
       { text: 'Cancel', style: 'cancel' },
-      { 
-        text: 'Delete', 
-        style: 'destructive', 
-        onPress: () => deleteMutation.mutate(id)
-      }
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => deleteMutation.mutate(id),
+      },
     ]);
   };
 
@@ -123,6 +123,12 @@ export const AddWorkHistoryScreen: React.FC = () => {
   };
 
   const showForm = isAdding || experiences.length === 0;
+
+  const countWords = (text: string) => {
+    return text.trim().split(/\s+/).filter(Boolean).length;
+  };
+
+  const descWordCount = countWords(description);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -165,105 +171,134 @@ export const AddWorkHistoryScreen: React.FC = () => {
               ? 'Update the details of your previous job.'
               : showForm
                 ? 'You can add more later.'
-                : `${experiences.length} experience${experiences.length > 1 ? 's' : ''} added. Tap a card to edit or delete it.`}
+                : `${experiences.length} experience${experiences.length > 1 ? 's' : ''} added.`}
           </Text>
 
-          {!showForm && (
+          {/* Added job history list (shown above form, if any exist) */}
+          {experiences.length > 0 && (
             <View style={styles.listContainer}>
+              <Text style={styles.sectionHeader}>Added Jobs ({experiences.length})</Text>
               {experiences.map((exp) => {
                 const isSelected = selectedExperienceId === exp.id;
+                const isMenuOpen = activeMenuId === exp.id;
                 return (
                   <View key={exp.id} style={[styles.card, isSelected && styles.cardSelected]}>
-                    <TouchableOpacity onPress={() => handleCardPress(exp.id)} activeOpacity={0.75}>
+                    <View style={styles.cardHeader}>
                       <View style={styles.cardMain}>
                         <View style={styles.cardIcon}>
-                          <Ionicons
-                            name="briefcase"
-                            size={20}
-                            color={isSelected ? colors.primaryDark : colors.inkMuted}
-                          />
+                          <Ionicons name="briefcase" size={20} color={colors.inkMuted} />
                         </View>
                         <View style={styles.cardContent}>
                           <Text style={styles.cardTitle}>{exp.job_title}</Text>
                           <Text style={styles.cardSubtitle}>{exp.employer_name}</Text>
                           <Text style={styles.cardMeta}>{exp.duration}</Text>
-                          {exp.description ? (
-                            <Text style={styles.cardDesc}>{exp.description}</Text>
-                          ) : null}
                         </View>
                       </View>
-                    </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setActiveMenuId(isMenuOpen ? null : exp.id)}
+                        style={styles.threeDotsButton}
+                        accessibilityLabel="Job options"
+                        accessibilityRole="button"
+                      >
+                        <Ionicons name="ellipsis-vertical" size={20} color={colors.inkMuted} />
+                      </TouchableOpacity>
+                    </View>
 
-                    {isSelected && (
-                      <View style={styles.actionRow}>
+                    {exp.description ? (
+                      <Text style={styles.cardDesc}>{exp.description}</Text>
+                    ) : null}
+
+                    {isMenuOpen && (
+                      <View style={styles.menuDropdown}>
                         <TouchableOpacity
-                          style={styles.actionButtonEdit}
-                          onPress={() => handleEditPress(exp)}
+                          style={styles.menuItem}
+                          onPress={() => {
+                            handleEditPress(exp);
+                            setActiveMenuId(null);
+                          }}
+                          accessibilityLabel="Edit job"
+                          accessibilityRole="button"
                         >
-                          <Ionicons name="create-outline" size={16} color={colors.primaryDark} />
-                          <Text style={styles.actionTextEdit}>Edit</Text>
+                          <Ionicons name="create-outline" size={16} color={colors.inkSoft} />
+                          <Text style={styles.menuItemText}>Edit</Text>
                         </TouchableOpacity>
+                        <View style={styles.menuDivider} />
                         <TouchableOpacity
-                          style={styles.actionButtonDelete}
-                          onPress={() => handleDeleteExperience(exp.id)}
-                          disabled={deleteMutation.isPending}
+                          style={styles.menuItem}
+                          onPress={() => {
+                            handleDeleteExperience(exp.id);
+                            setActiveMenuId(null);
+                          }}
+                          accessibilityLabel="Delete job"
+                          accessibilityRole="button"
                         >
                           <Ionicons name="trash-outline" size={16} color={colors.error} />
-                          <Text style={styles.actionTextDelete}>
-                            {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-                          </Text>
+                          <Text style={[styles.menuItemText, { color: colors.error }]}>Delete</Text>
                         </TouchableOpacity>
                       </View>
                     )}
                   </View>
                 );
               })}
-              <TouchableOpacity style={styles.addButton} onPress={() => setIsAdding(true)}>
-                <View style={styles.addIconCircle}>
-                  <Ionicons name="add" size={22} color={colors.white} />
-                </View>
-                <Text style={styles.addTitle}>Add another job</Text>
-              </TouchableOpacity>
             </View>
           )}
 
-          {showForm && (
+          {showForm ? (
             <View style={styles.formContainer}>
+              <Text style={styles.sectionHeader}>
+                {editingExperienceId !== null ? 'Edit Job' : 'Add New Job'}
+              </Text>
               <CustomInput
                 label="Job title"
                 value={jobTitle}
                 onChangeText={setJobTitle}
                 placeholder="E.g. Tile setter"
                 icon="briefcase-outline"
+                maxLength={85}
               />
+              <Text style={styles.inputLimitHelper}>{jobTitle.length}/85 characters</Text>
+
               <CustomInput
                 label="Employer or project"
                 value={employer}
                 onChangeText={setEmployer}
                 placeholder="E.g. Reyes household renovation"
                 icon="business-outline"
+                maxLength={85}
               />
-              <TouchableOpacity onPress={() => setIsDatePickerVisible(true)}>
-                <View pointerEvents="none">
-                  <CustomInput
-                    label="How long?"
-                    value={duration}
-                    onChangeText={setDuration}
-                    placeholder="E.g. 2 weeks · January 2026"
-                    icon="calendar-outline"
-                    editable={false}
-                  />
-                </View>
-              </TouchableOpacity>
+              <Text style={styles.inputLimitHelper}>{employer.length}/85 characters</Text>
+
               <CustomInput
-                label="Description (optional)"
-                value={description}
-                onChangeText={setDescription}
-                placeholder="What did you do?"
-                multiline
-                icon="document-text-outline"
+                label="How long?"
+                value={duration}
+                onChangeText={setDuration}
+                placeholder="E.g. 2 weeks, 3 months, Jan - Mar 2025"
+                icon="calendar-outline"
               />
+
+              <View>
+                <CustomInput
+                  label="Description (optional)"
+                  value={description}
+                  onChangeText={setDescription}
+                  placeholder="What did you do?"
+                  multiline
+                  icon="document-text-outline"
+                />
+                <Text
+                  style={[styles.wordCountText, descWordCount > 250 && styles.wordCountTextError]}
+                >
+                  {descWordCount}/250 words
+                </Text>
+              </View>
             </View>
+          ) : (
+            <TouchableOpacity style={styles.addButton} onPress={() => setIsAdding(true)}>
+              <View style={styles.addIconCircle}>
+                <Ionicons name="add" size={22} color={colors.white} />
+              </View>
+              <Text style={styles.addTitle}>Add another job</Text>
+            </TouchableOpacity>
           )}
         </ScrollView>
 
@@ -291,7 +326,14 @@ export const AddWorkHistoryScreen: React.FC = () => {
                 style={{ flex: experiences.length > 0 ? 2 : 1 }}
                 loading={saveMutation.isPending}
                 onPress={() => saveMutation.mutate()}
-                disabled={!jobTitle || !employer || !duration}
+                disabled={
+                  !jobTitle.trim() ||
+                  !employer.trim() ||
+                  !duration.trim() ||
+                  jobTitle.length > 85 ||
+                  employer.length > 85 ||
+                  descWordCount > 250
+                }
               />
             </View>
           ) : (
@@ -305,14 +347,6 @@ export const AddWorkHistoryScreen: React.FC = () => {
           )}
         </View>
       </KeyboardAvoidingView>
-
-      {isDatePickerVisible && (
-        <DatePickerModal
-          visible={isDatePickerVisible}
-          onClose={() => setIsDatePickerVisible(false)}
-          onConfirm={(text) => setDuration(text)}
-        />
-      )}
     </SafeAreaView>
   );
 };
@@ -382,6 +416,12 @@ const styles = StyleSheet.create({
     marginTop: 32,
     gap: 12,
   },
+  sectionHeader: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 16,
+    color: colors.ink,
+    marginBottom: 8,
+  },
   card: {
     backgroundColor: colors.paperBright,
     borderRadius: 14,
@@ -393,14 +433,21 @@ const styles = StyleSheet.create({
     elevation: 1,
     borderWidth: 2,
     borderColor: colors.paperBright,
+    position: 'relative',
   },
   cardSelected: {
     borderColor: colors.primary,
     backgroundColor: colors.primaryTint,
   },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
   cardMain: {
     flexDirection: 'row',
     gap: 14,
+    flex: 1,
   },
   cardIcon: {
     width: 40,
@@ -429,6 +476,63 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 12,
     color: colors.inkMuted,
+  },
+  threeDotsButton: {
+    padding: 8,
+    marginRight: -8,
+    marginTop: -8,
+  },
+  menuDropdown: {
+    position: 'absolute',
+    top: 40,
+    right: 8,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    paddingVertical: 6,
+    width: 120,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    zIndex: 1000,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  menuItemText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 14,
+    color: colors.inkSoft,
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: colors.inkFaint,
+  },
+  inputLimitHelper: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkMuted,
+    textAlign: 'right',
+    marginTop: -8,
+    marginBottom: 4,
+  },
+  wordCountText: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkMuted,
+    textAlign: 'right',
+    marginTop: 4,
+  },
+  wordCountTextError: {
+    color: colors.error,
+    fontFamily: fonts.bodyBold,
   },
   addButton: {
     backgroundColor: colors.peach,
@@ -465,47 +569,6 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 16,
     backgroundColor: colors.paper,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.inkFaint,
-  },
-  actionButtonEdit: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.primarySoft,
-  },
-  actionButtonDelete: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.error + '40',
-  },
-  actionTextEdit: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 13,
-    color: colors.primaryDark,
-  },
-  actionTextDelete: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 13,
-    color: colors.error,
   },
   cardDesc: {
     fontFamily: fonts.body,

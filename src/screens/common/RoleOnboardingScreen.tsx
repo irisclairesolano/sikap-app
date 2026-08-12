@@ -53,20 +53,10 @@ export const RoleOnboardingScreen: React.FC = () => {
   const createSkillMutation = useMutation({
     mutationFn: (name: string) => skillsApi.createSkill(name),
     onSuccess: (newSkill) => {
-      if (newSkill && newSkill.id) {
-        if (!customSkillsList.find((s) => s.id === newSkill.id)) {
-          setCustomSkillsList((prev) => [...prev, newSkill]);
-        }
-        if (!selectedSkills.includes(newSkill.id)) {
-          setSelectedSkills((prev) => [...prev, newSkill.id]);
-        }
-      }
-      setCustomSkill('');
-      setCustomSkillError('');
+      // Handled optimistically, success will swap the temp ID in handleAddCustomSkill callbacks
     },
     onError: (err: any) => {
       console.error('Failed to create skill', err);
-      setCustomSkillError(err.message || 'Failed to add custom skill');
     },
   });
 
@@ -86,7 +76,28 @@ export const RoleOnboardingScreen: React.FC = () => {
       return;
     }
 
-    createSkillMutation.mutate(trimmed);
+    const tempId = -Date.now();
+    const tempSkill: Skill = { id: tempId, name: trimmed };
+
+    // Optimistically add to lists
+    setCustomSkillsList((prev) => [...prev, tempSkill]);
+    setSelectedSkills((prev) => [...prev, tempId]);
+    setCustomSkill('');
+    setCustomSkillError('');
+
+    createSkillMutation.mutate(trimmed, {
+      onSuccess: (newSkill) => {
+        if (newSkill && newSkill.id) {
+          setCustomSkillsList((prev) => prev.map((s) => (s.id === tempId ? newSkill : s)));
+          setSelectedSkills((prev) => prev.map((id) => (id === tempId ? newSkill.id : id)));
+        }
+      },
+      onError: (err: any) => {
+        setCustomSkillsList((prev) => prev.filter((s) => s.id !== tempId));
+        setSelectedSkills((prev) => prev.filter((id) => id !== tempId));
+        setCustomSkillError(err.message || 'Failed to add custom skill');
+      },
+    });
   };
 
   const { data: skills = [] } = useQuery({
@@ -235,17 +246,11 @@ export const RoleOnboardingScreen: React.FC = () => {
                   />
                 </View>
                 <TouchableOpacity
-                  style={[
-                    styles.addButton,
-                    (!customSkill.trim() || createSkillMutation.isPending) &&
-                      styles.addButtonDisabled,
-                  ]}
+                  style={[styles.addButton, !customSkill.trim() && styles.addButtonDisabled]}
                   onPress={handleAddCustomSkill}
-                  disabled={!customSkill.trim() || createSkillMutation.isPending}
+                  disabled={!customSkill.trim()}
                 >
-                  <Text style={styles.addButtonText}>
-                    {createSkillMutation.isPending ? '...' : '+ Add'}
-                  </Text>
+                  <Text style={styles.addButtonText}>+ Add</Text>
                 </TouchableOpacity>
               </View>
             </View>
