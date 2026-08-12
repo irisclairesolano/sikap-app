@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { profileApi } from '../../api/profile';
+import LocationPicker from '../../components/common/LocationPicker';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { useAlert } from '../../contexts/AlertContext';
@@ -39,6 +40,11 @@ export const EditProfileScreen: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [localAvatarUri, setLocalAvatarUri] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
+
+  React.useEffect(() => {
+    setImageError(false);
+  }, [localAvatarUri, user?.avatar_url]);
 
   const [dateOfBirth, setDateOfBirth] = useState(
     user?.date_of_birth ? new Date(user.date_of_birth) : new Date('1990-01-01'),
@@ -212,8 +218,12 @@ export const EditProfileScreen: React.FC = () => {
             >
               {isUploading ? (
                 <ActivityIndicator color={colors.primary} />
-              ) : getAvatarUrl() ? (
-                <Image source={{ uri: getAvatarUrl()! }} style={styles.avatarImage} />
+              ) : getAvatarUrl() && !imageError ? (
+                <Image
+                  source={{ uri: getAvatarUrl()! }}
+                  style={styles.avatarImage}
+                  onError={() => setImageError(true)}
+                />
               ) : (
                 <Text style={styles.avatarText}>{name ? name.charAt(0) : 'U'}</Text>
               )}
@@ -237,15 +247,12 @@ export const EditProfileScreen: React.FC = () => {
             )}
           </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Barangay</Text>
-            <Input value={barangay} onChangeText={setBarangay} placeholder="Barangay" />
-          </View>
-
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Municipality</Text>
-            <Input value={municipality} onChangeText={setMunicipality} placeholder="Municipality" />
-          </View>
+          <LocationPicker
+            municipalityValue={municipality}
+            barangayValue={barangay}
+            onMunicipalityChange={setMunicipality}
+            onBarangayChange={setBarangay}
+          />
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Date of Birth</Text>
@@ -300,9 +307,16 @@ export const EditProfileScreen: React.FC = () => {
                 <Text style={styles.label}>Emergency Contact Name</Text>
                 <Input
                   value={emergencyContactName}
-                  onChangeText={setEmergencyContactName}
-                  placeholder="Juan Dela Cruz"
+                  onChangeText={(text) => {
+                    const cleaned = text.replace(/[^a-zA-Z\s\-\.ñÑ]/g, '');
+                    setEmergencyContactName(cleaned.slice(0, 5));
+                  }}
+                  placeholder="Juan"
+                  maxLength={5}
                 />
+                <Text style={styles.helperText}>
+                  {emergencyContactName.length} / 5 characters (letters only)
+                </Text>
               </View>
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Emergency Contact Phone</Text>
@@ -345,12 +359,14 @@ export const EditProfileScreen: React.FC = () => {
             <View style={styles.textAreaContainer}>
               <Input
                 value={bio}
-                onChangeText={setBio}
+                onChangeText={(text) => setBio(text.slice(0, 250))}
                 placeholder="Tell others about yourself..."
                 multiline={true}
                 numberOfLines={4}
+                maxLength={250}
               />
             </View>
+            <Text style={styles.helperText}>{bio.length} / 250 characters</Text>
           </View>
 
           <Button
@@ -393,6 +409,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
+    overflow: 'hidden',
   },
   avatarImage: { width: 80, height: 80, borderRadius: 40 },
   avatarText: { fontFamily: fonts.bodyBold, fontSize: 32, color: colors.ink },

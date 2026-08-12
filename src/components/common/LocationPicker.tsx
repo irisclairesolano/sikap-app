@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useMemo } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BARANGAYS_BY_MUNICIPALITY, MUNICIPALITIES } from '../../constants/locations';
-import { colors } from '../../theme/colors';
+import { colors, fonts } from '../../theme';
 
 type LocationPickerProps = {
   municipalityValue: string;
@@ -201,9 +201,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
     color: colors.ink,
+    marginBottom: 8,
   },
   pickerButton: {
     flexDirection: 'row',
@@ -211,9 +212,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 12,
     paddingVertical: 12,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: colors.inkFaint,
-    borderRadius: 8,
+    borderRadius: 12,
     backgroundColor: colors.white,
   },
   pickerButtonError: {
@@ -225,7 +226,8 @@ const styles = StyleSheet.create({
     borderColor: colors.inkFaint,
   },
   pickerText: {
-    fontSize: 16,
+    fontFamily: fonts.body,
+    fontSize: 15,
     color: colors.ink,
     flex: 1,
   },
@@ -267,8 +269,8 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.inkFaint,
   },
   modalTitle: {
+    fontFamily: fonts.bodyBold,
     fontSize: 16,
-    fontWeight: '600',
     color: colors.ink,
   },
   optionsList: {
@@ -282,6 +284,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.inkFaint,
   },
   optionText: {
+    fontFamily: fonts.body,
     fontSize: 16,
     color: colors.ink,
   },

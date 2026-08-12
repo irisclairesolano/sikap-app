@@ -25,6 +25,12 @@ export const ProfileScreen: React.FC = () => {
     queryFn: profileApi.getProfile,
   });
 
+  const [imageError, setImageError] = useState(false);
+
+  React.useEffect(() => {
+    setImageError(false);
+  }, [user?.avatar_url]);
+
   if (isLoading || !user) {
     return (
       <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -118,10 +124,11 @@ export const ProfileScreen: React.FC = () => {
           onPress={() => navigation.navigate('EditProfile')}
         >
           <View style={styles.avatarContainer}>
-            {getAvatarUrl() ? (
+            {getAvatarUrl() && !imageError ? (
               <Image
                 source={{ uri: getAvatarUrl()! }}
                 style={styles.avatarImage}
+                onError={() => setImageError(true)}
               />
             ) : (
               <Text style={styles.avatarText}>{worker.name.charAt(0)}</Text>
@@ -149,7 +156,9 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.reputationCard}>
           <Text style={styles.reputationEyebrow}>Reputation</Text>
           <View style={styles.reputationRow}>
-            <Text style={styles.reputationScore}>{worker.ratings > 0 ? worker.reputation : 'N/A'}</Text>
+            <Text style={styles.reputationScore}>
+              {worker.ratings > 0 ? worker.reputation : 'N/A'}
+            </Text>
             <View style={styles.reputationStars}>
               {worker.ratings > 0 ? (
                 <View style={styles.starsRow}>
@@ -187,7 +196,15 @@ export const ProfileScreen: React.FC = () => {
         {worker.bio ? (
           <View style={styles.skillsSection}>
             <Text style={styles.sectionEyebrow}>About Me</Text>
-            <Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.ink, marginTop: 10, lineHeight: 22 }}>
+            <Text
+              style={{
+                fontFamily: fonts.body,
+                fontSize: 14,
+                color: colors.ink,
+                marginTop: 10,
+                lineHeight: 22,
+              }}
+            >
               {worker.bio}
             </Text>
           </View>
@@ -208,14 +225,32 @@ export const ProfileScreen: React.FC = () => {
               </Text>
             ) : (
               worker.experiences.map((exp) => (
-                <View key={exp.id} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
-                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.butter, alignItems: 'center', justifyContent: 'center' }}>
+                <View
+                  key={exp.id}
+                  style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}
+                >
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      backgroundColor: colors.butter,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <Ionicons name="briefcase" size={18} color={colors.inkSoft} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>{exp.job_title}</Text>
-                    <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.ink }}>{exp.company}</Text>
-                    <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}>{exp.duration}</Text>
+                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>
+                      {exp.job_title}
+                    </Text>
+                    <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.ink }}>
+                      {exp.company}
+                    </Text>
+                    <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}>
+                      {exp.duration}
+                    </Text>
                   </View>
                 </View>
               ))
@@ -275,13 +310,25 @@ export const ProfileScreen: React.FC = () => {
             ) : (
               user.worker_profile.references.map((ref) => (
                 <View key={ref.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.paperBright, alignItems: 'center', justifyContent: 'center' }}>
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      backgroundColor: colors.paperBright,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <Ionicons name="person" size={18} color={colors.inkSoft} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>{ref.name}</Text>
+                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>
+                      {ref.name}
+                    </Text>
                     <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}>
-                      {ref.relationship} • {ref.phone ? ref.phone.replace(/(\d{4})\d{4}(\d{3})/, '$1 ••• $2') : ''}
+                      {ref.relationship} •{' '}
+                      {ref.phone ? ref.phone.replace(/(\d{4})\d{4}(\d{3})/, '$1 ••• $2') : ''}
                     </Text>
                   </View>
                 </View>
@@ -349,6 +396,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.peach,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   avatarImage: { width: 64, height: 64, borderRadius: 32 },
   avatarText: { fontFamily: fonts.bodyBold, fontSize: 24, color: colors.primaryDark },
