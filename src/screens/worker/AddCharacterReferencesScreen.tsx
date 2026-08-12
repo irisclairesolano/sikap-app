@@ -34,7 +34,14 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     queryFn: profileApi.getProfile,
   });
 
-  const references = profile?.worker_profile?.references || [];
+  const [references, setReferences] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (profile?.worker_profile?.references) {
+      setReferences(profile.worker_profile.references);
+    }
+  }, [profile?.worker_profile?.references]);
+
   const [isAdding, setIsAdding] = useState(false);
 
   const [name, setName] = useState('');
@@ -105,23 +112,66 @@ export const AddCharacterReferencesScreen: React.FC = () => {
       }
       return profileApi.addReference(payload);
     },
-    onSuccess: () => {
+    onMutate: async () => {
+      // Close modal instantly
+      setIsAdding(false);
+
+      const tempId = -Date.now();
+      const payload = {
+        id: editingReferenceId !== null ? editingReferenceId : tempId,
+        name,
+        phone,
+        relationship,
+      };
+
+      if (editingReferenceId !== null) {
+        setReferences((prev) => prev.map((r) => (r.id === editingReferenceId ? payload : r)));
+      } else {
+        setReferences((prev) => [...prev, payload]);
+      }
+
+      // Clear inputs
+      setName('');
+      setPhone('');
+      setRelationship('');
+      setPhoneError(undefined);
+
+      return { tempId };
+    },
+    onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      handleCancel();
+      const realRef = data?.reference || data;
+      if (realRef && realRef.id && editingReferenceId === null) {
+        setReferences((prev) => prev.map((r) => (r.id === context?.tempId ? realRef : r)));
+      }
+      setEditingReferenceId(null);
     },
     onError: (err) => {
       console.error('Failed to save reference', err);
+      if (profile?.worker_profile?.references) {
+        setReferences(profile.worker_profile.references);
+      }
+      setEditingReferenceId(null);
+      showAlert('Error', err.message || 'Failed to save reference');
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => profileApi.removeReference(id),
+    onMutate: (id) => {
+      setIsAdding(false);
+      setReferences((prev) => prev.filter((r) => r.id !== id));
+      handleCancel();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      handleCancel();
     },
     onError: (err) => {
       console.error('Failed to delete reference', err);
+      if (profile?.worker_profile?.references) {
+        setReferences(profile.worker_profile.references);
+      }
+      showAlert('Error', 'Failed to delete reference');
     },
   });
 

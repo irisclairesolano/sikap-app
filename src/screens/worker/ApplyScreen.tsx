@@ -16,6 +16,7 @@ import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { useJob } from '../../hooks/useJob';
 import { useApply, useWithdrawApplication } from '../../hooks/useApply';
+import { useAlert } from '../../contexts/AlertContext';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import CustomInput from '../../components/common/Input';
@@ -47,6 +48,7 @@ export const ApplyScreen: React.FC = () => {
   const { data: job, isLoading: isJobLoading, isError: isJobError } = useJob(id);
   const { mutate: apply, isPending, isError, error, isSuccess, data } = useApply(id);
   const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawApplication();
+  const { showAlert } = useAlert();
 
   const [coverNote, setCoverNote] = useState('');
   const maxLength = 1000;
@@ -61,11 +63,27 @@ export const ApplyScreen: React.FC = () => {
 
   const handleWithdraw = () => {
     if (data?.application_id) {
-      withdraw(data.application_id, {
-        onSuccess: () => {
-          navigation.navigate('Home');
-        },
-      });
+      showAlert(
+        'Withdraw Application',
+        'Are you sure you want to withdraw? The employer will be notified, and this action cannot be undone.',
+        [
+          { text: 'No, continue', style: 'cancel' },
+          {
+            text: 'Yes, withdraw',
+            style: 'destructive',
+            onPress: () => {
+              withdraw(data.application_id, {
+                onSuccess: () => {
+                  navigation.navigate('Home');
+                },
+                onError: (err: any) => {
+                  showAlert('Error', err.message || 'Could not withdraw application.');
+                },
+              });
+            },
+          },
+        ],
+      );
     }
   };
 

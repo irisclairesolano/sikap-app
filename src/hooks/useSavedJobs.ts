@@ -34,11 +34,22 @@ export const useToggleSaveJob = () => {
             data: previousSavedJobs.data.filter((j) => j.id !== jobId),
           });
         } else {
-          let fullJob = queryClient
-            .getQueryData<{ data: JobPost[] }>(['jobs'])
-            ?.data?.find((j) => j.id === jobId);
-          if (!fullJob) {
-            fullJob = queryClient.getQueryData<JobPost>(['job', jobId]);
+          let fullJob: JobPost | undefined;
+          const jobQueries = queryClient.getQueriesData<any>({ queryKey: ['jobs'] });
+          for (const [key, queryData] of jobQueries) {
+            if (!queryData) continue;
+            if (key.length === 2 && typeof key[1] === 'number' && key[1] === jobId) {
+              fullJob = queryData;
+              break;
+            }
+            const jobList = queryData.data || queryData;
+            if (Array.isArray(jobList)) {
+              const found = jobList.find((j: any) => j.id === jobId);
+              if (found) {
+                fullJob = found;
+                break;
+              }
+            }
           }
 
           const newJob = fullJob ? fullJob : ({ id: jobId } as JobPost);

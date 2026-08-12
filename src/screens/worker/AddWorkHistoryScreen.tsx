@@ -32,7 +32,13 @@ export const AddWorkHistoryScreen: React.FC = () => {
   });
 
   const [isAdding, setIsAdding] = useState(false);
-  const experiences = profile?.worker_profile?.experiences || [];
+  const [experiences, setExperiences] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (profile?.worker_profile?.experiences) {
+      setExperiences(profile.worker_profile.experiences);
+    }
+  }, [profile?.worker_profile?.experiences]);
 
   const [jobTitle, setJobTitle] = useState('');
   const [employer, setEmployer] = useState('');
@@ -59,23 +65,58 @@ export const AddWorkHistoryScreen: React.FC = () => {
         return profileApi.addExperience(payload);
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    onMutate: async () => {
+      const tempId = -Date.now();
+      const payload = {
+        id: editingExperienceId !== null ? editingExperienceId : tempId,
+        job_title: jobTitle,
+        employer_name: employer,
+        duration: duration,
+        description: description,
+      };
+
+      if (editingExperienceId !== null) {
+        setExperiences((prev) =>
+          prev.map((exp) => (exp.id === editingExperienceId ? payload : exp)),
+        );
+      } else {
+        setExperiences((prev) => [...prev, payload]);
+      }
+
       handleCancel();
+      return { tempId };
+    },
+    onSuccess: (data, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      const realExp = data?.experience || data;
+      if (realExp && realExp.id && editingExperienceId === null) {
+        setExperiences((prev) => prev.map((exp) => (exp.id === context?.tempId ? realExp : exp)));
+      }
     },
     onError: (err) => {
       console.error('Failed to save work experience', err);
+      if (profile?.worker_profile?.experiences) {
+        setExperiences(profile.worker_profile.experiences);
+      }
+      showAlert('Error', 'Failed to save experience');
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => profileApi.removeExperience(id),
+    onMutate: (id) => {
+      setExperiences((prev) => prev.filter((exp) => exp.id !== id));
+      setSelectedExperienceId(null);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      setSelectedExperienceId(null);
     },
     onError: (err) => {
       console.error('Failed to delete work experience', err);
+      if (profile?.worker_profile?.experiences) {
+        setExperiences(profile.worker_profile.experiences);
+      }
+      showAlert('Error', 'Failed to delete experience');
     },
   });
 
