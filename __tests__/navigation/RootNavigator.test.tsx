@@ -57,7 +57,7 @@ describe('RootNavigator', () => {
 
     const { getByTestId } = await render(<RootNavigator />);
     expect(getByTestId('mock-auth-navigator')).toBeTruthy();
-    expect(AuthNavigator).toHaveBeenCalledWith(expect.objectContaining({}), expect.anything());
+    expect(AuthNavigator).toHaveBeenCalledWith(expect.objectContaining({}), undefined);
   });
 
   it('renders AuthNavigator with initialRouteName="OTPVerify" when status is pending_email_verification', async () => {
@@ -85,7 +85,7 @@ describe('RootNavigator', () => {
           role: 'worker',
         },
       }),
-      expect.anything(),
+      undefined,
     );
   });
 
@@ -113,7 +113,7 @@ describe('RootNavigator', () => {
           role: 'worker',
         },
       }),
-      expect.anything(),
+      undefined,
     );
   });
 
@@ -138,7 +138,7 @@ describe('RootNavigator', () => {
         initialRouteName: 'PendingVerify',
         initialParams: undefined,
       }),
-      expect.anything(),
+      undefined,
     );
   });
 
@@ -162,7 +162,7 @@ describe('RootNavigator', () => {
       expect.objectContaining({
         initialRouteName: 'PendingVerify',
       }),
-      expect.anything(),
+      undefined,
     );
   });
 });

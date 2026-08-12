@@ -42,9 +42,9 @@ describe('LoginScreen', () => {
   });
 
   it('shows error banner if email or password is empty', async () => {
-    const { getByText } = await render(<LoginScreen />);
+    const { getByText, getByRole } = await render(<LoginScreen />);
 
-    const signInButton = getByText('Sign in');
+    const signInButton = getByRole('button', { name: 'Sign in' });
     fireEvent.press(signInButton);
 
     expect(getByText('Please fill in all fields.')).toBeTruthy();
@@ -66,11 +66,11 @@ describe('LoginScreen', () => {
       }
     });
 
-    const { getByText, getByPlaceholderText } = await render(<LoginScreen />);
+    const { getByText, getByPlaceholderText, getByRole } = await render(<LoginScreen />);
 
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
     fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
-    fireEvent.press(getByText('Sign in'));
+    fireEvent.press(getByRole('button', { name: 'Sign in' }));
 
     expect(mockMutate).toHaveBeenCalledWith(
       { email: 'user@example.com', password: 'password123' },
@@ -92,11 +92,11 @@ describe('LoginScreen', () => {
       }
     });
 
-    const { getByText, getByPlaceholderText } = await render(<LoginScreen />);
+    const { getByText, getByPlaceholderText, getByRole } = await render(<LoginScreen />);
 
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
     fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
-    fireEvent.press(getByText('Sign in'));
+    fireEvent.press(getByRole('button', { name: 'Sign in' }));
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('Welcome');
@@ -121,11 +121,11 @@ describe('LoginScreen', () => {
       }
     });
 
-    const { getByText, getByPlaceholderText } = await render(<LoginScreen />);
+    const { getByText, getByPlaceholderText, getByRole } = await render(<LoginScreen />);
 
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'verify@example.com');
     fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
-    fireEvent.press(getByText('Sign in'));
+    fireEvent.press(getByRole('button', { name: 'Sign in' }));
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('OTPVerify', {
