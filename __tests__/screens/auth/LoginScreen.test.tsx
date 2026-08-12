@@ -45,9 +45,11 @@ describe('LoginScreen', () => {
     const { getByText, getByRole } = await render(<LoginScreen />);
 
     const signInButton = getByRole('button', { name: 'Sign in' });
-    fireEvent.press(signInButton);
+    await fireEvent.press(signInButton);
 
-    expect(getByText('Please fill in all fields.')).toBeTruthy();
+    await waitFor(() => {
+      expect(getByText('Please fill in all fields.')).toBeTruthy();
+    });
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
@@ -68,16 +70,15 @@ describe('LoginScreen', () => {
 
     const { getByText, getByPlaceholderText, getByRole } = await render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
-    fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
-    fireEvent.press(getByRole('button', { name: 'Sign in' }));
-
-    expect(mockMutate).toHaveBeenCalledWith(
-      { email: 'user@example.com', password: 'password123' },
-      expect.any(Object),
-    );
+    await fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
+    await fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
+    await fireEvent.press(getByRole('button', { name: 'Sign in' }));
 
     await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalledWith(
+        { email: 'user@example.com', password: 'password123' },
+        expect.any(Object),
+      );
       expect(mockNavigate).toHaveBeenCalledWith('Welcome');
     });
   });
@@ -94,9 +95,9 @@ describe('LoginScreen', () => {
 
     const { getByText, getByPlaceholderText, getByRole } = await render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
-    fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
-    fireEvent.press(getByRole('button', { name: 'Sign in' }));
+    await fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
+    await fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
+    await fireEvent.press(getByRole('button', { name: 'Sign in' }));
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('Welcome');
@@ -123,9 +124,9 @@ describe('LoginScreen', () => {
 
     const { getByText, getByPlaceholderText, getByRole } = await render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText('you@example.com'), 'verify@example.com');
-    fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
-    fireEvent.press(getByRole('button', { name: 'Sign in' }));
+    await fireEvent.changeText(getByPlaceholderText('you@example.com'), 'verify@example.com');
+    await fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
+    await fireEvent.press(getByRole('button', { name: 'Sign in' }));
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('OTPVerify', {
