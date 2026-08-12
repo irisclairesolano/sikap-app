@@ -69,6 +69,7 @@
     "lint-staged": "^16.4.0",
     "prettier": "^3.9.4",
     "react-test-renderer": "^19.2.8",
+    "test-renderer": "^1.2.0",
     "typescript": "~5.9.2"
   },
   "private": true

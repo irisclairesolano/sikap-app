@@ -195,7 +195,6 @@ export const RoleOnboardingScreen: React.FC = () => {
               : 'What are you good at? Select the skills that match your expertise.'}
           </Text>
         </View>
-
         {targetRole === 'employer' && (
           <View style={styles.section}>
             <TouchableOpacity
@@ -218,29 +217,11 @@ export const RoleOnboardingScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
           </View>
-        )}
-
+        )}{' '}
         {targetRole === 'worker' && (
           <View>
-            <View style={styles.skillsContainer}>
-              {[...skills, ...customSkillsList].map((skill) => {
-                const isSelected = selectedSkills.includes(skill.id);
-                return (
-                  <TouchableOpacity
-                    key={skill.id}
-                    style={[styles.skillChip, isSelected && styles.skillChipSelected]}
-                    onPress={() => handleToggleSkill(skill.id)}
-                  >
-                    <Text style={[styles.skillText, isSelected && styles.skillTextSelected]}>
-                      {skill.name}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            <View style={{ marginTop: 28 }}>
-              <Text style={styles.sectionHeader}>Or type a custom skill</Text>
+            <View style={{ marginBottom: 20 }}>
+              <Text style={styles.sectionHeader}>Type a custom skill</Text>
               <View style={styles.customInputRow}>
                 <View style={{ flex: 1 }}>
                   <Input
@@ -267,6 +248,23 @@ export const RoleOnboardingScreen: React.FC = () => {
                   </Text>
                 </TouchableOpacity>
               </View>
+            </View>
+
+            <View style={styles.skillsContainer}>
+              {[...skills, ...customSkillsList].map((skill) => {
+                const isSelected = selectedSkills.includes(skill.id);
+                return (
+                  <TouchableOpacity
+                    key={skill.id}
+                    style={[styles.skillChip, isSelected && styles.skillChipSelected]}
+                    onPress={() => handleToggleSkill(skill.id)}
+                  >
+                    <Text style={[styles.skillText, isSelected && styles.skillTextSelected]}>
+                      {skill.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         )}
@@ -360,8 +358,8 @@ const styles = StyleSheet.create({
     borderColor: colors.inkFaint,
   },
   skillChipSelected: {
-    backgroundColor: colors.mint,
-    borderColor: colors.mint,
+    backgroundColor: colors.inkFaint,
+    borderColor: colors.inkMuted,
   },
   skillText: {
     fontFamily: fonts.bodyMedium,
@@ -369,7 +367,7 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   skillTextSelected: {
-    color: colors.paperBright,
+    color: colors.inkSoft,
     fontFamily: fonts.bodyBold,
   },
   footer: {

@@ -112,6 +112,33 @@ export const AddSkillsScreen: React.FC = () => {
         </Text>
         <Text style={styles.subtitle}>Choose all that apply.</Text>
 
+        <Text style={styles.sectionHeader}>Custom Skill</Text>
+        <View style={styles.customInputRow}>
+          <View style={{ flex: 1 }}>
+            <Input
+              placeholder="Type custom skill e.g., Wood Carver"
+              value={customSkill}
+              onChangeText={(text) => {
+                setCustomSkill(text);
+                setCustomSkillError('');
+              }}
+              error={customSkillError}
+            />
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.addButton,
+              (!customSkill.trim() || createSkillMutation.isPending) && styles.addButtonDisabled,
+            ]}
+            onPress={handleAddCustomSkill}
+            disabled={!customSkill.trim() || createSkillMutation.isPending}
+          >
+            <Text style={styles.addButtonText}>
+              {createSkillMutation.isPending ? '...' : '+ Add'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         <Text style={styles.sectionHeaderPrimary}>Selected · {selectedSkills.length}</Text>
         <View style={styles.chipContainer}>
           {selectedSkills.map((skill) => (
@@ -153,33 +180,6 @@ export const AddSkillsScreen: React.FC = () => {
                 <Text style={styles.chipText}>+ {skill.name}</Text>
               </TouchableOpacity>
             ))}
-        </View>
-
-        <Text style={styles.sectionHeader}>Custom Skill</Text>
-        <View style={styles.customInputRow}>
-          <View style={{ flex: 1 }}>
-            <Input
-              placeholder="Type custom skill e.g., Wood Carver"
-              value={customSkill}
-              onChangeText={(text) => {
-                setCustomSkill(text);
-                setCustomSkillError('');
-              }}
-              error={customSkillError}
-            />
-          </View>
-          <TouchableOpacity
-            style={[
-              styles.addButton,
-              (!customSkill.trim() || createSkillMutation.isPending) && styles.addButtonDisabled,
-            ]}
-            onPress={handleAddCustomSkill}
-            disabled={!customSkill.trim() || createSkillMutation.isPending}
-          >
-            <Text style={styles.addButtonText}>
-              {createSkillMutation.isPending ? '...' : '+ Add'}
-            </Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -290,7 +290,9 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   chipSelected: {
-    backgroundColor: colors.peach,
+    backgroundColor: colors.inkFaint,
+    borderWidth: 1,
+    borderColor: colors.inkMuted,
   },
   chipText: {
     fontFamily: fonts.bodyBold,
@@ -300,7 +302,7 @@ const styles = StyleSheet.create({
   chipTextSelected: {
     fontFamily: fonts.bodyBold,
     fontSize: 13,
-    color: colors.primaryDark,
+    color: colors.inkSoft,
   },
   emptyText: {
     fontFamily: fonts.body,
