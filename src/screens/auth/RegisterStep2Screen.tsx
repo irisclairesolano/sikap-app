@@ -99,6 +99,20 @@ const RegisterStep2Screen: React.FC = () => {
       return;
     }
 
+    // Verify age is at least 15
+    const today = new Date();
+    let age = today.getFullYear() - dateOfBirth.getFullYear();
+    const monthDiff = today.getMonth() - dateOfBirth.getMonth();
+    const dayDiff = today.getDate() - dateOfBirth.getDate();
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+      age--;
+    }
+
+    if (age < 15) {
+      setBanner('You must be at least 15 years old to register.');
+      return;
+    }
+
     const payload = {
       role,
       name,

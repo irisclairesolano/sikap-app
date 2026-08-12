@@ -133,6 +133,21 @@ export const EditProfileScreen: React.FC = () => {
       }
     }
 
+    if (dateOfBirth) {
+      const today = new Date();
+      let age = today.getFullYear() - dateOfBirth.getFullYear();
+      const monthDiff = today.getMonth() - dateOfBirth.getMonth();
+      const dayDiff = today.getDate() - dateOfBirth.getDate();
+      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+      }
+
+      if (age < 15) {
+        showAlert('Invalid Age', 'You must be at least 15 years old.');
+        return;
+      }
+    }
+
     try {
       setIsSaving(true);
       const updateData: any = {
