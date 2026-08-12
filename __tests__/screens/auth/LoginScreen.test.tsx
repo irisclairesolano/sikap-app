@@ -41,8 +41,8 @@ describe('LoginScreen', () => {
     });
   });
 
-  it('shows error banner if email or password is empty', () => {
-    const { getByText } = render(<LoginScreen />);
+  it('shows error banner if email or password is empty', async () => {
+    const { getByText } = await render(<LoginScreen />);
 
     const signInButton = getByText('Sign in');
     fireEvent.press(signInButton);
@@ -66,7 +66,7 @@ describe('LoginScreen', () => {
       }
     });
 
-    const { getByText, getByPlaceholderText } = render(<LoginScreen />);
+    const { getByText, getByPlaceholderText } = await render(<LoginScreen />);
 
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
     fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
@@ -92,7 +92,7 @@ describe('LoginScreen', () => {
       }
     });
 
-    const { getByText, getByPlaceholderText } = render(<LoginScreen />);
+    const { getByText, getByPlaceholderText } = await render(<LoginScreen />);
 
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
     fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
@@ -121,7 +121,7 @@ describe('LoginScreen', () => {
       }
     });
 
-    const { getByText, getByPlaceholderText } = render(<LoginScreen />);
+    const { getByText, getByPlaceholderText } = await render(<LoginScreen />);
 
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'verify@example.com');
     fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');

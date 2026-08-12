@@ -37,30 +37,30 @@ describe('RootNavigator', () => {
     jest.clearAllMocks();
   });
 
-  it('renders loading screen when isLoading is true', () => {
+  it('renders loading screen when isLoading is true', async () => {
     (useAuthCheck as jest.Mock).mockReturnValue({
       user: null,
       isLoading: true,
       isVerified: false,
     });
 
-    const { getByText } = render(<RootNavigator />);
+    const { getByText } = await render(<RootNavigator />);
     expect(getByText('Loading SIKAP...')).toBeTruthy();
   });
 
-  it('renders AuthNavigator with default route when user is not logged in', () => {
+  it('renders AuthNavigator with default route when user is not logged in', async () => {
     (useAuthCheck as jest.Mock).mockReturnValue({
       user: null,
       isLoading: false,
       isVerified: false,
     });
 
-    const { getByTestId } = render(<RootNavigator />);
+    const { getByTestId } = await render(<RootNavigator />);
     expect(getByTestId('mock-auth-navigator')).toBeTruthy();
     expect(AuthNavigator).toHaveBeenCalledWith(expect.objectContaining({}), expect.anything());
   });
 
-  it('renders AuthNavigator with initialRouteName="OTPVerify" when status is pending_email_verification', () => {
+  it('renders AuthNavigator with initialRouteName="OTPVerify" when status is pending_email_verification', async () => {
     const mockUser = {
       id: 123,
       email: 'unverified@example.com',
@@ -74,7 +74,7 @@ describe('RootNavigator', () => {
       isVerified: false,
     });
 
-    render(<RootNavigator />);
+    await render(<RootNavigator />);
 
     expect(AuthNavigator).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -89,7 +89,7 @@ describe('RootNavigator', () => {
     );
   });
 
-  it('renders AuthNavigator with initialRouteName="IDUpload" when status is pending_id_upload', () => {
+  it('renders AuthNavigator with initialRouteName="IDUpload" when status is pending_id_upload', async () => {
     const mockUser = {
       id: 456,
       email: 'idupload@example.com',
@@ -103,7 +103,7 @@ describe('RootNavigator', () => {
       isVerified: false,
     });
 
-    render(<RootNavigator />);
+    await render(<RootNavigator />);
 
     expect(AuthNavigator).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -117,7 +117,7 @@ describe('RootNavigator', () => {
     );
   });
 
-  it('renders AuthNavigator with initialRouteName="PendingVerify" when status is pending_review', () => {
+  it('renders AuthNavigator with initialRouteName="PendingVerify" when status is pending_review', async () => {
     const mockUser = {
       id: 789,
       email: 'review@example.com',
@@ -131,7 +131,7 @@ describe('RootNavigator', () => {
       isVerified: false,
     });
 
-    render(<RootNavigator />);
+    await render(<RootNavigator />);
 
     expect(AuthNavigator).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -142,7 +142,7 @@ describe('RootNavigator', () => {
     );
   });
 
-  it('renders AuthNavigator with initialRouteName="PendingVerify" when status is rejected', () => {
+  it('renders AuthNavigator with initialRouteName="PendingVerify" when status is rejected', async () => {
     const mockUser = {
       id: 999,
       email: 'rejected@example.com',
@@ -156,7 +156,7 @@ describe('RootNavigator', () => {
       isVerified: false,
     });
 
-    render(<RootNavigator />);
+    await render(<RootNavigator />);
 
     expect(AuthNavigator).toHaveBeenCalledWith(
       expect.objectContaining({
