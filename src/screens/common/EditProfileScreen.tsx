@@ -24,6 +24,7 @@ import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { useAlert } from '../../contexts/AlertContext';
 import { useAuth } from '../../hooks/useAuth';
+import { ApiClientError } from '../../api/client';
 import { colors, fonts, shadows } from '../../theme';
 
 export const EditProfileScreen: React.FC = () => {
@@ -182,7 +183,11 @@ export const EditProfileScreen: React.FC = () => {
       ]);
     } catch (err: any) {
       console.error(err);
-      showAlert('Save Failed', err.message || 'We could not save your changes.');
+      const msg =
+        err instanceof ApiClientError && err.errors
+          ? Object.values(err.errors)[0]?.[0] || err.message
+          : err.message || 'We could not save your changes.';
+      showAlert('Save Failed', msg);
     } finally {
       setIsSaving(false);
     }

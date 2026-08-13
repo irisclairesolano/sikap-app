@@ -19,6 +19,7 @@ import { useApply, useWithdrawApplication } from '../../hooks/useApply';
 import { useAlert } from '../../contexts/AlertContext';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
+import { ApiClientError } from '../../api/client';
 import CustomInput from '../../components/common/Input';
 import Button from '../../components/common/Button';
 
@@ -215,7 +216,15 @@ export const ApplyScreen: React.FC = () => {
           <View style={{ width: 40 }} />
         </View>
 
-        {isError && <ErrorBanner message={error?.message || 'Failed to submit application.'} />}
+        {isError && (
+          <ErrorBanner
+            message={
+              error instanceof ApiClientError && error.errors
+                ? Object.values(error.errors)[0]?.[0] || error.message
+                : error?.message || 'Failed to submit application.'
+            }
+          />
+        )}
 
         <ScrollView
           contentContainerStyle={styles.scrollContent}

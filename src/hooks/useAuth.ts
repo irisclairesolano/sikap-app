@@ -12,6 +12,9 @@ export const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: async (data) => {
+      if (data.user && data.user.role !== 'worker' && data.user.role !== 'employer') {
+        throw new Error('FUTURE_ROLE');
+      }
       await SecureStore.setItemAsync('auth_token', data.token);
       await SecureStore.setItemAsync('user_profile', JSON.stringify(data.user));
       queryClient.setQueryData(['profile'], data.user);

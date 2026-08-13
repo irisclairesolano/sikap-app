@@ -19,6 +19,13 @@ jest.mock('../../../src/hooks/useAuth', () => ({
   useAuth: jest.fn(),
 }));
 
+jest.mock('../../../src/contexts/AlertContext', () => ({
+  useAlert: () => ({
+    showAlert: jest.fn(),
+    hideAlert: jest.fn(),
+  }),
+}));
+
 jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'Ionicons',
 }));

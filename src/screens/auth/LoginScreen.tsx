@@ -8,6 +8,7 @@ import { ApiClientError } from '../../api/client';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { useAuth } from '../../hooks/useAuth';
+import { useAlert } from '../../contexts/AlertContext';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 import { LoginRequest } from '../../types';
@@ -19,6 +20,7 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, '
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const { loginMutation } = useAuth();
+  const { showAlert } = useAlert();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -74,6 +76,10 @@ const LoginScreen: React.FC = () => {
         setBanner('');
       },
       onError: (err: unknown) => {
+        if (err instanceof Error && err.message === 'FUTURE_ROLE') {
+          showAlert('ooops, it seems like yu have discovered a future feature');
+          return;
+        }
         if (err instanceof ApiClientError) {
           if (
             err.metadata?.registration_status === 'rejected' ||
