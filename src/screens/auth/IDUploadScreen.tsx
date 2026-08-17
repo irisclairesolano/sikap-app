@@ -251,7 +251,7 @@ const IDUploadScreen: React.FC = () => {
             <Ionicons name="camera" size={28} color={colors.white} />
           </View>
           <Text style={styles.uploadTitle}>
-            {selectedFile ? 'ID Front Uploaded ✓' : 'Take a photo of your ID (Front)'}
+            {selectedFile ? 'ID Front Uploaded ✓' : 'Upload a photo of your ID (Front)'}
           </Text>
           <Text style={styles.uploadSubtitle}>
             {selectedFile
@@ -270,7 +270,7 @@ const IDUploadScreen: React.FC = () => {
             <Ionicons name="camera" size={28} color={colors.white} />
           </View>
           <Text style={styles.uploadTitle}>
-            {selectedFileBack ? 'ID Back Uploaded ✓' : 'Take a photo of your ID (Back)'}
+            {selectedFileBack ? 'ID Back Uploaded ✓' : 'Upload a photo of your ID (Back)'}
           </Text>
           <Text style={styles.uploadSubtitle}>
             {selectedFileBack ? `${selectedFileBack.name}` : 'Back side of your ID'}
@@ -287,7 +287,7 @@ const IDUploadScreen: React.FC = () => {
             <Ionicons name="person" size={24} color={colors.white} />
           </View>
           <Text style={styles.uploadTitle}>
-            {selectedSelfie ? 'Selfie Uploaded ✓' : 'Take a selfie holding your ID'}
+            {selectedSelfie ? 'Selfie Uploaded ✓' : 'Upload a selfie holding your ID'}
           </Text>
           <Text style={styles.uploadSubtitle}>
             {selectedSelfie
