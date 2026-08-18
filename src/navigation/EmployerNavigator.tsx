@@ -88,6 +88,7 @@ const HomeStack: React.FC = () => (
 const MyJobsStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="MyJobs" component={MyJobsScreen} />
+    <Stack.Screen name="PostJob" component={PostJobScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
     <Stack.Screen name="ViewApplicants" component={ViewApplicantsScreen} />
