@@ -11,7 +11,7 @@ export const jobsApi = {
 
   updateJob: async (id: number, payload: Partial<JobPost>) => {
     return apiClient<{ message: string; job: JobPost }>(`/jobs/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       body: JSON.stringify(payload),
     });
   },

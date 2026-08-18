@@ -53,9 +53,15 @@ export const MyJobsScreen: React.FC = () => {
           </View>
           <TouchableOpacity
             style={styles.manageBtn}
-            onPress={() => navigation.navigate('ViewApplicants', { id: item.id })}
+            onPress={() => {
+              if (item.status === 'open') {
+                navigation.navigate('ViewApplicants', { id: item.id });
+              } else {
+                navigation.navigate('JobStatusManagement', { id: item.id, job: item });
+              }
+            }}
           >
-            <Text style={styles.manageBtnText}>Manage</Text>
+            <Text style={styles.manageBtnText}>{item.status === 'open' ? 'Manage' : 'Status'}</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>

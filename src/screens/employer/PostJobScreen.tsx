@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
@@ -20,7 +20,7 @@ import Button from '../../components/common/Button';
 import CustomInput from '../../components/common/Input';
 import LocationPicker from '../../components/common/LocationPicker';
 import { useAlert } from '../../contexts/AlertContext';
-import { useCreateJob } from '../../hooks/useEmployerJobs';
+import { useCreateJob, useUpdateJob } from '../../hooks/useEmployerJobs';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts } from '../../theme';
 
@@ -36,20 +36,25 @@ const DEFAULT_CATEGORIES = [
 
 export const PostJobScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<EmployerStackParamList>>();
+  const route = useRoute<RouteProp<EmployerStackParamList, 'PostJob'>>();
+  const jobToEdit = (route.params as any)?.job;
+  const isEditMode = !!jobToEdit;
+
   const createJobMutation = useCreateJob();
+  const updateJobMutation = useUpdateJob();
   const { showAlert } = useAlert();
 
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(jobToEdit?.title || '');
 
   // Category tags
   const [currentCategory, setCurrentCategory] = useState('');
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>(jobToEdit?.categories || []);
   const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
 
-  const [municipality, setMunicipality] = useState('');
-  const [barangay, setBarangay] = useState('');
-  const [pay, setPay] = useState('');
-  const [slots, setSlots] = useState('');
+  const [municipality, setMunicipality] = useState(jobToEdit?.municipality || '');
+  const [barangay, setBarangay] = useState(jobToEdit?.barangay || '');
+  const [pay, setPay] = useState(jobToEdit?.compensation ? String(jobToEdit.compensation) : '');
+  const [slots, setSlots] = useState(jobToEdit?.slots ? String(jobToEdit.slots) : '');
 
   const parsedPay = parseFloat(pay);
   const payInvalid = pay !== '' && (isNaN(parsedPay) || parsedPay < 1);
@@ -58,15 +63,17 @@ export const PostJobScreen: React.FC = () => {
   const slotsInvalid = slots !== '' && (isNaN(parsedSlots) || parsedSlots < 1);
 
   // Duration
-  const [duration, setDuration] = useState('');
-  const [durationUnit, setDurationUnit] = useState('Days');
+  const [duration, setDuration] = useState(jobToEdit?.duration ? String(jobToEdit.duration) : '');
+  const [durationUnit, setDurationUnit] = useState(jobToEdit?.duration_unit || 'Days');
 
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(jobToEdit?.description || '');
   const [isUrgent, setIsUrgent] = useState(false);
-  const [scheduleDate, setScheduleDate] = useState(new Date());
+  const [scheduleDate, setScheduleDate] = useState(
+    jobToEdit?.schedule_date ? new Date(jobToEdit.schedule_date) : new Date(),
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [exactLocation, setExactLocation] = useState('');
-  const [toolsRequired, setToolsRequired] = useState('');
+  const [exactLocation, setExactLocation] = useState(jobToEdit?.exact_location || '');
+  const [toolsRequired, setToolsRequired] = useState(jobToEdit?.tools_required || '');
 
   // Media
   const [photos, setPhotos] = useState<ImagePicker.ImagePickerAsset[]>([]);
@@ -166,6 +173,39 @@ export const PostJobScreen: React.FC = () => {
       return;
     }
 
+    if (isEditMode) {
+      const payload: any = {
+        title,
+        categories: JSON.stringify(finalCategories),
+        barangay,
+        municipality,
+        compensation: parseFloat(pay.replace(/[^0-9.]/g, '')),
+        slots: parseInt(slots, 10),
+        description,
+      };
+      if (duration) {
+        payload.duration = parseInt(duration, 10);
+        payload.duration_unit = durationUnit;
+      }
+      if (exactLocation) payload.exact_location = exactLocation;
+      if (toolsRequired) payload.tools_required = toolsRequired;
+
+      updateJobMutation.mutate(
+        { id: jobToEdit.id, payload },
+        {
+          onSuccess: () => {
+            showAlert('Job updated!', 'Your changes have been saved.', [
+              { text: 'OK', onPress: () => navigation.goBack() },
+            ]);
+          },
+          onError: (err: any) => {
+            showAlert('Error', err.message || 'Failed to update job.');
+          },
+        },
+      );
+      return;
+    }
+
     const formData = new FormData();
     formData.append('title', title);
     formData.append('categories', JSON.stringify(finalCategories));
@@ -223,7 +263,7 @@ export const PostJobScreen: React.FC = () => {
             <Ionicons name="close" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.appBarBadge}>
-            <Text style={styles.appBarBadgeText}>New post</Text>
+            <Text style={styles.appBarBadgeText}>{isEditMode ? 'Edit post' : 'New post'}</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
@@ -234,8 +274,9 @@ export const PostJobScreen: React.FC = () => {
           keyboardShouldPersistTaps="handled"
         >
           <Text style={styles.title}>
-            Post a{'\n'}
-            <Text style={styles.titleAccent}>new job.</Text>
+            {isEditMode ? 'Edit your' : 'Post a'}
+            {'\n'}
+            <Text style={styles.titleAccent}>{isEditMode ? 'job post.' : 'new job.'}</Text>
           </Text>
 
           <View style={styles.formContainer}>
@@ -434,64 +475,65 @@ export const PostJobScreen: React.FC = () => {
               icon="hammer-outline"
             />
 
-            {/* Media Uploads */}
-            <View style={styles.mediaSection}>
-              <Text style={styles.label}>Photos & Video (Optional)</Text>
+            {!isEditMode && (
+              <View style={styles.mediaSection}>
+                <Text style={styles.label}>Photos & Video (Optional)</Text>
 
-              <View style={styles.mediaRow}>
-                <TouchableOpacity style={styles.mediaBtn} onPress={pickPhotos}>
-                  <Ionicons name="image-outline" size={24} color={colors.primary} />
-                  <Text style={styles.mediaBtnText}>Add Photos</Text>
-                  <Text style={styles.mediaBtnSub}>{photos.length}/5</Text>
-                </TouchableOpacity>
+                <View style={styles.mediaRow}>
+                  <TouchableOpacity style={styles.mediaBtn} onPress={pickPhotos}>
+                    <Ionicons name="image-outline" size={24} color={colors.primary} />
+                    <Text style={styles.mediaBtnText}>Add Photos</Text>
+                    <Text style={styles.mediaBtnSub}>{photos.length}/5</Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity style={styles.mediaBtn} onPress={pickVideo}>
-                  <Ionicons name="videocam-outline" size={24} color={colors.primary} />
-                  <Text style={styles.mediaBtnText}>{video ? 'Change Video' : 'Add Video'}</Text>
-                  <Text style={styles.mediaBtnSub}>{video ? '1/1' : '0/1'}</Text>
-                </TouchableOpacity>
-              </View>
-
-              {photos.length > 0 && (
-                <ScrollView
-                  horizontal
-                  style={styles.previewScroll}
-                  showsHorizontalScrollIndicator={false}
-                >
-                  {photos.map((p, idx) => (
-                    <View key={idx} style={styles.previewWrapper}>
-                      <Image source={{ uri: p.uri }} style={styles.previewImg} />
-                      <TouchableOpacity
-                        style={styles.removeMediaBtn}
-                        onPress={() => removePhoto(idx)}
-                      >
-                        <Ionicons name="close" size={16} color={colors.white} />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </ScrollView>
-              )}
-
-              {video && (
-                <View style={styles.previewWrapper}>
-                  <View
-                    style={[
-                      styles.previewImg,
-                      {
-                        backgroundColor: colors.ink,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      },
-                    ]}
-                  >
-                    <Ionicons name="play" size={24} color={colors.white} />
-                  </View>
-                  <TouchableOpacity style={styles.removeMediaBtn} onPress={() => setVideo(null)}>
-                    <Ionicons name="close" size={16} color={colors.white} />
+                  <TouchableOpacity style={styles.mediaBtn} onPress={pickVideo}>
+                    <Ionicons name="videocam-outline" size={24} color={colors.primary} />
+                    <Text style={styles.mediaBtnText}>{video ? 'Change Video' : 'Add Video'}</Text>
+                    <Text style={styles.mediaBtnSub}>{video ? '1/1' : '0/1'}</Text>
                   </TouchableOpacity>
                 </View>
-              )}
-            </View>
+
+                {photos.length > 0 && (
+                  <ScrollView
+                    horizontal
+                    style={styles.previewScroll}
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {photos.map((p, idx) => (
+                      <View key={idx} style={styles.previewWrapper}>
+                        <Image source={{ uri: p.uri }} style={styles.previewImg} />
+                        <TouchableOpacity
+                          style={styles.removeMediaBtn}
+                          onPress={() => removePhoto(idx)}
+                        >
+                          <Ionicons name="close" size={16} color={colors.white} />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </ScrollView>
+                )}
+
+                {video && (
+                  <View style={styles.previewWrapper}>
+                    <View
+                      style={[
+                        styles.previewImg,
+                        {
+                          backgroundColor: colors.ink,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        },
+                      ]}
+                    >
+                      <Ionicons name="play" size={24} color={colors.white} />
+                    </View>
+                    <TouchableOpacity style={styles.removeMediaBtn} onPress={() => setVideo(null)}>
+                      <Ionicons name="close" size={16} color={colors.white} />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            )}
 
             {/* Urgent Toggle */}
             <View style={styles.urgentCard}>
@@ -511,12 +553,12 @@ export const PostJobScreen: React.FC = () => {
           </View>
 
           <Button
-            label="Publish job"
+            label={isEditMode ? 'Save changes' : 'Publish job'}
             size="lg"
             fullWidth
-            icon="arrow-forward"
+            icon={isEditMode ? 'checkmark' : 'arrow-forward'}
             iconPosition="right"
-            loading={createJobMutation.isPending}
+            loading={createJobMutation.isPending || updateJobMutation.isPending}
             onPress={handleSubmit}
             style={{ marginTop: 24 }}
           />
