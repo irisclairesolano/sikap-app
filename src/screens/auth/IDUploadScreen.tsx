@@ -116,15 +116,18 @@ const IDUploadScreen: React.FC = () => {
       if (err instanceof Error && err.message === 'PICK_CANCELLED') return;
       if (err instanceof ApiClientError) {
         if (err.status === 401 || err.status === 404) {
-          setBanner('Authentication error. Please log in again.');
+          showAlert('Authentication Error', 'Authentication error. Please log in again.');
           setTimeout(() => navigation.replace('Login'), 2000);
         } else if (err.status === 413) {
-          setBanner('File too large. Please choose a smaller image.');
+          showAlert('File Too Large', 'File too large. Please choose a smaller image.');
+        } else if (err.status === 422 && err.errors) {
+          const firstError = Object.values(err.errors)[0]?.[0];
+          showAlert('Validation Failed', firstError || err.message || 'Validation failed.');
         } else {
-          setBanner(err.message || 'Upload failed. Please try again.');
+          showAlert('Upload Failed', err.message || 'Upload failed. Please try again.');
         }
       } else if (err instanceof Error) {
-        setBanner(`Upload failed: ${err.message}`);
+        showAlert('Upload Failed', `Upload failed: ${err.message}`);
       }
     },
   });
@@ -178,12 +181,23 @@ const IDUploadScreen: React.FC = () => {
 
   const handleSubmit = () => {
     if (!selectedFile || !selectedFileBack) {
-      setBanner('Please upload both front and back of your government ID to continue.');
+      showAlert(
+        'Required Files',
+        'Please upload both front and back of your government ID to continue.',
+      );
       return;
     }
 
     if (userRole === 'worker' && !selectedSelfie) {
-      setBanner('Please also upload a selfie holding your ID to continue.');
+      showAlert('Required Photo', 'Please also upload a selfie holding your ID to continue.');
+      return;
+    }
+
+    if (userRole === 'employer' && selectedBusinessDocs.length === 0) {
+      showAlert(
+        'Required Document',
+        'Please upload at least one business document (DTI / SEC / TIN permit) to continue.',
+      );
       return;
     }
 
@@ -308,7 +322,7 @@ const IDUploadScreen: React.FC = () => {
             <Text style={styles.uploadTitle}>
               {selectedBusinessDocs.length > 0
                 ? `${selectedBusinessDocs.length} Document(s) Selected ✓`
-                : 'Upload Business Document (Optional)'}
+                : 'Upload Business Document (Required)'}
             </Text>
             <Text style={styles.uploadSubtitle}>
               {selectedBusinessDocs.length > 0
@@ -345,7 +359,10 @@ const IDUploadScreen: React.FC = () => {
             size="lg"
             fullWidth
             disabled={
-              !selectedFile || !selectedFileBack || (userRole === 'worker' && !selectedSelfie)
+              !selectedFile ||
+              !selectedFileBack ||
+              (userRole === 'worker' && !selectedSelfie) ||
+              (userRole === 'employer' && selectedBusinessDocs.length === 0)
             }
             loading={uploadMutation.isPending}
             onPress={handleSubmit}

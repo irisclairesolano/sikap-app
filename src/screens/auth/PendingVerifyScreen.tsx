@@ -102,8 +102,9 @@ const PendingVerifyScreen: React.FC = () => {
             'Please re-submit a valid government-issued ID with clear, complete details. Ensure the photo is sharp, all corners are visible, and the document is current.'
           ) : (
             <>
-              Our admin team is reviewing your ID.{'\n'}This usually takes up to{' '}
-              <Text style={styles.bodyBold}>48 hours</Text>.
+              Our admin team is reviewing your{' '}
+              {user?.role === 'employer' ? 'ID and business documents' : 'ID'}.{'\n'}This usually
+              takes up to <Text style={styles.bodyBold}>48 hours</Text>.
             </>
           )}
         </Text>
