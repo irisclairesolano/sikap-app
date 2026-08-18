@@ -122,12 +122,12 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
       );
       errBody.message = 'Failed to parse server response';
     }
-    throw new ApiClientError(
-      errBody.message ?? 'Something went wrong',
-      res.status,
-      errBody.errors,
-      errBody,
-    );
+    const displayMessage =
+      res.status >= 500
+        ? 'An unexpected server error occurred. Please try again later.'
+        : (errBody.message ?? 'Something went wrong');
+
+    throw new ApiClientError(displayMessage, res.status, errBody.errors, errBody);
   }
 
   // Log successful response before parsing

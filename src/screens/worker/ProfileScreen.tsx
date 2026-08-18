@@ -60,7 +60,7 @@ export const ProfileScreen: React.FC = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await queryClient.invalidateQueries();
+    await queryClient.invalidateQueries({ queryKey: ['profile'] });
     await refetchProfile();
     setRefreshing(false);
   };

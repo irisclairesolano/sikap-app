@@ -120,6 +120,10 @@ export interface EmployerProfile {
   verification_status: 'pending' | 'approved' | 'rejected' | 'correction_needed';
   verification_badge: boolean;
   reputation_score: number;
+  ratings_count?: number;
+  active_jobs?: number;
+  total_hired?: number;
+  total_spent?: number;
 }
 
 export interface Review {

@@ -32,31 +32,36 @@ export const MyJobsScreen: React.FC = () => {
     activeTab === 'Active' ? job.status === 'open' : job.status !== 'open',
   );
 
-  const renderJobCard = useCallback(({ item }: { item: JobPost }) => (
-    <TouchableOpacity
-      style={styles.jobCard}
-      onPress={() => navigation.navigate('JobDetails', { id: item.id })}
-    >
-      <View style={styles.jobHeader}>
-        <Text style={styles.jobCategory}>{item.category}</Text>
-        <Text style={styles.jobTime}>{item.status}</Text>
-      </View>
-      <Text style={styles.jobTitle}>{item.title}</Text>
-
-      <View style={styles.jobFooter}>
-        <View style={styles.applicantsBadge}>
-          <Ionicons name="people" size={14} color={colors.primary} />
-          <Text style={styles.applicantsText}>{item.applications?.length || 0} applicants</Text>
+  const renderJobCard = useCallback(
+    ({ item }: { item: JobPost }) => (
+      <TouchableOpacity
+        style={styles.jobCard}
+        onPress={() => navigation.navigate('JobDetails', { id: item.id })}
+      >
+        <View style={styles.jobHeader}>
+          <Text style={styles.jobCategory}>
+            {item.categories && item.categories.length > 0 ? item.categories[0] : 'General'}
+          </Text>
+          <Text style={styles.jobTime}>{item.status}</Text>
         </View>
-        <TouchableOpacity
-          style={styles.manageBtn}
-          onPress={() => navigation.navigate('ViewApplicants', { id: item.id })}
-        >
-          <Text style={styles.manageBtnText}>Manage</Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  ), [navigation]);
+        <Text style={styles.jobTitle}>{item.title}</Text>
+
+        <View style={styles.jobFooter}>
+          <View style={styles.applicantsBadge}>
+            <Ionicons name="people" size={14} color={colors.primary} />
+            <Text style={styles.applicantsText}>{item.applications?.length || 0} applicants</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.manageBtn}
+            onPress={() => navigation.navigate('ViewApplicants', { id: item.id })}
+          >
+            <Text style={styles.manageBtnText}>Manage</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    ),
+    [navigation],
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -65,9 +70,7 @@ export const MyJobsScreen: React.FC = () => {
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>My Posts</Text>
         </View>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('PostJob')}>
-          <Ionicons name="add" size={26} color={colors.primary} />
-        </TouchableOpacity>
+        <View style={styles.iconBtn} />
       </View>
 
       <View style={styles.tabContainer}>
@@ -126,6 +129,9 @@ export const MyJobsScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         />
       )}
+      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('PostJob')}>
+        <Ionicons name="add" size={30} color={colors.white} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -215,6 +221,22 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 6,
   },
 });
 

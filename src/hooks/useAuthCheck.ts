@@ -15,8 +15,9 @@ export const useAuthCheck = () => {
     () =>
       subscribeAuthChanged(() => {
         setReloadToken((t) => t + 1);
+        queryClient.invalidateQueries({ queryKey: ['profile'] });
       }),
-    [],
+    [queryClient],
   );
 
   useEffect(() => {

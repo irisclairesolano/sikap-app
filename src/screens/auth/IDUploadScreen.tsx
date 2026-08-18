@@ -193,14 +193,6 @@ const IDUploadScreen: React.FC = () => {
       return;
     }
 
-    if (userRole === 'employer' && selectedBusinessDocs.length === 0) {
-      showAlert(
-        'Required Document',
-        'Please upload at least one business document (DTI / SEC / TIN permit) to continue.',
-      );
-      return;
-    }
-
     uploadMutation.mutate();
   };
 
@@ -322,7 +314,7 @@ const IDUploadScreen: React.FC = () => {
             <Text style={styles.uploadTitle}>
               {selectedBusinessDocs.length > 0
                 ? `${selectedBusinessDocs.length} Document(s) Selected ✓`
-                : 'Upload Business Document (Required)'}
+                : 'Upload Business Document (Optional)'}
             </Text>
             <Text style={styles.uploadSubtitle}>
               {selectedBusinessDocs.length > 0
@@ -359,10 +351,7 @@ const IDUploadScreen: React.FC = () => {
             size="lg"
             fullWidth
             disabled={
-              !selectedFile ||
-              !selectedFileBack ||
-              (userRole === 'worker' && !selectedSelfie) ||
-              (userRole === 'employer' && selectedBusinessDocs.length === 0)
+              !selectedFile || !selectedFileBack || (userRole === 'worker' && !selectedSelfie)
             }
             loading={uploadMutation.isPending}
             onPress={handleSubmit}

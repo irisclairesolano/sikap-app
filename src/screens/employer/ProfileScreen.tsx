@@ -42,7 +42,7 @@ export const ProfileScreen: React.FC = () => {
 
   const profileUser = user || authUser;
   const activeJobsCount = (jobsResponse?.data || []).filter(
-    (j) => j.status === 'open' || j.status === 'in_progress',
+    (j) => j.status === 'open' || j.status === 'closed_in_progress',
   ).length;
 
   // Employer data mixed with real
@@ -59,7 +59,7 @@ export const ProfileScreen: React.FC = () => {
     hired: profileUser?.employer_profile?.total_hired || 0,
     totalPaid: `₱${profileUser?.employer_profile?.total_spent || 0}`,
     memberSince: 'New',
-    recentReview: null, // TODO: Fetch real recent review if needed
+    recentReview: null as null | { worker: string; stars: number; comment: string }, // TODO: Fetch real recent review if needed
   };
 
   const getAvatarUrl = () => {
@@ -76,7 +76,7 @@ export const ProfileScreen: React.FC = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await queryClient.invalidateQueries();
+    await queryClient.invalidateQueries({ queryKey: ['profile'] });
     await refetchProfile();
     setRefreshing(false);
   };
@@ -93,10 +93,7 @@ export const ProfileScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <RefreshableContainer
-        onRefresh={handleRefresh}
-        contentContainerStyle={styles.scrollContent}
-      >
+      <RefreshableContainer onRefresh={handleRefresh} contentContainerStyle={styles.scrollContent}>
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
@@ -133,7 +130,9 @@ export const ProfileScreen: React.FC = () => {
         <View style={[styles.reputationCard, { backgroundColor: colors.sky }]}>
           <Text style={styles.reputationEyebrow}>Reputation</Text>
           <View style={styles.reputationRow}>
-            <Text style={styles.reputationScore}>{employer.ratings > 0 ? employer.reputation : 'N/A'}</Text>
+            <Text style={styles.reputationScore}>
+              {employer.ratings > 0 ? employer.reputation : 'N/A'}
+            </Text>
             <View style={styles.reputationStars}>
               {employer.ratings > 0 ? (
                 <View style={styles.starsRow}>
@@ -142,7 +141,9 @@ export const ProfileScreen: React.FC = () => {
                       key={star}
                       name="star"
                       size={14}
-                      color={star <= Math.round(employer.reputation) ? colors.gold : colors.inkFaint}
+                      color={
+                        star <= Math.round(employer.reputation) ? colors.gold : colors.inkFaint
+                      }
                     />
                   ))}
                 </View>

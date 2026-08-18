@@ -51,6 +51,12 @@ export const PostJobScreen: React.FC = () => {
   const [pay, setPay] = useState('');
   const [slots, setSlots] = useState('');
 
+  const parsedPay = parseFloat(pay);
+  const payInvalid = pay !== '' && (isNaN(parsedPay) || parsedPay < 1);
+
+  const parsedSlots = parseInt(slots, 10);
+  const slotsInvalid = slots !== '' && (isNaN(parsedSlots) || parsedSlots < 1);
+
   // Duration
   const [duration, setDuration] = useState('');
   const [durationUnit, setDurationUnit] = useState('Days');
@@ -150,6 +156,13 @@ export const PostJobScreen: React.FC = () => {
         'Missing fields',
         `Please fill in all the required fields: ${missingFields.join(', ')}`,
       );
+    }
+
+    if (payInvalid || slotsInvalid) {
+      const invalidFields = [];
+      if (payInvalid) invalidFields.push('Pay must be at least 1 PHP');
+      if (slotsInvalid) invalidFields.push('Slots must be at least 1');
+      showAlert('Invalid input', invalidFields.join('\n'));
       return;
     }
 
@@ -332,6 +345,7 @@ export const PostJobScreen: React.FC = () => {
                   onChangeText={setPay}
                   placeholder="600"
                   keyboardType="numeric"
+                  status={payInvalid ? 'invalid' : undefined}
                 />
               </View>
               <View style={styles.col}>
@@ -341,6 +355,7 @@ export const PostJobScreen: React.FC = () => {
                   onChangeText={setSlots}
                   placeholder="2"
                   keyboardType="numeric"
+                  status={slotsInvalid ? 'invalid' : undefined}
                 />
               </View>
             </View>
