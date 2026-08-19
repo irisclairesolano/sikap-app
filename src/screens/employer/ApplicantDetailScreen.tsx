@@ -21,6 +21,27 @@ const ApplicantDetailScreen: React.FC = () => {
   const navigation = useNavigation<ApplicantDetailScreenNavigationProp>();
   const { applicantId, jobTitle, applicantName, status } = route.params;
 
+  const getStage = () => {
+    switch (status) {
+      case 'pending':
+        return 1;
+      case 'shortlisted':
+      case 'pending_negotiation':
+      case 'employer_requested':
+        return 2;
+      case 'employer_confirmed':
+        return 3;
+      case 'accepted':
+        return 4;
+      case 'completed':
+        return 5;
+      default:
+        return 1;
+    }
+  };
+
+  const stage = getStage();
+
   const { showAlert } = useAlert();
   const [isMenuVisible, setMenuVisible] = useState(false);
 
@@ -63,6 +84,94 @@ const ApplicantDetailScreen: React.FC = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* 5-Stage Tracker */}
+        <View style={styles.stages}>
+          <View style={stage >= 1 ? styles.stageActive : styles.stage}>
+            <View
+              style={[
+                styles.stageCircle,
+                stage >= 2 ? styles.stageDone : stage === 1 ? styles.stageCircleActive : null,
+              ]}
+            >
+              {stage >= 2 ? (
+                <Ionicons name="checkmark" size={12} color="white" />
+              ) : (
+                <Text style={stage === 1 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                  1
+                </Text>
+              )}
+            </View>
+            <Text style={styles.stageLabel}>Applied</Text>
+          </View>
+          <View style={[styles.stageDivider, stage >= 2 && styles.stageDoneDivider]} />
+
+          <View style={stage >= 2 ? styles.stageActive : styles.stage}>
+            <View
+              style={[
+                styles.stageCircle,
+                stage >= 3 ? styles.stageDone : stage === 2 ? styles.stageCircleActive : null,
+              ]}
+            >
+              {stage >= 3 ? (
+                <Ionicons name="checkmark" size={12} color="white" />
+              ) : (
+                <Text style={stage === 2 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                  2
+                </Text>
+              )}
+            </View>
+            <Text style={styles.stageLabel}>Shortlist</Text>
+          </View>
+          <View style={[styles.stageDivider, stage >= 3 && styles.stageDoneDivider]} />
+
+          <View style={stage >= 3 ? styles.stageActive : styles.stage}>
+            <View
+              style={[
+                styles.stageCircle,
+                stage >= 4 ? styles.stageDone : stage === 3 ? styles.stageCircleActive : null,
+              ]}
+            >
+              {stage >= 4 ? (
+                <Ionicons name="checkmark" size={12} color="white" />
+              ) : (
+                <Text style={stage === 3 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                  3
+                </Text>
+              )}
+            </View>
+            <Text style={styles.stageLabel}>Offer</Text>
+          </View>
+          <View style={[styles.stageDivider, stage >= 4 && styles.stageDoneDivider]} />
+
+          <View style={stage >= 4 ? styles.stageActive : styles.stage}>
+            <View
+              style={[
+                styles.stageCircle,
+                stage >= 5 ? styles.stageDone : stage === 4 ? styles.stageCircleActive : null,
+              ]}
+            >
+              {stage >= 5 ? (
+                <Ionicons name="checkmark" size={12} color="white" />
+              ) : (
+                <Text style={stage === 4 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                  4
+                </Text>
+              )}
+            </View>
+            <Text style={styles.stageLabel}>Hired</Text>
+          </View>
+          <View style={[styles.stageDivider, stage >= 5 && styles.stageDoneDivider]} />
+
+          <View style={stage >= 5 ? styles.stageActive : styles.stage}>
+            <View style={[styles.stageCircle, stage === 5 ? styles.stageCircleActive : null]}>
+              <Text style={stage === 5 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                5
+              </Text>
+            </View>
+            <Text style={styles.stageLabel}>Done</Text>
+          </View>
+        </View>
+
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
@@ -483,7 +592,7 @@ const styles = StyleSheet.create({
     marginTop: 60,
     marginRight: 16,
     width: 220,
-    ...shadows.md,
+    ...shadows.base,
   },
   menuOption: {
     flexDirection: 'row',
@@ -496,6 +605,41 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.ink,
   },
+  stages: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    backgroundColor: colors.paperBright,
+    padding: 16,
+    borderRadius: 16,
+    ...shadows.sm,
+  },
+  stage: { alignItems: 'center', opacity: 0.5 },
+  stageActive: { alignItems: 'center', opacity: 1 },
+  stageCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: colors.inkFaint,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  stageCircleActive: { borderColor: colors.primary, backgroundColor: colors.primary },
+  stageDone: { borderColor: colors.mintDeep, backgroundColor: colors.mintDeep, borderWidth: 0 },
+  stageCircleText: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.inkMuted },
+  stageCircleTextActive: { fontFamily: fonts.bodyBold, fontSize: 10, color: 'white' },
+  stageLabel: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.ink },
+  stageDivider: {
+    height: 2,
+    flex: 1,
+    backgroundColor: colors.inkFaint,
+    marginHorizontal: 8,
+    marginBottom: 16,
+  },
+  stageDoneDivider: { backgroundColor: colors.mintDeep },
 });
 
 export default ApplicantDetailScreen;

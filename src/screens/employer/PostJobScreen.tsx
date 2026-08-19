@@ -14,6 +14,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/common/Button';
@@ -22,7 +24,8 @@ import LocationPicker from '../../components/common/LocationPicker';
 import { useAlert } from '../../contexts/AlertContext';
 import { useCreateJob, useUpdateJob } from '../../hooks/useEmployerJobs';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
-import { colors, fonts } from '../../theme';
+import { colors, fonts, shadows } from '../../theme';
+import * as SecureStore from '../../utils/storage';
 
 const DURATION_UNITS = ['Hours', 'Days', 'Weeks', 'Months'];
 const DEFAULT_CATEGORIES = [
@@ -43,6 +46,9 @@ export const PostJobScreen: React.FC = () => {
   const createJobMutation = useCreateJob();
   const updateJobMutation = useUpdateJob();
   const { showAlert } = useAlert();
+
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [title, setTitle] = useState(jobToEdit?.title || '');
 
@@ -85,8 +91,11 @@ export const PostJobScreen: React.FC = () => {
 
   const addCategory = () => {
     const trimmed = currentCategory.trim();
-    if (trimmed && !categories.includes(trimmed)) {
-      setCategories([...categories, trimmed]);
+    if (trimmed) {
+      const lowerCategories = categories.map((c) => c.toLowerCase());
+      if (!lowerCategories.includes(trimmed.toLowerCase())) {
+        setCategories([...categories, trimmed]);
+      }
     }
     setCurrentCategory('');
     setShowCategorySuggestions(false);
@@ -239,17 +248,53 @@ export const PostJobScreen: React.FC = () => {
       } as any);
     }
 
-    createJobMutation.mutate(formData, {
-      onSuccess: () => {
-        showAlert('Job published!', 'Your job is now visible to workers.', [
-          { text: 'OK', onPress: () => navigation.goBack() },
-        ]);
-      },
-      onError: (err: any) => {
-        console.error('Job creation failed', err);
-        showAlert('Error', err.message || 'Failed to publish job.');
-      },
-    });
+    setIsPublishing(true);
+    setUploadProgress(0);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${process.env.EXPO_PUBLIC_API_URL}/jobs`);
+    xhr.setRequestHeader('Accept', 'application/json');
+
+    SecureStore.getItemAsync('auth_token')
+      .then((token) => {
+        if (token) {
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        }
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const progress = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(progress);
+          }
+        };
+
+        xhr.onload = () => {
+          setIsPublishing(false);
+          if (xhr.status >= 200 && xhr.status < 300) {
+            showAlert('Job published!', 'Your job is now visible to workers.', [
+              { text: 'OK', onPress: () => navigation.goBack() },
+            ]);
+          } else {
+            let errorMsg = 'Failed to publish job.';
+            try {
+              const res = JSON.parse(xhr.responseText);
+              errorMsg = res.message || errorMsg;
+            } catch (e) {}
+            showAlert('Error', errorMsg);
+          }
+        };
+
+        xhr.onerror = () => {
+          setIsPublishing(false);
+          showAlert('Error', 'Network request failed.');
+        };
+
+        xhr.send(formData);
+      })
+      .catch((err) => {
+        setIsPublishing(false);
+        showAlert('Error', 'Failed to retrieve auth token.');
+      });
   };
 
   return (
@@ -293,18 +338,25 @@ export const PostJobScreen: React.FC = () => {
                 label="Categories *"
                 value={currentCategory}
                 onChangeText={(text) => {
-                  setCurrentCategory(text);
-                  setShowCategorySuggestions(true);
+                  if (text.endsWith(',')) {
+                    const trimmed = text.slice(0, -1).trim();
+                    if (trimmed) {
+                      const lowerCategories = categories.map((c) => c.toLowerCase());
+                      if (!lowerCategories.includes(trimmed.toLowerCase())) {
+                        setCategories([...categories, trimmed]);
+                      }
+                    }
+                    setCurrentCategory('');
+                    setShowCategorySuggestions(false);
+                  } else {
+                    setCurrentCategory(text);
+                    setShowCategorySuggestions(true);
+                  }
                 }}
                 onFocus={() => setShowCategorySuggestions(true)}
                 placeholder="Type tag or select suggestion..."
                 icon="pricetag-outline"
                 onSubmitEditing={addCategory}
-                onKeyPress={(e: any) => {
-                  if (e.nativeEvent?.key === ' ') {
-                    addCategory();
-                  }
-                }}
               />
 
               {showCategorySuggestions &&
@@ -316,7 +368,10 @@ export const PostJobScreen: React.FC = () => {
                           key={cat}
                           style={styles.dropdownItem}
                           onPress={() => {
-                            setCategories([...categories, cat]);
+                            const lowerCategories = categories.map((c) => c.toLowerCase());
+                            if (!lowerCategories.includes(cat.toLowerCase())) {
+                              setCategories([...categories, cat]);
+                            }
                             setCurrentCategory('');
                             setShowCategorySuggestions(false);
                           }}
@@ -564,6 +619,20 @@ export const PostJobScreen: React.FC = () => {
           />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Modal visible={isPublishing} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.progressContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.progressTitle}>Publishing Job Post</Text>
+            <View style={styles.progressBarBg}>
+              <View style={[styles.progressBarFill, { width: `${uploadProgress}%` }]} />
+            </View>
+            <Text style={styles.progressPercent}>{uploadProgress}% Uploaded</Text>
+            <Text style={styles.progressSubtitle}>Uploading photos, videos, and details...</Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -803,6 +872,52 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.inkSoft,
     marginTop: 2,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  progressContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 24,
+    padding: 30,
+    width: '85%',
+    alignItems: 'center',
+    ...shadows.base,
+  },
+  progressTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 18,
+    color: colors.ink,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  progressBarBg: {
+    width: '100%',
+    height: 8,
+    backgroundColor: colors.inkFaint,
+    borderRadius: 4,
+    marginVertical: 12,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 4,
+  },
+  progressPercent: {
+    fontFamily: fonts.numericBlack,
+    fontSize: 15,
+    color: colors.primarySoft,
+  },
+  progressSubtitle: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkMuted,
+    marginTop: 8,
+    textAlign: 'center',
   },
 });
 
