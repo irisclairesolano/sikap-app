@@ -6,12 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AlertProvider } from './src/contexts/AlertContext';
-import {
-  useFonts,
-  Fraunces_700Bold,
-  Fraunces_900Black,
-  Fraunces_700Bold_Italic,
-} from '@expo-google-fonts/fraunces';
+import { useFonts } from 'expo-font';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -39,9 +34,9 @@ const queryClient = new QueryClient({
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    Fraunces_700Bold,
-    Fraunces_900Black,
-    Fraunces_700Bold_Italic,
+    Raleway_700Bold: require('./assets/raleway/Raleway-Bold.ttf'),
+    Raleway_900Black: require('./assets/raleway/Raleway-Heavy.ttf'),
+    Raleway_700Bold_Italic: require('./assets/raleway/Raleway-Bold.ttf'),
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,

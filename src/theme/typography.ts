@@ -1,7 +1,7 @@
 export const fonts = {
-  display: 'Fraunces_700Bold',
-  displayItalic: 'Fraunces_700Bold_Italic',
-  wordmark: 'Fraunces_900Black',
+  display: 'Raleway_700Bold',
+  displayItalic: 'Raleway_700Bold_Italic',
+  wordmark: 'Raleway_900Black',
   body: 'Inter_400Regular',
   bodyMedium: 'Inter_500Medium',
   bodySemiBold: 'Inter_600SemiBold',
