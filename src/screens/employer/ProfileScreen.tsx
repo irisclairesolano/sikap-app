@@ -113,11 +113,6 @@ export const ProfileScreen: React.FC = () => {
             <Text style={styles.locationText}>
               <Ionicons name="location" size={11} color={colors.primary} /> {employer.location}
             </Text>
-            <View style={styles.verifiedBadge}>
-              <Text style={styles.verifiedBadgeText}>
-                {employer.verified ? 'Verified' : 'Unverified'}
-              </Text>
-            </View>
           </View>
         </View>
 

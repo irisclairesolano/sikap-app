@@ -4,6 +4,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -82,8 +83,196 @@ export const PostJobScreen: React.FC = () => {
   const [toolsRequired, setToolsRequired] = useState(jobToEdit?.tools_required || '');
 
   // Media
-  const [photos, setPhotos] = useState<ImagePicker.ImagePickerAsset[]>([]);
-  const [video, setVideo] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  interface JobPhoto {
+    id: string;
+    uri: string;
+    remoteUrl?: string;
+    status: 'pending' | 'uploading' | 'success' | 'error';
+    progress: number;
+  }
+
+  const [photos, setPhotos] = useState<JobPhoto[]>(
+    jobToEdit?.photos
+      ? jobToEdit.photos.map((url: string, index: number) => ({
+          id: `edit_${index}_${Date.now()}`,
+          uri: url,
+          remoteUrl: url,
+          status: 'success',
+          progress: 100,
+        }))
+      : [],
+  );
+  interface VideoUpload {
+    uri: string;
+    remoteUrl: string | null;
+    status: 'idle' | 'compressing' | 'uploading' | 'success' | 'error';
+    progress: number;
+    fileName: string;
+    mimeType: string;
+  }
+
+  const [videoUpload, setVideoUpload] = useState<VideoUpload | null>(
+    jobToEdit?.video_url
+      ? {
+          uri: jobToEdit.video_url,
+          remoteUrl: jobToEdit.video_url,
+          status: 'success',
+          progress: 100,
+          fileName: 'video.mp4',
+          mimeType: 'video/mp4',
+        }
+      : null,
+  );
+
+  const compressImage = async (uri: string) => {
+    const manipResult = await ImageManipulator.manipulateAsync(uri, [{ resize: { width: 1080 } }], {
+      compress: 0.7,
+      format: ImageManipulator.SaveFormat.JPEG,
+    });
+    return manipResult.uri;
+  };
+
+  const compressVideo = async (uri: string) => {
+    if (Platform.OS === 'web') {
+      return uri;
+    }
+    try {
+      const { Video } = require('react-native-compressor');
+      const compressedUri = await Video.compress(uri, {
+        compressionMethod: 'auto',
+      });
+      return compressedUri;
+    } catch (e) {
+      console.warn('Video compression failed, using original URI:', e);
+      return uri;
+    }
+  };
+
+  const uploadVideoImmediately = async (localUri: string, fileName: string, mimeType: string) => {
+    setVideoUpload({
+      uri: localUri,
+      remoteUrl: null,
+      status: 'compressing',
+      progress: 0,
+      fileName,
+      mimeType,
+    });
+
+    try {
+      const compressedUri = await compressVideo(localUri);
+      setVideoUpload((prev) => (prev ? { ...prev, status: 'uploading' } : null));
+
+      const token = await SecureStore.getItemAsync('auth_token');
+      const formData = new FormData();
+      formData.append('video', {
+        uri: compressedUri,
+        name: fileName || 'video.mp4',
+        type: mimeType || 'video/mp4',
+      } as any);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${process.env.EXPO_PUBLIC_API_URL}/jobs/upload-video`);
+      xhr.setRequestHeader('Accept', 'application/json');
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setVideoUpload((prev) => (prev ? { ...prev, progress } : null));
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const res = JSON.parse(xhr.responseText);
+          setVideoUpload((prev) =>
+            prev ? { ...prev, status: 'success', remoteUrl: res.url, progress: 100 } : null,
+          );
+        } else {
+          setVideoUpload((prev) => (prev ? { ...prev, status: 'error', progress: 0 } : null));
+        }
+      };
+
+      xhr.onerror = () => {
+        setVideoUpload((prev) => (prev ? { ...prev, status: 'error', progress: 0 } : null));
+      };
+
+      xhr.send(formData);
+    } catch (error) {
+      setVideoUpload((prev) => (prev ? { ...prev, status: 'error', progress: 0 } : null));
+    }
+  };
+
+  const uploadPhotoImmediately = async (photoId: string, localUri: string) => {
+    setPhotos((prev) =>
+      prev.map((p) => (p.id === photoId ? { ...p, status: 'uploading', progress: 0 } : p)),
+    );
+
+    try {
+      const compressedUri = localUri.startsWith('http') ? localUri : await compressImage(localUri);
+
+      if (localUri.startsWith('http')) {
+        setPhotos((prev) =>
+          prev.map((p) =>
+            p.id === photoId ? { ...p, status: 'success', remoteUrl: localUri, progress: 100 } : p,
+          ),
+        );
+        return;
+      }
+
+      const token = await SecureStore.getItemAsync('auth_token');
+
+      const formData = new FormData();
+      formData.append('photo', {
+        uri: compressedUri,
+        name: `photo_${photoId}.jpg`,
+        type: 'image/jpeg',
+      } as any);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${process.env.EXPO_PUBLIC_API_URL}/jobs/upload-photo`);
+      xhr.setRequestHeader('Accept', 'application/json');
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setPhotos((prev) => prev.map((p) => (p.id === photoId ? { ...p, progress } : p)));
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const res = JSON.parse(xhr.responseText);
+          setPhotos((prev) =>
+            prev.map((p) =>
+              p.id === photoId ? { ...p, status: 'success', remoteUrl: res.url, progress: 100 } : p,
+            ),
+          );
+        } else {
+          setPhotos((prev) =>
+            prev.map((p) => (p.id === photoId ? { ...p, status: 'error', progress: 0 } : p)),
+          );
+        }
+      };
+
+      xhr.onerror = () => {
+        setPhotos((prev) =>
+          prev.map((p) => (p.id === photoId ? { ...p, status: 'error', progress: 0 } : p)),
+        );
+      };
+
+      xhr.send(formData);
+    } catch (error) {
+      setPhotos((prev) =>
+        prev.map((p) => (p.id === photoId ? { ...p, status: 'error', progress: 0 } : p)),
+      );
+    }
+  };
 
   const filteredSuggestions = DEFAULT_CATEGORIES.filter(
     (cat) => !categories.includes(cat) && cat.toLowerCase().includes(currentCategory.toLowerCase()),
@@ -116,13 +305,31 @@ export const PostJobScreen: React.FC = () => {
       selectionLimit: 5 - photos.length,
       quality: 0.8,
     });
-    if (!result.canceled) {
-      setPhotos([...photos, ...result.assets].slice(0, 5));
+    if (!result.canceled && result.assets) {
+      const newPhotos: JobPhoto[] = result.assets.map((asset) => ({
+        id: Math.random().toString() + '_' + Date.now(),
+        uri: asset.uri,
+        status: 'pending',
+        progress: 0,
+      }));
+      const updatedPhotos = [...photos, ...newPhotos].slice(0, 5);
+      setPhotos(updatedPhotos);
+
+      newPhotos.forEach((photo) => {
+        uploadPhotoImmediately(photo.id, photo.uri);
+      });
     }
   };
 
   const removePhoto = (index: number) => {
     setPhotos(photos.filter((_, i) => i !== index));
+  };
+
+  const retryUpload = (photoId: string) => {
+    const photo = photos.find((p) => p.id === photoId);
+    if (photo) {
+      uploadPhotoImmediately(photoId, photo.uri);
+    }
   };
 
   const pickVideo = async () => {
@@ -131,10 +338,27 @@ export const PostJobScreen: React.FC = () => {
       allowsMultipleSelection: false,
       quality: 0.8,
     });
-    if (!result.canceled) {
-      setVideo(result.assets[0]);
+    if (!result.canceled && result.assets && result.assets[0]) {
+      const asset = result.assets[0];
+      uploadVideoImmediately(
+        asset.uri,
+        asset.fileName || 'video.mp4',
+        asset.mimeType || 'video/mp4',
+      );
     }
   };
+
+  const overallProgress =
+    photos.length > 0
+      ? Math.round(photos.reduce((acc, p) => acc + p.progress, 0) / photos.length)
+      : 0;
+
+  const isAllPhotosUploaded = photos.every((p) => p.status === 'success');
+
+  const isUploadingVideo = !!(
+    videoUpload &&
+    (videoUpload.status === 'uploading' || videoUpload.status === 'compressing')
+  );
 
   const handleSubmit = () => {
     // Automatically add currentCategory if the user forgot to press enter/space
@@ -172,6 +396,7 @@ export const PostJobScreen: React.FC = () => {
         'Missing fields',
         `Please fill in all the required fields: ${missingFields.join(', ')}`,
       );
+      return;
     }
 
     if (payInvalid || slotsInvalid) {
@@ -182,119 +407,88 @@ export const PostJobScreen: React.FC = () => {
       return;
     }
 
-    if (isEditMode) {
-      const payload: any = {
-        title,
-        categories: JSON.stringify(finalCategories),
-        barangay,
-        municipality,
-        compensation: parseFloat(pay.replace(/[^0-9.]/g, '')),
-        slots: parseInt(slots, 10),
-        description,
-      };
-      if (duration) {
-        payload.duration = parseInt(duration, 10);
-        payload.duration_unit = durationUnit;
-      }
-      if (exactLocation) payload.exact_location = exactLocation;
-      if (toolsRequired) payload.tools_required = toolsRequired;
+    // Media Upload Progress Guards
+    const isUploadingPhotos = photos.some((p) => p.status === 'uploading');
+    const isUploadingVideo =
+      videoUpload && (videoUpload.status === 'uploading' || videoUpload.status === 'compressing');
 
+    if (isUploadingPhotos || isUploadingVideo) {
+      showAlert(
+        'Upload in progress',
+        'Please wait for all media to finish uploading before publishing.',
+      );
+      return;
+    }
+
+    const hasPhotoErrors = photos.some((p) => p.status === 'error');
+    const hasVideoError = videoUpload && videoUpload.status === 'error';
+    if (hasPhotoErrors || hasVideoError) {
+      showAlert(
+        'Upload error',
+        'Please remove or retry any failed media uploads before publishing.',
+      );
+      return;
+    }
+
+    const remoteUrls = photos
+      .filter((p) => p.status === 'success')
+      .map((p) => p.remoteUrl)
+      .filter(Boolean);
+
+    const payload: any = {
+      title,
+      categories: JSON.stringify(finalCategories),
+      barangay,
+      municipality,
+      compensation: parseFloat(pay.replace(/[^0-9.]/g, '')),
+      slots: parseInt(slots, 10),
+      description,
+      schedule_date: scheduleDate.toISOString().split('T')[0],
+      photos: remoteUrls,
+      video_url: videoUpload?.remoteUrl || null,
+    };
+    if (duration) {
+      payload.duration = parseInt(duration, 10);
+      payload.duration_unit = durationUnit;
+    }
+    if (exactLocation) payload.exact_location = exactLocation;
+    if (toolsRequired) payload.tools_required = toolsRequired;
+
+    setIsPublishing(true);
+    setUploadProgress(90);
+
+    if (isEditMode) {
       updateJobMutation.mutate(
         { id: jobToEdit.id, payload },
         {
           onSuccess: () => {
+            setIsPublishing(false);
+            setUploadProgress(100);
             showAlert('Job updated!', 'Your changes have been saved.', [
               { text: 'OK', onPress: () => navigation.goBack() },
             ]);
           },
           onError: (err: any) => {
+            setIsPublishing(false);
             showAlert('Error', err.message || 'Failed to update job.');
           },
         },
       );
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('categories', JSON.stringify(finalCategories));
-    formData.append('barangay', barangay);
-    formData.append('municipality', municipality);
-    formData.append('compensation', pay.replace(/[^0-9.]/g, ''));
-    formData.append('slots', slots);
-    formData.append('description', description);
-    if (duration) {
-      formData.append('duration', duration);
-      formData.append('duration_unit', durationUnit);
-    }
-    formData.append('schedule_date', scheduleDate.toISOString().split('T')[0]);
-
-    if (exactLocation) formData.append('exact_location', exactLocation);
-    if (toolsRequired) formData.append('tools_required', toolsRequired);
-
-    photos.forEach((photo, index) => {
-      formData.append('photos[]', {
-        uri: photo.uri,
-        name: photo.fileName || `photo_${index}.jpg`,
-        type: photo.mimeType || 'image/jpeg',
-      } as any);
-    });
-
-    if (video) {
-      formData.append('video', {
-        uri: video.uri,
-        name: video.fileName || 'video.mp4',
-        type: video.mimeType || 'video/mp4',
-      } as any);
-    }
-
-    setIsPublishing(true);
-    setUploadProgress(0);
-
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${process.env.EXPO_PUBLIC_API_URL}/jobs`);
-    xhr.setRequestHeader('Accept', 'application/json');
-
-    SecureStore.getItemAsync('auth_token')
-      .then((token) => {
-        if (token) {
-          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-        }
-
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const progress = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress(progress);
-          }
-        };
-
-        xhr.onload = () => {
+    } else {
+      createJobMutation.mutate(payload, {
+        onSuccess: () => {
           setIsPublishing(false);
-          if (xhr.status >= 200 && xhr.status < 300) {
-            showAlert('Job published!', 'Your job is now visible to workers.', [
-              { text: 'OK', onPress: () => navigation.goBack() },
-            ]);
-          } else {
-            let errorMsg = 'Failed to publish job.';
-            try {
-              const res = JSON.parse(xhr.responseText);
-              errorMsg = res.message || errorMsg;
-            } catch (e) {}
-            showAlert('Error', errorMsg);
-          }
-        };
-
-        xhr.onerror = () => {
+          setUploadProgress(100);
+          showAlert('Job published!', 'Your job is now visible to workers.', [
+            { text: 'OK', onPress: () => navigation.goBack() },
+          ]);
+        },
+        onError: (err: any) => {
           setIsPublishing(false);
-          showAlert('Error', 'Network request failed.');
-        };
-
-        xhr.send(formData);
-      })
-      .catch((err) => {
-        setIsPublishing(false);
-        showAlert('Error', 'Failed to retrieve auth token.');
+          showAlert('Error', err.message || 'Failed to publish job.');
+        },
       });
+    }
   };
 
   return (
@@ -362,7 +556,11 @@ export const PostJobScreen: React.FC = () => {
               {showCategorySuggestions &&
                 (filteredSuggestions.length > 0 || currentCategory.trim().length > 0) && (
                   <View style={styles.dropdownContainer}>
-                    <ScrollView keyboardShouldPersistTaps="always" style={{ maxHeight: 200 }}>
+                    <ScrollView
+                      keyboardShouldPersistTaps="always"
+                      style={{ maxHeight: 200 }}
+                      nestedScrollEnabled={true}
+                    >
                       {filteredSuggestions.map((cat) => (
                         <TouchableOpacity
                           key={cat}
@@ -541,12 +739,59 @@ export const PostJobScreen: React.FC = () => {
                     <Text style={styles.mediaBtnSub}>{photos.length}/5</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.mediaBtn} onPress={pickVideo}>
+                  <TouchableOpacity
+                    style={styles.mediaBtn}
+                    onPress={pickVideo}
+                    disabled={isUploadingVideo}
+                  >
                     <Ionicons name="videocam-outline" size={24} color={colors.primary} />
-                    <Text style={styles.mediaBtnText}>{video ? 'Change Video' : 'Add Video'}</Text>
-                    <Text style={styles.mediaBtnSub}>{video ? '1/1' : '0/1'}</Text>
+                    <Text style={styles.mediaBtnText}>
+                      {videoUpload ? 'Change Video' : 'Add Video'}
+                    </Text>
+                    <Text style={styles.mediaBtnSub}>{videoUpload ? '1/1' : '0/1'}</Text>
                   </TouchableOpacity>
                 </View>
+
+                {photos.length > 0 && overallProgress < 100 && (
+                  <View style={styles.progressBarWrapper}>
+                    <View style={styles.progressBarBg}>
+                      <View style={[styles.progressBarFill, { width: `${overallProgress}%` }]} />
+                    </View>
+                    <Text style={styles.progressText}>Uploading photos: {overallProgress}%</Text>
+                  </View>
+                )}
+
+                {videoUpload && videoUpload.status === 'compressing' && (
+                  <View style={styles.progressBarWrapper}>
+                    <ActivityIndicator
+                      size="small"
+                      color={colors.primary}
+                      style={{ marginRight: 8 }}
+                    />
+                    <Text style={styles.progressText}>Compressing video...</Text>
+                  </View>
+                )}
+
+                {videoUpload && videoUpload.status === 'uploading' && (
+                  <View style={styles.progressBarWrapper}>
+                    <View style={styles.progressBarBg}>
+                      <View
+                        style={[styles.progressBarFill, { width: `${videoUpload.progress}%` }]}
+                      />
+                    </View>
+                    <Text style={styles.progressText}>
+                      Uploading video: {videoUpload.progress}%
+                    </Text>
+                  </View>
+                )}
+
+                {videoUpload && videoUpload.status === 'error' && (
+                  <View style={styles.progressBarWrapper}>
+                    <Text style={[styles.progressText, { color: colors.error }]}>
+                      Video upload failed. Remove and retry.
+                    </Text>
+                  </View>
+                )}
 
                 {photos.length > 0 && (
                   <ScrollView
@@ -555,8 +800,27 @@ export const PostJobScreen: React.FC = () => {
                     showsHorizontalScrollIndicator={false}
                   >
                     {photos.map((p, idx) => (
-                      <View key={idx} style={styles.previewWrapper}>
-                        <Image source={{ uri: p.uri }} style={styles.previewImg} />
+                      <View key={p.id} style={styles.previewWrapper}>
+                        <Image
+                          source={{ uri: p.uri }}
+                          style={styles.previewImg}
+                          blurRadius={p.status !== 'success' ? 15 : 0}
+                        />
+                        {p.status === 'uploading' && (
+                          <View style={styles.imgLoaderOverlay}>
+                            <ActivityIndicator size="small" color={colors.white} />
+                            <Text style={styles.imgLoaderText}>{p.progress}%</Text>
+                          </View>
+                        )}
+                        {p.status === 'error' && (
+                          <TouchableOpacity
+                            style={styles.imgLoaderOverlay}
+                            onPress={() => retryUpload(p.id)}
+                          >
+                            <Ionicons name="refresh-circle" size={24} color={colors.white} />
+                            <Text style={styles.imgLoaderText}>Retry</Text>
+                          </TouchableOpacity>
+                        )}
                         <TouchableOpacity
                           style={styles.removeMediaBtn}
                           onPress={() => removePhoto(idx)}
@@ -568,7 +832,7 @@ export const PostJobScreen: React.FC = () => {
                   </ScrollView>
                 )}
 
-                {video && (
+                {videoUpload && (
                   <View style={styles.previewWrapper}>
                     <View
                       style={[
@@ -577,12 +841,16 @@ export const PostJobScreen: React.FC = () => {
                           backgroundColor: colors.ink,
                           justifyContent: 'center',
                           alignItems: 'center',
+                          opacity: videoUpload.status === 'success' ? 1 : 0.5,
                         },
                       ]}
                     >
-                      <Ionicons name="play" size={24} color={colors.white} />
+                      <Ionicons name="film-outline" size={24} color={colors.white} />
                     </View>
-                    <TouchableOpacity style={styles.removeMediaBtn} onPress={() => setVideo(null)}>
+                    <TouchableOpacity
+                      style={styles.removeMediaBtn}
+                      onPress={() => setVideoUpload(null)}
+                    >
                       <Ionicons name="close" size={16} color={colors.white} />
                     </TouchableOpacity>
                   </View>
@@ -613,10 +881,29 @@ export const PostJobScreen: React.FC = () => {
             fullWidth
             icon={isEditMode ? 'checkmark' : 'arrow-forward'}
             iconPosition="right"
-            loading={createJobMutation.isPending || updateJobMutation.isPending}
+            loading={createJobMutation.isPending || updateJobMutation.isPending || isPublishing}
+            disabled={
+              !isAllPhotosUploaded ||
+              isUploadingVideo ||
+              createJobMutation.isPending ||
+              updateJobMutation.isPending
+            }
             onPress={handleSubmit}
             style={{ marginTop: 24 }}
           />
+          {(!isAllPhotosUploaded || isUploadingVideo) && (
+            <Text
+              style={{
+                fontFamily: fonts.body,
+                color: colors.error,
+                fontSize: 12,
+                marginTop: 8,
+                textAlign: 'center',
+              }}
+            >
+              Please wait until all selected photos and videos are uploaded before publishing.
+            </Text>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -918,6 +1205,29 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
     marginTop: 8,
     textAlign: 'center',
+  },
+  progressBarWrapper: {
+    width: '100%',
+    marginTop: 12,
+  },
+  progressText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.primary,
+    marginTop: 4,
+  },
+  imgLoaderOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imgLoaderText: {
+    color: colors.white,
+    fontFamily: fonts.bodyBold,
+    fontSize: 10,
+    marginTop: 2,
   },
 });
 

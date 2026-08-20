@@ -2,18 +2,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { profileApi } from '../../api/profile';
 import Button from '../../components/common/Button';
 import { DatePickerModal } from '../../components/common/DatePickerModal';
@@ -21,6 +21,8 @@ import CustomInput from '../../components/common/Input';
 import { useAlert } from '../../contexts/AlertContext';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts } from '../../theme';
+
+const DURATION_UNITS = ['Days', 'Weeks', 'Months', 'Years'];
 
 export const AddWorkHistoryScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
@@ -34,7 +36,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [experiences, setExperiences] = useState<any[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (profile?.worker_profile?.experiences) {
       setExperiences(profile.worker_profile.experiences);
     }
@@ -42,7 +44,8 @@ export const AddWorkHistoryScreen: React.FC = () => {
 
   const [jobTitle, setJobTitle] = useState('');
   const [employer, setEmployer] = useState('');
-  const [duration, setDuration] = useState('');
+  const [durationVal, setDurationVal] = useState('');
+  const [durationUnit, setDurationUnit] = useState('Months');
   const [description, setDescription] = useState('');
 
   const [selectedExperienceId, setSelectedExperienceId] = useState<number | null>(null);
@@ -52,35 +55,31 @@ export const AddWorkHistoryScreen: React.FC = () => {
   const { showAlert } = useAlert();
 
   const saveMutation = useMutation({
-    mutationFn: () => {
-      const payload = {
-        job_title: jobTitle,
-        employer_name: employer,
-        duration: duration,
-        description: description,
-      };
+    mutationFn: (payload: {
+      job_title: string;
+      employer_name: string;
+      duration: string;
+      description: string;
+    }) => {
       if (editingExperienceId !== null) {
         return profileApi.updateExperience(editingExperienceId, payload);
       } else {
         return profileApi.addExperience(payload);
       }
     },
-    onMutate: async () => {
+    onMutate: async (payload) => {
       const tempId = -Date.now();
-      const payload = {
+      const optimisticItem = {
         id: editingExperienceId !== null ? editingExperienceId : tempId,
-        job_title: jobTitle,
-        employer_name: employer,
-        duration: duration,
-        description: description,
+        ...payload,
       };
 
       if (editingExperienceId !== null) {
         setExperiences((prev) =>
-          prev.map((exp) => (exp.id === editingExperienceId ? payload : exp)),
+          prev.map((exp) => (exp.id === editingExperienceId ? optimisticItem : exp)),
         );
       } else {
-        setExperiences((prev) => [...prev, payload]);
+        setExperiences((prev) => [...prev, optimisticItem]);
       }
 
       handleCancel();
@@ -123,7 +122,8 @@ export const AddWorkHistoryScreen: React.FC = () => {
   const handleCancel = () => {
     setJobTitle('');
     setEmployer('');
-    setDuration('');
+    setDurationVal('');
+    setDurationUnit('Months');
     setDescription('');
     setIsAdding(false);
     setEditingExperienceId(null);
@@ -137,7 +137,24 @@ export const AddWorkHistoryScreen: React.FC = () => {
   const handleEditPress = (exp: any) => {
     setJobTitle(exp.job_title);
     setEmployer(exp.employer_name || '');
-    setDuration(exp.duration || '');
+
+    const durStr = exp.duration || '';
+    const match = durStr
+      .trim()
+      .match(/^(\d+)\s*(Days|Weeks|Months|Years|Day|Week|Month|Year)(s)?$/i);
+    if (match) {
+      setDurationVal(match[1]);
+      let unit = match[2];
+      if (!unit.endsWith('s')) {
+        unit = unit + 's';
+      }
+      const normalizedUnit = unit.charAt(0).toUpperCase() + unit.slice(1).toLowerCase();
+      setDurationUnit(normalizedUnit);
+    } else {
+      setDurationVal(durStr);
+      setDurationUnit('Months');
+    }
+
     setDescription(exp.description || '');
     setEditingExperienceId(exp.id);
     setIsAdding(true);
@@ -184,10 +201,12 @@ export const AddWorkHistoryScreen: React.FC = () => {
           <View style={{ width: 40 }} />
         </View>
 
-        <ScrollView
+        <KeyboardAwareScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          enableOnAndroid={true}
+          extraScrollHeight={40}
         >
           <Text style={styles.title}>
             {editingExperienceId !== null ? (
@@ -309,13 +328,39 @@ export const AddWorkHistoryScreen: React.FC = () => {
               />
               <Text style={styles.inputLimitHelper}>{employer.length}/85 characters</Text>
 
-              <CustomInput
-                label="How long?"
-                value={duration}
-                onChangeText={setDuration}
-                placeholder="E.g. 2 weeks, 3 months, Jan - Mar 2025"
-                icon="calendar-outline"
-              />
+              <View style={styles.row}>
+                <View style={{ flex: 1 }}>
+                  <CustomInput
+                    label="Duration"
+                    value={durationVal}
+                    onChangeText={setDurationVal}
+                    placeholder="E.g. 3"
+                    keyboardType="numeric"
+                    icon="calendar-outline"
+                  />
+                </View>
+                <View style={{ flex: 1.5 }}>
+                  <Text style={styles.inputLabel}>Unit</Text>
+                  <View style={styles.unitSelector}>
+                    {DURATION_UNITS.map((unit) => (
+                      <TouchableOpacity
+                        key={unit}
+                        style={[styles.unitBtn, durationUnit === unit && styles.unitBtnActive]}
+                        onPress={() => setDurationUnit(unit)}
+                      >
+                        <Text
+                          style={[
+                            styles.unitBtnText,
+                            durationUnit === unit && styles.unitBtnTextActive,
+                          ]}
+                        >
+                          {unit}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </View>
 
               <View>
                 <CustomInput
@@ -341,7 +386,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
               <Text style={styles.addTitle}>Add another job</Text>
             </TouchableOpacity>
           )}
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         <View style={styles.bottomBar}>
           {showForm ? (
@@ -366,11 +411,18 @@ export const AddWorkHistoryScreen: React.FC = () => {
                 size="lg"
                 style={{ flex: experiences.length > 0 ? 2 : 1 }}
                 loading={saveMutation.isPending}
-                onPress={() => saveMutation.mutate()}
+                onPress={() =>
+                  saveMutation.mutate({
+                    job_title: jobTitle,
+                    employer_name: employer,
+                    duration: `${durationVal} ${durationUnit}`,
+                    description: description,
+                  })
+                }
                 disabled={
                   !jobTitle.trim() ||
                   !employer.trim() ||
-                  !duration.trim() ||
+                  !durationVal.trim() ||
                   jobTitle.length > 85 ||
                   employer.length > 85 ||
                   descWordCount > 250
@@ -617,6 +669,46 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     marginTop: 6,
     lineHeight: 18,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 4,
+  },
+  inputLabel: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.ink,
+    marginBottom: 8,
+  },
+  unitSelector: {
+    flexDirection: 'row',
+    backgroundColor: colors.paperCream,
+    borderRadius: 12,
+    padding: 4,
+    height: 56,
+  },
+  unitBtn: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  unitBtnActive: {
+    backgroundColor: colors.white,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  unitBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.inkSoft,
+  },
+  unitBtnTextActive: {
+    color: colors.primary,
   },
 });
 

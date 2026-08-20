@@ -34,6 +34,35 @@ jest.mock('react-native-keyboard-aware-scroll-view', () => ({
   KeyboardAwareScrollView: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+jest.mock('react-native-elements', () => {
+  const React = require('react');
+  const { TextInput } = require('react-native');
+  return {
+    Input: jest.fn(
+      ({
+        placeholder,
+        onChangeText,
+        value,
+        secureTextEntry,
+        inputStyle,
+        inputContainerStyle,
+        containerStyle,
+        leftIcon,
+        rightIcon,
+        ...props
+      }: any) => (
+        <TextInput
+          placeholder={placeholder}
+          onChangeText={onChangeText}
+          value={value}
+          secureTextEntry={secureTextEntry}
+          {...props}
+        />
+      ),
+    ),
+  };
+});
+
 describe('LoginScreen', () => {
   let mockMutate: jest.Mock;
 
@@ -49,7 +78,8 @@ describe('LoginScreen', () => {
   });
 
   it('shows error banner if email or password is empty', async () => {
-    const { getByText, getByRole } = await render(<LoginScreen />);
+    const result = await render(<LoginScreen />);
+    const { getByText, getByRole } = result;
 
     const signInButton = getByRole('button', { name: 'Sign in' });
     await fireEvent.press(signInButton);

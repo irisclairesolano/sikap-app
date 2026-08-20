@@ -2,19 +2,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
+import { useAlert } from '../../contexts/AlertContext';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
 
 const ForgotPasswordScreen: React.FC = () => {
   const navigation = useNavigation<NavProp>();
   const insets = useSafeAreaInsets();
+  const { showAlert } = useAlert();
 
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -40,8 +42,9 @@ const ForgotPasswordScreen: React.FC = () => {
       navigation.navigate('ResetOTPVerify', { email });
     } catch (err: any) {
       // If the backend returns 404, we can still show a generic message or the error.
-      Alert.alert('Notice', 'If an account exists with this email, an OTP has been sent.');
-      navigation.navigate('ResetOTPVerify', { email });
+      showAlert('Notice', 'If an account exists with this email, an OTP has been sent.', [
+        { text: 'OK', onPress: () => navigation.navigate('ResetOTPVerify', { email }) },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -87,11 +90,7 @@ const ForgotPasswordScreen: React.FC = () => {
         />
 
         <View style={styles.footer}>
-          {loading ? (
-            <ActivityIndicator size="large" color={colors.primary} />
-          ) : (
-            <Button label="Send OTP" size="lg" fullWidth onPress={handleSendOTP} />
-          )}
+          <Button label="Send OTP" size="lg" fullWidth onPress={handleSendOTP} loading={loading} />
         </View>
       </View>
     </View>

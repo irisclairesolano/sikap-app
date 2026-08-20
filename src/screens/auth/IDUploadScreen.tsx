@@ -1,11 +1,18 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as SecureStore from '../../utils/storage';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
 import { authApi } from '../../api/auth';
@@ -20,6 +27,7 @@ type NavProp = NativeStackNavigationProp<AuthStackParamList, 'IDUpload'>;
 type IDUploadRouteProp = RouteProp<AuthStackParamList, 'IDUpload'>;
 
 const IDUploadScreen: React.FC = () => {
+  const queryClient = useQueryClient();
   const navigation = useNavigation<NavProp>();
   const route = useRoute<IDUploadRouteProp>();
   const { userId, role } = route.params;
@@ -91,26 +99,19 @@ const IDUploadScreen: React.FC = () => {
         } as unknown as Blob);
       }
 
-      if (userRole === 'employer' && selectedBusinessDocs.length > 0) {
-        for (let index = 0; index < selectedBusinessDocs.length; index++) {
-          const doc = selectedBusinessDocs[index];
-          const isImage = doc.mimeType?.startsWith('image/');
-          const finalUri = isImage ? await compressImage(doc.uri) : doc.uri;
-
-          form.append('business_documents[]', {
-            uri: finalUri,
-            name: doc.name ?? `business-doc-${index}.${isImage ? 'jpg' : 'pdf'}`,
-            type: isImage ? 'image/jpeg' : (doc.mimeType ?? 'application/pdf'),
-          } as unknown as Blob);
-        }
-      }
-
       await authApi.uploadId(form);
     },
     onSuccess: async () => {
       setBanner('');
+      queryClient.setQueryData(['profile'], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          registration_status: 'pending_review',
+          document_url: 'uploaded',
+        };
+      });
       notifyAuthChanged();
-      navigation.replace('PendingVerify' as any); // The mockup shows this goes to PendingVerification
     },
     onError: (err: unknown) => {
       if (err instanceof Error && err.message === 'PICK_CANCELLED') return;
@@ -302,28 +303,6 @@ const IDUploadScreen: React.FC = () => {
           </Text>
         </TouchableOpacity>
 
-        {userRole === 'employer' && (
-          <TouchableOpacity
-            style={[styles.uploadArea, { marginTop: 16 }]}
-            onPress={() => handleFileSelect('business')}
-            disabled={uploadMutation.isPending}
-          >
-            <View style={styles.cameraIconBox}>
-              <Ionicons name="document-text" size={24} color={colors.white} />
-            </View>
-            <Text style={styles.uploadTitle}>
-              {selectedBusinessDocs.length > 0
-                ? `${selectedBusinessDocs.length} Document(s) Selected ✓`
-                : 'Upload Business Document (Optional)'}
-            </Text>
-            <Text style={styles.uploadSubtitle}>
-              {selectedBusinessDocs.length > 0
-                ? selectedBusinessDocs.map((doc) => doc.name).join('\n')
-                : 'DTI / SEC / TIN Document (Max 3 files, PDF/Image)'}
-            </Text>
-          </TouchableOpacity>
-        )}
-
         <View style={{ marginTop: 12 }}>
           <Button
             label="Choose from gallery"
@@ -358,6 +337,14 @@ const IDUploadScreen: React.FC = () => {
           />
         </View>
       </ScrollView>
+      {uploadMutation.isPending && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>
+            Uploading government ID... Please keep the app open.
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -501,6 +488,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.error,
     textAlign: 'center',
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.ink,
+    textAlign: 'center',
+    paddingHorizontal: 32,
   },
 });
 

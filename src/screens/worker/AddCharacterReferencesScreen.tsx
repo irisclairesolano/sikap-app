@@ -11,6 +11,7 @@ import {
   Alert,
   Modal,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -95,47 +96,37 @@ export const AddCharacterReferencesScreen: React.FC = () => {
   };
 
   const saveMutation = useMutation({
-    mutationFn: async () => {
-      const errorMsg = validatePhone(phone);
+    mutationFn: async (payload: { name: string; phone: string; relationship: string }) => {
+      const errorMsg = validatePhone(payload.phone);
       if (errorMsg) {
         setPhoneError(errorMsg);
         throw new Error(errorMsg);
       }
 
-      const payload = {
-        name,
-        phone,
-        relationship,
-      };
       if (editingReferenceId !== null) {
         await profileApi.removeReference(editingReferenceId);
       }
       return profileApi.addReference(payload);
     },
-    onMutate: async () => {
+    onMutate: async (payload) => {
       // Close modal instantly
       setIsAdding(false);
 
       const tempId = -Date.now();
-      const payload = {
+      const optimisticItem = {
         id: editingReferenceId !== null ? editingReferenceId : tempId,
-        name,
-        phone,
-        relationship,
+        ...payload,
       };
 
       if (editingReferenceId !== null) {
-        setReferences((prev) => prev.map((r) => (r.id === editingReferenceId ? payload : r)));
+        setReferences((prev) =>
+          prev.map((r) => (r.id === editingReferenceId ? optimisticItem : r)),
+        );
       } else {
-        setReferences((prev) => [...prev, payload]);
+        setReferences((prev) => [...prev, optimisticItem]);
       }
 
-      // Clear inputs
-      setName('');
-      setPhone('');
-      setRelationship('');
-      setPhoneError(undefined);
-
+      handleCancel();
       return { tempId };
     },
     onSuccess: (data, variables, context) => {
@@ -339,7 +330,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
         >
           <KeyboardAvoidingView
             style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           >
             <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={handleCancel}>
               <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
@@ -416,7 +407,13 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                     size="lg"
                     style={{ flex: 2 }}
                     loading={saveMutation.isPending}
-                    onPress={() => saveMutation.mutate()}
+                    onPress={() =>
+                      saveMutation.mutate({
+                        name,
+                        phone,
+                        relationship,
+                      })
+                    }
                     disabled={!name || !phone || !relationship || !!validatePhone(phone)}
                   />
                 </View>

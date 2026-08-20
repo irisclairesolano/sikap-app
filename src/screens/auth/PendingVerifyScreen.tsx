@@ -34,6 +34,14 @@ const PendingVerifyScreen: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (isRejected) return;
+    const interval = setInterval(() => {
+      notifyAuthChanged();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [isRejected]);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     // Adding a small delay just to show the spinner briefly

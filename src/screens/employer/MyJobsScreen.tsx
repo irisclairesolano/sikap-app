@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,10 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,20 +24,34 @@ type MyJobsNavigationProp = NativeStackNavigationProp<EmployerStackParamList, 'M
 
 export const MyJobsScreen: React.FC = () => {
   const navigation = useNavigation<MyJobsNavigationProp>();
+  const route = useRoute<any>();
   const [activeTab, setActiveTab] = useState<'Active' | 'Past'>('Active');
+  const [refreshing, setRefreshing] = useState(false);
 
-  const { data: jobsResponse, isLoading, isError } = useEmployerJobs();
+  const { data: jobsResponse, isLoading, isError, refetch } = useEmployerJobs();
   const jobs = jobsResponse?.data || [];
 
   const filteredJobs = jobs.filter((job) =>
     activeTab === 'Active' ? job.status === 'open' : job.status !== 'open',
   );
 
+  useEffect(() => {
+    if (route.params?.tab) {
+      setActiveTab(route.params.tab);
+    }
+  }, [route.params?.tab]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refetch().catch(console.error);
+    setRefreshing(false);
+  };
+
   const renderJobCard = useCallback(
     ({ item }: { item: JobPost }) => (
       <TouchableOpacity
         style={styles.jobCard}
-        onPress={() => navigation.navigate('JobDetails', { id: item.id })}
+        onPress={() => navigation.navigate('JobStatusManagement', { id: item.id, job: item })}
       >
         <View style={styles.jobHeader}>
           <Text style={styles.jobCategory}>
@@ -76,7 +91,9 @@ export const MyJobsScreen: React.FC = () => {
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>My Posts</Text>
         </View>
-        <View style={styles.iconBtn} />
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('PostJob')}>
+          <Ionicons name="add" size={26} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.tabContainer}>
@@ -108,20 +125,22 @@ export const MyJobsScreen: React.FC = () => {
           <Text style={styles.emptyTitle}>Error loading jobs</Text>
         </View>
       ) : filteredJobs.length === 0 ? (
-        <View style={styles.emptyState}>
+        <ScrollView
+          contentContainerStyle={[styles.emptyState, { flex: 1, justifyContent: 'center' }]}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.primary}
+            />
+          }
+        >
           <Ionicons name="briefcase-outline" size={48} color={colors.inkFaint} />
           <Text style={styles.emptyTitle}>No {activeTab.toLowerCase()} jobs</Text>
           <Text style={styles.emptyBody}>
             You don't have any {activeTab.toLowerCase()} job postings right now.
           </Text>
-          {activeTab === 'Active' && (
-            <Button
-              label="Post a job"
-              onPress={() => navigation.navigate('PostJob')}
-              style={{ marginTop: 20 }}
-            />
-          )}
-        </View>
+        </ScrollView>
       ) : (
         <FlatList
           data={filteredJobs}
@@ -133,11 +152,15 @@ export const MyJobsScreen: React.FC = () => {
           removeClippedSubviews={true}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.primary}
+            />
+          }
         />
       )}
-      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('PostJob')}>
-        <Ionicons name="add" size={30} color={colors.white} />
-      </TouchableOpacity>
     </SafeAreaView>
   );
 };

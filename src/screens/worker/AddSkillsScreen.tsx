@@ -1,5 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -9,15 +9,24 @@ import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { skillsApi, Skill } from '../../api/skills';
 import { profileApi } from '../../api/profile';
+import { useAuthCheck } from '../../hooks/useAuthCheck';
 
 export const AddSkillsScreen: React.FC = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuthCheck();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
   const [customSkill, setCustomSkill] = useState('');
   const [customSkillError, setCustomSkillError] = useState('');
+
+  useEffect(() => {
+    if (user?.worker_profile?.skills) {
+      setSelectedSkills(user.worker_profile.skills);
+    }
+  }, [user]);
 
   const { data: skills = [] } = useQuery({
     queryKey: ['skills'],
@@ -27,6 +36,7 @@ export const AddSkillsScreen: React.FC = () => {
   const saveMutation = useMutation({
     mutationFn: (skillIds: number[]) => profileApi.addSkills(skillIds),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       navigation.goBack();
     },
     onError: (err) => {

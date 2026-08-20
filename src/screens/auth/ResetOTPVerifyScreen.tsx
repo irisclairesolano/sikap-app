@@ -1,14 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
+import { useAlert } from '../../contexts/AlertContext';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'ResetOTPVerify'>;
 type RouteType = RouteProp<AuthStackParamList, 'ResetOTPVerify'>;
@@ -17,12 +18,24 @@ const ResetOTPVerifyScreen: React.FC = () => {
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RouteType>();
   const insets = useSafeAreaInsets();
+  const { showAlert } = useAlert();
 
   const { email } = route.params;
 
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (cooldown > 0) {
+      timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [cooldown]);
 
   const handleVerify = async () => {
     if (otp.length !== 6) {
@@ -48,11 +61,14 @@ const ResetOTPVerifyScreen: React.FC = () => {
   };
 
   const handleResend = async () => {
+    if (cooldown > 0) return;
     try {
       await authApi.forgotPassword(email);
-      Alert.alert('Sent', 'A new OTP has been sent to your email.');
+      showAlert('Sent', 'A new OTP has been sent to your email.');
+      setCooldown(60);
     } catch (err: any) {
-      Alert.alert('Notice', 'A new OTP has been sent if the email exists.');
+      showAlert('Notice', 'A new OTP has been sent if the email exists.');
+      setCooldown(60);
     }
   };
 
@@ -92,14 +108,22 @@ const ResetOTPVerifyScreen: React.FC = () => {
         />
 
         <View style={styles.footer}>
-          {loading ? (
-            <ActivityIndicator size="large" color={colors.primary} />
-          ) : (
-            <Button label="Verify Code" size="lg" fullWidth onPress={handleVerify} />
-          )}
+          <Button
+            label="Verify Code"
+            size="lg"
+            fullWidth
+            onPress={handleVerify}
+            loading={loading}
+          />
 
-          <TouchableOpacity style={styles.resendBtn} onPress={handleResend}>
-            <Text style={styles.resendText}>Didn't receive a code? Resend</Text>
+          <TouchableOpacity
+            style={[styles.resendBtn, cooldown > 0 && { opacity: 0.6 }]}
+            onPress={handleResend}
+            disabled={cooldown > 0}
+          >
+            <Text style={[styles.resendText, cooldown > 0 && { color: colors.inkMuted }]}>
+              {cooldown > 0 ? `Resend code in ${cooldown}s` : "Didn't receive a code? Resend"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

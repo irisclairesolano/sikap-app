@@ -144,11 +144,6 @@ export const ProfileScreen: React.FC = () => {
             <Text style={styles.locationText}>
               <Ionicons name="location" size={11} color={colors.primary} /> {worker.location}
             </Text>
-            <View style={styles.verifiedBadge}>
-              <Text style={styles.verifiedBadgeText}>
-                {worker.verified ? 'Verified' : 'Unverified'}
-              </Text>
-            </View>
           </View>
         </TouchableOpacity>
 
@@ -260,7 +255,12 @@ export const ProfileScreen: React.FC = () => {
 
         {/* Skills */}
         <View style={styles.skillsSection}>
-          <Text style={styles.sectionEyebrow}>Skills</Text>
+          <View style={styles.reviewHeader}>
+            <Text style={styles.sectionEyebrow}>Skills</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AddSkills' as any)}>
+              <Text style={styles.viewAllText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.skillsList}>
             {worker.skills.length === 0 ? (
               <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>

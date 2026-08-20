@@ -185,9 +185,6 @@ const ApplicantDetailScreen: React.FC = () => {
             <Text style={styles.locationText}>
               <Ionicons name="location" size={11} color={colors.primary} /> Worker
             </Text>
-            <View style={styles.verifiedBadge}>
-              <Text style={styles.verifiedBadgeText}>Verified</Text>
-            </View>
           </View>
         </View>
 

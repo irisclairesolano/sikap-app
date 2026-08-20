@@ -2,13 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
+import { useAlert } from '../../contexts/AlertContext';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'NewPassword'>;
 type RouteType = RouteProp<AuthStackParamList, 'NewPassword'>;
@@ -17,6 +18,7 @@ const NewPasswordScreen: React.FC = () => {
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RouteType>();
   const insets = useSafeAreaInsets();
+  const { showAlert } = useAlert();
 
   const { resetToken } = route.params;
 
@@ -46,7 +48,7 @@ const NewPasswordScreen: React.FC = () => {
 
     try {
       await authApi.resetPassword(resetToken, password, confirmPassword);
-      Alert.alert('Success', 'Your password has been reset. You can now log in.', [
+      showAlert('Success', 'Your password has been reset. You can now log in.', [
         { text: 'OK', onPress: () => navigation.navigate('Login') },
       ]);
     } catch (err: any) {
@@ -105,11 +107,13 @@ const NewPasswordScreen: React.FC = () => {
         </View>
 
         <View style={styles.footer}>
-          {loading ? (
-            <ActivityIndicator size="large" color={colors.primary} />
-          ) : (
-            <Button label="Reset Password" size="lg" fullWidth onPress={handleReset} />
-          )}
+          <Button
+            label="Reset Password"
+            size="lg"
+            fullWidth
+            onPress={handleReset}
+            loading={loading}
+          />
         </View>
       </View>
     </View>

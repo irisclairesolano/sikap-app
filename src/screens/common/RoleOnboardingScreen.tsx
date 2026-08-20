@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,6 +48,31 @@ export const RoleOnboardingScreen: React.FC = () => {
         },
       ],
     );
+  };
+
+  const handleBackPress = () => {
+    if (targetRole === 'employer') {
+      showAlert(
+        'Skip Document Upload?',
+        'You can upload your business documents later in Settings. Would you like to skip this step for now?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Skip & Continue',
+            onPress: async () => {
+              try {
+                await onboardRole({ targetRole, data: {} });
+                notifyAuthChanged();
+              } catch (error: any) {
+                showAlert('Error', error.message || 'Failed to skip onboarding');
+              }
+            },
+          },
+        ],
+      );
+    } else {
+      handleCancel();
+    }
   };
 
   const [selectedBusinessDocs, setSelectedBusinessDocs] = useState<any[]>([]);
@@ -184,7 +216,7 @@ export const RoleOnboardingScreen: React.FC = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.cancelBtn}
-          onPress={handleCancel}
+          onPress={handleBackPress}
           disabled={isOnboardingRole}
         >
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
@@ -276,8 +308,19 @@ export const RoleOnboardingScreen: React.FC = () => {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button label="Complete Setup" onPress={handleComplete} isLoading={isOnboardingRole} />
+        <Button label="Complete Setup" onPress={handleComplete} loading={isOnboardingRole} />
       </View>
+
+      {isOnboardingRole && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>
+            {targetRole === 'employer'
+              ? 'Uploading documents & completing setup...'
+              : 'Saving your skills & completing setup...'}
+          </Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -410,6 +453,21 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontFamily: fonts.bodyBold,
     fontSize: 14,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.ink,
+    textAlign: 'center',
+    paddingHorizontal: 32,
   },
 });
 

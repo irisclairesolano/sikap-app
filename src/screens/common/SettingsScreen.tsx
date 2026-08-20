@@ -13,6 +13,7 @@ import { useAuth } from '../../hooks/useAuth';
 const SettingRow = ({
   icon,
   title,
+  subtitle,
   type = 'nav',
   value,
   onToggle,
@@ -26,9 +27,18 @@ const SettingRow = ({
   >
     <View style={styles.settingRowLeft}>
       <Ionicons name={icon} size={22} color={isDestructive ? colors.error : colors.ink} />
-      <Text style={[styles.settingRowTitle, isDestructive && { color: colors.error }]}>
-        {title}
-      </Text>
+      <View>
+        <Text style={[styles.settingRowTitle, isDestructive && { color: colors.error }]}>
+          {title}
+        </Text>
+        {subtitle && (
+          <Text
+            style={{ fontFamily: fonts.body, fontSize: 13, color: colors.inkMuted, marginTop: 2 }}
+          >
+            {subtitle}
+          </Text>
+        )}
+      </View>
     </View>
     {type === 'nav' && <Ionicons name="chevron-forward" size={20} color={colors.inkLight} />}
     {type === 'toggle' && (
@@ -51,7 +61,7 @@ export const SettingsScreen: React.FC = () => {
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
-  const { userRole, switchRole } = useAuth();
+  const { user, userRole, switchRole } = useAuth();
 
   const handleLogout = () => {
     showAlert('Log Out', 'Are you sure you want to log out?', [
@@ -118,6 +128,13 @@ export const SettingsScreen: React.FC = () => {
               icon="person-outline"
               title="Edit Profile"
               onPress={() => navigation.navigate('EditProfile')}
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              icon="mail-outline"
+              title="Email Address"
+              subtitle={user?.email || 'N/A'}
+              type="text"
             />
             <View style={styles.divider} />
             <SettingRow

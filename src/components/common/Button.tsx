@@ -72,6 +72,17 @@ const Button: React.FC<ButtonProps> = ({
         ? shadows.sm
         : undefined;
 
+  const lastPressTime = React.useRef(0);
+
+  const handlePress = (e: any) => {
+    const now = Date.now();
+    if (now - lastPressTime.current < 800) {
+      return;
+    }
+    lastPressTime.current = now;
+    onPress?.(e);
+  };
+
   return (
     <TouchableOpacity
       style={[
@@ -83,7 +94,7 @@ const Button: React.FC<ButtonProps> = ({
         (disabled || loading) && styles.disabled,
         style,
       ]}
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled || loading}
       activeOpacity={0.85}
       accessibilityLabel={accessibilityLabel || displayLabel}

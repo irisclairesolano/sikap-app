@@ -98,21 +98,33 @@ export const EmployerDashboardScreen: React.FC = () => {
       >
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
-          <View style={[styles.statCard, { backgroundColor: colors.peach }]}>
+          <TouchableOpacity
+            style={[styles.statCard, { backgroundColor: colors.peach }]}
+            onPress={() => navigation.navigate('MyJobs', { tab: 'Active' } as any)}
+          >
             <Text style={[styles.statNum, { color: colors.primaryDark }]}>
               {loading ? '-' : activeJobs.length}
             </Text>
             <Text style={[styles.statLabel, { color: colors.primaryDark }]}>Active jobs</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.mint }]}>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.statCard, { backgroundColor: colors.mint }]}
+            onPress={() => navigation.navigate('MyJobs', { tab: 'Past' } as any)}
+          >
             <Text style={[styles.statNum, { color: colors.mintDeep }]}>0</Text>
             <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Total hires</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.butter }]}>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.statCard, { backgroundColor: colors.butter }]}
+            onPress={() => navigation.navigate('MyJobs', { tab: 'Past' } as any)}
+          >
             <Text style={[styles.statNum, { color: colors.ink }]}>₱0</Text>
             <Text style={[styles.statLabel, { color: colors.inkSoft }]}>Total paid</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.sky }]}>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.statCard, { backgroundColor: colors.sky }]}
+            onPress={() => navigation.navigate('Profile')}
+          >
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
               <Text style={[styles.statNum, { color: colors.skyDeep }]}>0.0</Text>
               <Ionicons
@@ -123,7 +135,7 @@ export const EmployerDashboardScreen: React.FC = () => {
               />
             </View>
             <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Reputation</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         <Button
@@ -137,9 +149,16 @@ export const EmployerDashboardScreen: React.FC = () => {
 
         {/* Real Dynamic Action Required */}
         {(() => {
-          const allApps = activeJobs.flatMap((j) => (j.applications || []).map((app) => ({ ...app, jobTitle: j.title, jobId: j.id })));
-          const pendingApps = allApps.filter((a) => (a.status as string) === 'pending' || (a.status as string) === 'pending_negotiation');
-          const hiredApps = allApps.filter((a) => (a.status as string) === 'hired' || (a.status as string) === 'accepted');
+          const allApps = activeJobs.flatMap((j) =>
+            (j.applications || []).map((app) => ({ ...app, jobTitle: j.title, jobId: j.id })),
+          );
+          const pendingApps = allApps.filter(
+            (a) =>
+              (a.status as string) === 'pending' || (a.status as string) === 'pending_negotiation',
+          );
+          const hiredApps = allApps.filter(
+            (a) => (a.status as string) === 'hired' || (a.status as string) === 'accepted',
+          );
 
           return (
             <>
@@ -155,7 +174,9 @@ export const EmployerDashboardScreen: React.FC = () => {
                   <TouchableOpacity
                     style={[styles.actionCard, { borderColor: colors.urgentSoft }]}
                     activeOpacity={0.7}
-                    onPress={() => navigation.navigate('ViewApplicants', { id: pendingApps[0].jobId })}
+                    onPress={() =>
+                      navigation.navigate('ViewApplicants', { id: pendingApps[0].jobId })
+                    }
                   >
                     <View style={[styles.actionIconBox, { backgroundColor: colors.urgentSoft }]}>
                       <Ionicons name="people" size={24} color={colors.urgent} />
@@ -181,7 +202,9 @@ export const EmployerDashboardScreen: React.FC = () => {
                     </View>
                     <View style={styles.jobDetails}>
                       <Text style={styles.jobTitle}>Active hired workers</Text>
-                      <Text style={styles.jobSubtitle}>{hiredApps.length} job(s) currently in progress</Text>
+                      <Text style={styles.jobSubtitle}>
+                        {hiredApps.length} job(s) currently in progress
+                      </Text>
                     </View>
                     <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
                   </TouchableOpacity>
@@ -205,11 +228,23 @@ export const EmployerDashboardScreen: React.FC = () => {
 
               <View style={styles.listContainer}>
                 {allApps.length === 0 ? (
-                  <View style={[styles.applicantCard, { justifyContent: 'center', paddingVertical: 20 }]}>
-                    <Ionicons name="people-outline" size={28} color={colors.inkLight} style={{ marginRight: 12 }} />
+                  <View
+                    style={[
+                      styles.applicantCard,
+                      { justifyContent: 'center', paddingVertical: 20 },
+                    ]}
+                  >
+                    <Ionicons
+                      name="people-outline"
+                      size={28}
+                      color={colors.inkLight}
+                      style={{ marginRight: 12 }}
+                    />
                     <View style={styles.jobDetails}>
                       <Text style={styles.jobTitle}>No applicants yet</Text>
-                      <Text style={styles.jobSubtitle}>Applicants will appear here when workers apply</Text>
+                      <Text style={styles.jobSubtitle}>
+                        Applicants will appear here when workers apply
+                      </Text>
                     </View>
                   </View>
                 ) : (
@@ -226,7 +261,9 @@ export const EmployerDashboardScreen: React.FC = () => {
                         </Text>
                       </View>
                       <View style={styles.jobDetails}>
-                        <Text style={styles.jobTitle}>{app.worker?.name || 'Worker Applicant'}</Text>
+                        <Text style={styles.jobTitle}>
+                          {app.worker?.name || 'Worker Applicant'}
+                        </Text>
                         <Text style={styles.jobSubtitle}>Applied for {app.jobTitle}</Text>
                         <View style={styles.ratingRow}>
                           <Ionicons name="star" size={12} color={colors.gold} />
