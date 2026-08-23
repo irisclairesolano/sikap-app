@@ -50,8 +50,9 @@ export const useAuth = () => {
   // Logout function
   const logout = async () => {
     try {
-      // Remove token from SecureStore
+      // Remove token and profile from SecureStore
       await SecureStore.deleteItemAsync('auth_token');
+      await SecureStore.deleteItemAsync('user_profile');
 
       // Clear all cached data
       queryClient.clear();

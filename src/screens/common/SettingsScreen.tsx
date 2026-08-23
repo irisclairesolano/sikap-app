@@ -71,6 +71,7 @@ export const SettingsScreen: React.FC = () => {
         style: 'destructive',
         onPress: async () => {
           await SecureStore.deleteItemAsync('auth_token');
+          await SecureStore.deleteItemAsync('user_profile');
           queryClient.clear();
           notifyAuthChanged();
         },

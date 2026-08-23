@@ -76,6 +76,7 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
 
   if (res.status === 401) {
     await SecureStore.deleteItemAsync('auth_token');
+    await SecureStore.deleteItemAsync('user_profile');
     throw new ApiClientError('UNAUTHORIZED', 401);
   }
 

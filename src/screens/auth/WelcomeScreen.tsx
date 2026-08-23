@@ -18,6 +18,11 @@ const WelcomeScreen: React.FC = () => {
   const navigation = useNavigation<WelcomeScreenNavigationProp>();
   const queryClient = useQueryClient();
 
+  React.useEffect(() => {
+    // Proactively clear any stale user profile cache when landing on welcome
+    SecureStore.deleteItemAsync('user_profile').catch(() => {});
+  }, []);
+
   const navigateToRegister = (role: 'worker' | 'employer') => {
     navigation.navigate('Register', { role });
   };

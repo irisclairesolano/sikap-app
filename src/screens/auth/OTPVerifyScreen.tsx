@@ -1,6 +1,6 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from '../../utils/storage';
 import React, { useState, useEffect, useRef } from 'react';
 import { Platform, StyleSheet, Text, View, TouchableOpacity, AppState } from 'react-native';
@@ -24,6 +24,7 @@ const OTPVerifyScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const { userId, email, role } = route.params;
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
 
   const [currentEmail, setCurrentEmail] = useState(email);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
@@ -65,11 +66,15 @@ const OTPVerifyScreen: React.FC = () => {
 
   const verifyMutation = useMutation({
     mutationFn: (code: string) => authApi.verifyOtp(userId, code, currentEmail),
-    onSuccess: async (response) => {
+    onSuccess: async (response: any) => {
       setBanner('');
       if (response?.user_id) {
         if ('token' in response && response.token) {
           await SecureStore.setItemAsync('auth_token', String(response.token));
+        }
+        if ('user' in response && response.user) {
+          await SecureStore.setItemAsync('user_profile', JSON.stringify(response.user));
+          queryClient.setQueryData(['profile'], response.user);
         }
         notifyAuthChanged();
         navigation.navigate('IDUpload' as any, { userId: response.user_id, role } as any);

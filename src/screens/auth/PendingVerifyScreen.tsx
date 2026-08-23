@@ -52,6 +52,7 @@ const PendingVerifyScreen: React.FC = () => {
 
   const signOut = async () => {
     await SecureStore.deleteItemAsync('auth_token').catch(() => {});
+    await SecureStore.deleteItemAsync('user_profile').catch(() => {});
     notifyAuthChanged();
   };
 
