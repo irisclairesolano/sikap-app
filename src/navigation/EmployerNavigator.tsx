@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { Text, View } from 'react-native';
 import { colors } from '../theme';
+import { useNotifications } from '../hooks/useNotifications';
 
 import { EmployerDashboardScreen } from '../screens/employer/EmployerDashboardScreen';
 import ProfileScreen from '../screens/employer/ProfileScreen';
@@ -120,6 +121,9 @@ const ProfileStack: React.FC = () => (
 );
 
 const EmployerNavigator: React.FC = () => {
+  const { data } = useNotifications();
+  const unreadCount = data?.unread_count || 0;
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -147,7 +151,14 @@ const EmployerNavigator: React.FC = () => {
     >
       <Tab.Screen name="Home" component={HomeStack} />
       <Tab.Screen name="MyJobs" component={MyJobsStack} />
-      <Tab.Screen name="Notifications" component={NotificationsStack} />
+      <Tab.Screen
+        name="Notifications"
+        component={NotificationsStack}
+        options={{
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+          tabBarBadgeStyle: { backgroundColor: colors.peach, color: colors.white },
+        }}
+      />
       <Tab.Screen name="Profile" component={ProfileStack} />
     </Tab.Navigator>
   );

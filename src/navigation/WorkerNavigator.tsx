@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { profileApi } from '../api/profile';
+import { useNotifications } from '../hooks/useNotifications';
 
 import { JobFeedScreen } from '../screens/worker/JobFeedScreen';
 import { JobDetailsScreen } from '../screens/worker/JobDetailsScreen';
@@ -62,6 +63,7 @@ export type WorkerTabParamList = {
   Find: undefined;
   Mine: undefined;
   Saved: undefined;
+  Notifications: undefined;
   Me: undefined;
 };
 
@@ -149,6 +151,13 @@ const ApplicationsStack: React.FC = () => (
   </Stack.Navigator>
 );
 
+// Notifications Stack
+const NotificationsStack: React.FC = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="Notifications" component={NotificationsScreen} />
+  </Stack.Navigator>
+);
+
 // Profile Stack
 const ProfileStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -165,6 +174,9 @@ const ProfileStack: React.FC = () => (
 );
 
 const WorkerNavigator: React.FC = () => {
+  const { data } = useNotifications();
+  const unreadCount = data?.unread_count || 0;
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -177,6 +189,8 @@ const WorkerNavigator: React.FC = () => {
             iconName = focused ? 'document-text' : 'document-text-outline';
           } else if (route.name === 'Saved') {
             iconName = focused ? 'bookmark' : 'bookmark-outline';
+          } else if (route.name === 'Notifications') {
+            iconName = focused ? 'notifications' : 'notifications-outline';
           } else if (route.name === 'Me') {
             iconName = focused ? 'person' : 'person-outline';
           } else {
@@ -193,6 +207,14 @@ const WorkerNavigator: React.FC = () => {
       <Tab.Screen name="Find" component={FindStack} />
       <Tab.Screen name="Mine" component={ApplicationsStack} />
       <Tab.Screen name="Saved" component={SavedStack} />
+      <Tab.Screen
+        name="Notifications"
+        component={NotificationsStack}
+        options={{
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+          tabBarBadgeStyle: { backgroundColor: colors.peach, color: colors.white },
+        }}
+      />
       <Tab.Screen name="Me" component={ProfileStack} />
     </Tab.Navigator>
   );

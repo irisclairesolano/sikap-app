@@ -6,7 +6,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
-import { useNotifications } from '../../hooks/useNotifications';
+import {
+  useNotifications,
+  useMarkNotificationAsRead,
+  useMarkAllNotificationsAsRead,
+} from '../../hooks/useNotifications';
 import { ActivityIndicator } from 'react-native';
 
 type NotificationsScreenNavigationProp = NativeStackNavigationProp<
@@ -16,7 +20,9 @@ type NotificationsScreenNavigationProp = NativeStackNavigationProp<
 
 export const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation<NotificationsScreenNavigationProp>();
-  const { data, isLoading, error } = useNotifications();
+  const { data, isLoading } = useNotifications();
+  const markAsReadMutation = useMarkNotificationAsRead();
+  const markAllAsReadMutation = useMarkAllNotificationsAsRead();
 
   if (isLoading) {
     return (
@@ -37,8 +43,14 @@ export const NotificationsScreen: React.FC = () => {
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>Notifications</Text>
         </View>
-        <TouchableOpacity style={styles.markAllBtn}>
-          <Text style={styles.markAllText}>Mark all</Text>
+        <TouchableOpacity
+          style={styles.markAllBtn}
+          onPress={() => markAllAsReadMutation.mutate()}
+          disabled={markAllAsReadMutation.isPending}
+        >
+          <Text style={styles.markAllText}>
+            {markAllAsReadMutation.isPending ? 'Marking...' : 'Mark all'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -72,14 +84,20 @@ export const NotificationsScreen: React.FC = () => {
                   style={[styles.notificationCard, isUnread && styles.unreadPrimary]}
                   activeOpacity={0.7}
                   onPress={() => {
+                    if (isUnread) {
+                      markAsReadMutation.mutate(notif.id);
+                    }
+
                     let parsedData = notif.data;
                     if (typeof parsedData === 'string') {
-                      try { parsedData = JSON.parse(parsedData); } catch (e) {}
+                      try {
+                        parsedData = JSON.parse(parsedData);
+                      } catch (_) {}
                     }
-                    
+
                     const appId = parsedData?.application_id || parsedData?.applicationId;
                     const jobId = parsedData?.job_id || parsedData?.jobId;
-                    
+
                     if (appId) {
                       navigation.navigate('ApplicationDetail' as any, { applicationId: appId });
                     } else if (jobId) {

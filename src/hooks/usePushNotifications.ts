@@ -3,6 +3,8 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
+import { navigate } from '../../App';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -20,7 +22,8 @@ export interface PushNotificationState {
 export const usePushNotifications = (): PushNotificationState => {
   const [expoPushToken, setExpoPushToken] = useState<Notifications.ExpoPushToken | undefined>();
   const [notification, setNotification] = useState<Notifications.Notification | undefined>();
-  
+  const queryClient = useQueryClient();
+
   const notificationListener = useRef<Notifications.Subscription>();
   const responseListener = useRef<Notifications.Subscription>();
 
@@ -57,7 +60,7 @@ export const usePushNotifications = (): PushNotificationState => {
           projectId,
         });
         console.log('Expo Push Token:', token);
-      } catch (e) {
+      } catch (_) {
         token = await Notifications.getExpoPushTokenAsync({
           projectId: '1b899a77-3e16-41b4-ac5d-007e155bc293', // dummy fallback
         });
@@ -74,21 +77,32 @@ export const usePushNotifications = (): PushNotificationState => {
 
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
       setNotification(notification);
+      // Real-time invalidation to update badges/lists instantly in the foreground
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
       console.log('Notification Response:', response);
+      const data = response.notification.request.content.data;
+      const appId = data?.application_id || data?.applicationId;
+      const jobId = data?.job_id || data?.jobId;
+
+      if (appId) {
+        navigate('ApplicationDetail', { applicationId: appId });
+      } else if (jobId) {
+        navigate('JobDetails', { id: jobId });
+      }
     });
 
     return () => {
       if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(notificationListener.current);
+        notificationListener.current.remove();
       }
       if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
+        responseListener.current.remove();
       }
     };
-  }, []);
+  }, [queryClient]);
 
   return { expoPushToken, notification };
 };
