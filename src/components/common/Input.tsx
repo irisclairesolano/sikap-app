@@ -54,14 +54,23 @@ const CustomInput: React.FC<InputProps> = ({
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  // Convert label to sentence case (if requested format is e.g. "FULL NAME")
-  const sentenceCaseLabel = label
-    ? label.charAt(0).toUpperCase() + label.slice(1).toLowerCase()
-    : '';
+  const renderLabel = () => {
+    if (!label) return null;
+    const hasAsterisk = label.endsWith(' *') || label.endsWith('*');
+    const cleanLabel = hasAsterisk ? label.replace(/\s*\*$/, '') : label;
+    const formattedLabel = cleanLabel.charAt(0).toUpperCase() + cleanLabel.slice(1).toLowerCase();
+
+    return (
+      <Text style={styles.label}>
+        {formattedLabel}
+        {hasAsterisk ? <Text style={{ color: colors.error }}> *</Text> : null}
+      </Text>
+    );
+  };
 
   return (
     <View style={styles.wrap}>
-      {label ? <Text style={styles.label}>{sentenceCaseLabel}</Text> : null}
+      {renderLabel()}
       <View style={[styles.focusRing, isFocused && styles.focusRingActive]}>
         <RNEInput
           value={value}

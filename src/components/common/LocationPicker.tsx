@@ -131,7 +131,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     <View style={styles.container}>
       {/* Municipality Picker */}
       <View style={styles.pickerContainer}>
-        <Text style={styles.label}>Municipality</Text>
+        <Text style={styles.label}>
+          Municipality <Text style={{ color: colors.error }}>*</Text>
+        </Text>
         <TouchableOpacity
           style={[styles.pickerButton, municipalityError && styles.pickerButtonError]}
           onPress={() => setMunicipalityModalVisible(true)}
@@ -151,7 +153,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 
       {/* Barangay Picker */}
       <View style={styles.pickerContainer}>
-        <Text style={styles.label}>Barangay</Text>
+        <Text style={styles.label}>
+          Barangay <Text style={{ color: colors.error }}>*</Text>
+        </Text>
         <TouchableOpacity
           style={[
             styles.pickerButton,

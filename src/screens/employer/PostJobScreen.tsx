@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -63,11 +63,31 @@ export const PostJobScreen: React.FC = () => {
   const [pay, setPay] = useState(jobToEdit?.compensation ? String(jobToEdit.compensation) : '');
   const [slots, setSlots] = useState(jobToEdit?.slots ? String(jobToEdit.slots) : '');
 
+  const handlePayChange = (text: string) => {
+    let cleaned = text.replace(/[^0-9.]/g, '');
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      cleaned = parts[0] + '.' + parts.slice(1).join('');
+    }
+    if (cleaned.startsWith('0') && cleaned.length > 1 && cleaned[1] !== '.') {
+      cleaned = cleaned.substring(1);
+    }
+    setPay(cleaned);
+  };
+
+  const handleSlotsChange = (text: string) => {
+    let cleaned = text.replace(/[^0-9]/g, '');
+    if (cleaned.startsWith('0') && cleaned.length > 1) {
+      cleaned = cleaned.substring(1);
+    }
+    setSlots(cleaned);
+  };
+
   const parsedPay = parseFloat(pay);
-  const payInvalid = pay !== '' && (isNaN(parsedPay) || parsedPay < 1);
+  const payInvalid = pay !== '' && (isNaN(parsedPay) || parsedPay < 1 || pay === '0');
 
   const parsedSlots = parseInt(slots, 10);
-  const slotsInvalid = slots !== '' && (isNaN(parsedSlots) || parsedSlots < 1);
+  const slotsInvalid = slots !== '' && (isNaN(parsedSlots) || parsedSlots < 1 || slots === '0');
 
   // Duration
   const [duration, setDuration] = useState(jobToEdit?.duration ? String(jobToEdit.duration) : '');
@@ -123,6 +143,62 @@ export const PostJobScreen: React.FC = () => {
         }
       : null,
   );
+  useEffect(() => {
+    if (jobToEdit) {
+      setTitle(jobToEdit.title || '');
+      setCategories(jobToEdit.categories || []);
+      setMunicipality(jobToEdit.municipality || '');
+      setBarangay(jobToEdit.barangay || '');
+      setPay(jobToEdit.compensation ? String(jobToEdit.compensation) : '');
+      setSlots(jobToEdit.slots ? String(jobToEdit.slots) : '');
+      setDuration(jobToEdit.duration ? String(jobToEdit.duration) : '');
+      setDurationUnit(jobToEdit.duration_unit || 'Days');
+      setDescription(jobToEdit.description || '');
+      setExactLocation(jobToEdit.exact_location || '');
+      setToolsRequired(jobToEdit.tools_required || '');
+      setPhotos(
+        jobToEdit.photos
+          ? jobToEdit.photos.map((url: string, index: number) => ({
+              id: `edit_${index}_${Date.now()}`,
+              uri: url,
+              remoteUrl: url,
+              status: 'success',
+              progress: 100,
+            }))
+          : [],
+      );
+      if (jobToEdit.video_url) {
+        setVideoUpload({
+          uri: jobToEdit.video_url,
+          remoteUrl: jobToEdit.video_url,
+          status: 'success',
+          progress: 100,
+          fileName: 'video.mp4',
+          mimeType: 'video/mp4',
+        });
+      } else {
+        setVideoUpload(null);
+      }
+      if (jobToEdit.schedule_date) {
+        setScheduleDate(new Date(jobToEdit.schedule_date));
+      }
+    } else {
+      setTitle('');
+      setCategories([]);
+      setMunicipality('');
+      setBarangay('');
+      setPay('');
+      setSlots('');
+      setDuration('');
+      setDurationUnit('Days');
+      setDescription('');
+      setExactLocation('');
+      setToolsRequired('');
+      setPhotos([]);
+      setVideoUpload(null);
+      setScheduleDate(new Date());
+    }
+  }, [jobToEdit]);
 
   const compressImage = async (uri: string) => {
     const manipResult = await ImageManipulator.manipulateAsync(uri, [{ resize: { width: 1080 } }], {
@@ -278,11 +354,51 @@ export const PostJobScreen: React.FC = () => {
     (cat) => !categories.includes(cat) && cat.toLowerCase().includes(currentCategory.toLowerCase()),
   );
 
+  const BANNED_WORDS = [
+    'fuck',
+    'shit',
+    'asshole',
+    'bitch',
+    'cunt',
+    'dick',
+    'pussy',
+    'bastard',
+    'gago',
+    'tarantado',
+    'putangina',
+    'tangina',
+    'puta',
+    'kupal',
+    'gaga',
+    'salsal',
+    'ulol',
+    'ulul',
+    'kantot',
+    'iyot',
+    'pekpek',
+    'titi',
+    'puke',
+    'bayag',
+  ];
+
+  const containsProfanity = (text: string) => {
+    const words = text.toLowerCase().split(/\s+/);
+    return words.some((word) => BANNED_WORDS.includes(word));
+  };
+
   const addCategory = () => {
     const trimmed = currentCategory.trim();
     if (trimmed) {
+      if (containsProfanity(trimmed)) {
+        showAlert('Profanity detected', 'Category tags cannot contain inappropriate language.');
+        setCurrentCategory('');
+        setShowCategorySuggestions(false);
+        return;
+      }
       const lowerCategories = categories.map((c) => c.toLowerCase());
-      if (!lowerCategories.includes(trimmed.toLowerCase())) {
+      if (lowerCategories.includes(trimmed.toLowerCase())) {
+        showAlert('Duplicate tag', 'This category tag has already been added.');
+      } else {
         setCategories([...categories, trimmed]);
       }
     }
@@ -359,6 +475,9 @@ export const PostJobScreen: React.FC = () => {
     videoUpload &&
     (videoUpload.status === 'uploading' || videoUpload.status === 'compressing')
   );
+
+  const isUploadingPhotos = photos.some((p) => p.status === 'uploading');
+  const isAnyMediaUploading = isUploadingPhotos || isUploadingVideo;
 
   const handleSubmit = () => {
     // Automatically add currentCategory if the user forgot to press enter/space
@@ -532,16 +651,40 @@ export const PostJobScreen: React.FC = () => {
                 label="Categories *"
                 value={currentCategory}
                 onChangeText={(text) => {
-                  if (text.endsWith(',')) {
-                    const trimmed = text.slice(0, -1).trim();
-                    if (trimmed) {
-                      const lowerCategories = categories.map((c) => c.toLowerCase());
-                      if (!lowerCategories.includes(trimmed.toLowerCase())) {
-                        setCategories([...categories, trimmed]);
+                  if (text.includes(',')) {
+                    const parts = text.split(',');
+                    const updatedCategories = [...categories];
+                    let duplicateFound = false;
+                    let profanityFound = false;
+                    parts.forEach((part) => {
+                      const trimmed = part.trim();
+                      if (trimmed) {
+                        if (containsProfanity(trimmed)) {
+                          profanityFound = true;
+                          return;
+                        }
+                        const lowerCategories = updatedCategories.map((c) => c.toLowerCase());
+                        if (!lowerCategories.includes(trimmed.toLowerCase())) {
+                          updatedCategories.push(trimmed);
+                        } else {
+                          duplicateFound = true;
+                        }
                       }
-                    }
+                    });
+                    setCategories(updatedCategories);
                     setCurrentCategory('');
                     setShowCategorySuggestions(false);
+                    if (profanityFound) {
+                      showAlert(
+                        'Profanity detected',
+                        'Category tags cannot contain inappropriate language.',
+                      );
+                    } else if (duplicateFound) {
+                      showAlert(
+                        'Duplicate tag',
+                        'One or more category tags have already been added.',
+                      );
+                    }
                   } else {
                     setCurrentCategory(text);
                     setShowCategorySuggestions(true);
@@ -636,7 +779,7 @@ export const PostJobScreen: React.FC = () => {
                 <CustomInput
                   label="Pay (PHP) *"
                   value={pay}
-                  onChangeText={setPay}
+                  onChangeText={handlePayChange}
                   placeholder="600"
                   keyboardType="numeric"
                   status={payInvalid ? 'invalid' : undefined}
@@ -646,7 +789,7 @@ export const PostJobScreen: React.FC = () => {
                 <CustomInput
                   label="Slots *"
                   value={slots}
-                  onChangeText={setSlots}
+                  onChangeText={handleSlotsChange}
                   placeholder="2"
                   keyboardType="numeric"
                   status={slotsInvalid ? 'invalid' : undefined}
@@ -917,6 +1060,47 @@ export const PostJobScreen: React.FC = () => {
             </View>
             <Text style={styles.progressPercent}>{uploadProgress}% Uploaded</Text>
             <Text style={styles.progressSubtitle}>Uploading photos, videos, and details...</Text>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={isAnyMediaUploading} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.progressContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.progressTitle}>
+              {isUploadingVideo
+                ? videoUpload?.status === 'compressing'
+                  ? 'Compressing Video...'
+                  : `Uploading Video: ${videoUpload?.progress || 0}%`
+                : `Uploading Photos: ${overallProgress}%`}
+            </Text>
+            <View style={styles.progressBarBg}>
+              <View
+                style={[
+                  styles.progressBarFill,
+                  {
+                    width: `${
+                      isUploadingVideo
+                        ? videoUpload?.status === 'compressing'
+                          ? 10
+                          : videoUpload?.progress || 0
+                        : overallProgress
+                    }%`,
+                  },
+                ]}
+              />
+            </View>
+            <Text style={styles.progressPercent}>
+              {isUploadingVideo
+                ? videoUpload?.status === 'compressing'
+                  ? 'Processing...'
+                  : `${videoUpload?.progress || 0}%`
+                : `${overallProgress}%`}
+            </Text>
+            <Text style={styles.progressSubtitle}>
+              Please wait while we upload your media assets.
+            </Text>
           </View>
         </View>
       </Modal>
