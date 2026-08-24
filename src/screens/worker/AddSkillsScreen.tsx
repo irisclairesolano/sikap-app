@@ -21,6 +21,7 @@ export const AddSkillsScreen: React.FC = () => {
   const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
   const [customSkill, setCustomSkill] = useState('');
   const [customSkillError, setCustomSkillError] = useState('');
+  const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
     if (user?.worker_profile?.skills) {
@@ -66,8 +67,12 @@ export const AddSkillsScreen: React.FC = () => {
     if (existing) {
       if (!selectedSkills.find((s) => s.id === existing.id)) {
         setSelectedSkills([...selectedSkills, existing]);
+        setCustomSkill('');
+        setCustomSkillError('');
+        setSaveError('');
+      } else {
+        setCustomSkillError('This skill is already in your selected list.');
       }
-      setCustomSkill('');
       return;
     }
 
@@ -78,6 +83,7 @@ export const AddSkillsScreen: React.FC = () => {
     setSelectedSkills([...selectedSkills, tempSkill]);
     setCustomSkill('');
     setCustomSkillError('');
+    setSaveError('');
 
     createSkillMutation.mutate(trimmed, {
       onSuccess: (newSkill) => {
@@ -93,6 +99,7 @@ export const AddSkillsScreen: React.FC = () => {
   };
 
   const toggleSkill = (skill: Skill) => {
+    setSaveError('');
     if (selectedSkills.find((s) => s.id === skill.id)) {
       setSelectedSkills(selectedSkills.filter((s) => s.id !== skill.id));
     } else {
@@ -200,12 +207,31 @@ export const AddSkillsScreen: React.FC = () => {
       </ScrollView>
 
       <View style={styles.bottomBar}>
+        {saveError ? (
+          <Text
+            style={{
+              color: colors.error,
+              fontFamily: fonts.body,
+              fontSize: 13,
+              marginBottom: 8,
+              textAlign: 'center',
+            }}
+          >
+            {saveError}
+          </Text>
+        ) : null}
         <Button
           label={saveMutation.isPending ? 'Saving...' : 'Next'}
           size="lg"
           fullWidth
           loading={saveMutation.isPending}
-          onPress={() => saveMutation.mutate(selectedSkills.map((s) => s.id))}
+          onPress={() => {
+            if (selectedSkills.length === 0) {
+              setSaveError('Please select at least one skill to continue.');
+              return;
+            }
+            saveMutation.mutate(selectedSkills.map((s) => s.id));
+          }}
         />
       </View>
     </SafeAreaView>

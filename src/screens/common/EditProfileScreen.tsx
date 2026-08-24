@@ -86,38 +86,6 @@ export const EditProfileScreen: React.FC = () => {
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const uri = result.assets[0].uri;
       setLocalAvatarUri(uri);
-      try {
-        const manipResult = await ImageManipulator.manipulateAsync(
-          uri,
-          [{ resize: { width: 800 } }],
-          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG },
-        );
-        uploadAvatar(manipResult.uri);
-      } catch (error) {
-        console.log('Compression error, using original', error);
-        uploadAvatar(uri);
-      }
-    }
-  };
-
-  const uploadAvatar = async (uri: string) => {
-    try {
-      setIsUploading(true);
-      const res = await profileApi.uploadAvatar(uri);
-      if (res?.avatar_url && user) {
-        const updatedUser = { ...user, avatar_url: res.avatar_url };
-        await SecureStore.setItemAsync('user_profile', JSON.stringify(updatedUser));
-        queryClient.setQueryData(['profile'], updatedUser);
-      }
-      await refetchProfile();
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      showAlert('Looking Good!', 'Your profile picture was updated successfully.');
-    } catch (err: any) {
-      console.error(err);
-      setLocalAvatarUri(null);
-      showAlert('Upload Failed', err.message || 'We could not upload your profile picture.');
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -157,6 +125,35 @@ export const EditProfileScreen: React.FC = () => {
 
     try {
       setIsSaving(true);
+
+      // 1. Upload avatar first if a new one was selected locally
+      if (localAvatarUri) {
+        try {
+          setIsUploading(true);
+          const manipResult = await ImageManipulator.manipulateAsync(
+            localAvatarUri,
+            [{ resize: { width: 800 } }],
+            { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG },
+          );
+          const res = await profileApi.uploadAvatar(manipResult.uri);
+          if (res?.avatar_url && user) {
+            const updatedUser = { ...user, avatar_url: res.avatar_url };
+            await SecureStore.setItemAsync('user_profile', JSON.stringify(updatedUser));
+            queryClient.setQueryData(['profile'], updatedUser);
+          }
+          setLocalAvatarUri(null); // Clear local URI upon successful upload
+        } catch (error: any) {
+          console.error('Avatar upload failed during save:', error);
+          showAlert('Save Failed', 'We could not upload your profile picture. Please try again.');
+          setIsSaving(false);
+          setIsUploading(false);
+          return;
+        } finally {
+          setIsUploading(false);
+        }
+      }
+
+      // 2. Save profile fields
       const updateData: any = {
         barangay: barangay || undefined,
         municipality: municipality || undefined,

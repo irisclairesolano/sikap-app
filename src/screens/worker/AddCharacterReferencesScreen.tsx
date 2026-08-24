@@ -52,15 +52,19 @@ export const AddCharacterReferencesScreen: React.FC = () => {
   const handleNameChange = (text: string) => {
     // Strip out numbers and symbols (allow letters, spaces, hyphens, periods, and ñ/Ñ)
     setName(text.replace(/[^a-zA-Z\s\-\.ñÑ]/g, ''));
+    setNameError('');
   };
 
   const handleRelationshipChange = (text: string) => {
     // Strip out numbers and symbols (allow letters, spaces, hyphens, periods, and ñ/Ñ)
     setRelationship(text.replace(/[^a-zA-Z\s\-\.ñÑ]/g, ''));
+    setRelationshipError('');
   };
 
   const [editingReferenceId, setEditingReferenceId] = useState<number | null>(null);
   const [phoneError, setPhoneError] = useState<string | undefined>(undefined);
+  const [nameError, setNameError] = useState('');
+  const [relationshipError, setRelationshipError] = useState('');
 
   const { showAlert } = useAlert();
 
@@ -173,6 +177,8 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     setIsAdding(false);
     setEditingReferenceId(null);
     setPhoneError(undefined);
+    setNameError('');
+    setRelationshipError('');
   };
 
   const handleEditPress = (ref: any) => {
@@ -356,6 +362,8 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                       onChangeText={handleNameChange}
                       placeholder="E.g. Juan Reyes"
                       icon="person-outline"
+                      error={nameError}
+                      status={nameError ? 'invalid' : null}
                     />
                     <CustomInput
                       label="Relationship"
@@ -363,12 +371,15 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                       onChangeText={handleRelationshipChange}
                       placeholder="E.g. Former employer"
                       icon="people-outline"
+                      error={relationshipError}
+                      status={relationshipError ? 'invalid' : null}
                     />
                     <CustomInput
                       label="Phone number"
                       value={phone}
                       onChangeText={handlePhoneChange}
                       error={phoneError}
+                      status={phoneError ? 'invalid' : null}
                       placeholder="E.g. 09123456789"
                       icon="call-outline"
                       keyboardType="phone-pad"
@@ -407,14 +418,35 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                     size="lg"
                     style={{ flex: 2 }}
                     loading={saveMutation.isPending}
-                    onPress={() =>
+                    onPress={() => {
+                      const errors: Record<string, string> = {};
+                      if (!name.trim()) {
+                        errors.name = 'Full name is required';
+                      }
+                      if (!relationship.trim()) {
+                        errors.relationship = 'Relationship is required';
+                      }
+                      const phError = validatePhone(phone);
+                      if (!phone.trim()) {
+                        errors.phone = 'Phone number is required';
+                      } else if (phError) {
+                        errors.phone = phError;
+                      }
+
+                      if (Object.keys(errors).length > 0) {
+                        setNameError(errors.name || '');
+                        setRelationshipError(errors.relationship || '');
+                        setPhoneError(errors.phone || '');
+                        return;
+                      }
+
                       saveMutation.mutate({
                         name,
                         phone,
                         relationship,
-                      })
-                    }
-                    disabled={!name || !phone || !relationship || !!validatePhone(phone)}
+                      });
+                    }}
+                    disabled={saveMutation.isPending}
                   />
                 </View>
               </View>

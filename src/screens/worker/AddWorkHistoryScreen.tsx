@@ -47,6 +47,9 @@ export const AddWorkHistoryScreen: React.FC = () => {
   const [durationVal, setDurationVal] = useState('');
   const [durationUnit, setDurationUnit] = useState('Months');
   const [description, setDescription] = useState('');
+  const [jobTitleError, setJobTitleError] = useState('');
+  const [employerError, setEmployerError] = useState('');
+  const [durationError, setDurationError] = useState('');
 
   const [selectedExperienceId, setSelectedExperienceId] = useState<number | null>(null);
   const [editingExperienceId, setEditingExperienceId] = useState<number | null>(null);
@@ -128,6 +131,24 @@ export const AddWorkHistoryScreen: React.FC = () => {
     setIsAdding(false);
     setEditingExperienceId(null);
     setSelectedExperienceId(null);
+    setJobTitleError('');
+    setEmployerError('');
+    setDurationError('');
+  };
+
+  const handleJobTitleChange = (text: string) => {
+    setJobTitle(text);
+    setJobTitleError('');
+  };
+
+  const handleEmployerChange = (text: string) => {
+    setEmployer(text);
+    setEmployerError('');
+  };
+
+  const handleDurationChange = (text: string) => {
+    setDurationVal(text);
+    setDurationError('');
   };
 
   const handleCardPress = (id: number) => {
@@ -311,20 +332,24 @@ export const AddWorkHistoryScreen: React.FC = () => {
               <CustomInput
                 label="Job title"
                 value={jobTitle}
-                onChangeText={setJobTitle}
+                onChangeText={handleJobTitleChange}
                 placeholder="E.g. Tile setter"
                 icon="briefcase-outline"
                 maxLength={85}
+                error={jobTitleError}
+                status={jobTitleError ? 'invalid' : null}
               />
               <Text style={styles.inputLimitHelper}>{jobTitle.length}/85 characters</Text>
 
               <CustomInput
                 label="Employer or project"
                 value={employer}
-                onChangeText={setEmployer}
+                onChangeText={handleEmployerChange}
                 placeholder="E.g. Reyes household renovation"
                 icon="business-outline"
                 maxLength={85}
+                error={employerError}
+                status={employerError ? 'invalid' : null}
               />
               <Text style={styles.inputLimitHelper}>{employer.length}/85 characters</Text>
 
@@ -333,10 +358,12 @@ export const AddWorkHistoryScreen: React.FC = () => {
                   <CustomInput
                     label="Duration"
                     value={durationVal}
-                    onChangeText={setDurationVal}
+                    onChangeText={handleDurationChange}
                     placeholder="E.g. 3"
                     keyboardType="numeric"
                     icon="calendar-outline"
+                    error={durationError}
+                    status={durationError ? 'invalid' : null}
                   />
                 </View>
                 <View style={{ flex: 1.5 }}>
@@ -411,18 +438,45 @@ export const AddWorkHistoryScreen: React.FC = () => {
                 size="lg"
                 style={{ flex: experiences.length > 0 ? 2 : 1 }}
                 loading={saveMutation.isPending}
-                onPress={() =>
+                onPress={() => {
+                  const errors: Record<string, string> = {};
+                  if (!jobTitle.trim()) {
+                    errors.jobTitle = 'Job title is required';
+                  } else if (jobTitle.length > 85) {
+                    errors.jobTitle = 'Job title cannot exceed 85 characters';
+                  }
+
+                  if (!employer.trim()) {
+                    errors.employer = 'Employer name is required';
+                  } else if (employer.length > 85) {
+                    errors.employer = 'Employer name cannot exceed 85 characters';
+                  }
+
+                  if (!durationVal.trim()) {
+                    errors.duration = 'Duration is required';
+                  } else {
+                    const parsed = Number(durationVal);
+                    if (isNaN(parsed) || parsed <= 0) {
+                      errors.duration = 'Duration must be a positive number';
+                    }
+                  }
+
+                  if (Object.keys(errors).length > 0) {
+                    setJobTitleError(errors.jobTitle || '');
+                    setEmployerError(errors.employer || '');
+                    setDurationError(errors.duration || '');
+                    return;
+                  }
+
                   saveMutation.mutate({
                     job_title: jobTitle,
                     employer_name: employer,
                     duration: `${durationVal} ${durationUnit}`,
                     description: description,
-                  })
-                }
+                  });
+                }}
                 disabled={
-                  !jobTitle.trim() ||
-                  !employer.trim() ||
-                  !durationVal.trim() ||
+                  saveMutation.isPending ||
                   jobTitle.length > 85 ||
                   employer.length > 85 ||
                   descWordCount > 250
