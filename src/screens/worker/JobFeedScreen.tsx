@@ -45,15 +45,42 @@ export const JobFeedScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
   const { user } = useAuthCheck();
+  const workerProfile = user?.worker_profile || user?.workerProfile;
+  const userSkills = useMemo(() => {
+    const skills = workerProfile?.skills || [];
+    return Array.from(new Set(skills.map((s) => s.name)));
+  }, [workerProfile]);
+
+  const feedCategories = useMemo(() => {
+    if (userSkills.length > 0) {
+      return ['All', ...userSkills];
+    }
+    return CATEGORIES;
+  }, [userSkills]);
 
   const filters = useMemo(() => {
+    const isSearching = !!searchQuery;
+    let skillsParam: string[] | undefined = undefined;
+    let categoryParam: string | undefined = undefined;
+
+    if (userSkills.length > 0 && !isSearching) {
+      if (activeCategory === 'All') {
+        skillsParam = userSkills;
+      } else {
+        skillsParam = [activeCategory];
+      }
+    } else {
+      categoryParam = activeCategory;
+    }
+
     return {
       search: searchQuery || undefined,
-      category: activeCategory,
+      category: categoryParam,
+      skills: skillsParam,
       barangay: locationFilter === 'Same Barangay' ? user?.barangay : undefined,
       municipality: locationFilter === 'Same Municipality' ? user?.municipality : undefined,
     };
-  }, [searchQuery, activeCategory, locationFilter, user]);
+  }, [searchQuery, activeCategory, locationFilter, user, userSkills]);
 
   const { data, isLoading, isError, error, refetch } = useJobs(filters);
   const { data: savedJobsData } = useSavedJobs();
@@ -164,7 +191,7 @@ export const JobFeedScreen: React.FC = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterScroll}
         >
-          {CATEGORIES.map((category) => (
+          {feedCategories.map((category) => (
             <TouchableOpacity
               key={category}
               style={[styles.chip, activeCategory === category && styles.chipActive]}

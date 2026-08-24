@@ -7,6 +7,7 @@ interface JobFilters {
   category?: string;
   barangay?: string;
   municipality?: string;
+  skills?: string[];
 }
 
 export const useJobs = (filters?: JobFilters) => {
@@ -15,10 +16,16 @@ export const useJobs = (filters?: JobFilters) => {
     queryFn: async () => {
       const params = new URLSearchParams({ per_page: '50' });
       if (filters?.search) params.append('search', filters.search);
-      if (filters?.category && filters.category !== 'All') params.append('category', filters.category);
+      if (filters?.category && filters.category !== 'All')
+        params.append('category', filters.category);
       if (filters?.barangay) params.append('barangay', filters.barangay);
       if (filters?.municipality) params.append('municipality', filters.municipality);
-      
+      if (filters?.skills && filters.skills.length > 0) {
+        filters.skills.forEach((skill) => {
+          params.append('skills[]', skill);
+        });
+      }
+
       const response = await apiClient<PaginatedResponse<JobPost>>(`/jobs?${params.toString()}`);
       return response;
     },
