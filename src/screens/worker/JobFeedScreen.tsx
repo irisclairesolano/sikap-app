@@ -183,7 +183,7 @@ export const JobFeedScreen: React.FC = () => {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        {renderHeader()}
+        <View style={{ paddingHorizontal: 20 }}>{renderHeader()}</View>
         <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>
           <JobCardSkeleton />
           <JobCardSkeleton />
@@ -196,8 +196,10 @@ export const JobFeedScreen: React.FC = () => {
   if (isError) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        {renderHeader()}
-        <ErrorBanner message={error?.message || 'Failed to load jobs.'} />
+        <View style={{ paddingHorizontal: 20 }}>{renderHeader()}</View>
+        <View style={{ paddingHorizontal: 20 }}>
+          <ErrorBanner message={error?.message || 'Failed to load jobs.'} />
+        </View>
       </SafeAreaView>
     );
   }
