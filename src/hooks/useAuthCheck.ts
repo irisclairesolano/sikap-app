@@ -11,15 +11,6 @@ export const useAuthCheck = () => {
   const [reloadToken, setReloadToken] = useState(0);
   const queryClient = useQueryClient();
 
-  useEffect(
-    () =>
-      subscribeAuthChanged(() => {
-        setReloadToken((t) => t + 1);
-        queryClient.invalidateQueries({ queryKey: ['profile'] });
-      }),
-    [queryClient],
-  );
-
   useEffect(() => {
     const checkToken = async () => {
       setIsLoadingToken(true);
@@ -30,7 +21,11 @@ export const useAuthCheck = () => {
     checkToken();
   }, [reloadToken]);
 
-  const { data: user, isLoading: isLoadingProfile } = useQuery<User | null>({
+  const {
+    data: user,
+    isLoading: isLoadingProfile,
+    refetch,
+  } = useQuery<User | null>({
     queryKey: ['profile'],
     queryFn: async () => {
       const authToken = await SecureStore.getItemAsync('auth_token');
@@ -44,10 +39,16 @@ export const useAuthCheck = () => {
       }
     },
     enabled: !isLoadingToken && !!token,
-    initialData: () => {
-      return queryClient.getQueryData(['profile']);
-    },
   });
+
+  useEffect(
+    () =>
+      subscribeAuthChanged(() => {
+        setReloadToken((t) => t + 1);
+        refetch();
+      }),
+    [refetch],
+  );
 
   // Restore cached user on mount
   useEffect(() => {

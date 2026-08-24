@@ -24,6 +24,8 @@ const NewPasswordScreen: React.FC = () => {
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -83,11 +85,16 @@ const NewPasswordScreen: React.FC = () => {
           <Input
             label="New Password"
             placeholder="••••••••"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={password}
             onChangeText={(val) => {
               setPassword(val);
               setError('');
+            }}
+            rightIcon={{
+              name: showPassword ? 'eye-off' : 'eye',
+              type: 'ionicon',
+              onPress: () => setShowPassword(!showPassword),
             }}
           />
 
@@ -96,11 +103,16 @@ const NewPasswordScreen: React.FC = () => {
           <Input
             label="Confirm Password"
             placeholder="••••••••"
-            secureTextEntry
+            secureTextEntry={!showConfirmPassword}
             value={confirmPassword}
             onChangeText={(val) => {
               setConfirmPassword(val);
               setError('');
+            }}
+            rightIcon={{
+              name: showConfirmPassword ? 'eye-off' : 'eye',
+              type: 'ionicon',
+              onPress: () => setShowConfirmPassword(!showConfirmPassword),
             }}
             error={error}
           />

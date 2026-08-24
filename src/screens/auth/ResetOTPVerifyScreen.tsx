@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import Button from '../../components/common/Button';
@@ -38,6 +38,7 @@ const ResetOTPVerifyScreen: React.FC = () => {
   }, [cooldown]);
 
   const handleVerify = async () => {
+    Keyboard.dismiss();
     if (otp.length !== 6) {
       setError('Please enter a 6-digit OTP.');
       return;
