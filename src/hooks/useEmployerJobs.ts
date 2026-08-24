@@ -38,6 +38,26 @@ export const useDeleteJob = () => {
     mutationFn: (id: number) => jobsApi.deleteJob(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myJobs'] });
+      queryClient.invalidateQueries({ queryKey: ['archivedJobs'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+    },
+  });
+};
+
+export const useArchivedJobs = () => {
+  return useQuery<PaginatedResponse<JobPost>, Error>({
+    queryKey: ['archivedJobs'],
+    queryFn: jobsApi.getArchivedJobs,
+  });
+};
+
+export const useRestoreJob = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => jobsApi.restoreJob(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myJobs'] });
+      queryClient.invalidateQueries({ queryKey: ['archivedJobs'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
     },
   });

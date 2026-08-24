@@ -16,24 +16,46 @@ import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
-import { useEmployerJobs } from '../../hooks/useEmployerJobs';
+import { useEmployerJobs, useArchivedJobs, useRestoreJob } from '../../hooks/useEmployerJobs';
 import { JobPost } from '../../types';
 import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
+import { useAlert } from '../../contexts/AlertContext';
 
 type MyJobsNavigationProp = NativeStackNavigationProp<EmployerStackParamList, 'MyJobs'>;
 
 export const MyJobsScreen: React.FC = () => {
   const navigation = useNavigation<MyJobsNavigationProp>();
   const route = useRoute<any>();
-  const [activeTab, setActiveTab] = useState<'Active' | 'Past'>('Active');
+  const [activeTab, setActiveTab] = useState<'Active' | 'Past' | 'Archived'>('Active');
   const [refreshing, setRefreshing] = useState(false);
+  const { showAlert } = useAlert();
 
-  const { data: jobsResponse, isLoading, isError, refetch } = useEmployerJobs();
+  const {
+    data: jobsResponse,
+    isLoading: isJobsLoading,
+    isError: isJobsError,
+    refetch: refetchJobs,
+  } = useEmployerJobs();
+  const {
+    data: archivedResponse,
+    isLoading: isArchivedLoading,
+    isError: isArchivedError,
+    refetch: refetchArchived,
+  } = useArchivedJobs();
+  const { mutate: restoreJob, isPending: isRestoring } = useRestoreJob();
+
   const jobs = jobsResponse?.data || [];
+  const archivedJobs = archivedResponse?.data || [];
 
-  const filteredJobs = jobs.filter((job) =>
-    activeTab === 'Active' ? job.status === 'open' : job.status !== 'open',
-  );
+  const isLoading = isJobsLoading || isArchivedLoading || isRestoring;
+  const isError = isJobsError || isArchivedError;
+
+  const filteredJobs =
+    activeTab === 'Active'
+      ? jobs.filter((job) => job.status === 'open')
+      : activeTab === 'Past'
+        ? jobs.filter((job) => job.status !== 'open')
+        : archivedJobs;
 
   useEffect(() => {
     if (route.params?.tab) {
@@ -43,7 +65,11 @@ export const MyJobsScreen: React.FC = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await refetch().catch(console.error);
+    if (activeTab === 'Archived') {
+      await refetchArchived().catch(console.error);
+    } else {
+      await refetchJobs().catch(console.error);
+    }
     setRefreshing(false);
   };
 
@@ -51,37 +77,64 @@ export const MyJobsScreen: React.FC = () => {
     ({ item }: { item: JobPost }) => (
       <TouchableOpacity
         style={styles.jobCard}
-        onPress={() => navigation.navigate('JobStatusManagement', { id: item.id, job: item })}
+        onPress={() => {
+          if (!item.deleted_at) {
+            navigation.navigate('JobStatusManagement', { id: item.id, job: item });
+          }
+        }}
+        disabled={!!item.deleted_at}
       >
         <View style={styles.jobHeader}>
           <Text style={styles.jobCategory}>
             {item.categories && item.categories.length > 0 ? item.categories[0] : 'General'}
           </Text>
-          <Text style={styles.jobTime}>{item.status}</Text>
+          <Text style={styles.jobTime}>{item.deleted_at ? 'Archived' : item.status}</Text>
         </View>
         <Text style={styles.jobTitle}>{item.title}</Text>
 
         <View style={styles.jobFooter}>
-          <View style={styles.applicantsBadge}>
-            <Ionicons name="people" size={14} color={colors.primary} />
-            <Text style={styles.applicantsText}>{item.applications?.length || 0} applicants</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.manageBtn}
-            onPress={() => {
-              if (item.status === 'open') {
-                navigation.navigate('ViewApplicants', { id: item.id });
-              } else {
+          {item.deleted_at ? (
+            <View style={styles.applicantsBadge}>
+              <Ionicons name="trash-outline" size={14} color={colors.inkSoft} />
+              <Text style={[styles.applicantsText, { color: colors.inkSoft }]}>Archived</Text>
+            </View>
+          ) : (
+            <View style={styles.applicantsBadge}>
+              <Ionicons name="people" size={14} color={colors.primary} />
+              <Text style={styles.applicantsText}>{item.applications?.length || 0} applicants</Text>
+            </View>
+          )}
+
+          {item.deleted_at ? (
+            <TouchableOpacity
+              style={[styles.manageBtn, { backgroundColor: colors.primaryDark }]}
+              onPress={() => {
+                restoreJob(item.id, {
+                  onSuccess: () => {
+                    showAlert('Success', 'Job restored successfully.');
+                  },
+                  onError: (err: any) => {
+                    showAlert('Error', err.message || 'Failed to restore job.');
+                  },
+                });
+              }}
+            >
+              <Text style={styles.manageBtnText}>Restore</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.manageBtn}
+              onPress={() => {
                 navigation.navigate('JobStatusManagement', { id: item.id, job: item });
-              }
-            }}
-          >
-            <Text style={styles.manageBtnText}>{item.status === 'open' ? 'Manage' : 'Status'}</Text>
-          </TouchableOpacity>
+              }}
+            >
+              <Text style={styles.manageBtnText}>Manage</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </TouchableOpacity>
     ),
-    [navigation],
+    [navigation, restoreJob, showAlert],
   );
 
   return (
@@ -89,7 +142,7 @@ export const MyJobsScreen: React.FC = () => {
       <View style={styles.header}>
         <View style={styles.iconBtn} />
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>My Posts</Text>
+          <Text style={styles.headerPillText}>My Job Posts</Text>
         </View>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('PostJob')}>
           <Ionicons name="add" size={26} color={colors.primary} />
@@ -111,6 +164,14 @@ export const MyJobsScreen: React.FC = () => {
         >
           <Text style={[styles.tabText, activeTab === 'Past' && styles.tabTextActive]}>
             Past ({jobs.filter((j) => j.status !== 'open').length})
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'Archived' && styles.tabBtnActive]}
+          onPress={() => setActiveTab('Archived')}
+        >
+          <Text style={[styles.tabText, activeTab === 'Archived' && styles.tabTextActive]}>
+            Archived ({archivedJobs.length})
           </Text>
         </TouchableOpacity>
       </View>

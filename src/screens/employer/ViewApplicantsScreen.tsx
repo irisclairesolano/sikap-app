@@ -128,6 +128,16 @@ export const ViewApplicantsScreen: React.FC = () => {
                     applicantName: `${app.worker?.first_name || ''} ${app.worker?.last_name || ''}`,
                     jobTitle: job?.title || '',
                     status: app.status,
+                    barangay: app.worker?.barangay,
+                    municipality: app.worker?.municipality,
+                    reputationScore: app.worker?.reputation_score,
+                    bio: app.worker?.bio,
+                    skills: app.worker?.skills,
+                    experiences: app.worker?.experiences,
+                    characterReferences: app.worker?.character_references,
+                    phone: app.worker?.phone,
+                    emergencyContactName: app.worker?.emergency_contact_name,
+                    emergencyContactPhone: app.worker?.emergency_contact_phone,
                   })
                 }
                 activeOpacity={0.7}

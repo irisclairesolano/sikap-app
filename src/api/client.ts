@@ -123,10 +123,34 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
       );
       errBody.message = 'Failed to parse server response';
     }
-    const displayMessage =
-      res.status >= 500
-        ? 'An unexpected server error occurred. Please try again later.'
-        : (errBody.message ?? 'Something went wrong');
+
+    let displayMessage = 'Something went wrong';
+    if (res.status === 422) {
+      const validationErrors = errBody.errors || errBody;
+      if (
+        validationErrors &&
+        typeof validationErrors === 'object' &&
+        !Array.isArray(validationErrors)
+      ) {
+        const errorValues = Object.values(validationErrors);
+        if (errorValues.length > 0) {
+          const firstErrorVal = errorValues[0];
+          if (Array.isArray(firstErrorVal) && firstErrorVal[0]) {
+            displayMessage = firstErrorVal[0];
+          } else if (typeof firstErrorVal === 'string') {
+            displayMessage = firstErrorVal;
+          }
+        }
+      }
+      if (displayMessage === 'Something went wrong' && errBody.message) {
+        displayMessage = errBody.message;
+      }
+    } else {
+      displayMessage =
+        res.status >= 500
+          ? 'An unexpected server error occurred. Please try again later.'
+          : (errBody.message ?? 'Something went wrong');
+    }
 
     throw new ApiClientError(displayMessage, res.status, errBody.errors, errBody);
   }

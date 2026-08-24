@@ -36,6 +36,13 @@ export type EmployerStackParamList = {
     jobTitle: string;
     applicantName: string;
     status: string;
+    barangay?: string;
+    municipality?: string;
+    reputationScore?: number;
+    bio?: string;
+    skills?: string[];
+    experiences?: any[];
+    characterReferences?: any[];
     phone?: string;
     emergencyContactName?: string;
     emergencyContactPhone?: string;

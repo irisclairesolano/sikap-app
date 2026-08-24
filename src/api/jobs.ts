@@ -26,6 +26,16 @@ export const jobsApi = {
     return apiClient<PaginatedResponse<JobPost>>('/my-jobs');
   },
 
+  getArchivedJobs: async () => {
+    return apiClient<PaginatedResponse<JobPost>>('/jobs/archived');
+  },
+
+  restoreJob: async (id: number) => {
+    return apiClient<{ message: string }>(`/jobs/${id}/restore`, {
+      method: 'PATCH',
+    });
+  },
+
   markJobComplete: async (id: number) => {
     return apiClient<{ message: string }>(`/jobs/${id}/complete`, {
       method: 'POST',

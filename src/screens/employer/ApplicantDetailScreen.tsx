@@ -183,7 +183,10 @@ const ApplicantDetailScreen: React.FC = () => {
               <Ionicons name="checkmark-circle" size={18} color={colors.mintDeep} />
             </View>
             <Text style={styles.locationText}>
-              <Ionicons name="location" size={11} color={colors.primary} /> Worker
+              <Ionicons name="location" size={12} color={colors.primary} />{' '}
+              {route.params.barangay
+                ? `${route.params.barangay}, ${route.params.municipality}`
+                : 'Worker'}
             </Text>
           </View>
         </View>
@@ -192,9 +195,17 @@ const ApplicantDetailScreen: React.FC = () => {
         <View style={styles.reputationCard}>
           <Text style={styles.reputationEyebrow}>Reputation</Text>
           <View style={styles.reputationRow}>
-            <Text style={styles.reputationScore}>N/A</Text>
+            <Text style={styles.reputationScore}>
+              {route.params.reputationScore !== undefined && route.params.reputationScore !== null
+                ? route.params.reputationScore
+                : 'N/A'}
+            </Text>
             <View style={styles.reputationStars}>
-              <Text style={styles.reputationCount}>No ratings yet</Text>
+              <Text style={styles.reputationCount}>
+                {route.params.reputationScore !== undefined && route.params.reputationScore !== null
+                  ? 'Reputation Score'
+                  : 'No ratings yet'}
+              </Text>
             </View>
           </View>
           <Text style={styles.reputationTagline}>Their score travels with them.</Text>
@@ -203,14 +214,146 @@ const ApplicantDetailScreen: React.FC = () => {
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
-            <Text style={[styles.statValue, { color: colors.mintDeep }]}>0</Text>
-            <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Jobs done</Text>
+            <Text style={[styles.statValue, { color: colors.mintDeep }]}>
+              {route.params.experiences ? route.params.experiences.length : 0}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Jobs listed</Text>
           </View>
           <View style={[styles.statBox, { backgroundColor: colors.sky }]}>
-            <Text style={[styles.statValue, { color: colors.skyDeep }]}>New</Text>
-            <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Member</Text>
+            <Text style={[styles.statValue, { color: colors.skyDeep }]}>Active</Text>
+            <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Worker</Text>
           </View>
         </View>
+
+        {/* About Me */}
+        {route.params.bio ? (
+          <View style={styles.skillsSection}>
+            <Text style={styles.sectionEyebrow}>About Me</Text>
+            <Text
+              style={{
+                fontFamily: fonts.body,
+                fontSize: 14,
+                color: colors.ink,
+                marginTop: 4,
+                lineHeight: 22,
+              }}
+            >
+              {route.params.bio}
+            </Text>
+          </View>
+        ) : null}
+
+        {/* Skills */}
+        <View style={styles.skillsSection}>
+          <Text style={styles.sectionEyebrow}>Skills</Text>
+          <View style={styles.skillsList}>
+            {!route.params.skills || route.params.skills.length === 0 ? (
+              <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
+                No skills added yet.
+              </Text>
+            ) : (
+              route.params.skills.map((skillName: string, index: number) => {
+                const bgColors = [colors.peach, colors.mint, colors.butter, colors.sky];
+                const textColors = [
+                  colors.primaryDark,
+                  colors.mintDeep,
+                  colors.ink,
+                  colors.skyDeep,
+                ];
+                const icons = ['hammer', 'construct', 'brush', 'water'] as const;
+                const colorIdx = index % 4;
+
+                return (
+                  <View key={index} style={[styles.chip, { backgroundColor: bgColors[colorIdx] }]}>
+                    <Ionicons name={icons[colorIdx]} size={14} color={textColors[colorIdx]} />
+                    <Text style={[styles.chipText, { color: textColors[colorIdx] }]}>
+                      {skillName}
+                    </Text>
+                  </View>
+                );
+              })
+            )}
+          </View>
+        </View>
+
+        {/* Work History */}
+        <View style={styles.skillsSection}>
+          <Text style={styles.sectionEyebrow}>Work History</Text>
+          <View style={{ marginTop: 10, gap: 12 }}>
+            {!route.params.experiences || route.params.experiences.length === 0 ? (
+              <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
+                No work history added yet.
+              </Text>
+            ) : (
+              route.params.experiences.map((exp: any) => (
+                <View
+                  key={exp.id}
+                  style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}
+                >
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      backgroundColor: colors.butter,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Ionicons name="briefcase" size={18} color={colors.inkSoft} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>
+                      {exp.job_title}
+                    </Text>
+                    <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.ink }}>
+                      {exp.company}
+                    </Text>
+                    <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}>
+                      {exp.duration}
+                    </Text>
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+        </View>
+
+        {/* Character References */}
+        {route.params.characterReferences && route.params.characterReferences.length > 0 && (
+          <View style={styles.skillsSection}>
+            <Text style={styles.sectionEyebrow}>Character References</Text>
+            <View style={{ marginTop: 10, gap: 12 }}>
+              {route.params.characterReferences.map((ref: any) => (
+                <View
+                  key={ref.id}
+                  style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}
+                >
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      backgroundColor: colors.peach,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Ionicons name="person" size={18} color={colors.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>
+                      {ref.name}
+                    </Text>
+                    <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft }}>
+                      {ref.relationship} · {ref.contact_number}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* Contact Info (Requires Shortlist & Confirmed) */}
         {status === 'pending' || status === 'withdrawn' ? (

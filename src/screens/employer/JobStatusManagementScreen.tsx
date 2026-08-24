@@ -17,6 +17,7 @@ import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { useDeleteJob } from '../../hooks/useJobs';
 import { useJob } from '../../hooks/useJob';
+import { useJobApplications } from '../../hooks/useJobApplications';
 
 type JobStatusScreenRouteProp = RouteProp<EmployerStackParamList, 'JobStatusManagement'>;
 type JobStatusScreenNavigationProp = NativeStackNavigationProp<
@@ -29,9 +30,50 @@ export const JobStatusManagementScreen: React.FC = () => {
   const navigation = useNavigation<JobStatusScreenNavigationProp>();
   const { id } = route.params;
 
-  const { data: job, isLoading, isError, error, refetch } = useJob(id);
+  const { data: job, isLoading: isJobLoading, isError, error, refetch } = useJob(id);
+  const { data: applications = [], isLoading: isAppsLoading } = useJobApplications(id);
   const { mutate: deleteJob, isPending: isDeleting } = useDeleteJob();
   const { showAlert } = useAlert();
+
+  const isLoading = isJobLoading || isAppsLoading;
+
+  const getStageLabel = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Applied';
+      case 'employer_requested':
+        return 'Shortlisted';
+      case 'employer_confirmed':
+        return 'Offer';
+      case 'accepted':
+        return 'Hired';
+      case 'completed':
+        return 'Done';
+      case 'rejected':
+        return 'Rejected';
+      default:
+        return status;
+    }
+  };
+
+  const getStageColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return colors.sky;
+      case 'employer_requested':
+        return colors.butter;
+      case 'employer_confirmed':
+        return colors.peach;
+      case 'accepted':
+        return colors.mint;
+      case 'completed':
+        return colors.mintDeep;
+      case 'rejected':
+        return colors.error;
+      default:
+        return colors.inkFaint;
+    }
+  };
 
   const handleEditJob = () => {
     if (!job) return;
@@ -178,6 +220,133 @@ export const JobStatusManagementScreen: React.FC = () => {
           <Text style={styles.refNumber}>{job.reference_number}</Text>
         </View>
 
+        {/* 5-Stage Hiring Pipeline */}
+        {job.status !== 'cancelled' && job.status !== 'suspended' && (
+          <View style={styles.pipelineCard}>
+            <Text style={styles.pipelineTitle}>Hiring Pipeline</Text>
+            <View style={styles.pipeline}>
+              {(() => {
+                const countPending = applications.filter((a) => a.status === 'pending').length;
+                const countShortlisted = applications.filter(
+                  (a) => a.status === 'employer_requested' || a.status === 'pending_negotiation',
+                ).length;
+                const countOffer = applications.filter(
+                  (a) => a.status === 'employer_confirmed',
+                ).length;
+                const countHired = applications.filter((a) => a.status === 'accepted').length;
+                const countCompleted = applications.filter((a) => a.status === 'completed').length;
+
+                return (
+                  <>
+                    <View style={styles.pipelineStep}>
+                      <View
+                        style={[
+                          styles.pipelineCircle,
+                          countPending > 0 && styles.pipelineCircleActive,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.pipelineCircleText,
+                            countPending > 0 && styles.pipelineCircleTextActive,
+                          ]}
+                        >
+                          {countPending}
+                        </Text>
+                      </View>
+                      <Text style={styles.pipelineLabel}>Applied</Text>
+                    </View>
+
+                    <View style={styles.pipelineDivider} />
+
+                    <View style={styles.pipelineStep}>
+                      <View
+                        style={[
+                          styles.pipelineCircle,
+                          countShortlisted > 0 && styles.pipelineCircleActive,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.pipelineCircleText,
+                            countShortlisted > 0 && styles.pipelineCircleTextActive,
+                          ]}
+                        >
+                          {countShortlisted}
+                        </Text>
+                      </View>
+                      <Text style={styles.pipelineLabel}>Shortlist</Text>
+                    </View>
+
+                    <View style={styles.pipelineDivider} />
+
+                    <View style={styles.pipelineStep}>
+                      <View
+                        style={[
+                          styles.pipelineCircle,
+                          countOffer > 0 && styles.pipelineCircleActive,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.pipelineCircleText,
+                            countOffer > 0 && styles.pipelineCircleTextActive,
+                          ]}
+                        >
+                          {countOffer}
+                        </Text>
+                      </View>
+                      <Text style={styles.pipelineLabel}>Offer</Text>
+                    </View>
+
+                    <View style={styles.pipelineDivider} />
+
+                    <View style={styles.pipelineStep}>
+                      <View
+                        style={[
+                          styles.pipelineCircle,
+                          countHired > 0 && styles.pipelineCircleActive,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.pipelineCircleText,
+                            countHired > 0 && styles.pipelineCircleTextActive,
+                          ]}
+                        >
+                          {countHired}
+                        </Text>
+                      </View>
+                      <Text style={styles.pipelineLabel}>Hired</Text>
+                    </View>
+
+                    <View style={styles.pipelineDivider} />
+
+                    <View style={styles.pipelineStep}>
+                      <View
+                        style={[
+                          styles.pipelineCircle,
+                          countCompleted > 0 && styles.pipelineCircleActive,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.pipelineCircleText,
+                            countCompleted > 0 && styles.pipelineCircleTextActive,
+                          ]}
+                        >
+                          {countCompleted}
+                        </Text>
+                      </View>
+                      <Text style={styles.pipelineLabel}>Done</Text>
+                    </View>
+                  </>
+                );
+              })()}
+            </View>
+          </View>
+        )}
+
         <View style={styles.card}>
           <Text style={styles.jobTitle}>{job.title}</Text>
           <Text style={styles.categoryText}>
@@ -220,6 +389,71 @@ export const JobStatusManagementScreen: React.FC = () => {
             </>
           ) : null}
         </View>
+
+        {/* Applicants List Section */}
+        {job.status !== 'cancelled' && job.status !== 'suspended' && (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Applicants ({applications.length})</Text>
+            {applications.length === 0 ? (
+              <Text style={styles.noApplicantsText}>
+                No workers have applied to this job post yet.
+              </Text>
+            ) : (
+              <View style={styles.applicantsList}>
+                {applications.map((app) => (
+                  <TouchableOpacity
+                    key={app.id}
+                    style={styles.applicantRow}
+                    onPress={() =>
+                      navigation.navigate('ApplicantDetail', {
+                        applicantId: app.id,
+                        applicantName: `${app.worker?.first_name || ''} ${app.worker?.last_name || ''}`,
+                        jobTitle: job?.title || '',
+                        status: app.status,
+                        barangay: app.worker?.barangay,
+                        municipality: app.worker?.municipality,
+                        reputationScore: app.worker?.reputation_score,
+                        bio: app.worker?.bio,
+                        skills: app.worker?.skills,
+                        experiences: app.worker?.experiences,
+                        characterReferences: app.worker?.character_references,
+                        phone: app.worker?.phone,
+                        emergencyContactName: app.worker?.emergency_contact_name,
+                        emergencyContactPhone: app.worker?.emergency_contact_phone,
+                      })
+                    }
+                  >
+                    <View style={styles.applicantLeft}>
+                      <View style={styles.applicantAvatar}>
+                        <Text style={styles.avatarInitial}>
+                          {app.worker?.first_name?.charAt(0) || 'W'}
+                        </Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.applicantName}>
+                          {app.worker?.first_name} {app.worker?.last_name}
+                        </Text>
+                        <Text style={styles.applicantSub} numberOfLines={1}>
+                          {app.worker?.barangay
+                            ? `${app.worker.barangay}, ${app.worker.municipality}`
+                            : 'Worker'}
+                        </Text>
+                      </View>
+                    </View>
+                    <View
+                      style={[
+                        styles.statusBadgeSmall,
+                        { backgroundColor: getStageColor(app.status) },
+                      ]}
+                    >
+                      <Text style={styles.statusBadgeTextSmall}>{getStageLabel(app.status)}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
 
         <View style={styles.actionsCard}>
           {job.status === 'open' && (
@@ -337,6 +571,118 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   cancelBtnText: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.error },
+  pipelineCard: {
+    backgroundColor: colors.paperBright,
+    borderRadius: 16,
+    padding: 16,
+    ...shadows.sm,
+  },
+  pipelineTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.ink,
+    marginBottom: 12,
+  },
+  pipeline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  pipelineStep: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  pipelineCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.inkFaint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pipelineCircleActive: {
+    backgroundColor: colors.primary,
+  },
+  pipelineCircleText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.inkSoft,
+  },
+  pipelineCircleTextActive: {
+    color: colors.paperBright,
+  },
+  pipelineLabel: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 9,
+    color: colors.inkMuted,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  pipelineDivider: {
+    height: 2,
+    flex: 0.5,
+    backgroundColor: colors.inkFaint,
+    marginBottom: 14,
+  },
+  noApplicantsText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkMuted,
+    textAlign: 'center',
+    marginVertical: 12,
+  },
+  applicantsList: {
+    marginTop: 10,
+    gap: 12,
+  },
+  applicantRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.inkFaint,
+  },
+  applicantLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  applicantAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.peach,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitial: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 16,
+    color: colors.primaryDark,
+  },
+  applicantName: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.ink,
+  },
+  applicantSub: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkSoft,
+    width: '90%',
+  },
+  statusBadgeSmall: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  statusBadgeTextSmall: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 10,
+    color: colors.ink,
+  },
 });
 
 export default JobStatusManagementScreen;
