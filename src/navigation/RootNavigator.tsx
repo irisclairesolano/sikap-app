@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthCheck } from '../hooks/useAuthCheck';
 import { useAuth } from '../hooks/useAuth';
 import { usePushNotifications } from '../hooks/usePushNotifications';
@@ -70,6 +71,79 @@ const AdminFallback: React.FC = () => {
   );
 };
 
+const SuspendedFallback: React.FC = () => {
+  const { logout } = useAuth();
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 32,
+        backgroundColor: colors.paper,
+      }}
+    >
+      <View
+        style={{
+          width: 80,
+          height: 80,
+          backgroundColor: colors.status.rejected.bg,
+          borderRadius: 40,
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginBottom: 24,
+          borderWidth: 2,
+          borderColor: colors.error,
+        }}
+      >
+        <Ionicons name="lock-closed" size={40} color={colors.error} />
+      </View>
+      <Text
+        style={{
+          fontFamily: fonts.display,
+          fontSize: 26,
+          color: colors.ink,
+          marginBottom: 12,
+          textAlign: 'center',
+        }}
+      >
+        Account Suspended
+      </Text>
+      <Text
+        style={{
+          fontFamily: fonts.body,
+          fontSize: 15,
+          color: colors.inkSoft,
+          textAlign: 'center',
+          lineHeight: 22,
+          marginBottom: 32,
+        }}
+      >
+        Your SIKAP account has been suspended for violating our platform community guidelines and
+        policies. You cannot view, post, or apply to any job opportunities.
+      </Text>
+      <TouchableOpacity
+        onPress={logout}
+        style={{
+          backgroundColor: colors.error,
+          paddingHorizontal: 32,
+          paddingVertical: 16,
+          borderRadius: 100,
+          shadowColor: colors.error,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          elevation: 4,
+        }}
+      >
+        <Text style={{ color: colors.white, fontFamily: fonts.bodyBold, fontSize: 16 }}>
+          Log Out
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 const RootNavigator: React.FC = () => {
   const { user, isLoading, isVerified } = useAuthCheck();
   const { expoPushToken } = usePushNotifications();
@@ -114,6 +188,10 @@ const RootNavigator: React.FC = () => {
 
   if (user.role === 'admin') {
     return <AdminFallback />;
+  }
+
+  if (user.is_suspended) {
+    return <SuspendedFallback />;
   }
 
   if (!isVerified) {
