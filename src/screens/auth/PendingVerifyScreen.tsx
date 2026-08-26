@@ -118,18 +118,6 @@ const PendingVerifyScreen: React.FC = () => {
           )}
         </Text>
 
-        {!isRejected && (
-          <View style={styles.infoCard}>
-            <View style={styles.infoIconBox}>
-              <Ionicons name="mail" size={18} color={colors.primary} />
-            </View>
-            <Text style={styles.infoText}>
-              <Text style={styles.infoTextBold}>We'll email you</Text> as soon as your account is
-              approved.
-            </Text>
-          </View>
-        )}
-
         <View style={styles.footer}>
           {!isRejected && (
             <>
