@@ -260,7 +260,7 @@ export const RoleOnboardingScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
           </View>
-        )}{' '}
+        )}
         {targetRole === 'worker' && (
           <View>
             <View style={{ marginBottom: 20 }}>
