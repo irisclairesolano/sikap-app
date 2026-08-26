@@ -12,7 +12,7 @@ export const useEmployerJobs = () => {
 export const useCreateJob = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: FormData) => jobsApi.createJob(payload),
+    mutationFn: (payload: any) => jobsApi.createJob(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myJobs'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });

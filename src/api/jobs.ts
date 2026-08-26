@@ -2,10 +2,13 @@ import { apiClient } from './client';
 import { JobPost, PaginatedResponse } from '../types';
 
 export const jobsApi = {
-  createJob: async (payload: FormData) => {
+  createJob: async (payload: any) => {
     return apiClient<{ message: string; job: JobPost }>('/jobs', {
       method: 'POST',
-      body: payload,
+      body:
+        typeof FormData !== 'undefined' && payload instanceof FormData
+          ? payload
+          : JSON.stringify(payload),
     });
   },
 
