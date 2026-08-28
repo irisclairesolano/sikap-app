@@ -52,6 +52,8 @@ export interface JobPost {
   applications?: Application[];
   is_applied?: boolean;
   is_withdrawn?: boolean;
+  reactions_count?: number;
+  user_has_reacted?: boolean;
 }
 
 export interface Application {

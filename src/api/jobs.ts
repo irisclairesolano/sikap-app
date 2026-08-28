@@ -45,3 +45,17 @@ export const jobsApi = {
     });
   },
 };
+
+export const reactToJob = async (
+  jobId: number,
+): Promise<{ reacted: boolean; reactions_count: number }> => {
+  return apiClient<{ reacted: boolean; reactions_count: number }>(`/jobs/${jobId}/react`, {
+    method: 'POST',
+  });
+};
+
+export const getShareLink = async (
+  jobId: number,
+): Promise<{ share_link: string; job_title: string }> => {
+  return apiClient<{ share_link: string; job_title: string }>(`/jobs/${jobId}/share-link`);
+};

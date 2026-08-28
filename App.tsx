@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AlertProvider } from './src/contexts/AlertContext';
 import { useFonts } from 'expo-font';
+import * as Linking from 'expo-linking';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -53,6 +54,32 @@ persistQueryClient({
   maxAge: 1000 * 60 * 60 * 24, // 24 hours
 });
 
+const linking = {
+  prefixes: [Linking.createURL('/'), 'sikap://'],
+  config: {
+    screens: {
+      Worker: {
+        screens: {
+          Find: {
+            screens: {
+              JobDetails: 'jobs/:id',
+            },
+          },
+        },
+      },
+      Employer: {
+        screens: {
+          Home: {
+            screens: {
+              JobDetails: 'jobs/:id',
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 export default function App() {
   const [fontsLoaded] = useFonts({
     Raleway_700Bold: require('./assets/raleway/Raleway-Bold.ttf'),
@@ -88,7 +115,7 @@ export default function App() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <AlertProvider>
-            <NavigationContainer ref={navigationRef}>
+            <NavigationContainer ref={navigationRef} linking={linking}>
               <RootNavigator />
             </NavigationContainer>
             <StatusBar style="auto" />

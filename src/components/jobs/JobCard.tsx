@@ -1,8 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Share, Alert, useState } from 'react-native';
 import { colors, fonts } from '../../theme';
 import { JobPost } from '../../types';
+import { useReactToJob } from '../../hooks/useReactToJob';
+import { getShareLink } from '../../api/jobs';
+import { ReportJobSheet } from './ReportJobSheet';
 
 interface JobCardProps {
   job: JobPost;
@@ -33,6 +37,29 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
   const catStyles = getCategoryStyles(job.categories?.[0] || 'Other');
   const isApplied = job.is_applied && !job.is_withdrawn;
 
+  const [reportSheetVisible, setReportSheetVisible] = useState(false);
+  const { mutate: toggleReact, isPending: isReacting } = useReactToJob();
+
+  const handleReact = () => {
+    toggleReact(job.id);
+  };
+
+  const handleShare = async () => {
+    try {
+      const result = await getShareLink(job.id);
+      await Share.share({
+        message: `Check out this job on SIKAP: ${result.job_title}\n${result.share_link}`,
+        url: result.share_link,
+      });
+    } catch (err: any) {
+      if (err?.response?.status === 410) {
+        Alert.alert('Job Closed', 'This job is no longer available for sharing.');
+      } else if (err?.response?.status === 403) {
+        Alert.alert('Not Authorized', 'You are not authorized to share this post.');
+      }
+    }
+  };
+
   return (
     <TouchableOpacity
       style={[
@@ -45,63 +72,113 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
     >
       {isApplied && <View style={styles.appliedCorner} />}
       {job.is_withdrawn && <View style={styles.withdrawnCorner} />}
-      <View style={[styles.jobIcon, { backgroundColor: catStyles.bg }]}>
-        <Ionicons name={catStyles.icon as any} size={20} color={catStyles.color} />
-      </View>
 
-      <View style={styles.jobText}>
-        {(isUrgent || isVerified) && (
-          <View style={styles.jobBadges}>
-            {isUrgent && (
-              <View style={[styles.badge, styles.badgeUrgent]}>
-                <Ionicons name="flame" size={10} color={colors.error} />
-                <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
-              </View>
-            )}
-            {isVerified && (
-              <View style={[styles.badge, styles.badgeVerified]}>
-                <Ionicons name="checkmark-circle" size={10} color={colors.mintDeep} />
-                <Text style={[styles.badgeText, { color: colors.mintDeep }]}>VERIFIED</Text>
-              </View>
-            )}
+      <View style={styles.topRow}>
+        <View style={[styles.jobIcon, { backgroundColor: catStyles.bg }]}>
+          <Ionicons name={catStyles.icon as any} size={20} color={catStyles.color} />
+        </View>
+
+        <View style={styles.jobText}>
+          {(isUrgent || isVerified) && (
+            <View style={styles.jobBadges}>
+              {isUrgent && (
+                <View style={[styles.badge, styles.badgeUrgent]}>
+                  <Ionicons name="flame" size={10} color={colors.error} />
+                  <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
+                </View>
+              )}
+              {isVerified && (
+                <View style={[styles.badge, styles.badgeVerified]}>
+                  <Ionicons name="checkmark-circle" size={10} color={colors.mintDeep} />
+                  <Text style={[styles.badgeText, { color: colors.mintDeep }]}>VERIFIED</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          <Text style={styles.jobTitle} numberOfLines={1}>
+            {job.title}
+          </Text>
+
+          <View style={styles.jobMeta}>
+            <Ionicons name="location" size={11} color={colors.inkMuted} />
+            <Text style={styles.metaText} numberOfLines={1}>
+              {job.municipality}
+            </Text>
+            <View style={styles.dot} />
+            <Text style={styles.metaText}>{job.slots || 1} slots</Text>
           </View>
-        )}
+        </View>
 
-        <Text style={styles.jobTitle} numberOfLines={1}>
-          {job.title}
-        </Text>
-
-        <View style={styles.jobMeta}>
-          <Ionicons name="location" size={11} color={colors.inkMuted} />
-          <Text style={styles.metaText} numberOfLines={1}>
-            {job.municipality}
-          </Text>
-          <View style={styles.dot} />
-          <Text style={styles.metaText}>{job.slots || 1} slots</Text>
+        <View style={styles.rightContent}>
+          {onSave && (
+            <TouchableOpacity
+              onPress={onSave}
+              style={styles.saveBtn}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons
+                name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                size={20}
+                color={isSaved ? colors.primary : colors.inkSoft}
+              />
+            </TouchableOpacity>
+          )}
+          <View style={styles.payContainer}>
+            <Text style={styles.payValue}>₱{job.compensation}</Text>
+            <Text style={styles.payUnit}>
+              per {job.duration_type === 'daily' ? 'day' : 'project'}
+            </Text>
+          </View>
         </View>
       </View>
 
-      <View style={styles.rightContent}>
-        {onSave && (
-          <TouchableOpacity
-            onPress={onSave}
-            style={styles.saveBtn}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons
-              name={isSaved ? 'bookmark' : 'bookmark-outline'}
-              size={20}
-              color={isSaved ? colors.primary : colors.inkSoft}
-            />
-          </TouchableOpacity>
-        )}
-        <View style={styles.payContainer}>
-          <Text style={styles.payValue}>₱{job.compensation}</Text>
-          <Text style={styles.payUnit}>
-            per {job.duration_type === 'daily' ? 'day' : 'project'}
+      {/* Social Action Bar */}
+      <View style={styles.actionBar}>
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={handleReact}
+          disabled={isReacting}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons
+            name={job.user_has_reacted ? 'heart' : 'heart-outline'}
+            size={16}
+            color={job.user_has_reacted ? '#E85D75' : '#8C7B6A'}
+          />
+          <Text style={[styles.actionText, job.user_has_reacted && styles.actionTextActive]}>
+            {job.reactions_count && job.reactions_count > 0 ? job.reactions_count : ''} Interested
           </Text>
-        </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={handleShare}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons name="share-social-outline" size={16} color="#8C7B6A" />
+          <Text style={styles.actionText}>Share</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={() => setReportSheetVisible(true)}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons name="flag-outline" size={16} color="#8C7B6A" />
+          <Text style={styles.actionText}>Report</Text>
+        </TouchableOpacity>
       </View>
+
+      <ReportJobSheet
+        visible={reportSheetVisible}
+        onClose={() => setReportSheetVisible(false)}
+        jobId={job.id}
+        jobTitle={job.title}
+      />
     </TouchableOpacity>
   );
 };
@@ -112,8 +189,7 @@ const styles = StyleSheet.create({
     borderRadius: 14, // var(--r-md)
     padding: 14,
     display: 'flex',
-    flexDirection: 'row',
-    gap: 14,
+    flexDirection: 'column',
     marginBottom: 10,
     shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 1 },
@@ -152,6 +228,10 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 14,
     borderBottomRightRadius: 32,
     zIndex: 10,
+  },
+  topRow: {
+    flexDirection: 'row',
+    gap: 14,
   },
   jobIcon: {
     width: 44,
@@ -234,5 +314,30 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.inkSoft,
     marginTop: 2,
+  },
+  actionBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.06)',
+  },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  actionText: {
+    fontSize: 12,
+    color: '#8C7B6A',
+    fontWeight: '500',
+  },
+  actionTextActive: {
+    color: '#E85D75',
+    fontWeight: '600',
   },
 });

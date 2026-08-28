@@ -1,7 +1,8 @@
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Share, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../theme';
@@ -12,23 +13,49 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { Avatar } from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
+import { useReactToJob } from '../../hooks/useReactToJob';
+import { getShareLink } from '../../api/jobs';
+import { ReportJobSheet } from '../../components/jobs/ReportJobSheet';
 
 type JobDetailsRouteProp = RouteProp<WorkerStackParamList, 'JobDetails'>;
 
 export const JobDetailsScreen: React.FC = () => {
   const route = useRoute<JobDetailsRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
-  const { id } = route.params;
+  const id = Number(route.params.id);
   const insets = useSafeAreaInsets();
 
   const { data: job, isLoading, isError, error } = useJob(id);
   const { data: savedJobsData } = useSavedJobs();
   const { mutate: toggleSave, isPending: isSaving } = useToggleSaveJob();
+  const [reportSheetVisible, setReportSheetVisible] = useState(false);
+  const { mutate: toggleReact, isPending: isReacting } = useReactToJob();
 
   const isSaved = savedJobsData?.data?.some((j) => j.id === id) || false;
 
   const handleToggleSave = () => {
     toggleSave(id);
+  };
+
+  const handleReact = () => {
+    if (job) toggleReact(job.id);
+  };
+
+  const handleShare = async () => {
+    if (!job) return;
+    try {
+      const result = await getShareLink(job.id);
+      await Share.share({
+        message: `Check out this job on SIKAP: ${result.job_title}\n${result.share_link}`,
+        url: result.share_link,
+      });
+    } catch (err: any) {
+      if (err?.response?.status === 410) {
+        Alert.alert('Job Closed', 'This job is no longer available for sharing.');
+      } else if (err?.response?.status === 403) {
+        Alert.alert('Not Authorized', 'You are not authorized to share this post.');
+      }
+    }
   };
 
   if (isLoading) {
@@ -184,6 +211,53 @@ export const JobDetailsScreen: React.FC = () => {
             </View>
           </View>
         </View>
+
+        {/* Social Action Bar */}
+        <View style={detailActionBar.container}>
+          <TouchableOpacity
+            style={detailActionBar.btn}
+            onPress={handleReact}
+            disabled={isReacting}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={job.user_has_reacted ? 'heart' : 'heart-outline'}
+              size={18}
+              color={job.user_has_reacted ? '#E85D75' : '#8C7B6A'}
+            />
+            <Text
+              style={[detailActionBar.text, job.user_has_reacted && detailActionBar.textActive]}
+            >
+              {job.reactions_count && job.reactions_count > 0 ? `${job.reactions_count} ` : ''}
+              Interested
+            </Text>
+          </TouchableOpacity>
+
+          <View style={detailActionBar.divider} />
+
+          <TouchableOpacity style={detailActionBar.btn} onPress={handleShare} activeOpacity={0.7}>
+            <Ionicons name="share-social-outline" size={18} color="#8C7B6A" />
+            <Text style={detailActionBar.text}>Share</Text>
+          </TouchableOpacity>
+
+          <View style={detailActionBar.divider} />
+
+          <TouchableOpacity
+            style={detailActionBar.btn}
+            onPress={() => setReportSheetVisible(true)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="flag-outline" size={18} color="#8C7B6A" />
+            <Text style={detailActionBar.text}>Report</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ReportJobSheet
+          visible={reportSheetVisible}
+          onClose={() => setReportSheetVisible(false)}
+          jobId={job.id}
+          jobTitle={job.title}
+        />
       </ScrollView>
 
       {/* Bottom CTA */}
@@ -423,6 +497,40 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+  },
+});
+
+const detailActionBar = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FAFAF8',
+    borderRadius: 16,
+    padding: 12,
+    marginVertical: 16,
+    borderWidth: 1,
+    borderColor: '#E5E0D8',
+  },
+  btn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  divider: {
+    width: 1,
+    height: 20,
+    backgroundColor: '#E5E0D8',
+  },
+  text: {
+    fontSize: 13,
+    color: '#8C7B6A',
+    fontWeight: '500',
+  },
+  textActive: {
+    color: '#E85D75',
+    fontWeight: '700',
   },
 });
 
