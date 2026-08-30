@@ -43,6 +43,7 @@ export type EmployerStackParamList = {
     skills?: string[];
     experiences?: any[];
     characterReferences?: any[];
+    reviews?: any[];
     phone?: string;
     emergencyContactName?: string;
     emergencyContactPhone?: string;

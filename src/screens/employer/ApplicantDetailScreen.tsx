@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -225,6 +225,75 @@ const ApplicantDetailScreen: React.FC = () => {
           </View>
         </View>
 
+        {/* Worker Reviews List */}
+        <View style={styles.skillsSection}>
+          <Text style={styles.sectionEyebrow}>Employer Reviews</Text>
+          <View style={{ marginTop: 10, gap: 12 }}>
+            {!route.params.reviews || route.params.reviews.length === 0 ? (
+              <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
+                No feedback reviews yet.
+              </Text>
+            ) : (
+              route.params.reviews.map((rev: any) => (
+                <View
+                  key={rev.id}
+                  style={{
+                    backgroundColor: colors.paperBright,
+                    padding: 14,
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: colors.inkFaint,
+                    gap: 6,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>
+                      {rev.reviewer_name}
+                    </Text>
+                    <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}>
+                      {rev.created_at}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Ionicons
+                      name="star"
+                      size={14}
+                      color={colors.butter}
+                      style={{
+                        textShadowColor: 'rgba(0,0,0,0.1)',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 1,
+                      }}
+                    />
+                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink }}>
+                      {rev.overall_rating} / 5.0
+                    </Text>
+                  </View>
+                  {rev.comment ? (
+                    <Text
+                      style={{
+                        fontFamily: fonts.body,
+                        fontSize: 13,
+                        color: colors.inkSoft,
+                        marginTop: 4,
+                        lineHeight: 18,
+                      }}
+                    >
+                      "{rev.comment}"
+                    </Text>
+                  ) : null}
+                </View>
+              ))
+            )}
+          </View>
+        </View>
+
         {/* About Me */}
         {route.params.bio ? (
           <View style={styles.skillsSection}>
@@ -318,44 +387,61 @@ const ApplicantDetailScreen: React.FC = () => {
             )}
           </View>
         </View>
-
         {/* Character References */}
-        {route.params.characterReferences && route.params.characterReferences.length > 0 && (
+        {status === 'pending' || status === 'withdrawn' ? (
           <View style={styles.skillsSection}>
             <Text style={styles.sectionEyebrow}>Character References</Text>
-            <View style={{ marginTop: 10, gap: 12 }}>
-              {route.params.characterReferences.map((ref: any) => (
-                <View
-                  key={ref.id}
-                  style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}
-                >
-                  <View
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 20,
-                      backgroundColor: colors.peach,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Ionicons name="person" size={18} color={colors.primary} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>
-                      {ref.name}
-                    </Text>
-                    <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft }}>
-                      {ref.relationship} · {ref.contact_number}
-                    </Text>
-                  </View>
+            <View style={styles.privacyShield}>
+              <View style={styles.shieldHeader}>
+                <View style={styles.shieldIcon}>
+                  <Ionicons name="lock-closed" size={16} color={colors.primary} />
                 </View>
-              ))}
+                <View>
+                  <Text style={styles.shieldTitle}>References Locked</Text>
+                  <Text style={styles.shieldSub}>Shortlist worker to unlock references</Text>
+                </View>
+              </View>
             </View>
           </View>
+        ) : (
+          route.params.characterReferences &&
+          route.params.characterReferences.length > 0 && (
+            <View style={styles.skillsSection}>
+              <Text style={styles.sectionEyebrow}>Character References</Text>
+              <View style={{ marginTop: 10, gap: 12 }}>
+                {route.params.characterReferences.map((ref: any) => (
+                  <View
+                    key={ref.id}
+                    style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}
+                  >
+                    <View
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 20,
+                        backgroundColor: colors.peach,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Ionicons name="person" size={18} color={colors.primary} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>
+                        {ref.name}
+                      </Text>
+                      <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft }}>
+                        {ref.relationship} · {ref.contact_number}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )
         )}
 
-        {/* Contact Info (Requires Shortlist & Confirmed) */}
+        {/* Contact Info Visibility Guards */}
         {status === 'pending' || status === 'withdrawn' ? (
           <View style={styles.privacyShield}>
             <View style={styles.shieldHeader}>
@@ -368,7 +454,23 @@ const ApplicantDetailScreen: React.FC = () => {
               </View>
             </View>
             <Text style={styles.shieldDesc}>
-              Confirm hire to unlock their phone number and references.
+              Shortlist worker to review profile and hire to request contact information.
+            </Text>
+          </View>
+        ) : status === 'pending_negotiation' || status === 'employer_confirmed' ? (
+          <View style={styles.privacyShield}>
+            <View style={styles.shieldHeader}>
+              <View style={styles.shieldIcon}>
+                <Ionicons name="lock-closed" size={16} color={colors.primary} />
+              </View>
+              <View>
+                <Text style={styles.shieldTitle}>Contact Details Locked</Text>
+                <Text style={styles.shieldSub}>Waiting for offer acceptance</Text>
+              </View>
+            </View>
+            <Text style={styles.shieldDesc}>
+              Direct phone number and emergency contacts will unlock once the worker accepts your
+              hire offer.
             </Text>
           </View>
         ) : (
@@ -378,31 +480,120 @@ const ApplicantDetailScreen: React.FC = () => {
                 <Ionicons name="eye" size={16} color={colors.mintDeep} />
               </View>
               <View>
-                <Text style={styles.shieldTitle}>Contact details unlocked</Text>
+                <Text style={styles.shieldTitle}>Contact Details Unlocked</Text>
                 <Text style={[styles.shieldSub, { color: colors.mintDeep }]}>
-                  You can now review their references
+                  Hired worker contact details
                 </Text>
               </View>
             </View>
-            <View style={{ marginTop: 12, gap: 8 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ fontFamily: fonts.body, color: colors.inkSoft, fontSize: 13 }}>
-                  Phone
-                </Text>
-                <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink, fontSize: 13 }}>
-                  {route.params.phone || '0912 345 6789'}
-                </Text>
+            <View style={{ marginTop: 12, gap: 12 }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <View>
+                  <Text
+                    style={{
+                      fontFamily: fonts.body,
+                      color: colors.inkSoft,
+                      fontSize: 11,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Phone
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: fonts.bodyBold,
+                      color: colors.ink,
+                      fontSize: 15,
+                      marginTop: 2,
+                    }}
+                  >
+                    {route.params.phone || '0912 345 6789'}
+                  </Text>
+                </View>
+                {route.params.phone ? (
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL(`tel:${route.params.phone}`)}
+                      style={{
+                        padding: 8,
+                        borderRadius: 10,
+                        backgroundColor: colors.primary + '10',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Ionicons name="call" size={16} color={colors.primary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL(`sms:${route.params.phone}`)}
+                      style={{
+                        padding: 8,
+                        borderRadius: 10,
+                        backgroundColor: colors.primary + '10',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Ionicons name="chatbox" size={16} color={colors.primary} />
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
               </View>
               {route.params.emergencyContactName && (
                 <View
-                  style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderTopWidth: 1,
+                    borderTopColor: colors.inkFaint,
+                    paddingTop: 10,
+                  }}
                 >
-                  <Text style={{ fontFamily: fonts.body, color: colors.inkSoft, fontSize: 13 }}>
-                    Emergency ({route.params.emergencyContactName})
-                  </Text>
-                  <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink, fontSize: 13 }}>
-                    {route.params.emergencyContactPhone}
-                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontFamily: fonts.body,
+                        color: colors.inkSoft,
+                        fontSize: 11,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      Emergency Contact ({route.params.emergencyContactName})
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: fonts.bodyBold,
+                        color: colors.ink,
+                        fontSize: 15,
+                        marginTop: 2,
+                      }}
+                    >
+                      {route.params.emergencyContactPhone}
+                    </Text>
+                  </View>
+                  {route.params.emergencyContactPhone ? (
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      <TouchableOpacity
+                        onPress={() => Linking.openURL(`tel:${route.params.emergencyContactPhone}`)}
+                        style={{
+                          padding: 8,
+                          borderRadius: 10,
+                          backgroundColor: colors.primary + '10',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Ionicons name="call" size={16} color={colors.primary} />
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
                 </View>
               )}
             </View>

@@ -84,8 +84,9 @@ export const ViewApplicantsScreen: React.FC = () => {
               <Text style={{ fontFamily: fonts.bodyBold, color: colors.primaryDark }}>
                 Privacy Shield is active.
               </Text>{' '}
-              Only public profile data is visible right now. Shortlist a worker to see their contact
-              info.
+              Only public profile data is visible. Shortlisting a worker unlocks their character
+              references, while the worker accepting the hire offer unlocks their phone number and
+              emergency contacts.
             </Text>
           </View>
 
@@ -135,6 +136,7 @@ export const ViewApplicantsScreen: React.FC = () => {
                     skills: app.worker?.skills,
                     experiences: app.worker?.experiences,
                     characterReferences: app.worker?.character_references,
+                    reviews: app.worker?.reviews,
                     phone: app.worker?.phone,
                     emergencyContactName: app.worker?.emergency_contact_name,
                     emergencyContactPhone: app.worker?.emergency_contact_phone,
