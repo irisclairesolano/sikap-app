@@ -79,7 +79,6 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
       await Share.share({
         title: shareTitle,
         message: `Check out this job on SIKAP: ${shareTitle}\n${shareUrl}`,
-        url: shareUrl,
       });
     } catch (err) {
       console.warn('Share error:', err);

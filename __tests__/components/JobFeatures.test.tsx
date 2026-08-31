@@ -50,14 +50,12 @@ describe('Job Features Test Suite', () => {
     await Share.share({
       title: result.job_title,
       message: `Check out this job on SIKAP: ${result.job_title}\n${result.share_link}`,
-      url: result.share_link,
     });
 
     expect(Share.share).toHaveBeenCalledWith({
       title: 'Senior Carpentry Specialist',
       message:
         'Check out this job on SIKAP: Senior Carpentry Specialist\nhttps://sikap.app/jobs/42',
-      url: 'https://sikap.app/jobs/42',
     });
   });
 
