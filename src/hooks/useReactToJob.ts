@@ -49,7 +49,23 @@ export const useReactToJob = () => {
           user_has_reacted: result.reacted,
         };
       });
-      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+
+      // Update all job lists in cache in-place
+      queryClient.setQueriesData({ queryKey: ['jobs'] }, (old: any) => {
+        if (!old) return old;
+        const jobs = Array.isArray(old) ? old : old?.data || old?.jobs || [];
+        const updated = jobs.map((job: any) =>
+          job.id === jobId
+            ? {
+                ...job,
+                user_has_reacted: result.reacted,
+                reactions_count: result.reactions_count,
+              }
+            : job,
+        );
+        if (Array.isArray(old)) return updated;
+        return { ...old, data: updated };
+      });
     },
   });
 };

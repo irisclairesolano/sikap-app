@@ -107,8 +107,19 @@ export const AddCharacterReferencesScreen: React.FC = () => {
         throw new Error(errorMsg);
       }
 
-      if (editingReferenceId !== null) {
-        await profileApi.removeReference(editingReferenceId);
+      const isDuplicatePhone = references.some(
+        (ref) =>
+          ref.phone.replace(/[^0-9]/g, '') === payload.phone.replace(/[^0-9]/g, '') &&
+          (editingReferenceId === null || ref.id !== editingReferenceId),
+      );
+      if (isDuplicatePhone) {
+        const dupError = 'This phone number is already used for another reference.';
+        setPhoneError(dupError);
+        throw new Error(dupError);
+      }
+
+      if (editingReferenceId !== null && editingReferenceId > 0) {
+        return profileApi.updateReference(editingReferenceId, payload);
       }
       return profileApi.addReference(payload);
     },
@@ -136,8 +147,12 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       const realRef = data?.reference || data;
-      if (realRef && realRef.id && editingReferenceId === null) {
-        setReferences((prev) => prev.map((r) => (r.id === context?.tempId ? realRef : r)));
+      if (realRef && realRef.id) {
+        if (editingReferenceId !== null) {
+          setReferences((prev) => prev.map((r) => (r.id === editingReferenceId ? realRef : r)));
+        } else {
+          setReferences((prev) => prev.map((r) => (r.id === context?.tempId ? realRef : r)));
+        }
       }
       setEditingReferenceId(null);
     },

@@ -227,7 +227,7 @@ export const RoleOnboardingScreen: React.FC = () => {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.contentHeader}>
           <Text style={styles.title}>
             {targetRole === 'employer' ? 'Employer Verification' : 'Your Skills'}
@@ -288,20 +288,28 @@ export const RoleOnboardingScreen: React.FC = () => {
             </View>
 
             <View style={styles.skillsContainer}>
-              {[...skills, ...customSkillsList].map((skill) => {
-                const isSelected = selectedSkills.includes(skill.id);
-                return (
-                  <TouchableOpacity
-                    key={skill.id}
-                    style={[styles.skillChip, isSelected && styles.skillChipSelected]}
-                    onPress={() => handleToggleSkill(skill.id)}
-                  >
-                    <Text style={[styles.skillText, isSelected && styles.skillTextSelected]}>
-                      {skill.name}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+              {[...skills, ...customSkillsList]
+                .sort((a, b) => {
+                  const aSelected = selectedSkills.includes(a.id);
+                  const bSelected = selectedSkills.includes(b.id);
+                  if (aSelected && !bSelected) return -1;
+                  if (!aSelected && bSelected) return 1;
+                  return 0;
+                })
+                .map((skill) => {
+                  const isSelected = selectedSkills.includes(skill.id);
+                  return (
+                    <TouchableOpacity
+                      key={skill.id}
+                      style={[styles.skillChip, isSelected && styles.skillChipSelected]}
+                      onPress={() => handleToggleSkill(skill.id)}
+                    >
+                      <Text style={[styles.skillText, isSelected && styles.skillTextSelected]}>
+                        {skill.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
             </View>
           </View>
         )}
@@ -309,6 +317,15 @@ export const RoleOnboardingScreen: React.FC = () => {
 
       <View style={styles.footer}>
         <Button label="Complete Setup" onPress={handleComplete} loading={isOnboardingRole} />
+        {targetRole === 'employer' && (
+          <Button
+            label="Skip for now"
+            variant="ghost"
+            onPress={handleBackPress}
+            disabled={isOnboardingRole}
+            style={{ marginTop: 8 }}
+          />
+        )}
       </View>
 
       {isOnboardingRole && (

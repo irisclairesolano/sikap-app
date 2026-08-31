@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Linking } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Modal,
+  Linking,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -8,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
-import { useJobRequest } from '../../hooks/useJobApplications';
+import { useJobRequest, useApplication } from '../../hooks/useJobApplications';
 
 type ApplicantDetailScreenRouteProp = RouteProp<EmployerStackParamList, 'ApplicantDetail'>;
 type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -19,7 +28,49 @@ type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
 const ApplicantDetailScreen: React.FC = () => {
   const route = useRoute<ApplicantDetailScreenRouteProp>();
   const navigation = useNavigation<ApplicantDetailScreenNavigationProp>();
-  const { applicantId, jobTitle, applicantName, status } = route.params;
+  const { showAlert } = useAlert();
+  const [isMenuVisible, setMenuVisible] = useState(false);
+
+  const appId = route.params.applicantId || (route.params as any).applicationId;
+  const { data: appData, isLoading: queryLoading } = useApplication(appId);
+
+  const status = appData?.status || route.params.status;
+  const applicantName = appData?.worker?.name || route.params.applicantName;
+  const jobTitle = appData?.job?.title || route.params.jobTitle;
+  const applicantId = appId;
+
+  const barangay = appData?.worker?.barangay || route.params.barangay;
+  const municipality = appData?.worker?.municipality || route.params.municipality;
+  const reputationScore =
+    appData?.worker?.reputation_score !== undefined && appData?.worker?.reputation_score !== null
+      ? appData.worker.reputation_score
+      : route.params.reputationScore;
+  const experiences = appData?.worker?.experiences || route.params.experiences;
+  const reviews = appData?.worker?.reviews || route.params.reviews;
+  const bio = appData?.worker?.bio || route.params.bio;
+  const skills = appData?.worker?.skills || route.params.skills;
+  const characterReferences =
+    appData?.worker?.character_references || route.params.characterReferences;
+  const phone = appData?.worker?.phone || route.params.phone;
+  const emergencyContactName =
+    appData?.worker?.emergency_contact_name || route.params.emergencyContactName;
+  const emergencyContactPhone =
+    appData?.worker?.emergency_contact_phone || route.params.emergencyContactPhone;
+
+  if (queryLoading && !applicantName) {
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: colors.paper,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
 
   const getStage = () => {
     switch (status) {
@@ -41,9 +92,6 @@ const ApplicantDetailScreen: React.FC = () => {
   };
 
   const stage = getStage();
-
-  const { showAlert } = useAlert();
-  const [isMenuVisible, setMenuVisible] = useState(false);
 
   const handleReport = () => {
     setMenuVisible(false);
@@ -184,9 +232,7 @@ const ApplicantDetailScreen: React.FC = () => {
             </View>
             <Text style={styles.locationText}>
               <Ionicons name="location" size={12} color={colors.primary} />{' '}
-              {route.params.barangay
-                ? `${route.params.barangay}, ${route.params.municipality}`
-                : 'Worker'}
+              {barangay ? `${barangay}, ${municipality}` : 'Worker'}
             </Text>
           </View>
         </View>
@@ -196,13 +242,11 @@ const ApplicantDetailScreen: React.FC = () => {
           <Text style={styles.reputationEyebrow}>Reputation</Text>
           <View style={styles.reputationRow}>
             <Text style={styles.reputationScore}>
-              {route.params.reputationScore !== undefined && route.params.reputationScore !== null
-                ? route.params.reputationScore
-                : 'N/A'}
+              {reputationScore !== undefined && reputationScore !== null ? reputationScore : 'N/A'}
             </Text>
             <View style={styles.reputationStars}>
               <Text style={styles.reputationCount}>
-                {route.params.reputationScore !== undefined && route.params.reputationScore !== null
+                {reputationScore !== undefined && reputationScore !== null
                   ? 'Reputation Score'
                   : 'No ratings yet'}
               </Text>
@@ -215,7 +259,7 @@ const ApplicantDetailScreen: React.FC = () => {
         <View style={styles.statsGrid}>
           <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
             <Text style={[styles.statValue, { color: colors.mintDeep }]}>
-              {route.params.experiences ? route.params.experiences.length : 0}
+              {experiences ? experiences.length : 0}
             </Text>
             <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Jobs listed</Text>
           </View>
@@ -229,12 +273,12 @@ const ApplicantDetailScreen: React.FC = () => {
         <View style={styles.skillsSection}>
           <Text style={styles.sectionEyebrow}>Employer Reviews</Text>
           <View style={{ marginTop: 10, gap: 12 }}>
-            {!route.params.reviews || route.params.reviews.length === 0 ? (
+            {!reviews || reviews.length === 0 ? (
               <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
                 No feedback reviews yet.
               </Text>
             ) : (
-              route.params.reviews.map((rev: any) => (
+              reviews.map((rev: any) => (
                 <View
                   key={rev.id}
                   style={{
@@ -295,7 +339,7 @@ const ApplicantDetailScreen: React.FC = () => {
         </View>
 
         {/* About Me */}
-        {route.params.bio ? (
+        {bio ? (
           <View style={styles.skillsSection}>
             <Text style={styles.sectionEyebrow}>About Me</Text>
             <Text
@@ -307,7 +351,7 @@ const ApplicantDetailScreen: React.FC = () => {
                 lineHeight: 22,
               }}
             >
-              {route.params.bio}
+              {bio}
             </Text>
           </View>
         ) : null}
@@ -316,12 +360,12 @@ const ApplicantDetailScreen: React.FC = () => {
         <View style={styles.skillsSection}>
           <Text style={styles.sectionEyebrow}>Skills</Text>
           <View style={styles.skillsList}>
-            {!route.params.skills || route.params.skills.length === 0 ? (
+            {!skills || skills.length === 0 ? (
               <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
                 No skills added yet.
               </Text>
             ) : (
-              route.params.skills.map((skillName: string, index: number) => {
+              skills.map((skillName: string, index: number) => {
                 const bgColors = [colors.peach, colors.mint, colors.butter, colors.sky];
                 const textColors = [
                   colors.primaryDark,
@@ -349,12 +393,12 @@ const ApplicantDetailScreen: React.FC = () => {
         <View style={styles.skillsSection}>
           <Text style={styles.sectionEyebrow}>Work History</Text>
           <View style={{ marginTop: 10, gap: 12 }}>
-            {!route.params.experiences || route.params.experiences.length === 0 ? (
+            {!experiences || experiences.length === 0 ? (
               <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
                 No work history added yet.
               </Text>
             ) : (
-              route.params.experiences.map((exp: any) => (
+              experiences.map((exp: any) => (
                 <View
                   key={exp.id}
                   style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}
@@ -404,12 +448,12 @@ const ApplicantDetailScreen: React.FC = () => {
             </View>
           </View>
         ) : (
-          route.params.characterReferences &&
-          route.params.characterReferences.length > 0 && (
+          characterReferences &&
+          characterReferences.length > 0 && (
             <View style={styles.skillsSection}>
               <Text style={styles.sectionEyebrow}>Character References</Text>
               <View style={{ marginTop: 10, gap: 12 }}>
-                {route.params.characterReferences.map((ref: any) => (
+                {characterReferences.map((ref: any) => (
                   <View
                     key={ref.id}
                     style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}
@@ -513,13 +557,13 @@ const ApplicantDetailScreen: React.FC = () => {
                       marginTop: 2,
                     }}
                   >
-                    {route.params.phone || '0912 345 6789'}
+                    {phone || '0912 345 6789'}
                   </Text>
                 </View>
-                {route.params.phone ? (
+                {phone ? (
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     <TouchableOpacity
-                      onPress={() => Linking.openURL(`tel:${route.params.phone}`)}
+                      onPress={() => Linking.openURL(`tel:${phone}`)}
                       style={{
                         padding: 8,
                         borderRadius: 10,
@@ -531,7 +575,7 @@ const ApplicantDetailScreen: React.FC = () => {
                       <Ionicons name="call" size={16} color={colors.primary} />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      onPress={() => Linking.openURL(`sms:${route.params.phone}`)}
+                      onPress={() => Linking.openURL(`sms:${phone}`)}
                       style={{
                         padding: 8,
                         borderRadius: 10,
@@ -545,7 +589,7 @@ const ApplicantDetailScreen: React.FC = () => {
                   </View>
                 ) : null}
               </View>
-              {route.params.emergencyContactName && (
+              {emergencyContactName && (
                 <View
                   style={{
                     flexDirection: 'row',
@@ -565,7 +609,7 @@ const ApplicantDetailScreen: React.FC = () => {
                         textTransform: 'uppercase',
                       }}
                     >
-                      Emergency Contact ({route.params.emergencyContactName})
+                      Emergency Contact ({emergencyContactName})
                     </Text>
                     <Text
                       style={{
@@ -575,13 +619,13 @@ const ApplicantDetailScreen: React.FC = () => {
                         marginTop: 2,
                       }}
                     >
-                      {route.params.emergencyContactPhone}
+                      {emergencyContactPhone}
                     </Text>
                   </View>
-                  {route.params.emergencyContactPhone ? (
+                  {emergencyContactPhone ? (
                     <View style={{ flexDirection: 'row', gap: 8 }}>
                       <TouchableOpacity
-                        onPress={() => Linking.openURL(`tel:${route.params.emergencyContactPhone}`)}
+                        onPress={() => Linking.openURL(`tel:${emergencyContactPhone}`)}
                         style={{
                           padding: 8,
                           borderRadius: 10,

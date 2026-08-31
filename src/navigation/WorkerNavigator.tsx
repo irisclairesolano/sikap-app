@@ -27,6 +27,7 @@ import ReportScreen from '../screens/common/ReportScreen';
 import RoleOnboardingScreen from '../screens/common/RoleOnboardingScreen';
 import { SavedJobsScreen } from '../screens/worker/SavedJobsScreen';
 import AcceptHireScreen from '../screens/worker/AcceptHireScreen';
+import EmployerPublicProfileScreen from '../screens/worker/EmployerPublicProfileScreen';
 
 export type WorkerStackParamList = {
   Home: undefined;
@@ -39,6 +40,16 @@ export type WorkerStackParamList = {
   Profile: undefined;
   JobDetails: { id: number };
   Apply: { id: number };
+  EmployerPublicProfile: {
+    employerId?: number;
+    employerName?: string;
+    avatarUrl?: string;
+    verificationBadge?: boolean;
+    reputationScore?: number;
+    barangay?: string;
+    municipality?: string;
+    businessDocuments?: string[];
+  };
   ApplicationDetail: {
     applicationId: number;
     jobTitle: string;
@@ -126,6 +137,7 @@ const FindStack: React.FC = () => {
       <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
       <Stack.Screen name="Report" component={ReportScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
     </Stack.Navigator>
   );
 };
@@ -136,6 +148,7 @@ const SavedStack: React.FC = () => (
     <Stack.Screen name="SavedJobs" component={SavedJobsScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="Apply" component={ApplyScreen} />
+    <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
   </Stack.Navigator>
 );
 

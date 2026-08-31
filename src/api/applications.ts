@@ -34,4 +34,8 @@ export const applicationsApi = {
   getContact: async (applicationId: number) => {
     return apiClient<{ phone: string }>(`/applications/${applicationId}/contact`);
   },
+
+  getById: async (applicationId: number) => {
+    return apiClient<Application>(`/applications/${applicationId}`);
+  },
 };

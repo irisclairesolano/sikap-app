@@ -209,19 +209,8 @@ export const PostJobScreen: React.FC = () => {
   };
 
   const compressVideo = async (uri: string) => {
-    if (Platform.OS === 'web') {
-      return uri;
-    }
-    try {
-      const { Video } = require('react-native-compressor');
-      const compressedUri = await Video.compress(uri, {
-        compressionMethod: 'auto',
-      });
-      return compressedUri;
-    } catch (e) {
-      console.warn('Video compression failed, using original URI:', e);
-      return uri;
-    }
+    // Skip video compression to prevent Nitro JSI crashes in non-custom development clients
+    return uri;
   };
 
   const uploadVideoImmediately = async (localUri: string, fileName: string, mimeType: string) => {
@@ -255,7 +244,10 @@ export const PostJobScreen: React.FC = () => {
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
-          const progress = Math.round((event.loaded / event.total) * 100);
+          const progress = Math.min(
+            100,
+            Math.max(0, Math.round((event.loaded / event.total) * 100)),
+          );
           setVideoUpload((prev) => (prev ? { ...prev, progress } : null));
         }
       };
@@ -316,7 +308,10 @@ export const PostJobScreen: React.FC = () => {
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
-          const progress = Math.round((event.loaded / event.total) * 100);
+          const progress = Math.min(
+            100,
+            Math.max(0, Math.round((event.loaded / event.total) * 100)),
+          );
           setPhotos((prev) => prev.map((p) => (p.id === photoId ? { ...p, progress } : p)));
         }
       };
@@ -562,6 +557,7 @@ export const PostJobScreen: React.FC = () => {
       compensation: parseFloat(pay.replace(/[^0-9.]/g, '')),
       slots: parseInt(slots, 10),
       description,
+      is_urgent: isUrgent,
       schedule_date: scheduleDate.toISOString().split('T')[0],
       photos: remoteUrls,
       video_url: videoUpload?.remoteUrl || null,
@@ -952,7 +948,9 @@ export const PostJobScreen: React.FC = () => {
                         {p.status === 'uploading' && (
                           <View style={styles.imgLoaderOverlay}>
                             <ActivityIndicator size="small" color={colors.white} />
-                            <Text style={styles.imgLoaderText}>{p.progress}%</Text>
+                            <Text style={styles.imgLoaderText}>
+                              {p.progress >= 100 ? 'Processing' : `${p.progress}%`}
+                            </Text>
                           </View>
                         )}
                         {p.status === 'error' && (
@@ -1054,53 +1052,10 @@ export const PostJobScreen: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.progressContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={styles.progressTitle}>Publishing Job Post</Text>
-            <View style={styles.progressBarBg}>
-              <View style={[styles.progressBarFill, { width: `${uploadProgress}%` }]} />
-            </View>
-            <Text style={styles.progressPercent}>{uploadProgress}% Uploaded</Text>
-            <Text style={styles.progressSubtitle}>Uploading photos, videos, and details...</Text>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={isAnyMediaUploading} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.progressContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
             <Text style={styles.progressTitle}>
-              {isUploadingVideo
-                ? videoUpload?.status === 'compressing'
-                  ? 'Compressing Video...'
-                  : `Uploading Video: ${videoUpload?.progress || 0}%`
-                : `Uploading Photos: ${overallProgress}%`}
+              {isEditMode ? 'Updating Job Post...' : 'Publishing Job Post...'}
             </Text>
-            <View style={styles.progressBarBg}>
-              <View
-                style={[
-                  styles.progressBarFill,
-                  {
-                    width: `${
-                      isUploadingVideo
-                        ? videoUpload?.status === 'compressing'
-                          ? 10
-                          : videoUpload?.progress || 0
-                        : overallProgress
-                    }%`,
-                  },
-                ]}
-              />
-            </View>
-            <Text style={styles.progressPercent}>
-              {isUploadingVideo
-                ? videoUpload?.status === 'compressing'
-                  ? 'Processing...'
-                  : `${videoUpload?.progress || 0}%`
-                : `${overallProgress}%`}
-            </Text>
-            <Text style={styles.progressSubtitle}>
-              Please wait while we upload your media assets.
-            </Text>
+            <Text style={styles.progressSubtitle}>Please wait a moment.</Text>
           </View>
         </View>
       </Modal>

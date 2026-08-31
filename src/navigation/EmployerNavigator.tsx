@@ -28,6 +28,7 @@ import MarkCompleteScreen from '../screens/employer/MarkCompleteScreen';
 
 export type EmployerStackParamList = {
   Home: undefined;
+  EmployerDashboard: undefined;
   PostJob: undefined;
   JobDetails: { id: number };
   ViewApplicants: { id: number };
@@ -77,8 +78,8 @@ const Stack = createNativeStackNavigator<EmployerStackParamList>();
 
 // Home Stack
 const HomeStack: React.FC = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Home" component={EmployerDashboardScreen} />
+  <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="EmployerDashboard">
+    <Stack.Screen name="EmployerDashboard" component={EmployerDashboardScreen} />
     <Stack.Screen name="PostJob" component={PostJobScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="ViewApplicants" component={ViewApplicantsScreen} />

@@ -3,6 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Share, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
+import { Image } from 'expo-image';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../theme';
@@ -16,6 +17,7 @@ import Button from '../../components/common/Button';
 import { useReactToJob } from '../../hooks/useReactToJob';
 import { getShareLink } from '../../api/jobs';
 import { ReportJobSheet } from '../../components/jobs/ReportJobSheet';
+import { MediaViewerModal } from '../../components/common/MediaViewerModal';
 
 type JobDetailsRouteProp = RouteProp<WorkerStackParamList, 'JobDetails'>;
 
@@ -29,6 +31,9 @@ export const JobDetailsScreen: React.FC = () => {
   const { data: savedJobsData } = useSavedJobs();
   const { mutate: toggleSave, isPending: isSaving } = useToggleSaveJob();
   const [reportSheetVisible, setReportSheetVisible] = useState(false);
+  const [viewerMedia, setViewerMedia] = useState<{ type: 'photo' | 'video'; url: string } | null>(
+    null,
+  );
   const { mutate: toggleReact, isPending: isReacting } = useReactToJob();
 
   const isSaved = savedJobsData?.data?.some((j) => j.id === id) || false;
@@ -79,7 +84,7 @@ export const JobDetailsScreen: React.FC = () => {
     );
   }
 
-  const isUrgent = false; // Mock for now
+  const isUrgent = !!(job?.is_urgent || job?.urgent);
   const isVerified = job.employer?.verification_badge;
 
   const getRelativeTime = (dateString?: string) => {
@@ -111,20 +116,37 @@ export const JobDetailsScreen: React.FC = () => {
           <Text style={styles.postedText}>{getRelativeTime(job.created_at)}</Text>
         </View>
 
-        <TouchableOpacity style={styles.iconButton} onPress={handleToggleSave} disabled={isSaving}>
-          <Ionicons
-            name={isSaved ? 'bookmark' : 'bookmark-outline'}
-            size={24}
-            color={isSaved ? colors.primary : colors.ink}
-          />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <TouchableOpacity style={styles.iconButton} onPress={() => setReportSheetVisible(true)}>
+            <Ionicons name="flag-outline" size={22} color={colors.ink} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={handleToggleSave}
+            disabled={isSaving}
+          >
+            <Ionicons
+              name={isSaved ? 'bookmark' : 'bookmark-outline'}
+              size={22}
+              color={isSaved ? colors.primary : colors.ink}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Category & Badges */}
         <View style={styles.badgesRow}>
           <View style={styles.categoryChip}>
-            <Text style={styles.categoryText}>{job.categories?.join(', ') || 'Other'}</Text>
+            <Text style={styles.categoryText}>
+              {Array.isArray(job.categories)
+                ? job.categories
+                    .filter((c: string) => c && c.trim().length > 1 && c.toLowerCase() !== 'hi')
+                    .join(' · ') ||
+                  job.category ||
+                  'General'
+                : job.category || 'General'}
+            </Text>
           </View>
           {isUrgent && (
             <View style={[styles.badge, styles.badgeUrgent]}>
@@ -183,13 +205,123 @@ export const JobDetailsScreen: React.FC = () => {
           <Text style={styles.descriptionText}>{job.description}</Text>
         </View>
 
+        {/* Tools Required Section */}
+        {job.tools_required ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Tools Required</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: colors.paperBright,
+                padding: 12,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: colors.inkFaint,
+                gap: 8,
+              }}
+            >
+              <Ionicons name="construct-outline" size={18} color={colors.primary} />
+              <Text
+                style={{ fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft, flex: 1 }}
+              >
+                {job.tools_required}
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
+        {/* Media Attachments Section */}
+        {((job.photos && job.photos.length > 0) || job.video_url) && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Attachments & Media</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 12, paddingTop: 6 }}
+            >
+              {job.photos?.map((photoUrl: string, idx: number) => (
+                <TouchableOpacity
+                  key={idx}
+                  activeOpacity={0.8}
+                  onPress={() => setViewerMedia({ type: 'photo', url: photoUrl })}
+                >
+                  <Image
+                    source={{ uri: photoUrl }}
+                    style={{
+                      width: 110,
+                      height: 110,
+                      borderRadius: 14,
+                      backgroundColor: colors.inkFaint,
+                    }}
+                  />
+                  <View
+                    style={{
+                      position: 'absolute',
+                      bottom: 6,
+                      right: 6,
+                      backgroundColor: 'rgba(0,0,0,0.5)',
+                      padding: 4,
+                      borderRadius: 10,
+                    }}
+                  >
+                    <Ionicons name="expand-outline" size={14} color={colors.white} />
+                  </View>
+                </TouchableOpacity>
+              ))}
+
+              {job.video_url && (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => setViewerMedia({ type: 'video', url: job.video_url! })}
+                  style={{
+                    width: 150,
+                    height: 110,
+                    borderRadius: 14,
+                    backgroundColor: '#1E1E1E',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Ionicons name="play-circle" size={40} color={colors.white} />
+                  <Text
+                    style={{
+                      fontFamily: fonts.bodyBold,
+                      fontSize: 11,
+                      color: colors.white,
+                      marginTop: 4,
+                    }}
+                  >
+                    Play Video
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </ScrollView>
+          </View>
+        )}
+
         {/* Employer Card */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About the Employer</Text>
-          <View style={styles.employerCard}>
+          <TouchableOpacity
+            style={styles.employerCard}
+            activeOpacity={0.8}
+            onPress={() => {
+              (navigation as any).navigate('EmployerPublicProfile', {
+                employerId: job.employer_id,
+                employerName: job.employer?.name,
+                avatarUrl: job.employer?.avatar_url,
+                verificationBadge: job.employer?.verification_badge,
+                reputationScore: job.employer?.reputation_score,
+                barangay: job.barangay,
+                municipality: job.municipality,
+                businessDocuments: job.employer?.employer_profile?.business_documents || [],
+              });
+            }}
+          >
             <Avatar name={job.employer?.name || 'Unknown'} size={48} />
 
-            <View style={styles.employerInfo}>
+            <View style={[styles.employerInfo, { flex: 1 }]}>
               <View style={styles.employerNameRow}>
                 <Text style={styles.employerName}>{job.employer?.name || 'Unknown'}</Text>
                 {job.employer?.verification_badge && (
@@ -202,53 +334,19 @@ export const JobDetailsScreen: React.FC = () => {
                 )}
               </View>
 
-              <View style={styles.employerStats}>
-                <Ionicons name="star" size={12} color={colors.gold} />
-                <Text style={styles.statText}>{job.employer?.reputation_score || 'New'}</Text>
-                <Text style={styles.statDot}>·</Text>
-                <Text style={styles.statText}>2 hires</Text>
-              </View>
+              <Text
+                style={{
+                  fontFamily: fonts.body,
+                  fontSize: 11,
+                  color: colors.primary,
+                  marginTop: 2,
+                }}
+              >
+                Tap to view public profile & verification docs →
+              </Text>
             </View>
-          </View>
-        </View>
 
-        {/* Social Action Bar */}
-        <View style={detailActionBar.container}>
-          <TouchableOpacity
-            style={detailActionBar.btn}
-            onPress={handleReact}
-            disabled={isReacting}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name={job.user_has_reacted ? 'heart' : 'heart-outline'}
-              size={18}
-              color={job.user_has_reacted ? '#E85D75' : '#8C7B6A'}
-            />
-            <Text
-              style={[detailActionBar.text, job.user_has_reacted && detailActionBar.textActive]}
-            >
-              {job.reactions_count && job.reactions_count > 0 ? `${job.reactions_count} ` : ''}
-              Interested
-            </Text>
-          </TouchableOpacity>
-
-          <View style={detailActionBar.divider} />
-
-          <TouchableOpacity style={detailActionBar.btn} onPress={handleShare} activeOpacity={0.7}>
-            <Ionicons name="share-social-outline" size={18} color="#8C7B6A" />
-            <Text style={detailActionBar.text}>Share</Text>
-          </TouchableOpacity>
-
-          <View style={detailActionBar.divider} />
-
-          <TouchableOpacity
-            style={detailActionBar.btn}
-            onPress={() => setReportSheetVisible(true)}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="flag-outline" size={18} color="#8C7B6A" />
-            <Text style={detailActionBar.text}>Report</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.inkMuted} />
           </TouchableOpacity>
         </View>
 
@@ -261,9 +359,7 @@ export const JobDetailsScreen: React.FC = () => {
       </ScrollView>
 
       {/* Bottom CTA */}
-      <View
-        style={[styles.bottomBar, { paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 24 }]}
-      >
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <Button
           label="Apply for this job"
           size="lg"
@@ -271,6 +367,12 @@ export const JobDetailsScreen: React.FC = () => {
           fullWidth
         />
       </View>
+
+      <MediaViewerModal
+        visible={!!viewerMedia}
+        media={viewerMedia}
+        onClose={() => setViewerMedia(null)}
+      />
     </SafeAreaView>
   );
 };
@@ -486,9 +588,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 6,
   },
   bottomBar: {
-    paddingHorizontal: 26,
-    paddingTop: 16,
-    paddingBottom: 32,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
     backgroundColor: colors.paperBright,
     shadowColor: colors.ink,
     shadowOffset: { width: 0, height: -2 },

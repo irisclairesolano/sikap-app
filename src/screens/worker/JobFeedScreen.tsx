@@ -9,6 +9,7 @@ import {
   ScrollView,
   TextInput,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -63,14 +64,12 @@ export const JobFeedScreen: React.FC = () => {
     let skillsParam: string[] | undefined = undefined;
     let categoryParam: string | undefined = undefined;
 
-    if (userSkills.length > 0 && !isSearching) {
-      if (activeCategory === 'All') {
-        skillsParam = userSkills;
-      } else {
+    if (activeCategory !== 'All') {
+      if (userSkills.length > 0 && !isSearching) {
         skillsParam = [activeCategory];
+      } else {
+        categoryParam = activeCategory;
       }
-    } else {
-      categoryParam = activeCategory;
     }
 
     return {
@@ -82,7 +81,7 @@ export const JobFeedScreen: React.FC = () => {
     };
   }, [searchQuery, activeCategory, locationFilter, user, userSkills]);
 
-  const { data, isLoading, isError, error, refetch } = useJobs(filters);
+  const { data, isLoading, isError, error, refetch, isFetching } = useJobs(filters);
   const { data: savedJobsData } = useSavedJobs();
   const { mutate: toggleSave } = useToggleSaveJob();
 
@@ -153,7 +152,15 @@ export const JobFeedScreen: React.FC = () => {
 
       <View style={styles.searchRow}>
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color={colors.inkMuted} style={styles.searchIcon} />
+          {isFetching ? (
+            <ActivityIndicator
+              size="small"
+              color={colors.primary}
+              style={[styles.searchIcon, { marginRight: 8 }]}
+            />
+          ) : (
+            <Ionicons name="search" size={20} color={colors.inkMuted} style={styles.searchIcon} />
+          )}
           <TextInput
             style={styles.searchInput}
             placeholder="Search jobs..."
@@ -207,44 +214,39 @@ export const JobFeedScreen: React.FC = () => {
     </View>
   );
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={{ paddingHorizontal: 20 }}>{renderHeader()}</View>
-        <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>
-          <JobCardSkeleton />
-          <JobCardSkeleton />
-          <JobCardSkeleton />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (isError) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={{ paddingHorizontal: 20 }}>{renderHeader()}</View>
-        <View style={{ paddingHorizontal: 20 }}>
-          <ErrorBanner message={error?.message || 'Failed to load jobs.'} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <FlatList
-        data={jobsList}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderJobItem}
+        data={isLoading ? [1, 2, 3] : isError ? [] : jobsList}
+        keyExtractor={(item, index) =>
+          isLoading ? `skeleton_${index}` : isError ? 'error' : item.id.toString()
+        }
+        renderItem={({ item }) => {
+          if (isLoading) {
+            return (
+              <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>
+                <JobCardSkeleton />
+              </View>
+            );
+          }
+          return renderJobItem({ item });
+        }}
         initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={5}
         removeClippedSubviews={true}
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={<EmptyState message={`No jobs found for ${activeCategory}.`} />}
+        ListHeaderComponent={renderHeader()}
+        ListEmptyComponent={
+          isError ? (
+            <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>
+              <ErrorBanner message={error?.message || 'Failed to load jobs.'} />
+            </View>
+          ) : (
+            <EmptyState message={`No jobs found for ${activeCategory}.`} />
+          )
+        }
         contentContainerStyle={styles.listContent}
-        refreshing={isLoading}
+        refreshing={isFetching && !isLoading}
         onRefresh={refetch}
         showsVerticalScrollIndicator={false}
       />

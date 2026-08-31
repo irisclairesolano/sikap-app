@@ -10,11 +10,14 @@ export const profileApi = {
 
   // Update profile
   updateProfile: async (
-    data: Partial<User> & { bio?: string; availability_status?: string; description?: string },
+    data:
+      | (Partial<User> & { bio?: string; availability_status?: string; description?: string })
+      | FormData,
   ): Promise<any> => {
+    const isFormData = data instanceof FormData;
     const response = await apiClient<any>('/profile', {
-      method: 'PUT',
-      body: JSON.stringify(data),
+      method: isFormData ? 'POST' : 'PUT',
+      body: isFormData ? data : JSON.stringify(data),
     });
     return response?.data !== undefined ? response.data : response;
   },
@@ -103,13 +106,29 @@ export const profileApi = {
     });
   },
 
+  // Update character reference
+  updateReference: async (
+    referenceId: number,
+    reference: Omit<CharacterReference, 'id'>,
+  ): Promise<CharacterReference> => {
+    const response = await apiClient<any>(`/profile/references/${referenceId}`, {
+      method: 'PUT',
+      body: JSON.stringify(reference),
+    });
+    return response?.reference !== undefined
+      ? response.reference
+      : response?.data !== undefined
+        ? response.data
+        : response;
+  },
+
   // Onboard new role
   onboardRole: async (
     targetRole: 'worker' | 'employer',
-    data: any
+    data: any,
   ): Promise<{ message: string; user: User }> => {
     const isFormData = data instanceof FormData;
-    
+
     if (isFormData) {
       data.append('target_role', targetRole);
     }

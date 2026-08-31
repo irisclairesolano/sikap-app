@@ -13,7 +13,9 @@ export const useAuthCheck = () => {
 
   useEffect(() => {
     const checkToken = async () => {
-      setIsLoadingToken(true);
+      if (reloadToken === 0) {
+        setIsLoadingToken(true);
+      }
       const authToken = await SecureStore.getItemAsync('auth_token');
       setToken(authToken);
       setIsLoadingToken(false);

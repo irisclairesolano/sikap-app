@@ -1,7 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Share, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Share, Alert, useState } from 'react-native';
 import { colors, fonts } from '../../theme';
 import { JobPost } from '../../types';
 import { useReactToJob } from '../../hooks/useReactToJob';
@@ -30,9 +29,25 @@ const getCategoryStyles = (category: string) => {
   }
 };
 
+const getRelativeTime = (dateString?: string) => {
+  if (!dateString) return 'Just now';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return 'Just now';
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) return `${diffInDays}d ago`;
+  const diffInMonths = Math.floor(diffInDays / 30);
+  return `${diffInMonths}mo ago`;
+};
+
 export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved }) => {
-  // Mock badges logic
-  const isUrgent = false; // Mock logic
+  const isUrgent = !!(job.is_urgent || job.urgent);
   const isVerified = job.employer?.verification_badge;
   const catStyles = getCategoryStyles(job.categories?.[0] || 'Other');
   const isApplied = job.is_applied && !job.is_withdrawn;
@@ -61,77 +76,100 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
   };
 
   return (
-    <TouchableOpacity
+    <View
       style={[
         styles.card,
         isApplied && styles.cardApplied,
         job.is_withdrawn && styles.cardWithdrawn,
       ]}
-      onPress={onPress}
-      activeOpacity={0.7}
     >
       {isApplied && <View style={styles.appliedCorner} />}
       {job.is_withdrawn && <View style={styles.withdrawnCorner} />}
 
-      <View style={styles.topRow}>
-        <View style={[styles.jobIcon, { backgroundColor: catStyles.bg }]}>
-          <Ionicons name={catStyles.icon as any} size={20} color={catStyles.color} />
-        </View>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+        <View style={styles.topRow}>
+          <View style={[styles.jobIcon, { backgroundColor: catStyles.bg }]}>
+            <Ionicons name={catStyles.icon as any} size={20} color={catStyles.color} />
+          </View>
 
-        <View style={styles.jobText}>
-          {(isUrgent || isVerified) && (
-            <View style={styles.jobBadges}>
-              {isUrgent && (
-                <View style={[styles.badge, styles.badgeUrgent]}>
-                  <Ionicons name="flame" size={10} color={colors.error} />
-                  <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
-                </View>
-              )}
-              {isVerified && (
-                <View style={[styles.badge, styles.badgeVerified]}>
-                  <Ionicons name="checkmark-circle" size={10} color={colors.mintDeep} />
-                  <Text style={[styles.badgeText, { color: colors.mintDeep }]}>VERIFIED</Text>
-                </View>
-              )}
+          <View style={styles.jobText}>
+            {(isUrgent || isVerified) && (
+              <View style={styles.jobBadges}>
+                {isUrgent && (
+                  <View style={[styles.badge, styles.badgeUrgent]}>
+                    <Ionicons name="flame" size={10} color={colors.error} />
+                    <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
+                  </View>
+                )}
+                {isVerified && (
+                  <View style={[styles.badge, styles.badgeVerified]}>
+                    <Ionicons name="checkmark-circle" size={10} color={colors.mintDeep} />
+                    <Text style={[styles.badgeText, { color: colors.mintDeep }]}>VERIFIED</Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            <Text style={styles.jobTitle} numberOfLines={2}>
+              {job.title.length > 45 ? `${job.title.slice(0, 45)}...` : job.title}
+            </Text>
+
+            <View style={styles.jobMeta}>
+              <Ionicons name="location" size={11} color={colors.inkMuted} />
+              <Text style={styles.metaText} numberOfLines={1}>
+                {job.municipality}
+              </Text>
+              <View style={styles.dot} />
+              <Text style={styles.metaText}>{job.slots || 1} slots</Text>
+              <View style={styles.dot} />
+              <Text style={styles.metaText}>{getRelativeTime(job.created_at)}</Text>
             </View>
-          )}
+          </View>
 
-          <Text style={styles.jobTitle} numberOfLines={1}>
-            {job.title}
+          <View style={styles.rightContent}>
+            {onSave && (
+              <TouchableOpacity
+                onPress={onSave}
+                style={styles.saveBtn}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons
+                  name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                  size={20}
+                  color={isSaved ? colors.primary : colors.inkSoft}
+                />
+              </TouchableOpacity>
+            )}
+            <View style={styles.payContainer}>
+              <Text style={styles.payValue}>₱{job.compensation}</Text>
+              <Text style={styles.payUnit}>
+                per {job.duration_type === 'daily' ? 'day' : 'project'}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {job.description ? (
+          <Text style={styles.descriptionSnippet} numberOfLines={2}>
+            {job.description.length > 85 ? `${job.description.slice(0, 85)}...` : job.description}
           </Text>
+        ) : null}
 
-          <View style={styles.jobMeta}>
-            <Ionicons name="location" size={11} color={colors.inkMuted} />
-            <Text style={styles.metaText} numberOfLines={1}>
-              {job.municipality}
-            </Text>
-            <View style={styles.dot} />
-            <Text style={styles.metaText}>{job.slots || 1} slots</Text>
+        {job.tools_required ? (
+          <View style={styles.toolsContainer}>
+            <View style={styles.toolsSeparator} />
+            <View style={styles.toolsRow}>
+              <Ionicons name="construct-outline" size={13} color={colors.primary} />
+              <Text style={styles.toolsText} numberOfLines={1}>
+                <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink }}>
+                  Tools required:{' '}
+                </Text>
+                {job.tools_required}
+              </Text>
+            </View>
           </View>
-        </View>
-
-        <View style={styles.rightContent}>
-          {onSave && (
-            <TouchableOpacity
-              onPress={onSave}
-              style={styles.saveBtn}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons
-                name={isSaved ? 'bookmark' : 'bookmark-outline'}
-                size={20}
-                color={isSaved ? colors.primary : colors.inkSoft}
-              />
-            </TouchableOpacity>
-          )}
-          <View style={styles.payContainer}>
-            <Text style={styles.payValue}>₱{job.compensation}</Text>
-            <Text style={styles.payUnit}>
-              per {job.duration_type === 'daily' ? 'day' : 'project'}
-            </Text>
-          </View>
-        </View>
-      </View>
+        ) : null}
+      </TouchableOpacity>
 
       {/* Social Action Bar */}
       <View style={styles.actionBar}>
@@ -179,7 +217,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
         jobId={job.id}
         jobTitle={job.title}
       />
-    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -339,5 +377,38 @@ const styles = StyleSheet.create({
   actionTextActive: {
     color: '#E85D75',
     fontWeight: '600',
+  },
+  descriptionSnippet: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.inkSoft,
+    marginTop: 8,
+    paddingHorizontal: 2,
+  },
+  toolsContainer: {
+    marginTop: 4,
+  },
+  toolsSeparator: {
+    height: 1,
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    marginVertical: 8,
+  },
+  toolsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F8F6F2',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#EBE7DF',
+  },
+  toolsText: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkSoft,
+    flex: 1,
   },
 });

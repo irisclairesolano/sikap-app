@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Modal,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -9,6 +17,7 @@ import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { useWithdrawApplication, useAcceptOffer, useRejectOffer } from '../../hooks/useApply';
+import { useApplication } from '../../hooks/useJobApplications';
 
 type ApplicationDetailScreenRouteProp = RouteProp<WorkerStackParamList, 'ApplicationDetail'>;
 type ApplicationDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -19,11 +28,34 @@ type ApplicationDetailScreenNavigationProp = NativeStackNavigationProp<
 const ApplicationDetailScreen: React.FC = () => {
   const route = useRoute<ApplicationDetailScreenRouteProp>();
   const navigation = useNavigation<ApplicationDetailScreenNavigationProp>();
-  const { applicationId, jobTitle, employerName, status, compensation } = route.params;
+
+  const { applicationId } = route.params;
+  const { data: appData, isLoading: queryLoading } = useApplication(applicationId);
+
+  const status = appData?.status || route.params.status;
+  const jobTitle = appData?.job?.title || route.params.jobTitle;
+  const employerName = appData?.job?.employer?.name || route.params.employerName;
+  const compensation =
+    appData?.final_agreed_price || appData?.job?.compensation || route.params.compensation;
 
   const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawApplication();
   const { showAlert } = useAlert();
   const [isMenuVisible, setMenuVisible] = useState(false);
+
+  if (queryLoading && !jobTitle) {
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: colors.paper,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
 
   const handleWithdraw = () => {
     setMenuVisible(false);

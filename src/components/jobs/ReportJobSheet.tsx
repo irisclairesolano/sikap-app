@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { BottomSheet } from '../common/BottomSheet';
 import { useSubmitReport } from '../../hooks/useReports';
+import { useAlert } from '../../contexts/AlertContext';
 
 const REASONS = [
   { label: 'Fake / Scam Job', value: 'fake_account' },
@@ -37,10 +38,15 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
   const [selectedReason, setSelectedReason] = useState<ReasonType | null>(null);
   const [description, setDescription] = useState('');
   const { mutate: submitReport, isPending } = useSubmitReport();
+  const { showAlert } = useAlert();
 
   const handleSubmit = () => {
     if (!selectedReason) {
-      Alert.alert('Select a reason', 'Please select a reason for reporting.');
+      showAlert({
+        title: 'Select a Reason',
+        message: 'Please select a reason for reporting this job post.',
+        type: 'warning',
+      });
       return;
     }
     submitReport(
@@ -55,10 +61,18 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
           setSelectedReason(null);
           setDescription('');
           onClose();
-          Alert.alert('Report Submitted', 'Thank you. Our team will review this post.');
+          showAlert({
+            title: 'Report Submitted',
+            message: 'Thank you. Our moderation team will review this post shortly.',
+            type: 'success',
+          });
         },
         onError: () => {
-          Alert.alert('Error', 'Failed to submit report. Please try again.');
+          showAlert({
+            title: 'Submission Failed',
+            message: 'Failed to submit report. Please check your connection and try again.',
+            type: 'error',
+          });
         },
       },
     );

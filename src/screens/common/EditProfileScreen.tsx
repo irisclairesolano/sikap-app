@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import * as SecureStore from '../../utils/storage';
 import React, { useState } from 'react';
 import {
@@ -39,6 +40,41 @@ export const EditProfileScreen: React.FC = () => {
     user?.worker_profile?.bio || user?.employer_profile?.description || '',
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedBusinessDocs, setSelectedBusinessDocs] = useState<any[]>([]);
+
+  const handlePickBusinessDocs = async () => {
+    try {
+      const pick = await DocumentPicker.getDocumentAsync({
+        type: ['image/*', 'application/pdf'],
+        copyToCacheDirectory: true,
+        multiple: true,
+      });
+
+      if (!pick.canceled && pick.assets) {
+        if (pick.assets.length > 3) {
+          showAlert('Too Many Files', 'You can only upload up to 3 business documents.');
+          return;
+        }
+
+        let hasLargeFile = false;
+        const validFiles = pick.assets.filter((asset) => {
+          if (asset.size && asset.size > 5 * 1024 * 1024) {
+            hasLargeFile = true;
+            return false;
+          }
+          return true;
+        });
+
+        if (hasLargeFile) {
+          showAlert('File Too Large', 'One or more files exceed the 5MB limit.');
+        }
+
+        setSelectedBusinessDocs(validFiles.slice(0, 3));
+      }
+    } catch (error) {
+      console.log('Error selecting business documents:', error);
+    }
+  };
   const [isUploading, setIsUploading] = useState(false);
   const [localAvatarUri, setLocalAvatarUri] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
@@ -154,21 +190,56 @@ export const EditProfileScreen: React.FC = () => {
       }
 
       // 2. Save profile fields
-      const updateData: any = {
-        barangay: barangay || undefined,
-        municipality: municipality || undefined,
-        date_of_birth: dateOfBirth ? dateOfBirth.toISOString().split('T')[0] : undefined,
-        emergency_contact_name: emergencyContactName || undefined,
-        emergency_contact_phone: emergencyContactPhone || undefined,
-        bio: user?.role === 'worker' ? bio : undefined,
-        description: user?.role === 'employer' ? bio : undefined,
-      };
+      let res;
+      if (selectedBusinessDocs.length > 0) {
+        const formData = new FormData();
+        formData.append('_method', 'PUT'); // Laravel method override for multipart PUT
 
-      if (!isVerified && name) {
-        updateData.name = name;
+        formData.append('barangay', barangay || '');
+        formData.append('municipality', municipality || '');
+        if (dateOfBirth) {
+          formData.append('date_of_birth', dateOfBirth.toISOString().split('T')[0]);
+        }
+        formData.append('emergency_contact_name', emergencyContactName || '');
+        formData.append('emergency_contact_phone', emergencyContactPhone || '');
+
+        if (user?.role === 'worker') {
+          formData.append('bio', bio || '');
+        } else {
+          formData.append('description', bio || '');
+        }
+
+        if (!isVerified && name) {
+          formData.append('name', name);
+        }
+
+        selectedBusinessDocs.forEach((doc, idx) => {
+          formData.append('business_documents[]', {
+            uri: doc.uri,
+            name: doc.name || `business-doc-${idx}.pdf`,
+            type: doc.mimeType || 'application/pdf',
+          } as any);
+        });
+
+        res = await profileApi.updateProfile(formData);
+      } else {
+        const updateData: any = {
+          barangay: barangay || undefined,
+          municipality: municipality || undefined,
+          date_of_birth: dateOfBirth ? dateOfBirth.toISOString().split('T')[0] : undefined,
+          emergency_contact_name: emergencyContactName || undefined,
+          emergency_contact_phone: emergencyContactPhone || undefined,
+          bio: user?.role === 'worker' ? bio : undefined,
+          description: user?.role === 'employer' ? bio : undefined,
+        };
+
+        if (!isVerified && name) {
+          updateData.name = name;
+        }
+
+        res = await profileApi.updateProfile(updateData);
       }
 
-      const res = await profileApi.updateProfile(updateData);
       if (res?.user) {
         await SecureStore.setItemAsync('user_profile', JSON.stringify(res.user));
         queryClient.setQueryData(['profile'], res.user);
@@ -354,6 +425,104 @@ export const EditProfileScreen: React.FC = () => {
                 </Text>
               </View>
             </>
+          )}
+
+          {user?.role === 'employer' && (
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Business Permit / Documents</Text>
+
+              {user.business_documents && user.business_documents.length > 0 && (
+                <View style={{ marginBottom: 12, gap: 8 }}>
+                  <Text
+                    style={{
+                      fontFamily: fonts.bodyBold,
+                      fontSize: 11,
+                      color: colors.inkSoft,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Current Documents:
+                  </Text>
+                  {user.business_documents.map((docUrl: string, idx: number) => {
+                    const docName = docUrl.split('/').pop() || `document_${idx + 1}`;
+                    return (
+                      <View
+                        key={idx}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 8,
+                          backgroundColor: colors.paperBright,
+                          padding: 12,
+                          borderRadius: 12,
+                          borderWidth: 1,
+                          borderColor: colors.inkFaint,
+                        }}
+                      >
+                        <Ionicons name="document-text" size={16} color={colors.primary} />
+                        <Text
+                          numberOfLines={1}
+                          style={{
+                            flex: 1,
+                            fontFamily: fonts.body,
+                            fontSize: 13,
+                            color: colors.ink,
+                          }}
+                        >
+                          {docName}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={{
+                  backgroundColor: colors.paperBright,
+                  borderWidth: 1.5,
+                  borderColor: colors.inkFaint,
+                  borderStyle: 'dashed',
+                  borderRadius: 14,
+                  padding: 20,
+                  alignItems: 'center',
+                }}
+                onPress={handlePickBusinessDocs}
+                disabled={isSaving}
+              >
+                <Ionicons
+                  name="cloud-upload"
+                  size={24}
+                  color={colors.primary}
+                  style={{ marginBottom: 6 }}
+                />
+                <Text
+                  style={{
+                    fontFamily: fonts.bodyBold,
+                    fontSize: 14,
+                    color: colors.ink,
+                    textAlign: 'center',
+                  }}
+                >
+                  {selectedBusinessDocs.length > 0
+                    ? `${selectedBusinessDocs.length} New Document(s) Selected`
+                    : 'Upload New Business Documents'}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: fonts.body,
+                    fontSize: 11,
+                    color: colors.inkMuted,
+                    marginTop: 4,
+                    textAlign: 'center',
+                  }}
+                >
+                  {selectedBusinessDocs.length > 0
+                    ? selectedBusinessDocs.map((doc) => doc.name).join('\n')
+                    : 'DTI / SEC / TIN (Max 3 files, PDF/Image)'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           )}
 
           <View style={styles.formGroup}>

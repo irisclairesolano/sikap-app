@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Image } from 'expo-image';
 import {
   View,
   Text,
@@ -18,6 +19,7 @@ import Button from '../../components/common/Button';
 import { useDeleteJob } from '../../hooks/useJobs';
 import { useJob } from '../../hooks/useJob';
 import { useJobApplications } from '../../hooks/useJobApplications';
+import { MediaViewerModal } from '../../components/common/MediaViewerModal';
 
 type JobStatusScreenRouteProp = RouteProp<EmployerStackParamList, 'JobStatusManagement'>;
 type JobStatusScreenNavigationProp = NativeStackNavigationProp<
@@ -29,6 +31,10 @@ export const JobStatusManagementScreen: React.FC = () => {
   const route = useRoute<JobStatusScreenRouteProp>();
   const navigation = useNavigation<JobStatusScreenNavigationProp>();
   const { id } = route.params;
+
+  const [viewerMedia, setViewerMedia] = useState<{ type: 'photo' | 'video'; url: string } | null>(
+    null,
+  );
 
   const { data: job, isLoading: isJobLoading, isError, error, refetch } = useJob(id);
   const { data: applications = [], isLoading: isAppsLoading } = useJobApplications(id);
@@ -348,7 +354,35 @@ export const JobStatusManagementScreen: React.FC = () => {
         )}
 
         <View style={styles.card}>
-          <Text style={styles.jobTitle}>{job.title}</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 4,
+            }}
+          >
+            <Text style={[styles.jobTitle, { flex: 1, marginBottom: 0 }]}>{job.title}</Text>
+            {!!(job.is_urgent || job.urgent) && (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: colors.peach,
+                  paddingVertical: 4,
+                  paddingHorizontal: 8,
+                  borderRadius: 12,
+                  gap: 4,
+                  marginLeft: 8,
+                }}
+              >
+                <Ionicons name="flame" size={14} color={colors.error} />
+                <Text style={{ fontFamily: fonts.bodyBold, fontSize: 11, color: colors.error }}>
+                  URGENT
+                </Text>
+              </View>
+            )}
+          </View>
           <Text style={styles.categoryText}>
             {job.categories && job.categories.length > 0 ? job.categories.join(' · ') : 'General'}
           </Text>
@@ -386,6 +420,75 @@ export const JobStatusManagementScreen: React.FC = () => {
               <View style={styles.divider} />
               <Text style={styles.sectionTitle}>Tools Required</Text>
               <Text style={styles.descriptionText}>{job.tools_required}</Text>
+            </>
+          ) : null}
+
+          {(job.photos && job.photos.length > 0) || job.video_url ? (
+            <>
+              <View style={styles.divider} />
+              <Text style={styles.sectionTitle}>Attachments & Media</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 10, paddingTop: 6 }}
+              >
+                {job.photos?.map((photoUrl: string, idx: number) => (
+                  <TouchableOpacity
+                    key={idx}
+                    activeOpacity={0.8}
+                    onPress={() => setViewerMedia({ type: 'photo', url: photoUrl })}
+                  >
+                    <Image
+                      source={{ uri: photoUrl }}
+                      style={{
+                        width: 100,
+                        height: 100,
+                        borderRadius: 12,
+                        backgroundColor: colors.inkFaint,
+                      }}
+                    />
+                    <View
+                      style={{
+                        position: 'absolute',
+                        bottom: 6,
+                        right: 6,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        padding: 4,
+                        borderRadius: 8,
+                      }}
+                    >
+                      <Ionicons name="expand-outline" size={12} color={colors.white} />
+                    </View>
+                  </TouchableOpacity>
+                ))}
+
+                {job.video_url && (
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => setViewerMedia({ type: 'video', url: job.video_url! })}
+                    style={{
+                      width: 140,
+                      height: 100,
+                      borderRadius: 12,
+                      backgroundColor: '#1E1E1E',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Ionicons name="play-circle" size={36} color={colors.white} />
+                    <Text
+                      style={{
+                        fontFamily: fonts.bodyBold,
+                        fontSize: 11,
+                        color: colors.white,
+                        marginTop: 4,
+                      }}
+                    >
+                      Play Video
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </ScrollView>
             </>
           ) : null}
         </View>
@@ -493,6 +596,11 @@ export const JobStatusManagementScreen: React.FC = () => {
           )}
         </View>
       </ScrollView>
+      <MediaViewerModal
+        visible={!!viewerMedia}
+        media={viewerMedia}
+        onClose={() => setViewerMedia(null)}
+      />
     </SafeAreaView>
   );
 };

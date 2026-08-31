@@ -85,9 +85,29 @@ export const MyJobsScreen: React.FC = () => {
         disabled={!!item.deleted_at}
       >
         <View style={styles.jobHeader}>
-          <Text style={styles.jobCategory}>
-            {item.categories && item.categories.length > 0 ? item.categories[0] : 'General'}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text style={styles.jobCategory}>
+              {item.categories && item.categories.length > 0 ? item.categories[0] : 'General'}
+            </Text>
+            {!!(item.is_urgent || item.urgent) && (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: colors.peach,
+                  paddingVertical: 2,
+                  paddingHorizontal: 6,
+                  borderRadius: 8,
+                  gap: 2,
+                }}
+              >
+                <Ionicons name="flame" size={10} color={colors.error} />
+                <Text style={{ fontFamily: fonts.bodyBold, fontSize: 9, color: colors.error }}>
+                  URGENT
+                </Text>
+              </View>
+            )}
+          </View>
           <Text style={styles.jobTime}>{item.deleted_at ? 'Archived' : item.status}</Text>
         </View>
         <Text style={styles.jobTitle}>{item.title}</Text>

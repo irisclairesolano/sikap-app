@@ -4,7 +4,8 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
-import { navigate } from '../../App';
+import { navigationRef } from '../../App';
+import { User } from '../types';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -87,11 +88,32 @@ export const usePushNotifications = (): PushNotificationState => {
       const appId = data?.application_id || data?.applicationId;
       const jobId = data?.job_id || data?.jobId;
 
-      if (appId) {
-        navigate('ApplicationDetail', { applicationId: appId });
-      } else if (jobId) {
-        navigate('JobDetails', { id: jobId });
-      }
+      let retries = 0;
+      const tryNavigate = () => {
+        const user = queryClient.getQueryData<User>(['profile']);
+        const role = user?.role;
+        const ready = navigationRef.isReady();
+
+        if (ready && role) {
+          if (appId) {
+            if (role === 'employer') {
+              navigationRef.navigate('ApplicantDetail', { applicantId: appId });
+            } else {
+              navigationRef.navigate('ApplicationDetail', { applicationId: appId });
+            }
+          } else if (jobId) {
+            if (role === 'employer') {
+              navigationRef.navigate('JobStatusManagement', { id: jobId });
+            } else {
+              navigationRef.navigate('JobDetails', { id: jobId });
+            }
+          }
+        } else if (retries < 15) {
+          retries++;
+          setTimeout(tryNavigate, 300);
+        }
+      };
+      tryNavigate();
     });
 
     return () => {
