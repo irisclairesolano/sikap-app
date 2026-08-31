@@ -18,6 +18,7 @@ import Button from '../../components/common/Button';
 import { profileApi } from '../../api/profile';
 import { useAlert } from '../../contexts/AlertContext';
 import { useAuth } from '../../hooks/useAuth';
+import * as SecureStore from '../../utils/storage';
 
 export interface ContactPlatformSlot {
   platform: string;
@@ -138,7 +139,11 @@ export const ManageContactPlatformsScreen: React.FC = () => {
     const valid = platforms.filter((p) => p.value.trim().length > 0);
     setIsSubmitting(true);
     try {
-      await profileApi.updateProfile({ contact_platforms: valid });
+      const res = await profileApi.updateProfile({ contact_platforms: valid });
+      if (res?.user) {
+        await SecureStore.setItemAsync('user_profile', JSON.stringify(res.user));
+        queryClient.setQueryData(['profile'], res.user);
+      }
       await queryClient.invalidateQueries({ queryKey: ['profile'] });
       await refetchProfile();
       showAlert('Success', 'Communication platforms saved successfully.');

@@ -6,6 +6,7 @@ import { Platform } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { navigationRef } from '../../App';
 import { User } from '../types';
+import * as SecureStore from '../utils/storage';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -89,26 +90,46 @@ export const usePushNotifications = (): PushNotificationState => {
       const jobId = data?.job_id || data?.jobId;
 
       let retries = 0;
-      const tryNavigate = () => {
-        const user = queryClient.getQueryData<User>(['profile']);
-        const role = user?.role;
+      const tryNavigate = async () => {
+        let role = queryClient.getQueryData<User>(['profile'])?.role;
+        if (!role) {
+          try {
+            const cachedUserStr = await SecureStore.getItemAsync('user_profile');
+            if (cachedUserStr) {
+              const cachedUser = JSON.parse(cachedUserStr);
+              role = cachedUser?.role;
+            }
+          } catch (_) {}
+        }
         const ready = navigationRef.isReady();
 
         if (ready && role) {
           if (appId) {
             if (role === 'employer') {
-              navigationRef.navigate('ApplicantDetail', { applicantId: appId });
+              navigationRef.navigate('Employer', {
+                screen: 'ApplicantDetail',
+                params: { applicantId: appId },
+              });
             } else {
-              navigationRef.navigate('ApplicationDetail', { applicationId: appId });
+              navigationRef.navigate('Worker', {
+                screen: 'ApplicationDetail',
+                params: { applicationId: appId },
+              });
             }
           } else if (jobId) {
             if (role === 'employer') {
-              navigationRef.navigate('JobStatusManagement', { id: jobId });
+              navigationRef.navigate('Employer', {
+                screen: 'JobStatusManagement',
+                params: { id: jobId },
+              });
             } else {
-              navigationRef.navigate('JobDetails', { id: jobId });
+              navigationRef.navigate('Worker', {
+                screen: 'JobDetails',
+                params: { id: jobId },
+              });
             }
           }
-        } else if (retries < 15) {
+        } else if (retries < 25) {
           retries++;
           setTimeout(tryNavigate, 300);
         }

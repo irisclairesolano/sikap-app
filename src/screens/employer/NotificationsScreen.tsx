@@ -49,7 +49,7 @@ export const NotificationsScreen: React.FC = () => {
           disabled={markAllAsReadMutation.isPending}
         >
           <Text style={styles.markAllText}>
-            {markAllAsReadMutation.isPending ? 'Marking...' : 'Mark all'}
+            {markAllAsReadMutation.isPending ? 'Marking...' : 'Mark all as read'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -164,10 +164,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: 'transparent',
     ...shadows.sm,
   },
-  unreadPrimary: { borderLeftWidth: 3, borderLeftColor: colors.primary },
-  unreadMint: { borderLeftWidth: 3, borderLeftColor: colors.mintDeep },
+  unreadPrimary: { borderLeftColor: colors.primary },
+  unreadMint: { borderLeftColor: colors.mintDeep },
   iconBubble: {
     width: 36,
     height: 36,
