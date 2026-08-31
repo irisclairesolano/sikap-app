@@ -257,13 +257,9 @@ const styles = StyleSheet.create({
     elevation: 1, // var(--shadow-sm) equivalent
   },
   cardApplied: {
-    borderColor: colors.mintDeep,
-    borderWidth: 1, // thinner border
     backgroundColor: 'rgba(209, 250, 229, 0.45)',
   },
   cardWithdrawn: {
-    borderColor: colors.status.withdrawn.text, // use themed withdrawn text color
-    borderWidth: 1,
     backgroundColor: 'rgba(254, 243, 199, 0.45)',
   },
   statusChip: {
