@@ -152,7 +152,7 @@ export const JobFeedScreen: React.FC = () => {
 
       <View style={styles.searchRow}>
         <View style={styles.searchContainer}>
-          {isFetching ? (
+          {isLoading ? (
             <ActivityIndicator
               size="small"
               color={colors.primary}

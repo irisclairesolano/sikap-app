@@ -6,65 +6,95 @@ export const useReactToJob = () => {
 
   return useMutation({
     mutationFn: (jobId: number) => reactToJob(jobId),
-    onMutate: async (jobId: number) => {
-      // Optimistic update on job list queries
-      await queryClient.cancelQueries({ queryKey: ['jobs'] });
-      const previousData = queryClient.getQueriesData({ queryKey: ['jobs'] });
 
+    // Optimistic update — flip the UI instantly
+    onMutate: async (jobId: number) => {
+      await queryClient.cancelQueries({ queryKey: ['jobs'] });
+      await queryClient.cancelQueries({ queryKey: ['job', jobId] });
+
+      const previousJobs = queryClient.getQueriesData({ queryKey: ['jobs'] });
+      const previousJob = queryClient.getQueryData(['job', jobId]);
+
+      // Update all paginated job list caches
       queryClient.setQueriesData({ queryKey: ['jobs'] }, (old: any) => {
         if (!old) return old;
-        // Handle paginated data structures
-        const jobs = Array.isArray(old) ? old : old?.data || old?.jobs || [];
-        const updated = jobs.map((job: any) =>
-          job.id === jobId
-            ? {
-                ...job,
-                user_has_reacted: !job.user_has_reacted,
-                reactions_count: job.user_has_reacted
-                  ? (job.reactions_count || 1) - 1
-                  : (job.reactions_count || 0) + 1,
-              }
-            : job,
-        );
-        if (Array.isArray(old)) return updated;
-        return { ...old, data: updated };
+        const pages = old?.data;
+        if (Array.isArray(pages)) {
+          return {
+            ...old,
+            data: pages.map((job: any) =>
+              job.id === jobId
+                ? {
+                    ...job,
+                    user_has_reacted: !job.user_has_reacted,
+                    reactions_count: job.user_has_reacted
+                      ? Math.max((job.reactions_count || 1) - 1, 0)
+                      : (job.reactions_count || 0) + 1,
+                  }
+                : job,
+            ),
+          };
+        }
+        return old;
       });
 
-      return { previousData };
-    },
-    onError: (_err, _jobId, context) => {
-      if (context?.previousData) {
-        context.previousData.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-    },
-    onSuccess: (result, jobId) => {
-      // Update single job query if cached
+      // Update single job cache
       queryClient.setQueryData(['job', jobId], (old: any) => {
         if (!old) return old;
         return {
           ...old,
-          reactions_count: result.reactions_count,
-          user_has_reacted: result.reacted,
+          user_has_reacted: !old.user_has_reacted,
+          reactions_count: old.user_has_reacted
+            ? Math.max((old.reactions_count || 1) - 1, 0)
+            : (old.reactions_count || 0) + 1,
         };
       });
 
-      // Update all job lists in cache in-place
+      return { previousJobs, previousJob };
+    },
+
+    // On error, revert
+    onError: (_err, jobId, context) => {
+      if (context?.previousJobs) {
+        context.previousJobs.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      if (context?.previousJob) {
+        queryClient.setQueryData(['job', jobId], context.previousJob);
+      }
+    },
+
+    // On success, apply server truth then invalidate to sync counts
+    onSuccess: (result, jobId) => {
+      // Apply authoritative server values
       queryClient.setQueriesData({ queryKey: ['jobs'] }, (old: any) => {
         if (!old) return old;
-        const jobs = Array.isArray(old) ? old : old?.data || old?.jobs || [];
-        const updated = jobs.map((job: any) =>
-          job.id === jobId
-            ? {
-                ...job,
-                user_has_reacted: result.reacted,
-                reactions_count: result.reactions_count,
-              }
-            : job,
-        );
-        if (Array.isArray(old)) return updated;
-        return { ...old, data: updated };
+        const pages = old?.data;
+        if (Array.isArray(pages)) {
+          return {
+            ...old,
+            data: pages.map((job: any) =>
+              job.id === jobId
+                ? {
+                    ...job,
+                    user_has_reacted: result.reacted,
+                    reactions_count: result.reactions_count,
+                  }
+                : job,
+            ),
+          };
+        }
+        return old;
+      });
+
+      queryClient.setQueryData(['job', jobId], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          user_has_reacted: result.reacted,
+          reactions_count: result.reactions_count,
+        };
       });
     },
   });
