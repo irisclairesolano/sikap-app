@@ -17,6 +17,7 @@ import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { profileApi } from '../../api/profile';
 import { useAlert } from '../../contexts/AlertContext';
+import { useAuth } from '../../hooks/useAuth';
 
 export interface ContactPlatformSlot {
   platform: string;
@@ -66,6 +67,7 @@ export const ManageContactPlatformsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
   const { showAlert } = useAlert();
+  const { refetchProfile } = useAuth();
 
   const { data: user, isLoading: profileLoading } = useQuery({
     queryKey: ['profile'],
@@ -138,6 +140,7 @@ export const ManageContactPlatformsScreen: React.FC = () => {
     try {
       await profileApi.updateProfile({ contact_platforms: valid });
       await queryClient.invalidateQueries({ queryKey: ['profile'] });
+      await refetchProfile();
       showAlert('Success', 'Communication platforms saved successfully.');
       navigation.goBack();
     } catch (err: any) {
