@@ -93,8 +93,24 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
         job.is_withdrawn && styles.cardWithdrawn,
       ]}
     >
-      {isApplied && <View style={styles.appliedCorner} />}
-      {job.is_withdrawn && <View style={styles.withdrawnCorner} />}
+      {(isApplied || job.is_withdrawn) && (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.statusChip,
+            isApplied ? styles.statusChipApplied : styles.statusChipWithdrawn,
+          ]}
+        >
+          <Ionicons
+            name={isApplied ? 'checkmark-circle' : 'remove-circle'}
+            size={11}
+            color={isApplied ? '#15803D' : '#92400E'}
+          />
+          <Text style={[styles.statusChipText, { color: isApplied ? '#15803D' : '#92400E' }]}>
+            {isApplied ? 'Applied' : 'Withdrawn'}
+          </Text>
+        </View>
+      )}
 
       <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
         <View style={styles.topRow}>
@@ -111,12 +127,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
                     <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
                   </View>
                 )}
-                {isVerified && (
-                  <View style={[styles.badge, styles.badgeVerified]}>
-                    <Ionicons name="checkmark-circle" size={10} color={colors.mintDeep} />
-                    <Text style={[styles.badgeText, { color: colors.mintDeep }]}>VERIFIED</Text>
-                  </View>
-                )}
+                {isVerified && <Ionicons name="checkmark-circle" size={16} color="#22C55E" />}
               </View>
             )}
 
@@ -248,34 +259,39 @@ const styles = StyleSheet.create({
   cardApplied: {
     borderColor: colors.mintDeep,
     borderWidth: 1, // thinner border
-    backgroundColor: colors.status.accepted.bg, // subtle green tint
+    backgroundColor: 'rgba(209, 250, 229, 0.45)',
   },
   cardWithdrawn: {
     borderColor: colors.status.withdrawn.text, // use themed withdrawn text color
     borderWidth: 1,
-    backgroundColor: colors.status.withdrawn.bg, // use themed withdrawn background tint
+    backgroundColor: 'rgba(254, 243, 199, 0.45)',
   },
-  appliedCorner: {
+  statusChip: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 32,
-    height: 32,
-    backgroundColor: colors.mintDeep,
-    borderTopLeftRadius: 14,
-    borderBottomRightRadius: 32,
+    top: 10,
+    right: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 100,
     zIndex: 10,
   },
-  withdrawnCorner: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 32,
-    height: 32,
-    backgroundColor: colors.warning,
-    borderTopLeftRadius: 14,
-    borderBottomRightRadius: 32,
-    zIndex: 10,
+  statusChipApplied: {
+    backgroundColor: 'rgba(220, 252, 231, 0.9)',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+  },
+  statusChipWithdrawn: {
+    backgroundColor: 'rgba(254, 243, 199, 0.9)',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+  },
+  statusChipText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 10,
+    letterSpacing: 0.3,
   },
   topRow: {
     flexDirection: 'row',
@@ -312,9 +328,6 @@ const styles = StyleSheet.create({
   },
   badgeUrgent: {
     backgroundColor: colors.status.rejected.bg,
-  },
-  badgeVerified: {
-    backgroundColor: colors.mint,
   },
   jobTitle: {
     fontFamily: fonts.bodyBold,

@@ -51,14 +51,11 @@ export const JobDetailsScreen: React.FC = () => {
     try {
       const result = await getShareLink(job.id);
       await Share.share({
-        message: `Check out this job on SIKAP: ${result.job_title}\n${result.share_link}`,
-        url: result.share_link,
+        message: `Check out this job on SIKAP!\n\n${result.job_title}\n${result.share_link}`,
       });
     } catch (err: any) {
       if (err?.response?.status === 410) {
-        Alert.alert('Job Closed', 'This job is no longer available for sharing.');
-      } else if (err?.response?.status === 403) {
-        Alert.alert('Not Authorized', 'You are not authorized to share this post.');
+        Alert.alert('Job Closed', 'This job is no longer available.');
       }
     }
   };
@@ -154,12 +151,7 @@ export const JobDetailsScreen: React.FC = () => {
               <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
             </View>
           )}
-          {isVerified && (
-            <View style={[styles.badge, styles.badgeVerified]}>
-              <Ionicons name="checkmark-circle" size={10} color={colors.mintDeep} />
-              <Text style={[styles.badgeText, { color: colors.mintDeep }]}>VERIFIED</Text>
-            </View>
-          )}
+          {isVerified && <Ionicons name="checkmark-circle" size={18} color="#22C55E" />}
         </View>
 
         {/* Title */}
@@ -476,9 +468,6 @@ const styles = StyleSheet.create({
   },
   badgeUrgent: {
     backgroundColor: colors.status.rejected.bg,
-  },
-  badgeVerified: {
-    backgroundColor: colors.mint,
   },
   title: {
     fontFamily: fonts.display,
