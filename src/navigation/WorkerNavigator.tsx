@@ -225,7 +225,7 @@ const WorkerNavigator: React.FC = () => {
         component={NotificationsStack}
         options={{
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
-          tabBarBadgeStyle: { backgroundColor: colors.peach, color: colors.white },
+          tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
       />
       <Tab.Screen name="Me" component={ProfileStack} />

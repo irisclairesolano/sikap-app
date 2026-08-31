@@ -10,7 +10,10 @@ import { useJobRequest } from '../../hooks/useJobApplications';
 import { useAlert } from '../../contexts/AlertContext';
 
 type SendRequestScreenRouteProp = RouteProp<EmployerStackParamList, 'SendRequest'>;
-type SendRequestScreenNavigationProp = NativeStackNavigationProp<EmployerStackParamList, 'SendRequest'>;
+type SendRequestScreenNavigationProp = NativeStackNavigationProp<
+  EmployerStackParamList,
+  'SendRequest'
+>;
 
 const SendRequestScreen: React.FC = () => {
   const route = useRoute<SendRequestScreenRouteProp>();
@@ -26,11 +29,19 @@ const SendRequestScreen: React.FC = () => {
         showAlert(
           'Request Sent!',
           `You have sent a job request to ${applicantName}. Their references will now be visible to you.`,
-          [{ text: 'OK', onPress: () => navigation.popToTop() }]
+          [{ text: 'OK', onPress: () => navigation.popToTop() }],
         );
       },
       onError: (err: any) => {
-        showAlert('Error', err.message || 'Failed to send request.');
+        const rawMsg = err?.message || '';
+        const userFriendlyMsg =
+          !rawMsg ||
+          rawMsg.includes('http://') ||
+          rawMsg.includes('https://') ||
+          rawMsg.includes('NotFoundHttpException')
+            ? 'Unable to send job request. Please try again.'
+            : rawMsg;
+        showAlert('Error', userFriendlyMsg);
       },
     });
   };
@@ -42,10 +53,14 @@ const SendRequestScreen: React.FC = () => {
       </View>
       <View style={styles.content}>
         <Text style={styles.prompt}>
-          Are you sure you want to send a job request to <Text style={styles.bold}>{applicantName}</Text> for the position of <Text style={styles.bold}>{jobTitle}</Text>?
+          Are you sure you want to send a job request to{' '}
+          <Text style={styles.bold}>{applicantName}</Text> for the position of{' '}
+          <Text style={styles.bold}>{jobTitle}</Text>?
         </Text>
         <Text style={styles.info}>
-          Sending a request will move this application to the negotiation stage. The applicant's character references will be revealed so you can verify their background before confirming the hire.
+          Sending a request will move this application to the negotiation stage. The applicant's
+          character references will be revealed so you can verify their background before confirming
+          the hire.
         </Text>
 
         <Button
@@ -71,9 +86,21 @@ const styles = StyleSheet.create({
   header: { padding: 20, borderBottomWidth: 1, borderBottomColor: colors.inkFaint },
   headerTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
   content: { padding: 20 },
-  prompt: { fontFamily: fonts.body, fontSize: 16, color: colors.ink, marginBottom: 16, lineHeight: 24 },
+  prompt: {
+    fontFamily: fonts.body,
+    fontSize: 16,
+    color: colors.ink,
+    marginBottom: 16,
+    lineHeight: 24,
+  },
   bold: { fontFamily: fonts.bodyBold, color: colors.primary },
-  info: { fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft, marginBottom: 32, lineHeight: 20 },
+  info: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.inkSoft,
+    marginBottom: 32,
+    lineHeight: 20,
+  },
   actionBtn: { marginBottom: 12 },
 });
 

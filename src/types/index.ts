@@ -23,6 +23,7 @@ export interface User {
   employer_profile?: EmployerProfile;
   has_worker_profile?: boolean;
   has_employer_profile?: boolean;
+  contact_platforms?: { platform: string; value: string }[];
 }
 
 export interface JobPost {

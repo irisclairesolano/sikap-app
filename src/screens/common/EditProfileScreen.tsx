@@ -94,6 +94,12 @@ export const EditProfileScreen: React.FC = () => {
     user?.emergency_contact_phone || '',
   );
 
+  const [contactPlatforms, setContactPlatforms] = useState<{ platform: string; value: string }[]>(
+    user?.contact_platforms && user.contact_platforms.length > 0
+      ? user.contact_platforms
+      : [{ platform: 'WhatsApp', value: '' }],
+  );
+
   const { showAlert } = useAlert();
 
   const isVerified = user?.verification_status === 'approved';
@@ -231,6 +237,7 @@ export const EditProfileScreen: React.FC = () => {
           emergency_contact_phone: emergencyContactPhone || undefined,
           bio: user?.role === 'worker' ? bio : undefined,
           description: user?.role === 'employer' ? bio : undefined,
+          contact_platforms: contactPlatforms.filter((p) => p.value.trim().length > 0),
         };
 
         if (!isVerified && name) {

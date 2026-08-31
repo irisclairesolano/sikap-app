@@ -17,7 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
-import { useJobRequest, useApplication } from '../../hooks/useJobApplications';
+import { Avatar } from '../../components/common/Avatar';
+import { useApplication } from '../../hooks/useJobApplications';
 
 type ApplicantDetailScreenRouteProp = RouteProp<EmployerStackParamList, 'ApplicantDetail'>;
 type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -222,9 +223,7 @@ const ApplicantDetailScreen: React.FC = () => {
 
         {/* Profile Header */}
         <View style={styles.profileHeader}>
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{applicantName.charAt(0)}</Text>
-          </View>
+          <Avatar url={appData?.worker?.avatar_url} name={applicantName} size={52} />
           <View style={styles.profileInfo}>
             <View style={styles.nameRow}>
               <Text style={styles.nameText}>{applicantName}</Text>
@@ -259,9 +258,9 @@ const ApplicantDetailScreen: React.FC = () => {
         <View style={styles.statsGrid}>
           <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
             <Text style={[styles.statValue, { color: colors.mintDeep }]}>
-              {experiences ? experiences.length : 0}
+              {appData?.worker?.completed_jobs_count || (experiences ? experiences.length : 0)}
             </Text>
-            <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Jobs listed</Text>
+            <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Completed Jobs</Text>
           </View>
           <View style={[styles.statBox, { backgroundColor: colors.sky }]}>
             <Text style={[styles.statValue, { color: colors.skyDeep }]}>Active</Text>
@@ -648,14 +647,27 @@ const ApplicantDetailScreen: React.FC = () => {
       {/* Fixed Bottom Action */}
       <View style={styles.footer}>
         {status === 'pending' && (
-          <Button
-            label="Shortlist Applicant"
-            variant="primary"
-            size="lg"
-            fullWidth
-            onPress={navigateToSendRequest}
-            icon={<Ionicons name="star" size={18} color="white" />}
-          />
+          <View style={{ gap: 6 }}>
+            <Button
+              label="Shortlist applicant"
+              variant="primary"
+              size="lg"
+              fullWidth
+              onPress={navigateToSendRequest}
+              icon={<Ionicons name="star" size={18} color="white" />}
+            />
+            <Text
+              style={{
+                fontFamily: fonts.body,
+                fontSize: 12,
+                color: colors.inkSoft,
+                textAlign: 'center',
+                marginTop: 2,
+              }}
+            >
+              Shortlisting allows you to view contact info, negotiate details, and confirm the hire.
+            </Text>
+          </View>
         )}
         {status === 'pending_negotiation' && (
           <View style={{ gap: 12 }}>
