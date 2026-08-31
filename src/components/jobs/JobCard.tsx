@@ -245,16 +245,17 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
-    borderRadius: 14, // var(--r-md)
+    borderRadius: 14,
     padding: 14,
     display: 'flex',
     flexDirection: 'column',
     marginBottom: 10,
+    overflow: 'hidden',
     shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
     shadowRadius: 2,
-    elevation: 1, // var(--shadow-sm) equivalent
+    elevation: 1,
   },
   cardApplied: {
     backgroundColor: 'rgba(209, 250, 229, 0.45)',
