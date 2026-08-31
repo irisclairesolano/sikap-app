@@ -93,6 +93,14 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
         job.is_withdrawn && styles.cardWithdrawn,
       ]}
     >
+      {/* Tint overlay — absolute, clipped to rounded corners independently of shadow */}
+      {(isApplied || job.is_withdrawn) && (
+        <View
+          pointerEvents="none"
+          style={[styles.tintOverlay, isApplied ? styles.tintApplied : styles.tintWithdrawn]}
+        />
+      )}
+
       {(isApplied || job.is_withdrawn) && (
         <View
           pointerEvents="none"
@@ -250,18 +258,28 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     marginBottom: 10,
-    overflow: 'hidden',
     shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
     shadowRadius: 2,
     elevation: 1,
   },
-  cardApplied: {
-    backgroundColor: 'rgba(209, 250, 229, 0.45)',
+  cardApplied: {},
+  cardWithdrawn: {},
+  tintOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 14,
+    overflow: 'hidden',
   },
-  cardWithdrawn: {
-    backgroundColor: 'rgba(254, 243, 199, 0.45)',
+  tintApplied: {
+    backgroundColor: 'rgba(209, 250, 229, 0.55)',
+  },
+  tintWithdrawn: {
+    backgroundColor: 'rgba(254, 243, 199, 0.55)',
   },
   statusChip: {
     position: 'absolute',
