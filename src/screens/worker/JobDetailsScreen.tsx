@@ -360,12 +360,38 @@ export const JobDetailsScreen: React.FC = () => {
 
       {/* Bottom CTA */}
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-        <Button
-          label="Apply for this job"
-          size="lg"
-          onPress={() => navigation.navigate('Apply', { id: job.id })}
-          fullWidth
-        />
+        {job.is_applied || job.has_applied || job.application_id ? (
+          <View style={styles.alreadyAppliedCard}>
+            <View style={styles.alreadyAppliedRow}>
+              <Ionicons name="checkmark-circle" size={20} color={colors.mintDeep} />
+              <Text style={styles.alreadyAppliedTitle}>You have already applied for this job.</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.alreadyAppliedBtn}
+              activeOpacity={0.8}
+              onPress={() => {
+                if (job.application_id) {
+                  (navigation as any).navigate('ApplicationDetail', {
+                    applicationId: job.application_id,
+                  });
+                } else {
+                  (navigation as any).navigate('Mine');
+                }
+              }}
+            >
+              <Text style={styles.alreadyAppliedBtnText}>
+                Click here to manage your application →
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Button
+            label="Apply for this job"
+            size="lg"
+            onPress={() => navigation.navigate('Apply', { id: job.id })}
+            fullWidth
+          />
+        )}
       </View>
 
       <MediaViewerModal
@@ -599,6 +625,35 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+  },
+  alreadyAppliedCard: {
+    backgroundColor: colors.paperBright,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.mint,
+    alignItems: 'center',
+  },
+  alreadyAppliedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  alreadyAppliedTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.ink,
+  },
+  alreadyAppliedBtn: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  alreadyAppliedBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.primary,
+    textDecorationLine: 'underline',
   },
 });
 

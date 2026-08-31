@@ -21,60 +21,68 @@ import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 import { Application } from '../../types';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 
-const FILTERS = ['Active', 'Pending', 'Completed', 'Withdrawn'];
+const FILTERS = ['All', 'Active', 'Pending', 'Completed', 'Withdrawn'];
 
 export const MyApplicationsScreen: React.FC = () => {
-  const [activeFilter, setActiveFilter] = useState('Active');
+  const [activeFilter, setActiveFilter] = useState('All');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
 
-  const { data, isLoading, isError, error, refetch, isRefetching } = useMyApplications('All'); // Fetch all, we'll filter client-side for simplicity right now
+  const { data, isLoading, isError, error, refetch, isRefetching } = useMyApplications('All');
 
   const applications = data?.pages.flatMap((page) => page.data) || [];
 
-  const filteredApps = applications.filter((app) => {
-    if (activeFilter === 'Active') return app.status === 'accepted';
-    if (activeFilter === 'Pending')
-      return app.status === 'pending' || app.status === 'employer_confirmed';
-    if (activeFilter === 'Completed')
-      return app.status === 'completed' || app.status === 'rejected';
-    if (activeFilter === 'Withdrawn') return app.status === 'withdrawn';
+  const matchesFilter = (app: Application, filterName: string) => {
+    if (filterName === 'All') return true;
+    if (filterName === 'Active') {
+      return (
+        app.status === 'accepted' ||
+        app.status === 'employer_confirmed' ||
+        app.status === 'employer_requested' ||
+        app.status === 'pending_negotiation'
+      );
+    }
+    if (filterName === 'Pending') return app.status === 'pending';
+    if (filterName === 'Completed') return app.status === 'completed' || app.status === 'rejected';
+    if (filterName === 'Withdrawn') return app.status === 'withdrawn';
     return true;
-  }).sort((a, b) => {
-    const timeA = new Date(a.created_at).getTime();
-    const timeB = new Date(b.created_at).getTime();
-    return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
-  });
-
-  const getCount = (filterName: string) => {
-    return applications.filter((app) => {
-      if (filterName === 'Active') return app.status === 'accepted';
-      if (filterName === 'Pending')
-        return app.status === 'pending' || app.status === 'employer_confirmed';
-      if (filterName === 'Completed')
-        return app.status === 'completed' || app.status === 'rejected';
-      if (filterName === 'Withdrawn') return app.status === 'withdrawn';
-      return true;
-    }).length;
   };
 
-  const handlePressCard = useCallback((application: Application) => {
-    if (application.status === 'withdrawn') {
-      return;
-    }
-
-    navigation.navigate('ApplicationDetail', {
-      applicationId: application.id,
-      jobTitle: application.job?.title || 'Unknown Job',
-      employerName: application.job?.employer?.name || 'Unknown Employer',
-      status: application.status,
-      compensation: application.final_agreed_price?.toString(),
+  const filteredApps = applications
+    .filter((app) => matchesFilter(app, activeFilter))
+    .sort((a, b) => {
+      const timeA = new Date(a.created_at).getTime();
+      const timeB = new Date(b.created_at).getTime();
+      return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
     });
-  }, [navigation]);
 
-  const renderAppCard = useCallback(({ item }: { item: Application }) => (
-    <ApplicationCard application={item} onPress={() => handlePressCard(item)} />
-  ), [handlePressCard]);
+  const getCount = (filterName: string) => {
+    return applications.filter((app) => matchesFilter(app, filterName)).length;
+  };
+
+  const handlePressCard = useCallback(
+    (application: Application) => {
+      if (application.status === 'withdrawn') {
+        return;
+      }
+
+      navigation.navigate('ApplicationDetail', {
+        applicationId: application.id,
+        jobTitle: application.job?.title || 'Unknown Job',
+        employerName: application.job?.employer?.name || 'Unknown Employer',
+        status: application.status,
+        compensation: application.final_agreed_price?.toString(),
+      });
+    },
+    [navigation],
+  );
+
+  const renderAppCard = useCallback(
+    ({ item }: { item: Application }) => (
+      <ApplicationCard application={item} onPress={() => handlePressCard(item)} />
+    ),
+    [handlePressCard],
+  );
 
   const renderHeader = () => (
     <View style={styles.header}>
@@ -87,11 +95,15 @@ export const MyApplicationsScreen: React.FC = () => {
           <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
             {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+            onPress={() => setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
           >
-            <Ionicons name={sortOrder === 'desc' ? "arrow-down-outline" : "arrow-up-outline"} size={20} color={colors.ink} />
+            <Ionicons
+              name={sortOrder === 'desc' ? 'arrow-down-outline' : 'arrow-up-outline'}
+              size={20}
+              color={colors.ink}
+            />
           </TouchableOpacity>
         </View>
       </View>
