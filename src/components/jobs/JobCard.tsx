@@ -60,28 +60,20 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
   };
 
   const handleShare = async () => {
-    let shareUrl = `https://sikap.app/jobs/${job.id}`;
-    let shareTitle = job.title;
-
     try {
       const result = await getShareLink(job.id);
-      if (result?.share_link) {
-        shareUrl = result.share_link;
-      }
-      if (result?.job_title) {
-        shareTitle = result.job_title;
-      }
-    } catch {
-      // Smooth fallback if API endpoint returns non-200
-    }
-
-    try {
       await Share.share({
-        title: shareTitle,
-        message: `Check out this job on SIKAP: ${shareTitle}\n${shareUrl}`,
+        message: `Check out this job on SIKAP!\n\n${result.job_title}\n${result.share_link}`,
       });
-    } catch (err) {
-      console.warn('Share error:', err);
+    } catch {
+      // Share title only — never expose raw internal IDs
+      try {
+        await Share.share({
+          message: `Check out this job on SIKAP: ${job.title}`,
+        });
+      } catch (err) {
+        console.warn('Share error:', err);
+      }
     }
   };
 
