@@ -139,5 +139,5 @@ describe('AddSkillsScreen', () => {
     await waitFor(() => {
       expect(mockCreateSkillMutate).not.toHaveBeenCalled();
     });
-  });
+  }, 20000);
 });

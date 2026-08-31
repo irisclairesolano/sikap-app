@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface BottomSheetProps {
   visible: boolean;
@@ -23,7 +24,9 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   children,
   snapHeight = 380,
 }) => {
-  const translateY = useRef(new Animated.Value(snapHeight)).current;
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 20);
+  const translateY = useRef(new Animated.Value(snapHeight + bottomInset)).current;
 
   useEffect(() => {
     if (visible) {
@@ -36,12 +39,12 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       }).start();
     } else {
       Animated.timing(translateY, {
-        toValue: snapHeight,
+        toValue: snapHeight + bottomInset,
         duration: 250,
         useNativeDriver: true,
       }).start();
     }
-  }, [visible, snapHeight, translateY]);
+  }, [visible, snapHeight, bottomInset, translateY]);
 
   return (
     <Modal
@@ -57,7 +60,16 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         style={styles.avoidView}
         pointerEvents="box-none"
       >
-        <Animated.View style={[styles.sheet, { height: snapHeight, transform: [{ translateY }] }]}>
+        <Animated.View
+          style={[
+            styles.sheet,
+            {
+              height: snapHeight + bottomInset,
+              paddingBottom: bottomInset,
+              transform: [{ translateY }],
+            },
+          ]}
+        >
           {/* Drag handle */}
           <View style={styles.handle} />
           {children}
