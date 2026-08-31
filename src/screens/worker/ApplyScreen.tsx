@@ -201,6 +201,103 @@ export const ApplyScreen: React.FC = () => {
     );
   }
 
+  // DEDICATED ALREADY SUBMITTED SCREEN VIEW
+  const isAlreadySubmitted =
+    job.is_applied ||
+    job.has_applied ||
+    !!job.application_id ||
+    (isError &&
+      (error?.message?.toLowerCase().includes('already applied') ||
+        (error instanceof ApiClientError &&
+          JSON.stringify(error.errors || {})
+            .toLowerCase()
+            .includes('already applied'))));
+
+  if (isAlreadySubmitted) {
+    const handleGoToApplicationStatus = () => {
+      if (job.application_id) {
+        navigation.navigate('ApplicationDetail', {
+          applicationId: job.application_id,
+          jobTitle: job.title,
+          employerName: job.employer?.name || 'Employer',
+          status: 'pending',
+        });
+      } else {
+        (navigation as any).navigate('Mine');
+      }
+    };
+
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.appBar}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
+            <Ionicons name="arrow-back" size={24} color={colors.ink} />
+          </TouchableOpacity>
+          <Text style={styles.appBarTitle}>Application Status</Text>
+          <View style={{ width: 40 }} />
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.scrollContentSuccess}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Status Card */}
+          <View style={[styles.successCard, { backgroundColor: colors.mint }]}>
+            <View style={[styles.successIconBox, { backgroundColor: colors.paperBright }]}>
+              <Ionicons name="checkmark-circle" size={26} color={colors.mintDeep} />
+            </View>
+            <Text style={[styles.successHeadline, { color: colors.ink }]}>
+              Application Already{'\n'}
+              <Text style={{ color: colors.mintDeep }}>Submitted.</Text>
+            </Text>
+            <Text style={[styles.successSub, { color: colors.mintDeep, marginTop: 6 }]}>
+              You have already submitted an application for "{job.title}". You can track your status
+              below.
+            </Text>
+          </View>
+
+          {/* Job Summary Card */}
+          <View style={[styles.summaryCard, { marginTop: 16 }]}>
+            <View style={[styles.summaryIconBox, { backgroundColor: catStyles.bg }]}>
+              <Ionicons name={catStyles.icon as any} size={20} color={catStyles.color} />
+            </View>
+            <View style={styles.summaryDetails}>
+              <Text style={styles.summaryTitle} numberOfLines={1}>
+                {job.title}
+              </Text>
+              <Text style={styles.summaryEmployer} numberOfLines={1}>
+                {job.employer?.name}
+              </Text>
+            </View>
+            <View style={styles.summaryWageBox}>
+              <Text style={styles.summaryWage}>₱{job.compensation}</Text>
+            </View>
+          </View>
+
+          {/* Action Buttons */}
+          <View style={{ marginTop: 24, gap: 12, width: '100%' }}>
+            <Button
+              label="View Application Status"
+              variant="primary"
+              size="lg"
+              fullWidth
+              onPress={handleGoToApplicationStatus}
+              icon={<Ionicons name="document-text-outline" size={20} color="white" />}
+            />
+            <Button
+              label="Back to Job Feed"
+              variant="outline"
+              size="lg"
+              fullWidth
+              onPress={handleBackToJobs}
+              icon={<Ionicons name="arrow-back" size={20} color={colors.primary} />}
+            />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   // APPLICATION FORM
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
