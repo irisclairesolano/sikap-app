@@ -151,11 +151,13 @@ export const JobDetailsScreen: React.FC = () => {
               <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
             </View>
           )}
-          {isVerified && <Ionicons name="checkmark-circle" size={18} color="#22C55E" />}
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>{job.title}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+          <Text style={[styles.title, { flex: 1 }]}>{job.title}</Text>
+          {isVerified && <Ionicons name="checkmark-circle" size={20} color="#22C55E" />}
+        </View>
 
         {/* Peach Pay Card Hero */}
         <View style={styles.payCard}>

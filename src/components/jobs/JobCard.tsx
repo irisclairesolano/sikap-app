@@ -119,21 +119,21 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
           </View>
 
           <View style={styles.jobText}>
-            {(isUrgent || isVerified) && (
+            {isUrgent && (
               <View style={styles.jobBadges}>
-                {isUrgent && (
-                  <View style={[styles.badge, styles.badgeUrgent]}>
-                    <Ionicons name="flame" size={10} color={colors.error} />
-                    <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
-                  </View>
-                )}
-                {isVerified && <Ionicons name="checkmark-circle" size={16} color="#22C55E" />}
+                <View style={[styles.badge, styles.badgeUrgent]}>
+                  <Ionicons name="flame" size={10} color={colors.error} />
+                  <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
+                </View>
               </View>
             )}
 
-            <Text style={styles.jobTitle} numberOfLines={2}>
-              {job.title.length > 45 ? `${job.title.slice(0, 45)}...` : job.title}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Text style={[styles.jobTitle, { flex: 1 }]} numberOfLines={2}>
+                {job.title.length > 45 ? `${job.title.slice(0, 45)}...` : job.title}
+              </Text>
+              {isVerified && <Ionicons name="checkmark-circle" size={15} color="#22C55E" />}
+            </View>
 
             <View style={styles.jobMeta}>
               <Ionicons name="location" size={11} color={colors.inkMuted} />
