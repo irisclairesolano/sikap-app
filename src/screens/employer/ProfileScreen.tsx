@@ -93,6 +93,59 @@ export const ProfileScreen: React.FC = () => {
       </View>
 
       <RefreshableContainer onRefresh={handleRefresh} contentContainerStyle={styles.scrollContent}>
+        {(!user?.contact_platforms || user.contact_platforms.length === 0) && (
+          <TouchableOpacity
+            style={{
+              backgroundColor: colors.paperCream,
+              borderRadius: 14,
+              padding: 14,
+              marginBottom: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              borderWidth: 1,
+              borderColor: colors.inkFaint,
+            }}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('EditProfile' as any)}
+          >
+            <View
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 10,
+                backgroundColor: colors.peach,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Ionicons name="logo-whatsapp" size={20} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontFamily: fonts.bodyBold,
+                  fontSize: 13,
+                  color: colors.ink,
+                }}
+              >
+                Complete contact details
+              </Text>
+              <Text
+                style={{
+                  fontFamily: fonts.body,
+                  fontSize: 11,
+                  color: colors.inkSoft,
+                  marginTop: 2,
+                }}
+              >
+                Add preferred contact channels so shortlisted applicants can reach you easily.
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.primary} />
+          </TouchableOpacity>
+        )}
+
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>

@@ -55,7 +55,8 @@ export const ProfileScreen: React.FC = () => {
   const hasSkills = (user?.worker_profile?.skills?.length || 0) > 0;
   const hasHistory = (user?.worker_profile?.experiences?.length || 0) > 0;
   const hasRefs = (user?.worker_profile?.references?.length || 0) > 0;
-  const isProfileComplete = hasSkills && hasHistory && hasRefs;
+  const hasContact = (user?.contact_platforms?.length || 0) > 0;
+  const isProfileComplete = hasSkills && hasHistory && hasRefs && hasContact;
 
   const handleRefresh = async () => {
     setRefreshing(true);

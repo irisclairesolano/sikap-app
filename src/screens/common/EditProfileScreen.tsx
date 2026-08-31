@@ -492,6 +492,30 @@ export const EditProfileScreen: React.FC = () => {
                 />
               </View>
             ))}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                backgroundColor: colors.mint,
+                padding: 10,
+                borderRadius: 10,
+                marginTop: 4,
+              }}
+            >
+              <Ionicons name="lock-closed" size={14} color={colors.mintDeep} />
+              <Text
+                style={{
+                  fontFamily: fonts.body,
+                  fontSize: 11,
+                  color: colors.mintDeep,
+                  flex: 1,
+                }}
+              >
+                Private & Secure: Your communication links are strictly hidden until you shortlist
+                or accept a job with another user.
+              </Text>
+            </View>
           </View>
 
           {user?.role === 'employer' && (

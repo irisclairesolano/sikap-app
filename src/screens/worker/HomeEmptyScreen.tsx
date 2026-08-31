@@ -28,19 +28,22 @@ export const HomeEmptyScreen: React.FC = () => {
   const hasSkills = (profile?.worker_profile?.skills?.length || 0) > 0;
   const hasHistory = (profile?.worker_profile?.experiences?.length || 0) > 0;
   const hasRefs = (profile?.worker_profile?.references?.length || 0) > 0;
+  const hasContact =
+    (profile?.contact_platforms?.length || 0) > 0 || (user?.contact_platforms?.length || 0) > 0;
 
   let progressCount = 1; // Account verified
   if (hasSkills) progressCount++;
   if (hasHistory) progressCount++;
   if (hasRefs) progressCount++;
+  if (hasContact) progressCount++;
 
-  const progressPercent = Math.round((progressCount / 4) * 100);
+  const progressPercent = Math.round((progressCount / 5) * 100);
 
   React.useEffect(() => {
-    if (isFocused && hasSkills && hasHistory && hasRefs) {
+    if (isFocused && hasSkills && hasHistory && hasRefs && hasContact) {
       navigation.replace('Home');
     }
-  }, [hasSkills, hasHistory, hasRefs, isFocused, navigation]);
+  }, [hasSkills, hasHistory, hasRefs, hasContact, isFocused, navigation]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -190,6 +193,37 @@ export const HomeEmptyScreen: React.FC = () => {
             </View>
             <Ionicons
               name={hasRefs ? 'pencil' : 'chevron-forward'}
+              size={18}
+              color={colors.inkLight}
+            />
+          </TouchableOpacity>
+
+          {/* Add Preferred Contact & Social Links */}
+          <TouchableOpacity
+            style={[styles.taskCard, !hasContact && hasRefs && styles.activeTaskCard]}
+            onPress={() => navigation.navigate('EditProfile' as any)}
+            activeOpacity={0.7}
+          >
+            <View
+              style={[
+                styles.taskIconBox,
+                { backgroundColor: hasContact ? colors.mint : colors.paperCream },
+              ]}
+            >
+              <Ionicons
+                name={hasContact ? 'checkmark' : 'logo-whatsapp'}
+                size={16}
+                color={hasContact ? colors.mintDeep : colors.primary}
+              />
+            </View>
+            <View style={styles.taskTextContainer}>
+              <Text style={styles.taskTitle}>Add contact & social links</Text>
+              <Text style={styles.taskSubtitle}>
+                {hasContact ? 'Completed' : 'WhatsApp, FB, Phone (Revealed post-shortlist)'}
+              </Text>
+            </View>
+            <Ionicons
+              name={hasContact ? 'pencil' : 'chevron-forward'}
               size={18}
               color={colors.inkLight}
             />
