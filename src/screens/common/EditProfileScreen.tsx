@@ -15,6 +15,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -229,7 +230,7 @@ export const EditProfileScreen: React.FC = () => {
 
         res = await profileApi.updateProfile(formData);
       } else {
-        const updateData: any = {
+        const updateData: Record<string, any> = {
           barangay: barangay || undefined,
           municipality: municipality || undefined,
           date_of_birth: dateOfBirth ? dateOfBirth.toISOString().split('T')[0] : undefined,
@@ -300,6 +301,7 @@ export const EditProfileScreen: React.FC = () => {
                 <ActivityIndicator color={colors.primary} />
               ) : getAvatarUrl() && !imageError ? (
                 <Image
+                  cachePolicy="memory-disk"
                   source={{ uri: getAvatarUrl()! }}
                   style={styles.avatarImage}
                   onError={() => setImageError(true)}
@@ -433,6 +435,64 @@ export const EditProfileScreen: React.FC = () => {
               </View>
             </>
           )}
+
+          {/* Social Media & Communication Platforms */}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>
+              A social media or communication platform where you want the employer/user to contact
+              you
+            </Text>
+            <Text
+              style={{
+                fontFamily: fonts.body,
+                fontSize: 12,
+                color: colors.inkSoft,
+                marginBottom: 8,
+              }}
+            >
+              Add up to 3 links (WhatsApp, Facebook, Instagram, Viber, Telegram, Phone). Revealed to
+              the other party after shortlisting.
+            </Text>
+            {contactPlatforms.map((item, index) => (
+              <View
+                key={index}
+                style={{
+                  flexDirection: 'row',
+                  gap: 8,
+                  marginBottom: 8,
+                  alignItems: 'center',
+                }}
+              >
+                <View
+                  style={{
+                    backgroundColor: colors.paperBright,
+                    borderWidth: 1,
+                    borderColor: colors.inkFaint,
+                    borderRadius: 10,
+                    paddingHorizontal: 8,
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text style={{ fontFamily: fonts.bodyBold, fontSize: 12, color: colors.ink }}>
+                    {item.platform}
+                  </Text>
+                </View>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { flex: 1, backgroundColor: colors.paperBright, marginBottom: 0 },
+                  ]}
+                  placeholder={`Enter ${item.platform} handle or link`}
+                  value={item.value}
+                  onChangeText={(val) => {
+                    const updated = [...contactPlatforms];
+                    updated[index].value = val;
+                    setContactPlatforms(updated);
+                  }}
+                />
+              </View>
+            ))}
+          </View>
 
           {user?.role === 'employer' && (
             <View style={styles.formGroup}>

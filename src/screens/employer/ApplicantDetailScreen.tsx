@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAlert } from '../../contexts/AlertContext';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,7 +28,6 @@ type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
 const ApplicantDetailScreen: React.FC = () => {
   const route = useRoute<ApplicantDetailScreenRouteProp>();
   const navigation = useNavigation<ApplicantDetailScreenNavigationProp>();
-  const { showAlert } = useAlert();
   const [isMenuVisible, setMenuVisible] = useState(false);
 
   const appId = route.params.applicantId || (route.params as any).applicationId;
@@ -98,13 +96,6 @@ const ApplicantDetailScreen: React.FC = () => {
     setMenuVisible(false);
     navigation.navigate('Report' as any, { id: applicantId, type: 'user' });
   };
-
-  const isShortlisted =
-    status === 'employer_requested' || status === 'accepted' || status === 'employer_confirmed';
-  const isConfirmed = status === 'employer_confirmed';
-  const isAccepted = status === 'accepted';
-  const isPending = status === 'pending';
-  const isCompleted = status === 'completed';
 
   const navigateToConfirmHire = () => {
     navigation.navigate('ConfirmHire', { applicantId, applicantName, jobTitle });

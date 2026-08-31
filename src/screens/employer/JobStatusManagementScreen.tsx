@@ -38,7 +38,7 @@ export const JobStatusManagementScreen: React.FC = () => {
 
   const { data: job, isLoading: isJobLoading, isError, error, refetch } = useJob(id);
   const { data: applications = [], isLoading: isAppsLoading } = useJobApplications(id);
-  const { mutate: deleteJob, isPending: isDeleting } = useDeleteJob();
+  const { mutate: deleteJob } = useDeleteJob();
   const { showAlert } = useAlert();
 
   const isLoading = isJobLoading || isAppsLoading;
@@ -439,6 +439,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                     onPress={() => setViewerMedia({ type: 'photo', url: photoUrl })}
                   >
                     <Image
+                      cachePolicy="memory-disk"
                       source={{ uri: photoUrl }}
                       style={{
                         width: 100,

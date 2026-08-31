@@ -20,7 +20,6 @@ import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { useJobs } from '../../hooks/useJobs';
 import { useSavedJobs, useToggleSaveJob } from '../../hooks/useSavedJobs';
 import { JobCard } from '../../components/jobs/JobCard';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { EmptyState } from '../../components/common/EmptyState';
 import { useAuthCheck } from '../../hooks/useAuthCheck';
@@ -81,11 +80,21 @@ export const JobFeedScreen: React.FC = () => {
     };
   }, [searchQuery, activeCategory, locationFilter, user, userSkills]);
 
-  const { data, isLoading, isError, error, refetch, isFetching } = useJobs(filters);
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useJobs(filters);
   const { data: savedJobsData } = useSavedJobs();
   const { mutate: toggleSave } = useToggleSaveJob();
 
-  const jobsList = data?.data || [];
+  const jobsList = data?.pages.flatMap((page) => page.data) || [];
 
   const isSaved = useCallback(
     (id: number) => {
@@ -123,6 +132,7 @@ export const JobFeedScreen: React.FC = () => {
         <View style={styles.appBarLeft}>
           {user?.avatar_url ? (
             <Image
+              cachePolicy="memory-disk"
               source={{
                 uri: user.avatar_url.startsWith('http')
                   ? user.avatar_url
@@ -236,6 +246,17 @@ export const JobFeedScreen: React.FC = () => {
         windowSize={5}
         removeClippedSubviews={true}
         ListHeaderComponent={renderHeader()}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+        }}
+        onEndReachedThreshold={0.3}
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          ) : null
+        }
         ListEmptyComponent={
           isError ? (
             <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>

@@ -8,6 +8,7 @@ export const useSavedJobs = () => {
     queryFn: async () => {
       return await apiClient<{ data: JobPost[] }>('/saved-jobs');
     },
+    staleTime: 2 * 60 * 1000,
   });
 };
 

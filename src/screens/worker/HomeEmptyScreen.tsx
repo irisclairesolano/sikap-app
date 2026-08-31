@@ -50,6 +50,7 @@ export const HomeEmptyScreen: React.FC = () => {
             <View style={styles.avatar}>
               {user?.avatar_url ? (
                 <Image
+                  cachePolicy="memory-disk"
                   source={{
                     uri: user.avatar_url.startsWith('http')
                       ? user.avatar_url

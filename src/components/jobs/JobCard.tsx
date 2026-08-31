@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Share, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts } from '../../theme';
 import { JobPost } from '../../types';
@@ -46,7 +46,12 @@ const getRelativeTime = (dateString?: string) => {
   return `${diffInMonths}mo ago`;
 };
 
-export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved }) => {
+export const JobCard = React.memo(function JobCard({
+  job,
+  onPress,
+  onSave,
+  isSaved,
+}: JobCardProps) {
   const isUrgent = !!(job.is_urgent || job.urgent);
   const isVerified = job.employer?.verification_badge;
   const catStyles = getCategoryStyles(job.categories?.[0] || 'Other');
@@ -240,7 +245,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
       />
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   card: {

@@ -9,14 +9,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import { profileApi } from '../../api/profile';
-import { RefreshableContainer } from '../../components/common/RefreshableContainer';
 import { useAuth } from '../../hooks/useAuth';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'Profile'>;
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  const { user: authUser, refetchProfile } = useAuth();
+  const { refetchProfile } = useAuth();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -126,6 +125,7 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.avatarContainer}>
             {getAvatarUrl() && !imageError ? (
               <Image
+                cachePolicy="memory-disk"
                 source={{ uri: getAvatarUrl()! }}
                 style={styles.avatarImage}
                 onError={() => setImageError(true)}

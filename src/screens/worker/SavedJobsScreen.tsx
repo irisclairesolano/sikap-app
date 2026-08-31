@@ -14,7 +14,7 @@ import { EmptyState } from '../../components/common/EmptyState';
 
 export const SavedJobsScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
-  const { data, isLoading, isError, error, refetch } = useSavedJobs();
+  const { data, isLoading, isError, error, refetch, isFetching } = useSavedJobs();
   const { mutate: toggleSave } = useToggleSaveJob();
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
@@ -101,7 +101,7 @@ export const SavedJobsScreen: React.FC = () => {
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={<EmptyState message="You haven't saved any jobs yet." />}
         contentContainerStyle={styles.listContent}
-        refreshing={isLoading}
+        refreshing={isFetching && !isLoading}
         onRefresh={refetch}
         showsVerticalScrollIndicator={false}
       />

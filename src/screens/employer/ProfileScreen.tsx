@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -25,7 +25,6 @@ export const ProfileScreen: React.FC = () => {
   const { user: authUser, refetchProfile } = useAuth();
   const queryClient = useQueryClient();
   const { data: jobsResponse } = useEmployerJobs();
-  const [refreshing, setRefreshing] = useState(false);
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -98,7 +97,11 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
             {getAvatarUrl() ? (
-              <Image source={{ uri: getAvatarUrl()! }} style={styles.avatarImage} />
+              <Image
+                cachePolicy="memory-disk"
+                source={{ uri: getAvatarUrl()! }}
+                style={styles.avatarImage}
+              />
             ) : (
               <Text style={styles.avatarText}>{employer.name.charAt(0)}</Text>
             )}

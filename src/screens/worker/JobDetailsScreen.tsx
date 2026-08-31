@@ -241,6 +241,7 @@ export const JobDetailsScreen: React.FC = () => {
                   onPress={() => setViewerMedia({ type: 'photo', url: photoUrl })}
                 >
                   <Image
+                    cachePolicy="memory-disk"
                     source={{ uri: photoUrl }}
                     style={{
                       width: 110,
@@ -341,6 +342,39 @@ export const JobDetailsScreen: React.FC = () => {
             </View>
 
             <Ionicons name="chevron-forward" size={20} color={colors.inkMuted} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Social Action Bar */}
+        <View style={styles.detailActionBar}>
+          <TouchableOpacity
+            style={styles.detailActionBtn}
+            onPress={handleReact}
+            disabled={isReacting}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={job.user_has_reacted ? 'heart' : 'heart-outline'}
+              size={18}
+              color={job.user_has_reacted ? '#E85D75' : colors.inkSoft}
+            />
+            <Text
+              style={[
+                styles.detailActionText,
+                job.user_has_reacted && styles.detailActionTextActive,
+              ]}
+            >
+              {job.reactions_count && job.reactions_count > 0 ? job.reactions_count : ''} Interested
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.detailActionBtn}
+            onPress={handleShare}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="share-social-outline" size={18} color={colors.inkSoft} />
+            <Text style={styles.detailActionText}>Share</Text>
           </TouchableOpacity>
         </View>
 
@@ -646,10 +680,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     textDecorationLine: 'underline',
   },
-});
-
-const detailActionBar = StyleSheet.create({
-  container: {
+  detailActionBar: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FAFAF8',
@@ -659,24 +690,19 @@ const detailActionBar = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E0D8',
   },
-  btn: {
+  detailActionBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
   },
-  divider: {
-    width: 1,
-    height: 20,
-    backgroundColor: '#E5E0D8',
-  },
-  text: {
+  detailActionText: {
     fontSize: 13,
     color: '#8C7B6A',
     fontWeight: '500',
   },
-  textActive: {
+  detailActionTextActive: {
     color: '#E85D75',
     fontWeight: '700',
   },

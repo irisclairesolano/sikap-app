@@ -62,6 +62,7 @@ export const MediaViewerModal: React.FC<MediaViewerModalProps> = ({ visible, med
         <View style={styles.content}>
           {media.type === 'photo' ? (
             <Image
+              cachePolicy="memory-disk"
               source={{ uri: media.url }}
               style={styles.fullscreenImage}
               contentFit="contain"

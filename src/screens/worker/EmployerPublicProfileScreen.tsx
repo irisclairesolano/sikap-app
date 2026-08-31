@@ -44,7 +44,11 @@ export const EmployerPublicProfileScreen: React.FC = () => {
         {/* Profile Header Card */}
         <View style={styles.profileHeaderCard}>
           {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+            <Image
+              cachePolicy="memory-disk"
+              source={{ uri: avatarUrl }}
+              style={styles.avatarImage}
+            />
           ) : (
             <Avatar name={employerName || 'Employer'} size={72} />
           )}
@@ -143,7 +147,11 @@ export const EmployerPublicProfileScreen: React.FC = () => {
                       onPress={() => setViewerMedia({ type: 'photo', url: docUrl })}
                       style={styles.docThumb}
                     >
-                      <Image source={{ uri: docUrl }} style={styles.docImage} />
+                      <Image
+                        cachePolicy="memory-disk"
+                        source={{ uri: docUrl }}
+                        style={styles.docImage}
+                      />
                       <View style={styles.expandOverlay}>
                         <Ionicons name="expand-outline" size={12} color={colors.white} />
                       </View>

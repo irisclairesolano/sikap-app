@@ -49,7 +49,6 @@ export const PostJobScreen: React.FC = () => {
   const { showAlert } = useAlert();
 
   const [isPublishing, setIsPublishing] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [title, setTitle] = useState(jobToEdit?.title || '');
 
@@ -268,7 +267,7 @@ export const PostJobScreen: React.FC = () => {
       };
 
       xhr.send(formData);
-    } catch (error) {
+    } catch {
       setVideoUpload((prev) => (prev ? { ...prev, status: 'error', progress: 0 } : null));
     }
   };
@@ -338,7 +337,7 @@ export const PostJobScreen: React.FC = () => {
       };
 
       xhr.send(formData);
-    } catch (error) {
+    } catch {
       setPhotos((prev) =>
         prev.map((p) => (p.id === photoId ? { ...p, status: 'error', progress: 0 } : p)),
       );
@@ -470,9 +469,6 @@ export const PostJobScreen: React.FC = () => {
     videoUpload &&
     (videoUpload.status === 'uploading' || videoUpload.status === 'compressing')
   );
-
-  const isUploadingPhotos = photos.some((p) => p.status === 'uploading');
-  const isAnyMediaUploading = isUploadingPhotos || isUploadingVideo;
 
   const handleSubmit = () => {
     // Automatically add currentCategory if the user forgot to press enter/space
@@ -941,6 +937,7 @@ export const PostJobScreen: React.FC = () => {
                     {photos.map((p, idx) => (
                       <View key={p.id} style={styles.previewWrapper}>
                         <Image
+                          cachePolicy="memory-disk"
                           source={{ uri: p.uri }}
                           style={styles.previewImg}
                           blurRadius={p.status !== 'success' ? 15 : 0}
