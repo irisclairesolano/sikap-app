@@ -80,21 +80,23 @@ export const JobFeedScreen: React.FC = () => {
     };
   }, [searchQuery, activeCategory, locationFilter, user, userSkills]);
 
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isFetching,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useJobs(filters);
+  const { data, isLoading, isError, error, refetch, isFetching } = useJobs(filters);
   const { data: savedJobsData } = useSavedJobs();
   const { mutate: toggleSave } = useToggleSaveJob();
 
-  const jobsList = data?.pages.flatMap((page) => page.data) || [];
+  const jobsList = useMemo(() => {
+    if (!data) return [];
+    if (Array.isArray((data as any).pages)) {
+      return (data as any).pages.flatMap((page: any) => page?.data || []);
+    }
+    if (Array.isArray((data as any).data)) {
+      return (data as any).data;
+    }
+    if (Array.isArray(data)) {
+      return data;
+    }
+    return [];
+  }, [data]);
 
   const isSaved = useCallback(
     (id: number) => {
@@ -246,17 +248,6 @@ export const JobFeedScreen: React.FC = () => {
         windowSize={5}
         removeClippedSubviews={true}
         ListHeaderComponent={renderHeader()}
-        onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-        }}
-        onEndReachedThreshold={0.3}
-        ListFooterComponent={
-          isFetchingNextPage ? (
-            <View style={{ paddingVertical: 16, alignItems: 'center' }}>
-              <ActivityIndicator size="small" color={colors.primary} />
-            </View>
-          ) : null
-        }
         ListEmptyComponent={
           isError ? (
             <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>
