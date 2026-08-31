@@ -86,16 +86,21 @@ export const JobFeedScreen: React.FC = () => {
 
   const jobsList = useMemo(() => {
     if (!data) return [];
+    let list: any[] = [];
     if (Array.isArray((data as any).pages)) {
-      return (data as any).pages.flatMap((page: any) => page?.data || []);
+      list = (data as any).pages.flatMap((page: any) => page?.data || []);
+    } else if (Array.isArray((data as any).data)) {
+      list = (data as any).data;
+    } else if (Array.isArray(data)) {
+      list = data as any[];
     }
-    if (Array.isArray((data as any).data)) {
-      return (data as any).data;
-    }
-    if (Array.isArray(data)) {
-      return data;
-    }
-    return [];
+    // Strictly guarantee newest jobs (latest created_at / highest ID) appear first
+    return [...list].sort((a, b) => {
+      const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      if (timeA !== timeB) return timeB - timeA;
+      return (b.id || 0) - (a.id || 0);
+    });
   }, [data]);
 
   const isSaved = useCallback(
