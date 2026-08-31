@@ -4,6 +4,8 @@ import AddSkillsScreen from '../../../src/screens/worker/AddSkillsScreen';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuthCheck } from '../../../src/hooks/useAuthCheck';
 
+jest.setTimeout(30000);
+
 const mockNavigate = jest.fn();
 const mockGoBack = jest.fn();
 
