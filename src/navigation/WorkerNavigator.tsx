@@ -138,6 +138,7 @@ const FindStack: React.FC = () => {
       <Stack.Screen name="Report" component={ReportScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     </Stack.Navigator>
   );
 };

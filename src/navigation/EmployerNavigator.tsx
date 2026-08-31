@@ -91,6 +91,7 @@ const HomeStack: React.FC = () => (
     <Stack.Screen name="RateWorkerList" component={RateWorkerListScreen} />
     <Stack.Screen name="RateWorker" component={RateWorkerScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
+    <Stack.Screen name="EditProfile" component={EditProfileScreen} />
   </Stack.Navigator>
 );
 
@@ -109,6 +110,7 @@ const MyJobsStack: React.FC = () => (
     <Stack.Screen name="SendRequest" component={SendRequestScreen} />
     <Stack.Screen name="CancelHire" component={CancelHireScreen} />
     <Stack.Screen name="MarkComplete" component={MarkCompleteScreen} />
+    <Stack.Screen name="EditProfile" component={EditProfileScreen} />
   </Stack.Navigator>
 );
 
