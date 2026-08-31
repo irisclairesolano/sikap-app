@@ -107,7 +107,7 @@ export const ProfileScreen: React.FC = () => {
               borderColor: colors.inkFaint,
             }}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate('EditProfile' as any)}
+            onPress={() => navigation.navigate('ManageContactPlatforms' as any)}
           >
             <View
               style={{

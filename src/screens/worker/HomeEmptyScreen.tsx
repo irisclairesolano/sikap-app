@@ -201,7 +201,7 @@ export const HomeEmptyScreen: React.FC = () => {
           {/* Add Preferred Contact & Social Links */}
           <TouchableOpacity
             style={[styles.taskCard, !hasContact && hasRefs && styles.activeTaskCard]}
-            onPress={() => navigation.navigate('EditProfile' as any)}
+            onPress={() => navigation.navigate('ManageContactPlatforms' as any)}
             activeOpacity={0.7}
           >
             <View

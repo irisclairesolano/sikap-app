@@ -14,6 +14,7 @@ import RateWorkerListScreen from '../screens/employer/RateWorkerListScreen';
 import MyJobsScreen from '../screens/employer/MyJobsScreen';
 import JobStatusManagementScreen from '../screens/employer/JobStatusManagementScreen';
 import EditProfileScreen from '../screens/common/EditProfileScreen';
+import ManageContactPlatformsScreen from '../screens/common/ManageContactPlatformsScreen';
 import SettingsScreen from '../screens/common/SettingsScreen';
 import ReportScreen from '../screens/common/ReportScreen';
 import RoleOnboardingScreen from '../screens/common/RoleOnboardingScreen';
@@ -57,6 +58,7 @@ export type EmployerStackParamList = {
   RateWorker: { id: number; workerName: string; jobTitle: string };
   Report: { id: number };
   EditProfile: undefined;
+  ManageContactPlatforms: undefined;
   Settings: undefined;
   Reviews: undefined;
   MyJobs: undefined;
@@ -92,6 +94,7 @@ const HomeStack: React.FC = () => (
     <Stack.Screen name="RateWorker" component={RateWorkerScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    <Stack.Screen name="ManageContactPlatforms" component={ManageContactPlatformsScreen} />
   </Stack.Navigator>
 );
 
@@ -111,6 +114,7 @@ const MyJobsStack: React.FC = () => (
     <Stack.Screen name="CancelHire" component={CancelHireScreen} />
     <Stack.Screen name="MarkComplete" component={MarkCompleteScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    <Stack.Screen name="ManageContactPlatforms" component={ManageContactPlatformsScreen} />
   </Stack.Navigator>
 );
 
@@ -126,6 +130,7 @@ const ProfileStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Profile" component={ProfileScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    <Stack.Screen name="ManageContactPlatforms" component={ManageContactPlatformsScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
   </Stack.Navigator>

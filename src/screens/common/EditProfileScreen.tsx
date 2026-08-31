@@ -95,12 +95,6 @@ export const EditProfileScreen: React.FC = () => {
     user?.emergency_contact_phone || '',
   );
 
-  const [contactPlatforms, setContactPlatforms] = useState<{ platform: string; value: string }[]>(
-    user?.contact_platforms && user.contact_platforms.length > 0
-      ? user.contact_platforms
-      : [{ platform: 'WhatsApp', value: '' }],
-  );
-
   const { showAlert } = useAlert();
 
   const isVerified = user?.verification_status === 'approved';
@@ -238,7 +232,6 @@ export const EditProfileScreen: React.FC = () => {
           emergency_contact_phone: emergencyContactPhone || undefined,
           bio: user?.role === 'worker' ? bio : undefined,
           description: user?.role === 'employer' ? bio : undefined,
-          contact_platforms: contactPlatforms.filter((p) => p.value.trim().length > 0),
         };
 
         if (!isVerified && name) {
@@ -438,84 +431,54 @@ export const EditProfileScreen: React.FC = () => {
 
           {/* Social Media & Communication Platforms */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>
-              A social media or communication platform where you want the employer/user to contact
-              you
-            </Text>
-            <Text
-              style={{
-                fontFamily: fonts.body,
-                fontSize: 12,
-                color: colors.inkSoft,
-                marginBottom: 8,
-              }}
-            >
-              Add up to 3 links (WhatsApp, Facebook, Instagram, Viber, Telegram, Phone). Revealed to
-              the other party after shortlisting.
-            </Text>
-            {contactPlatforms.map((item, index) => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: 'row',
-                  gap: 8,
-                  marginBottom: 8,
-                  alignItems: 'center',
-                }}
-              >
-                <View
-                  style={{
-                    backgroundColor: colors.paperBright,
-                    borderWidth: 1,
-                    borderColor: colors.inkFaint,
-                    borderRadius: 10,
-                    paddingHorizontal: 8,
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Text style={{ fontFamily: fonts.bodyBold, fontSize: 12, color: colors.ink }}>
-                    {item.platform}
-                  </Text>
-                </View>
-                <TextInput
-                  style={[
-                    styles.input,
-                    { flex: 1, backgroundColor: colors.paperBright, marginBottom: 0 },
-                  ]}
-                  placeholder={`Enter ${item.platform} handle or link`}
-                  value={item.value}
-                  onChangeText={(val) => {
-                    const updated = [...contactPlatforms];
-                    updated[index].value = val;
-                    setContactPlatforms(updated);
-                  }}
-                />
-              </View>
-            ))}
-            <View
+            <Text style={styles.label}>Communication Platforms</Text>
+            <TouchableOpacity
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                gap: 6,
-                backgroundColor: colors.mint,
-                padding: 10,
-                borderRadius: 10,
-                marginTop: 4,
+                justifyContent: 'space-between',
+                backgroundColor: colors.paperBright,
+                borderWidth: 1,
+                borderColor: colors.inkFaint,
+                borderRadius: 12,
+                padding: 14,
               }}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('ManageContactPlatforms' as any)}
             >
-              <Ionicons name="lock-closed" size={14} color={colors.mintDeep} />
-              <Text
-                style={{
-                  fontFamily: fonts.body,
-                  fontSize: 11,
-                  color: colors.mintDeep,
-                  flex: 1,
-                }}
-              >
-                Private & Secure: Your communication links are strictly hidden until you shortlist
-                or accept a job with another user.
-              </Text>
-            </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+                <View
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    backgroundColor: colors.peach,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Ionicons name="chatbubbles" size={20} color={colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>
+                    Communication & Social Links
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: fonts.body,
+                      fontSize: 12,
+                      color: colors.inkSoft,
+                      marginTop: 2,
+                    }}
+                  >
+                    {user?.contact_platforms && user.contact_platforms.length > 0
+                      ? `${user.contact_platforms.length} platform(s) configured`
+                      : 'Add up to 3 links (WhatsApp, FB, Phone)'}
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.primary} />
+            </TouchableOpacity>
           </View>
 
           {user?.role === 'employer' && (

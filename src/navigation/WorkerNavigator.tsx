@@ -22,6 +22,7 @@ import ReviewsScreen from '../screens/worker/ReviewsScreen';
 import NotificationsScreen from '../screens/worker/NotificationsScreen';
 import RateEmployerScreen from '../screens/worker/RateEmployerScreen';
 import EditProfileScreen from '../screens/common/EditProfileScreen';
+import ManageContactPlatformsScreen from '../screens/common/ManageContactPlatformsScreen';
 import SettingsScreen from '../screens/common/SettingsScreen';
 import ReportScreen from '../screens/common/ReportScreen';
 import RoleOnboardingScreen from '../screens/common/RoleOnboardingScreen';
@@ -62,6 +63,7 @@ export type WorkerStackParamList = {
   RateEmployer: { id: number; employerName: string; jobTitle: string };
   Report: { id: number };
   EditProfile: undefined;
+  ManageContactPlatforms: undefined;
   Settings: undefined;
   Notifications: undefined;
   RoleOnboarding: { targetRole: 'worker' | 'employer' };
@@ -139,6 +141,7 @@ const FindStack: React.FC = () => {
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      <Stack.Screen name="ManageContactPlatforms" component={ManageContactPlatformsScreen} />
     </Stack.Navigator>
   );
 };
@@ -177,6 +180,7 @@ const ProfileStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Profile" component={ProfileScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    <Stack.Screen name="ManageContactPlatforms" component={ManageContactPlatformsScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} />
