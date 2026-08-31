@@ -60,18 +60,29 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress, onSave, isSaved 
   };
 
   const handleShare = async () => {
+    let shareUrl = `https://sikap.app/jobs/${job.id}`;
+    let shareTitle = job.title;
+
     try {
       const result = await getShareLink(job.id);
-      await Share.share({
-        message: `Check out this job on SIKAP: ${result.job_title}\n${result.share_link}`,
-        url: result.share_link,
-      });
-    } catch (err: any) {
-      if (err?.response?.status === 410) {
-        Alert.alert('Job Closed', 'This job is no longer available for sharing.');
-      } else if (err?.response?.status === 403) {
-        Alert.alert('Not Authorized', 'You are not authorized to share this post.');
+      if (result?.share_link) {
+        shareUrl = result.share_link;
       }
+      if (result?.job_title) {
+        shareTitle = result.job_title;
+      }
+    } catch {
+      // Smooth fallback if API endpoint returns non-200
+    }
+
+    try {
+      await Share.share({
+        title: shareTitle,
+        message: `Check out this job on SIKAP: ${shareTitle}\n${shareUrl}`,
+        url: shareUrl,
+      });
+    } catch (err) {
+      console.warn('Share error:', err);
     }
   };
 
