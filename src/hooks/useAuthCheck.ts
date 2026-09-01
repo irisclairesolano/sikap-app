@@ -37,6 +37,12 @@ export const useAuthCheck = () => {
         await SecureStore.setItemAsync('user_profile', JSON.stringify(response));
         return response;
       } catch (err) {
+        const cachedUserStr = await SecureStore.getItemAsync('user_profile');
+        if (cachedUserStr) {
+          try {
+            return JSON.parse(cachedUserStr);
+          } catch (e) {}
+        }
         return null;
       }
     },
