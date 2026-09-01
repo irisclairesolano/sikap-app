@@ -20,7 +20,7 @@ import {
   Manrope_700Bold,
   Manrope_800ExtraBold,
 } from '@expo-google-fonts/manrope';
-import { View, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
@@ -80,6 +80,78 @@ const linking = {
   },
 };
 
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Uncaught App Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 24,
+            backgroundColor: '#FFF7F2',
+          }}
+        >
+          <Text
+            style={{
+              fontFamily: 'Inter_700Bold',
+              fontSize: 22,
+              color: '#1E293B',
+              marginBottom: 8,
+              textAlign: 'center',
+            }}
+          >
+            Something went wrong
+          </Text>
+          <Text
+            style={{
+              fontFamily: 'Inter_400Regular',
+              fontSize: 14,
+              color: '#64748B',
+              textAlign: 'center',
+              marginBottom: 20,
+              lineHeight: 20,
+            }}
+          >
+            An unexpected error occurred in the application. Please reload the app to continue.
+          </Text>
+          <TouchableOpacity
+            onPress={() => this.setState({ hasError: false, error: null })}
+            style={{
+              backgroundColor: '#E8744A',
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: 12,
+            }}
+          >
+            <Text style={{ color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 15 }}>
+              Reload App
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   const [fontsLoaded] = useFonts({
     Raleway_700Bold: require('./assets/raleway/Raleway-Bold.ttf'),
@@ -115,9 +187,11 @@ export default function App() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <AlertProvider>
-            <NavigationContainer ref={navigationRef} linking={linking}>
-              <RootNavigator />
-            </NavigationContainer>
+            <ErrorBoundary>
+              <NavigationContainer ref={navigationRef} linking={linking}>
+                <RootNavigator />
+              </NavigationContainer>
+            </ErrorBoundary>
             <StatusBar style="auto" />
           </AlertProvider>
         </QueryClientProvider>

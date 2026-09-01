@@ -20,10 +20,13 @@ interface MediaViewerModalProps {
 }
 
 const VideoPlayerContent: React.FC<{ url: string }> = ({ url }) => {
-  const player = useVideoPlayer(url, (p) => {
+  const safeUrl = typeof url === 'string' ? url.trim() : '';
+  const player = useVideoPlayer(safeUrl, (p) => {
     p.loop = true;
     p.play();
   });
+
+  if (!safeUrl) return null;
 
   return (
     <VideoView
