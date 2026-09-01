@@ -95,12 +95,21 @@ export const NotificationsScreen: React.FC = () => {
                       } catch (_) {}
                     }
 
-                    const appId = parsedData?.application_id || parsedData?.applicationId;
-                    const jobId = parsedData?.job_id || parsedData?.jobId;
+                    const appId =
+                      parsedData?.application_id ||
+                      parsedData?.applicationId ||
+                      parsedData?.id ||
+                      notif.data?.application_id ||
+                      notif.data?.applicationId;
+                    const jobId =
+                      parsedData?.job_id ||
+                      parsedData?.jobId ||
+                      notif.data?.job_id ||
+                      notif.data?.jobId;
 
-                    if (appId) {
+                    if (appId && !isNaN(Number(appId))) {
                       navigation.navigate('ApplicationDetail', { applicationId: Number(appId) });
-                    } else if (jobId) {
+                    } else if (jobId && !isNaN(Number(jobId))) {
                       navigation.navigate('JobDetails', { id: Number(jobId) });
                     }
                   }}

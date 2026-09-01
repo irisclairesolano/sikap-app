@@ -29,14 +29,18 @@ const ApplicationDetailScreen: React.FC = () => {
   const route = useRoute<ApplicationDetailScreenRouteProp>();
   const navigation = useNavigation<ApplicationDetailScreenNavigationProp>();
 
-  const { applicationId } = route.params;
+  const rawAppId =
+    (route.params as any)?.applicationId ||
+    (route.params as any)?.id ||
+    (route.params as any)?.applicantId;
+  const applicationId = Number(rawAppId);
   const { data: appData, isLoading: queryLoading } = useApplication(applicationId);
 
-  const status = appData?.status || route.params.status;
-  const jobTitle = appData?.job?.title || route.params.jobTitle;
-  const employerName = appData?.job?.employer?.name || route.params.employerName;
+  const status = appData?.status || route.params?.status;
+  const jobTitle = appData?.job?.title || route.params?.jobTitle;
+  const employerName = appData?.job?.employer?.name || route.params?.employerName;
   const compensation =
-    appData?.final_agreed_price || appData?.job?.compensation || route.params.compensation;
+    appData?.final_agreed_price || appData?.job?.compensation || route.params?.compensation;
 
   const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawApplication();
   const { showAlert } = useAlert();
@@ -53,6 +57,51 @@ const ApplicationDetailScreen: React.FC = () => {
         }}
       >
         <ActivityIndicator size="large" color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!queryLoading && !appData && !jobTitle) {
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: colors.paper,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 24,
+        }}
+      >
+        <Ionicons name="alert-circle-outline" size={48} color={colors.primary} />
+        <Text
+          style={{
+            fontFamily: fonts.bodyBold,
+            fontSize: 18,
+            color: colors.ink,
+            marginTop: 12,
+            textAlign: 'center',
+          }}
+        >
+          Application Not Found
+        </Text>
+        <Text
+          style={{
+            fontFamily: fonts.body,
+            fontSize: 14,
+            color: colors.inkMuted,
+            marginTop: 4,
+            textAlign: 'center',
+          }}
+        >
+          This application details may no longer be available.
+        </Text>
+        <Button
+          label="Go Back"
+          variant="outline"
+          size="md"
+          onPress={() => navigation.goBack()}
+          style={{ marginTop: 20 }}
+        />
       </SafeAreaView>
     );
   }
