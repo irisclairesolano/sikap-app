@@ -20,10 +20,33 @@ import { useAlert } from '../../contexts/AlertContext';
 import { useAuth } from '../../hooks/useAuth';
 import * as SecureStore from '../../utils/storage';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 export interface ContactPlatformSlot {
   platform: string;
   value: string;
 }
+
+export const parseContactPlatforms = (raw: any): ContactPlatformSlot[] => {
+  if (!raw) return [];
+  let parsed = raw;
+  if (typeof raw === 'string') {
+    try {
+      parsed = JSON.parse(raw);
+    } catch (e) {
+      return [];
+    }
+  }
+  if (!Array.isArray(parsed)) return [];
+  return parsed.filter(
+    (item: any) =>
+      item &&
+      typeof item === 'object' &&
+      typeof item.platform === 'string' &&
+      typeof item.value === 'string' &&
+      item.value.trim().length > 0,
+  );
+};
 
 const AVAILABLE_PLATFORMS = [
   {
@@ -66,6 +89,7 @@ const AVAILABLE_PLATFORMS = [
 
 export const ManageContactPlatformsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { showAlert } = useAlert();
   const { refetchProfile } = useAuth();
@@ -76,14 +100,8 @@ export const ManageContactPlatformsScreen: React.FC = () => {
   });
 
   const [platforms, setPlatforms] = useState<ContactPlatformSlot[]>(() => {
-    if (
-      user?.contact_platforms &&
-      Array.isArray(user.contact_platforms) &&
-      user.contact_platforms.length > 0
-    ) {
-      return user.contact_platforms;
-    }
-    return [{ platform: 'WhatsApp', value: '' }];
+    const loaded = parseContactPlatforms(user?.contact_platforms);
+    return loaded.length > 0 ? loaded : [{ platform: 'WhatsApp', value: '' }];
   });
 
   const [activePickerIndex, setActivePickerIndex] = useState<number | null>(null);
@@ -91,12 +109,9 @@ export const ManageContactPlatformsScreen: React.FC = () => {
 
   // Sync state when profile loads
   React.useEffect(() => {
-    if (
-      user?.contact_platforms &&
-      Array.isArray(user.contact_platforms) &&
-      user.contact_platforms.length > 0
-    ) {
-      setPlatforms(user.contact_platforms);
+    const loaded = parseContactPlatforms(user?.contact_platforms);
+    if (loaded.length > 0) {
+      setPlatforms(loaded);
     }
   }, [user]);
 
@@ -262,7 +277,7 @@ export const ManageContactPlatformsScreen: React.FC = () => {
       </ScrollView>
 
       {/* Footer Save Button */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 14) }]}>
         <Button
           label="Save Communication Links"
           variant="primary"

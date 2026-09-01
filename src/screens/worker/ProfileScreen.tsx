@@ -10,6 +10,7 @@ import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import { profileApi } from '../../api/profile';
 import { useAuth } from '../../hooks/useAuth';
+import { parseContactPlatforms } from '../common/ManageContactPlatformsScreen';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'Profile'>;
 
@@ -344,6 +345,84 @@ export const ProfileScreen: React.FC = () => {
                   </View>
                 </View>
               ))
+            )}
+          </View>
+        </View>
+
+        {/* Communication Platforms */}
+        <View style={styles.reviewSection}>
+          <View style={styles.reviewHeader}>
+            <Text style={styles.sectionEyebrow}>Communication Platforms</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('ManageContactPlatforms' as any)}>
+              <Text style={styles.viewAllText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ marginTop: 10, gap: 10 }}>
+            {parseContactPlatforms(user.contact_platforms).length === 0 ? (
+              <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
+                No communication platforms added yet. Add up to 3 links (WhatsApp, FB, Phone).
+              </Text>
+            ) : (
+              parseContactPlatforms(user.contact_platforms).map((slot, idx) => {
+                const pName = slot.platform.toLowerCase();
+                let iconName: any = 'logo-whatsapp';
+                let iconColor = '#25D366';
+                if (pName.includes('facebook') || pName.includes('messenger')) {
+                  iconName = 'logo-facebook';
+                  iconColor = '#1877F2';
+                } else if (pName.includes('instagram')) {
+                  iconName = 'logo-instagram';
+                  iconColor = '#E4405F';
+                } else if (pName.includes('viber')) {
+                  iconName = 'call';
+                  iconColor = '#7360F2';
+                } else if (pName.includes('telegram')) {
+                  iconName = 'paper-plane';
+                  iconColor = '#229ED9';
+                } else if (pName.includes('phone') || pName.includes('sms')) {
+                  iconName = 'call-outline';
+                  iconColor = '#1E293B';
+                }
+
+                return (
+                  <View
+                    key={idx}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 12,
+                      backgroundColor: colors.paperBright,
+                      padding: 12,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: colors.inkFaint,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 34,
+                        height: 34,
+                        borderRadius: 10,
+                        backgroundColor: iconColor + '18',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Ionicons name={iconName} size={18} color={iconColor} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink }}>
+                        {slot.platform}
+                      </Text>
+                      <Text
+                        style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}
+                      >
+                        {slot.value}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })
             )}
           </View>
         </View>

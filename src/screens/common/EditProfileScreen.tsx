@@ -28,6 +28,7 @@ import { useAlert } from '../../contexts/AlertContext';
 import { useAuth } from '../../hooks/useAuth';
 import { ApiClientError } from '../../api/client';
 import { colors, fonts, shadows } from '../../theme';
+import { parseContactPlatforms } from './ManageContactPlatformsScreen';
 
 export const EditProfileScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -434,9 +435,6 @@ export const EditProfileScreen: React.FC = () => {
             <Text style={styles.label}>Communication Platforms</Text>
             <TouchableOpacity
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
                 backgroundColor: colors.paperBright,
                 borderWidth: 1,
                 borderColor: colors.inkFaint,
@@ -446,38 +444,105 @@ export const EditProfileScreen: React.FC = () => {
               activeOpacity={0.8}
               onPress={() => navigation.navigate('ManageContactPlatforms' as any)}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-                <View
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 10,
-                    backgroundColor: colors.peach,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Ionicons name="chatbubbles" size={20} color={colors.primary} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>
-                    Communication & Social Links
-                  </Text>
-                  <Text
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: parseContactPlatforms(user?.contact_platforms).length > 0 ? 10 : 0,
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+                  <View
                     style={{
-                      fontFamily: fonts.body,
-                      fontSize: 12,
-                      color: colors.inkSoft,
-                      marginTop: 2,
+                      width: 36,
+                      height: 36,
+                      borderRadius: 10,
+                      backgroundColor: colors.peach,
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
-                    {user?.contact_platforms && user.contact_platforms.length > 0
-                      ? `${user.contact_platforms.length} platform(s) configured`
-                      : 'Add up to 3 links (WhatsApp, FB, Phone)'}
-                  </Text>
+                    <Ionicons name="chatbubbles" size={20} color={colors.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>
+                      Communication & Social Links
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: fonts.body,
+                        fontSize: 12,
+                        color: colors.inkSoft,
+                        marginTop: 2,
+                      }}
+                    >
+                      {parseContactPlatforms(user?.contact_platforms).length > 0
+                        ? `${parseContactPlatforms(user?.contact_platforms).length} platform(s) configured`
+                        : 'Add up to 3 links (WhatsApp, FB, Phone)'}
+                    </Text>
+                  </View>
                 </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.primary} />
               </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.primary} />
+
+              {parseContactPlatforms(user?.contact_platforms).length > 0 && (
+                <View
+                  style={{
+                    borderTopWidth: 1,
+                    borderTopColor: colors.inkFaint,
+                    paddingTop: 10,
+                    gap: 6,
+                  }}
+                >
+                  {parseContactPlatforms(user?.contact_platforms).map((slot, idx) => {
+                    const pName = slot.platform.toLowerCase();
+                    let iconName: any = 'logo-whatsapp';
+                    let iconColor = '#25D366';
+                    if (pName.includes('facebook') || pName.includes('messenger')) {
+                      iconName = 'logo-facebook';
+                      iconColor = '#1877F2';
+                    } else if (pName.includes('instagram')) {
+                      iconName = 'logo-instagram';
+                      iconColor = '#E4405F';
+                    } else if (pName.includes('viber')) {
+                      iconName = 'call';
+                      iconColor = '#7360F2';
+                    } else if (pName.includes('telegram')) {
+                      iconName = 'paper-plane';
+                      iconColor = '#229ED9';
+                    } else if (pName.includes('phone') || pName.includes('sms')) {
+                      iconName = 'call-outline';
+                      iconColor = '#1E293B';
+                    }
+
+                    return (
+                      <View
+                        key={idx}
+                        style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+                      >
+                        <Ionicons name={iconName} size={14} color={iconColor} />
+                        <Text
+                          style={{ fontFamily: fonts.bodyBold, fontSize: 12, color: colors.ink }}
+                        >
+                          {slot.platform}:
+                        </Text>
+                        <Text
+                          style={{
+                            fontFamily: fonts.body,
+                            fontSize: 12,
+                            color: colors.inkMuted,
+                            flex: 1,
+                          }}
+                          numberOfLines={1}
+                        >
+                          {slot.value}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
             </TouchableOpacity>
           </View>
 
