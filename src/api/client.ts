@@ -1,6 +1,6 @@
 import * as SecureStore from '../utils/storage';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://sikap-backend.onrender.com/api/v1';
 
 console.log('🔗 API Base URL:', BASE_URL);
 

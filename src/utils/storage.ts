@@ -9,7 +9,11 @@ export const setItemAsync = async (key: string, value: string): Promise<void> =>
       console.error('Local storage error', e);
     }
   } else {
-    await SecureStore.setItemAsync(key, value);
+    try {
+      await SecureStore.setItemAsync(key, value);
+    } catch (e) {
+      console.warn('SecureStore set error:', e);
+    }
   }
 };
 
@@ -22,7 +26,12 @@ export const getItemAsync = async (key: string): Promise<string | null> => {
       return null;
     }
   } else {
-    return await SecureStore.getItemAsync(key);
+    try {
+      return await SecureStore.getItemAsync(key);
+    } catch (e) {
+      console.warn('SecureStore get error:', e);
+      return null;
+    }
   }
 };
 
@@ -34,6 +43,10 @@ export const deleteItemAsync = async (key: string): Promise<void> => {
       console.error('Local storage error', e);
     }
   } else {
-    await SecureStore.deleteItemAsync(key);
+    try {
+      await SecureStore.deleteItemAsync(key);
+    } catch (e) {
+      console.warn('SecureStore delete error:', e);
+    }
   }
 };

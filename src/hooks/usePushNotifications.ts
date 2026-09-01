@@ -55,17 +55,10 @@ export const usePushNotifications = (): PushNotificationState => {
       try {
         const projectId =
           Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
-        if (!projectId) {
-          throw new Error('Project ID not found');
-        }
-        token = await Notifications.getExpoPushTokenAsync({
-          projectId,
-        });
+        token = await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined);
         console.log('Expo Push Token:', token);
-      } catch (_) {
-        token = await Notifications.getExpoPushTokenAsync({
-          projectId: '1b899a77-3e16-41b4-ac5d-007e155bc293', // dummy fallback
-        });
+      } catch (err) {
+        console.log('Push notification token registration failed silently:', err);
       }
     } else {
       console.log('Must use physical device for Push Notifications');
