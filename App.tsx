@@ -50,7 +50,7 @@ const asyncStoragePersister = createAsyncStoragePersister({
 });
 
 persistQueryClient({
-  queryClient,
+  queryClient: queryClient as any,
   persister: asyncStoragePersister,
   maxAge: 1000 * 60 * 60 * 24, // 24 hours
 });

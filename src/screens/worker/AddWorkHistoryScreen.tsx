@@ -90,9 +90,16 @@ export const AddWorkHistoryScreen: React.FC = () => {
     },
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      const realExp = data?.experience || data;
-      if (realExp && realExp.id && editingExperienceId === null) {
-        setExperiences((prev) => prev.map((exp) => (exp.id === context?.tempId ? realExp : exp)));
+      const realExp = (data as any)?.experience || data;
+      if (
+        realExp &&
+        typeof realExp === 'object' &&
+        'id' in realExp &&
+        editingExperienceId === null
+      ) {
+        setExperiences((prev) =>
+          prev.map((exp) => (exp.id === context?.tempId ? (realExp as any) : exp)),
+        );
       }
     },
     onError: (err) => {

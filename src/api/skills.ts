@@ -3,7 +3,7 @@ import { apiClient } from './client';
 export interface Skill {
   id: number;
   name: string;
-  category: string;
+  category?: string;
 }
 
 export const skillsApi = {

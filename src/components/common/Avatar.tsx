@@ -1,14 +1,30 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { colors, fonts } from '../../theme';
 
 interface AvatarProps {
   name: string;
   size?: number;
+  url?: string | null;
 }
 
-export const Avatar: React.FC<AvatarProps> = ({ name, size = 40 }) => {
+export const Avatar: React.FC<AvatarProps> = ({ name, size = 40, url }) => {
   const initial = name ? name.charAt(0).toUpperCase() : '?';
+
+  if (url) {
+    return (
+      <Image
+        source={{ uri: url }}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+        }}
+        contentFit="cover"
+      />
+    );
+  }
 
   return (
     <View

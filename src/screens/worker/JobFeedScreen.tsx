@@ -45,13 +45,13 @@ export const JobFeedScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
   const { user } = useAuthCheck();
-  const workerProfile = user?.worker_profile || user?.workerProfile;
-  const userSkills = useMemo(() => {
+  const workerProfile = user?.worker_profile;
+  const userSkills: string[] = useMemo(() => {
     const skills = workerProfile?.skills || [];
-    return Array.from(new Set(skills.map((s) => s.name)));
+    return Array.from(new Set(skills.map((s: any) => s.name)));
   }, [workerProfile]);
 
-  const feedCategories = useMemo(() => {
+  const feedCategories: string[] = useMemo(() => {
     if (userSkills.length > 0) {
       return ['All', ...userSkills];
     }
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   modalTitle: {
-    fontFamily: fonts.h3,
+    fontFamily: fonts.display,
     fontSize: 18,
     color: colors.ink,
     marginBottom: 16,

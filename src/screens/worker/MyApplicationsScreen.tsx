@@ -51,8 +51,8 @@ export const MyApplicationsScreen: React.FC = () => {
   const filteredApps = applications
     .filter((app) => matchesFilter(app, activeFilter))
     .sort((a, b) => {
-      const timeA = new Date(a.created_at).getTime();
-      const timeB = new Date(b.created_at).getTime();
+      const timeA = new Date(a.created_at || a.applied_at || 0).getTime();
+      const timeB = new Date(b.created_at || b.applied_at || 0).getTime();
       return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
     });
 

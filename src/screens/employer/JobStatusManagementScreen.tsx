@@ -227,7 +227,7 @@ export const JobStatusManagementScreen: React.FC = () => {
         </View>
 
         {/* 5-Stage Hiring Pipeline */}
-        {job.status !== 'cancelled' && job.status !== 'suspended' && (
+        {job.status !== 'cancelled' && (job.status as string) !== 'suspended' && (
           <View style={styles.pipelineCard}>
             <Text style={styles.pipelineTitle}>Hiring Pipeline</Text>
             <View style={styles.pipeline}>
@@ -495,7 +495,7 @@ export const JobStatusManagementScreen: React.FC = () => {
         </View>
 
         {/* Applicants List Section */}
-        {job.status !== 'cancelled' && job.status !== 'suspended' && (
+        {job.status !== 'cancelled' && (job.status as string) !== 'suspended' && (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Applicants ({applications.length})</Text>
             {applications.length === 0 ? (
@@ -517,13 +517,13 @@ export const JobStatusManagementScreen: React.FC = () => {
                         barangay: app.worker?.barangay,
                         municipality: app.worker?.municipality,
                         reputationScore: app.worker?.reputation_score,
-                        bio: app.worker?.bio,
+                        bio: app.worker?.workerProfile?.bio || (app.worker as any)?.bio,
                         skills: app.worker?.skills,
                         experiences: app.worker?.experiences,
-                        characterReferences: app.worker?.character_references,
-                        phone: app.worker?.phone,
-                        emergencyContactName: app.worker?.emergency_contact_name,
-                        emergencyContactPhone: app.worker?.emergency_contact_phone,
+                        characterReferences: app.worker?.character_references || undefined,
+                        phone: app.worker?.phone || undefined,
+                        emergencyContactName: (app.worker as any)?.emergency_contact_name,
+                        emergencyContactPhone: (app.worker as any)?.emergency_contact_phone,
                       })
                     }
                   >

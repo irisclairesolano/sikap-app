@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +26,7 @@ export const ProfileScreen: React.FC = () => {
   const { user: authUser, refetchProfile } = useAuth();
   const queryClient = useQueryClient();
   const { data: jobsResponse } = useEmployerJobs();
+  const [refreshing, setRefreshing] = useState(false);
 
   const {
     data: user,
@@ -330,7 +331,11 @@ export const ProfileScreen: React.FC = () => {
                       key={s}
                       name="star"
                       size={11}
-                      color={s <= employer.recentReview.stars ? colors.gold : colors.inkFaint}
+                      color={
+                        employer.recentReview && s <= employer.recentReview.stars
+                          ? colors.gold
+                          : colors.inkFaint
+                      }
                     />
                   ))}
                 </View>

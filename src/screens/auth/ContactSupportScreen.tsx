@@ -32,7 +32,7 @@ const ContactSupportScreen: React.FC = () => {
     mutationFn: async () => {
       await apiClient('/support', {
         method: 'POST',
-        data: { subject, message },
+        body: JSON.stringify({ subject, message }),
       });
     },
     onSuccess: () => {
@@ -102,7 +102,6 @@ const ContactSupportScreen: React.FC = () => {
                 multiline
                 numberOfLines={6}
                 autoCapitalize="sentences"
-                style={{ height: 140, paddingTop: 16, textAlignVertical: 'top' }}
               />
             </View>
 

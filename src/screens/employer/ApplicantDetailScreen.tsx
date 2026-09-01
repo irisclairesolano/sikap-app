@@ -51,17 +51,17 @@ const ApplicantDetailScreen: React.FC = () => {
     appData?.worker?.reputation_score !== undefined && appData?.worker?.reputation_score !== null
       ? appData.worker.reputation_score
       : route.params.reputationScore;
-  const experiences = appData?.worker?.experiences || route.params.experiences;
-  const reviews = appData?.worker?.reviews || route.params.reviews;
-  const bio = appData?.worker?.bio || route.params.bio;
-  const skills = appData?.worker?.skills || route.params.skills;
+  const experiences = appData?.worker?.experiences || route.params?.experiences;
+  const reviews = appData?.worker?.reviews || route.params?.reviews;
+  const bio = appData?.worker?.workerProfile?.bio || appData?.worker?.bio || route.params?.bio;
+  const skills = appData?.worker?.skills || route.params?.skills;
   const characterReferences =
-    appData?.worker?.character_references || route.params.characterReferences;
-  const phone = appData?.worker?.phone || route.params.phone;
+    appData?.worker?.character_references || route.params?.characterReferences;
+  const phone = appData?.worker?.phone || route.params?.phone;
   const emergencyContactName =
-    appData?.worker?.emergency_contact_name || route.params.emergencyContactName;
+    appData?.worker?.emergency_contact_name || route.params?.emergencyContactName;
   const emergencyContactPhone =
-    appData?.worker?.emergency_contact_phone || route.params.emergencyContactPhone;
+    appData?.worker?.emergency_contact_phone || route.params?.emergencyContactPhone;
 
   if (queryLoading && !applicantName) {
     return (
@@ -115,7 +115,7 @@ const ApplicantDetailScreen: React.FC = () => {
         <Button
           label="Go Back"
           variant="outline"
-          size="md"
+          size="base"
           onPress={() => navigation.goBack()}
           style={{ marginTop: 20 }}
         />
@@ -150,15 +150,27 @@ const ApplicantDetailScreen: React.FC = () => {
   };
 
   const navigateToConfirmHire = () => {
-    navigation.navigate('ConfirmHire', { applicantId, applicantName, jobTitle });
+    navigation.navigate('ConfirmHire', {
+      applicantId,
+      applicantName: applicantName || 'Applicant',
+      jobTitle: jobTitle || 'Job',
+    });
   };
 
   const navigateToSendRequest = () => {
-    navigation.navigate('SendRequest', { id: applicantId, applicantName, jobTitle });
+    navigation.navigate('SendRequest', {
+      id: applicantId,
+      applicantName: applicantName || 'Applicant',
+      jobTitle: jobTitle || 'Job',
+    });
   };
 
   const navigateToCancelHire = () => {
-    navigation.navigate('CancelHire', { id: applicantId, applicantName, jobTitle });
+    navigation.navigate('CancelHire', {
+      id: applicantId,
+      applicantName: applicantName || 'Applicant',
+      jobTitle: jobTitle || 'Job',
+    });
   };
 
   return (
@@ -266,7 +278,7 @@ const ApplicantDetailScreen: React.FC = () => {
 
         {/* Profile Header */}
         <View style={styles.profileHeader}>
-          <Avatar url={appData?.worker?.avatar_url} name={applicantName} size={52} />
+          <Avatar url={appData?.worker?.avatar_url} name={applicantName || 'Worker'} size={52} />
           <View style={styles.profileInfo}>
             <View style={styles.nameRow}>
               <Text style={styles.nameText}>{applicantName}</Text>
@@ -860,8 +872,8 @@ const ApplicantDetailScreen: React.FC = () => {
             onPress={() =>
               navigation.navigate('RateWorker', {
                 id: applicantId,
-                workerName: applicantName,
-                jobTitle,
+                workerName: applicantName || 'Worker',
+                jobTitle: jobTitle || 'Job',
               })
             }
           />

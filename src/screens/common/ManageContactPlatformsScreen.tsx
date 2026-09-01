@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.paperBright,
     borderRadius: 20,
     padding: 20,
-    ...shadows.md,
+    ...shadows.base,
   },
   modalTitle: {
     fontFamily: fonts.bodyBold,

@@ -343,7 +343,7 @@ export const RoleOnboardingScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.surface },
+  safeArea: { flex: 1, backgroundColor: colors.paper },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   scrollContent: { padding: 24, paddingBottom: 40 },
   contentHeader: { marginBottom: 32 },
   title: {
-    fontFamily: fonts.heading,
+    fontFamily: fonts.display,
     fontSize: 28,
     color: colors.ink,
     marginBottom: 8,
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 12,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.paper,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
   },

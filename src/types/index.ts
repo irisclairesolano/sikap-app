@@ -24,6 +24,7 @@ export interface User {
   has_worker_profile?: boolean;
   has_employer_profile?: boolean;
   contact_platforms?: { platform: string; value: string }[];
+  business_documents?: string[];
 }
 
 export interface JobPost {
@@ -32,6 +33,7 @@ export interface JobPost {
   title: string;
   description: string;
   categories: string[];
+  category?: string;
   barangay: string;
   municipality: string;
   compensation: number;
@@ -49,9 +51,15 @@ export interface JobPost {
   rating_window_expires_at: string | null;
   created_at?: string;
   updated_at?: string;
+  deleted_at?: string | null;
+  is_urgent?: boolean;
+  urgent?: boolean;
+  employer_id?: number;
   employer: User;
   applications?: Application[];
   is_applied?: boolean;
+  has_applied?: boolean;
+  application_id?: number;
   is_withdrawn?: boolean;
   reactions_count?: number;
   user_has_reacted?: boolean;
@@ -67,9 +75,11 @@ export interface Application {
     | 'accepted'
     | 'rejected'
     | 'withdrawn'
-    | 'completed';
+    | 'completed'
+    | 'employer_requested';
   cover_note: string | null;
   applied_at: string;
+  created_at?: string;
   final_agreed_price: number | null; // only at employer_confirmed or accepted
   references_revealed: boolean; // true at Stage 2
   contact_revealed: boolean; // true at Stage 4
@@ -80,6 +90,7 @@ export interface Application {
     first_name?: string;
     last_name?: string;
     barangay: string;
+    municipality?: string;
     reputation_score: number;
     verification_badge: boolean;
     skills: string[];
@@ -87,6 +98,12 @@ export interface Application {
     character_references: CharacterReference[] | null; // null if not yet revealed
     phone: string | null; // null if not yet revealed
     email: null; // ALWAYS null — never shown
+    avatar_url?: string | null;
+    completed_jobs_count?: number;
+    reviews?: any[];
+    bio?: string;
+    emergency_contact_name?: string;
+    emergency_contact_phone?: string;
     workerProfile?: WorkerProfile;
   };
 }
@@ -94,7 +111,7 @@ export interface Application {
 export interface Skill {
   id: number;
   name: string;
-  category: string;
+  category?: string;
 }
 
 export interface WorkerProfile {
@@ -120,6 +137,7 @@ export interface EmployerProfile {
   municipality: string;
   bio?: string;
   description?: string;
+  business_documents?: string[];
   verification_status: 'pending' | 'approved' | 'rejected' | 'correction_needed';
   verification_badge: boolean;
   reputation_score: number;
@@ -127,6 +145,7 @@ export interface EmployerProfile {
   active_jobs?: number;
   total_hired?: number;
   total_spent?: number;
+  recentReview?: any;
 }
 
 export interface Review {
@@ -146,15 +165,21 @@ export interface CharacterReference {
   id: number;
   name: string;
   phone: string;
+  contact_number?: string;
+  contactNumber?: string;
+  number?: string;
   relationship: string;
+  reference?: string;
 }
 
 export interface WorkerExperience {
   id: number;
   job_title: string;
   employer_name: string;
+  company?: string;
   duration: string;
   description: string;
+  experience?: string;
 }
 
 export interface ApiResponse<T> {

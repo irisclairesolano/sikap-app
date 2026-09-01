@@ -49,6 +49,7 @@ export const PostJobScreen: React.FC = () => {
   const { showAlert } = useAlert();
 
   const [isPublishing, setIsPublishing] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [title, setTitle] = useState(jobToEdit?.title || '');
 

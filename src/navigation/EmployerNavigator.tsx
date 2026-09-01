@@ -18,6 +18,7 @@ import ManageContactPlatformsScreen from '../screens/common/ManageContactPlatfor
 import SettingsScreen from '../screens/common/SettingsScreen';
 import ReportScreen from '../screens/common/ReportScreen';
 import RoleOnboardingScreen from '../screens/common/RoleOnboardingScreen';
+import ReviewsScreen from '../screens/worker/ReviewsScreen';
 
 import { PostJobScreen } from '../screens/employer/PostJobScreen';
 import ApplicantDetailScreen from '../screens/employer/ApplicantDetailScreen';
@@ -33,9 +34,9 @@ export type EmployerStackParamList = {
   JobDetails: { id: number };
   ApplicantDetail: {
     applicantId: number;
-    jobTitle: string;
-    applicantName: string;
-    status: string;
+    jobTitle?: string;
+    applicantName?: string;
+    status?: string;
     barangay?: string;
     municipality?: string;
     reputationScore?: number;
@@ -119,6 +120,19 @@ const MyJobsStack: React.FC = () => (
 const NotificationsStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Notifications" component={NotificationsScreen} />
+    <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
+    <Stack.Screen name="JobDetails" component={JobStatusManagementScreen} />
+    <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
+    <Stack.Screen name="PostJob" component={PostJobScreen} />
+    <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
+    <Stack.Screen name="SendRequest" component={SendRequestScreen} />
+    <Stack.Screen name="CancelHire" component={CancelHireScreen} />
+    <Stack.Screen name="MarkComplete" component={MarkCompleteScreen} />
+    <Stack.Screen name="RateWorkerList" component={RateWorkerListScreen} />
+    <Stack.Screen name="RateWorker" component={RateWorkerScreen} />
+    <Stack.Screen name="Report" component={ReportScreen} />
+    <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    <Stack.Screen name="ManageContactPlatforms" component={ManageContactPlatformsScreen} />
   </Stack.Navigator>
 );
 
@@ -129,6 +143,7 @@ const ProfileStack: React.FC = () => (
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     <Stack.Screen name="ManageContactPlatforms" component={ManageContactPlatformsScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
+    <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
   </Stack.Navigator>
 );

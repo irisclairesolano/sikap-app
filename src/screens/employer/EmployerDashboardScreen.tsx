@@ -305,18 +305,18 @@ export const EmployerDashboardScreen: React.FC = () => {
                         navigation.navigate('ApplicantDetail', {
                           applicantId: Number(app.id),
                           applicantName: app.worker?.name || 'Worker Applicant',
-                          jobTitle: app.jobTitle || '',
+                          jobTitle: (app as any).jobTitle || '',
                           status: app.status || 'pending',
                           barangay: app.worker?.barangay,
                           municipality: app.worker?.municipality,
                           reputationScore: app.worker?.reputation_score,
-                          bio: app.worker?.bio,
+                          bio: app.worker?.workerProfile?.bio || (app.worker as any)?.bio,
                           skills: app.worker?.skills,
                           experiences: app.worker?.experiences,
-                          characterReferences: app.worker?.character_references,
-                          phone: app.worker?.phone,
-                          emergencyContactName: app.worker?.emergency_contact_name,
-                          emergencyContactPhone: app.worker?.emergency_contact_phone,
+                          characterReferences: app.worker?.character_references || undefined,
+                          phone: app.worker?.phone || undefined,
+                          emergencyContactName: (app.worker as any)?.emergency_contact_name,
+                          emergencyContactPhone: (app.worker as any)?.emergency_contact_phone,
                         })
                       }
                     >

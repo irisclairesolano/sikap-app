@@ -98,7 +98,7 @@ const ApplicationDetailScreen: React.FC = () => {
         <Button
           label="Go Back"
           variant="outline"
-          size="md"
+          size="base"
           onPress={() => navigation.goBack()}
           style={{ marginTop: 20 }}
         />
@@ -311,7 +311,7 @@ const ApplicationDetailScreen: React.FC = () => {
           <View>
             <Text style={styles.pageTitle}>
               {employerName}
-              <br />
+              {'\n'}
               <Text style={styles.titleItalic}>wants to talk.</Text>
             </Text>
             <Text style={styles.lede}>
@@ -386,10 +386,10 @@ const ApplicationDetailScreen: React.FC = () => {
 
             <View style={styles.employerContactCard}>
               <View style={styles.avatarSmall}>
-                <Text style={styles.avatarSmallText}>{employerName.charAt(0)}</Text>
+                <Text style={styles.avatarSmallText}>{(employerName || 'Employer').charAt(0)}</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.employerNameCard}>{employerName}</Text>
+                <Text style={styles.employerNameCard}>{employerName || 'Employer'}</Text>
                 <Text style={styles.employerSubCard}>Awaiting response • 23h left</Text>
               </View>
               <Ionicons name="call-outline" size={22} color={colors.primary} />
@@ -468,9 +468,9 @@ const ApplicationDetailScreen: React.FC = () => {
             onPress={() =>
               navigation.navigate('AcceptHire', {
                 id: applicationId,
-                jobTitle,
-                employerName,
-                offeredPrice: compensation,
+                jobTitle: jobTitle || 'Job',
+                employerName: employerName || 'Employer',
+                offeredPrice: compensation ? String(compensation) : undefined,
               })
             }
           />
@@ -486,7 +486,11 @@ const ApplicationDetailScreen: React.FC = () => {
             fullWidth
             icon={<Ionicons name="star" size={18} color="white" />}
             onPress={() =>
-              navigation.navigate('RateEmployer', { id: applicationId, employerName, jobTitle })
+              navigation.navigate('RateEmployer', {
+                id: applicationId,
+                employerName: employerName || 'Employer',
+                jobTitle: jobTitle || 'Job',
+              })
             }
           />
         )}

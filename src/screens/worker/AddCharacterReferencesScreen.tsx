@@ -146,12 +146,16 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     },
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      const realRef = data?.reference || data;
-      if (realRef && realRef.id) {
+      const realRef = (data as any)?.reference || data;
+      if (realRef && typeof realRef === 'object' && 'id' in realRef) {
         if (editingReferenceId !== null) {
-          setReferences((prev) => prev.map((r) => (r.id === editingReferenceId ? realRef : r)));
+          setReferences((prev) =>
+            prev.map((r) => (r.id === editingReferenceId ? (realRef as any) : r)),
+          );
         } else {
-          setReferences((prev) => prev.map((r) => (r.id === context?.tempId ? realRef : r)));
+          setReferences((prev) =>
+            prev.map((r) => (r.id === context?.tempId ? (realRef as any) : r)),
+          );
         }
       }
       setEditingReferenceId(null);

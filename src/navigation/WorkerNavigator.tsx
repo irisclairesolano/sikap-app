@@ -53,9 +53,9 @@ export type WorkerStackParamList = {
   };
   ApplicationDetail: {
     applicationId: number;
-    jobTitle: string;
-    employerName: string;
-    status: string;
+    jobTitle?: string;
+    employerName?: string;
+    status?: string;
     compensation?: string;
   };
   AcceptHire: { id: number; jobTitle: string; employerName: string; offeredPrice?: string };
@@ -162,8 +162,12 @@ const ApplicationsStack: React.FC = () => (
     <Stack.Screen name="Applications" component={MyApplicationsScreen} />
     <Stack.Screen name="ApplicationDetail" component={ApplicationDetailScreen} />
     <Stack.Screen name="AcceptHire" component={AcceptHireScreen} />
+    <Stack.Screen name="HireReceipt" component={HireReceiptScreen} />
     <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
+    <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
+    <Stack.Screen name="Apply" component={ApplyScreen} />
+    <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} />
   </Stack.Navigator>
 );
@@ -172,6 +176,16 @@ const ApplicationsStack: React.FC = () => (
 const NotificationsStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Notifications" component={NotificationsScreen} />
+    <Stack.Screen name="ApplicationDetail" component={ApplicationDetailScreen} />
+    <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
+    <Stack.Screen name="Apply" component={ApplyScreen} />
+    <Stack.Screen name="AcceptHire" component={AcceptHireScreen} />
+    <Stack.Screen name="HireReceipt" component={HireReceiptScreen} />
+    <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
+    <Stack.Screen name="Report" component={ReportScreen} />
+    <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
+    <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    <Stack.Screen name="ManageContactPlatforms" component={ManageContactPlatformsScreen} />
   </Stack.Navigator>
 );
 

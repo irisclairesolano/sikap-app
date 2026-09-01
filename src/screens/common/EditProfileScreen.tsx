@@ -31,7 +31,7 @@ import { colors, fonts, shadows } from '../../theme';
 import { parseContactPlatforms } from './ManageContactPlatformsScreen';
 
 export const EditProfileScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { user, refetchProfile } = useAuth();
   const queryClient = useQueryClient();
 

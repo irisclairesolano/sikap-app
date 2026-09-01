@@ -42,11 +42,7 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
 
   const handleSubmit = () => {
     if (!selectedReason) {
-      showAlert({
-        title: 'Select a Reason',
-        message: 'Please select a reason for reporting this job post.',
-        type: 'warning',
-      });
+      showAlert('Select a Reason', 'Please select a reason for reporting this job post.');
       return;
     }
     submitReport(
@@ -61,18 +57,16 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
           setSelectedReason(null);
           setDescription('');
           onClose();
-          showAlert({
-            title: 'Report Submitted',
-            message: 'Thank you. Our moderation team will review this post shortly.',
-            type: 'success',
-          });
+          showAlert(
+            'Report Submitted',
+            'Thank you. Our moderation team will review this post shortly.',
+          );
         },
         onError: () => {
-          showAlert({
-            title: 'Submission Failed',
-            message: 'Failed to submit report. Please check your connection and try again.',
-            type: 'error',
-          });
+          showAlert(
+            'Submission Failed',
+            'Failed to submit report. Please check your connection and try again.',
+          );
         },
       },
     );
