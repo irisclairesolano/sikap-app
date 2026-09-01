@@ -511,7 +511,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                     onPress={() =>
                       navigation.navigate('ApplicantDetail', {
                         applicantId: app.id,
-                        applicantName: `${app.worker?.first_name || ''} ${app.worker?.last_name || ''}`,
+                        applicantName: app.worker?.name || 'Worker Applicant',
                         jobTitle: job?.title || '',
                         status: app.status,
                         barangay: app.worker?.barangay,
@@ -530,12 +530,12 @@ export const JobStatusManagementScreen: React.FC = () => {
                     <View style={styles.applicantLeft}>
                       <View style={styles.applicantAvatar}>
                         <Text style={styles.avatarInitial}>
-                          {app.worker?.first_name?.charAt(0) || 'W'}
+                          {app.worker?.name?.charAt(0) || 'W'}
                         </Text>
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.applicantName}>
-                          {app.worker?.first_name} {app.worker?.last_name}
+                          {app.worker?.name || 'Worker Applicant'}
                         </Text>
                         <Text style={styles.applicantSub} numberOfLines={1}>
                           {app.worker?.barangay

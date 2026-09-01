@@ -32,6 +32,7 @@ export const AddSkillsScreen: React.FC = () => {
   const { data: skills = [] } = useQuery({
     queryKey: ['skills'],
     queryFn: skillsApi.getSkills,
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours (rarely changes)
   });
 
   const saveMutation = useMutation({

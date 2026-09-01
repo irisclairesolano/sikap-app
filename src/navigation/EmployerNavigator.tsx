@@ -20,7 +20,6 @@ import ReportScreen from '../screens/common/ReportScreen';
 import RoleOnboardingScreen from '../screens/common/RoleOnboardingScreen';
 
 import { PostJobScreen } from '../screens/employer/PostJobScreen';
-import { ViewApplicantsScreen } from '../screens/employer/ViewApplicantsScreen';
 import ApplicantDetailScreen from '../screens/employer/ApplicantDetailScreen';
 import ConfirmHireScreen from '../screens/employer/ConfirmHireScreen';
 import SendRequestScreen from '../screens/employer/SendRequestScreen';
@@ -32,7 +31,6 @@ export type EmployerStackParamList = {
   EmployerDashboard: undefined;
   PostJob: undefined;
   JobDetails: { id: number };
-  ViewApplicants: { id: number };
   ApplicantDetail: {
     applicantId: number;
     jobTitle: string;
@@ -84,7 +82,6 @@ const HomeStack: React.FC = () => (
     <Stack.Screen name="EmployerDashboard" component={EmployerDashboardScreen} />
     <Stack.Screen name="PostJob" component={PostJobScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
-    <Stack.Screen name="ViewApplicants" component={ViewApplicantsScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
     <Stack.Screen name="SendRequest" component={SendRequestScreen} />
     <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
@@ -105,7 +102,6 @@ const MyJobsStack: React.FC = () => (
     <Stack.Screen name="PostJob" component={PostJobScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
-    <Stack.Screen name="ViewApplicants" component={ViewApplicantsScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
     <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
     <Stack.Screen name="RateWorkerList" component={RateWorkerListScreen} />

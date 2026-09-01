@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
@@ -29,9 +29,16 @@ const ApplicantDetailScreen: React.FC = () => {
   const route = useRoute<ApplicantDetailScreenRouteProp>();
   const navigation = useNavigation<ApplicantDetailScreenNavigationProp>();
   const [isMenuVisible, setMenuVisible] = useState(false);
+  const [expandedExpIds, setExpandedExpIds] = useState<Record<number, boolean>>({});
 
   const appId = route.params.applicantId || (route.params as any).applicationId;
-  const { data: appData, isLoading: queryLoading } = useApplication(appId);
+  const { data: appData, isLoading: queryLoading, refetch } = useApplication(appId);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   const status = appData?.status || route.params.status;
   const applicantName = appData?.worker?.name || route.params.applicantName;
@@ -249,7 +256,7 @@ const ApplicantDetailScreen: React.FC = () => {
         <View style={styles.statsGrid}>
           <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
             <Text style={[styles.statValue, { color: colors.mintDeep }]}>
-              {appData?.worker?.completed_jobs_count || (experiences ? experiences.length : 0)}
+              {appData?.worker?.completed_jobs_count ?? 0}
             </Text>
             <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Completed Jobs</Text>
           </View>
@@ -388,36 +395,91 @@ const ApplicantDetailScreen: React.FC = () => {
                 No work history added yet.
               </Text>
             ) : (
-              experiences.map((exp: any) => (
-                <View
-                  key={exp.id}
-                  style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}
-                >
-                  <View
+              experiences.map((exp: any) => {
+                const isExpanded = !!expandedExpIds[exp.id];
+                return (
+                  <TouchableOpacity
+                    key={exp.id}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setExpandedExpIds((prev) => ({ ...prev, [exp.id]: !prev[exp.id] }));
+                    }}
                     style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 20,
-                      backgroundColor: colors.butter,
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      flexDirection: 'row',
+                      alignItems: 'flex-start',
+                      gap: 12,
+                      padding: 12,
+                      backgroundColor: colors.paperBright,
+                      borderRadius: 14,
+                      borderWidth: 1,
+                      borderColor: colors.inkFaint,
                     }}
                   >
-                    <Ionicons name="briefcase" size={18} color={colors.inkSoft} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>
-                      {exp.job_title}
-                    </Text>
-                    <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.ink }}>
-                      {exp.company}
-                    </Text>
-                    <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}>
-                      {exp.duration}
-                    </Text>
-                  </View>
-                </View>
-              ))
+                    <View
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 20,
+                        backgroundColor: colors.butter,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Ionicons name="briefcase" size={18} color={colors.inkSoft} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontFamily: fonts.bodyBold,
+                            fontSize: 14,
+                            color: colors.ink,
+                            flex: 1,
+                          }}
+                        >
+                          {exp.job_title}
+                        </Text>
+                        <Ionicons
+                          name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                          size={16}
+                          color={colors.inkMuted}
+                          style={{ marginLeft: 6 }}
+                        />
+                      </View>
+                      <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.ink }}>
+                        {exp.company || exp.employer_name}
+                      </Text>
+                      <Text
+                        style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}
+                      >
+                        {exp.duration}
+                      </Text>
+                      {isExpanded && exp.description ? (
+                        <Text
+                          style={{
+                            fontFamily: fonts.body,
+                            fontSize: 13,
+                            color: colors.inkSoft,
+                            marginTop: 8,
+                            paddingTop: 8,
+                            borderTopWidth: 1,
+                            borderTopColor: colors.inkFaint,
+                            lineHeight: 18,
+                          }}
+                        >
+                          {exp.description}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
             )}
           </View>
         </View>
@@ -645,7 +707,7 @@ const ApplicantDetailScreen: React.FC = () => {
               size="lg"
               fullWidth
               onPress={navigateToSendRequest}
-              icon={<Ionicons name="star" size={18} color="white" />}
+              icon="star"
             />
             <Text
               style={{
@@ -667,7 +729,7 @@ const ApplicantDetailScreen: React.FC = () => {
               variant="primary"
               size="lg"
               fullWidth
-              icon={<Ionicons name="arrow-forward" size={18} color="white" />}
+              icon="arrow-forward"
               onPress={navigateToConfirmHire}
             />
             <Button
@@ -700,7 +762,7 @@ const ApplicantDetailScreen: React.FC = () => {
             variant="primary"
             size="lg"
             fullWidth
-            icon={<Ionicons name="star" size={18} color="white" />}
+            icon="star"
             onPress={() =>
               navigation.navigate('RateWorker', {
                 id: applicantId,
@@ -952,8 +1014,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   footer: {
-    padding: 20,
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 16,
     backgroundColor: colors.paper,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,

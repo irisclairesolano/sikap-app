@@ -175,7 +175,7 @@ export const EmployerDashboardScreen: React.FC = () => {
                     style={[styles.actionCard, { borderColor: colors.urgentSoft }]}
                     activeOpacity={0.7}
                     onPress={() =>
-                      navigation.navigate('ViewApplicants', { id: pendingApps[0].jobId })
+                      navigation.navigate('JobStatusManagement', { id: pendingApps[0].jobId })
                     }
                   >
                     <View style={[styles.actionIconBox, { backgroundColor: colors.urgentSoft }]}>
@@ -253,7 +253,7 @@ export const EmployerDashboardScreen: React.FC = () => {
                       key={app.id || index}
                       style={styles.applicantCard}
                       activeOpacity={0.7}
-                      onPress={() => navigation.navigate('ViewApplicants', { id: app.jobId })}
+                      onPress={() => navigation.navigate('JobStatusManagement', { id: app.jobId })}
                     >
                       <View style={styles.applicantAvatar}>
                         <Text style={styles.applicantAvatarText}>
