@@ -12,8 +12,16 @@ export const applicationsApi = {
     });
   },
 
-  jobRequest: async (applicationId: number) => {
-    return apiClient<{ message: string }>(`/applications/${applicationId}/request`, {
+  jobRequest: async (applicationId: number | string) => {
+    const cleanId = String(applicationId).replace(/[^0-9]/g, '');
+    return apiClient<{ message: string }>(`/applications/${cleanId}/request`, {
+      method: 'POST',
+    });
+  },
+
+  shortlist: async (applicationId: number | string) => {
+    const cleanId = String(applicationId).replace(/[^0-9]/g, '');
+    return apiClient<{ message: string }>(`/applications/${cleanId}/request`, {
       method: 'POST',
     });
   },

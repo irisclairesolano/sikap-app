@@ -13,10 +13,23 @@ export const useJobApplications = (jobId: number) => {
 export const useJobRequest = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (applicationId: number) => applicationsApi.jobRequest(applicationId),
-    onSuccess: (_, applicationId) => {
-      // Invalidate both job applications and specific queries if any
+    mutationFn: (applicationId: number | string) => applicationsApi.jobRequest(applicationId),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
+      queryClient.invalidateQueries({ queryKey: ['application'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+  });
+};
+
+export const useShortlist = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (applicationId: number | string) => applicationsApi.shortlist(applicationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
+      queryClient.invalidateQueries({ queryKey: ['application'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
   });
 };
