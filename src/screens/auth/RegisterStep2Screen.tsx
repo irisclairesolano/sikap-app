@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     color: colors.primaryDark,
   },
   footer: {
-    marginTop: 32,
+    marginTop: 16,
   },
   bannerError: {
     backgroundColor: colors.status.rejected.bg,

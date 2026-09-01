@@ -139,8 +139,8 @@ const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: 15,
-    paddingHorizontal: 22,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   lg: {
-    paddingVertical: 16,
-    paddingHorizontal: 26,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
   },
   fullWidth: {
     alignSelf: 'stretch',

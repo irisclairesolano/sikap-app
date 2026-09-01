@@ -116,9 +116,9 @@ const RegisterScreen: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
-          <View style={styles.stepBadge}>
-            <Text style={styles.stepBadgeText}>1 of 4</Text>
-          </View>
+        <View style={styles.stepBadge}>
+          <Text style={styles.stepBadgeText}>1 of 4</Text>
+        </View>
         <View style={{ width: 40 }} />
       </View>
 
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   footer: {
-    marginTop: 32,
+    marginTop: 16,
   },
 });
 
