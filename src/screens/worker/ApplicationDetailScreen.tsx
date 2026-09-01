@@ -620,8 +620,9 @@ const styles = StyleSheet.create({
   employerNameCard: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink },
   employerSubCard: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, marginTop: 2 },
   footer: {
-    padding: 20,
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
     backgroundColor: colors.paper,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,

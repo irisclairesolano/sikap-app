@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   createAccountContainer: {
     marginTop: 'auto',
     alignItems: 'center',
-    paddingTop: 40,
+    paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
   },

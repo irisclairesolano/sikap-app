@@ -78,6 +78,51 @@ const ApplicantDetailScreen: React.FC = () => {
     );
   }
 
+  if (!queryLoading && !appData && !applicantName) {
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: colors.paper,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 24,
+        }}
+      >
+        <Ionicons name="alert-circle-outline" size={48} color={colors.primary} />
+        <Text
+          style={{
+            fontFamily: fonts.bodyBold,
+            fontSize: 18,
+            color: colors.ink,
+            marginTop: 12,
+            textAlign: 'center',
+          }}
+        >
+          Applicant Not Found
+        </Text>
+        <Text
+          style={{
+            fontFamily: fonts.body,
+            fontSize: 14,
+            color: colors.inkMuted,
+            marginTop: 4,
+            textAlign: 'center',
+          }}
+        >
+          This application details may no longer be available.
+        </Text>
+        <Button
+          label="Go Back"
+          variant="outline"
+          size="md"
+          onPress={() => navigation.goBack()}
+          style={{ marginTop: 20 }}
+        />
+      </SafeAreaView>
+    );
+  }
+
   const getStage = () => {
     switch (status) {
       case 'pending':
@@ -1016,7 +1061,7 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 16,
+    paddingBottom: 12,
     backgroundColor: colors.paper,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,

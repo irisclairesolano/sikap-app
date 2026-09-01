@@ -174,9 +174,17 @@ export const EmployerDashboardScreen: React.FC = () => {
                   <TouchableOpacity
                     style={[styles.actionCard, { borderColor: colors.urgentSoft }]}
                     activeOpacity={0.7}
-                    onPress={() =>
-                      navigation.navigate('JobStatusManagement', { id: pendingApps[0].jobId })
-                    }
+                    onPress={() => {
+                      if (pendingApps.length === 1 && pendingApps[0].id) {
+                        navigation.navigate('ApplicantDetail', {
+                          applicantId: Number(pendingApps[0].id),
+                        });
+                      } else {
+                        navigation.navigate('JobStatusManagement', {
+                          id: Number(pendingApps[0].jobId),
+                        });
+                      }
+                    }}
                   >
                     <View style={[styles.actionIconBox, { backgroundColor: colors.urgentSoft }]}>
                       <Ionicons name="people" size={24} color={colors.urgent} />

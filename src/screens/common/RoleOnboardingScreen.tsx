@@ -436,7 +436,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
   },
   footer: {
-    padding: 24,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,

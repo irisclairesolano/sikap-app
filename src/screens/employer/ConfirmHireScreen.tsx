@@ -414,8 +414,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
   },
   footer: {
-    padding: 20,
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
     backgroundColor: colors.paper,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
