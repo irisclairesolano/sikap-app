@@ -97,9 +97,9 @@ export const NotificationsScreen: React.FC = () => {
                     const jobId = parsedData?.job_id || parsedData?.jobId;
 
                     if (appId) {
-                      navigation.navigate('ApplicantDetail' as any, { applicationId: appId });
+                      navigation.navigate('ApplicantDetail', { applicantId: Number(appId) });
                     } else if (jobId) {
-                      navigation.navigate('JobStatusManagement' as any, { id: jobId });
+                      navigation.navigate('JobStatusManagement', { id: Number(jobId) });
                     }
                   }}
                 >

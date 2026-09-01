@@ -97,28 +97,31 @@ export const usePushNotifications = (): PushNotificationState => {
         const ready = navigationRef.isReady();
 
         if (ready && role) {
-          if (appId) {
+          const numAppId = Number(appId);
+          const numJobId = Number(jobId);
+
+          if (appId && !isNaN(numAppId)) {
             if (role === 'employer') {
               navigationRef.navigate('Employer', {
                 screen: 'ApplicantDetail',
-                params: { applicantId: appId },
+                params: { applicantId: numAppId },
               });
             } else {
               navigationRef.navigate('Worker', {
                 screen: 'ApplicationDetail',
-                params: { applicationId: appId },
+                params: { applicationId: numAppId },
               });
             }
-          } else if (jobId) {
+          } else if (jobId && !isNaN(numJobId)) {
             if (role === 'employer') {
               navigationRef.navigate('Employer', {
                 screen: 'JobStatusManagement',
-                params: { id: jobId },
+                params: { id: numJobId },
               });
             } else {
               navigationRef.navigate('Worker', {
                 screen: 'JobDetails',
-                params: { id: jobId },
+                params: { id: numJobId },
               });
             }
           }
