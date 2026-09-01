@@ -550,33 +550,82 @@ const ApplicantDetailScreen: React.FC = () => {
             <View style={styles.skillsSection}>
               <Text style={styles.sectionEyebrow}>Character References</Text>
               <View style={{ marginTop: 10, gap: 12 }}>
-                {characterReferences.map((ref: any) => (
-                  <View
-                    key={ref.id}
-                    style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}
-                  >
+                {characterReferences.map((ref: any) => {
+                  const refPhone =
+                    ref.contact_number || ref.phone || ref.contactNumber || ref.number;
+                  return (
                     <View
+                      key={ref.id || ref.name}
                       style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        backgroundColor: colors.peach,
+                        flexDirection: 'row',
                         alignItems: 'center',
-                        justifyContent: 'center',
+                        justifyContent: 'space-between',
+                        backgroundColor: colors.paperBright,
+                        padding: 12,
+                        borderRadius: 14,
+                        borderWidth: 1,
+                        borderColor: colors.inkFaint,
                       }}
                     >
-                      <Ionicons name="person" size={18} color={colors.primary} />
+                      <View
+                        style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}
+                      >
+                        <View
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 20,
+                            backgroundColor: colors.peach,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <Ionicons name="person" size={18} color={colors.primary} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}
+                          >
+                            {ref.name}
+                          </Text>
+                          <Text
+                            style={{ fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft }}
+                          >
+                            {ref.relationship} {refPhone ? `· ${refPhone}` : ''}
+                          </Text>
+                        </View>
+                      </View>
+                      {refPhone ? (
+                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                          <TouchableOpacity
+                            onPress={() => Linking.openURL(`tel:${refPhone}`)}
+                            style={{
+                              padding: 8,
+                              borderRadius: 10,
+                              backgroundColor: colors.primary + '10',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <Ionicons name="call" size={16} color={colors.primary} />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => Linking.openURL(`sms:${refPhone}`)}
+                            style={{
+                              padding: 8,
+                              borderRadius: 10,
+                              backgroundColor: colors.primary + '10',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <Ionicons name="chatbox" size={16} color={colors.primary} />
+                          </TouchableOpacity>
+                        </View>
+                      ) : null}
                     </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}>
-                        {ref.name}
-                      </Text>
-                      <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft }}>
-                        {ref.relationship} · {ref.contact_number}
-                      </Text>
-                    </View>
-                  </View>
-                ))}
+                  );
+                })}
               </View>
             </View>
           )
