@@ -29,6 +29,7 @@ export const EmployerDashboardScreen: React.FC = () => {
   const { user } = useAuthCheck();
 
   const [activeJobs, setActiveJobs] = useState<JobPost[]>([]);
+  const [allJobs, setAllJobs] = useState<JobPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -36,6 +37,7 @@ export const EmployerDashboardScreen: React.FC = () => {
     try {
       const res = await jobsApi.getMyJobs();
       const jobsList = res?.data || [];
+      setAllJobs(jobsList);
       const active = jobsList.filter(
         (j: JobPost) => (j.status as string) === 'open' || (j.status as string) === 'in_progress',
       );
@@ -58,6 +60,40 @@ export const EmployerDashboardScreen: React.FC = () => {
     await fetchJobs();
     setRefreshing(false);
   };
+
+  const navigateToTab = (tabName: string) => {
+    const parent = navigation.getParent();
+    if (parent) {
+      parent.navigate(tabName as any);
+    } else {
+      navigation.navigate(tabName as any);
+    }
+  };
+
+  const totalHires = allJobs.reduce((acc, j) => {
+    const hiredCount = (j.applications || []).filter(
+      (a: any) =>
+        a.status === 'accepted' || a.status === 'completed' || a.status === 'employer_confirmed',
+    ).length;
+    return acc + (j.accepted_count || hiredCount);
+  }, 0);
+
+  const totalPaid = allJobs.reduce((acc, j) => {
+    const completedApps = (j.applications || []).filter(
+      (a: any) => a.status === 'completed' || a.status === 'accepted',
+    );
+    const paid = completedApps.reduce(
+      (pAcc: number, a: any) =>
+        pAcc + (Number(a.final_agreed_price) || Number(j.compensation) || 0),
+      0,
+    );
+    return acc + paid;
+  }, 0);
+
+  const reputationFormatted =
+    user?.reputation_score !== undefined && user?.reputation_score !== null
+      ? Number(user.reputation_score).toFixed(1)
+      : '5.0';
 
   if (loading) {
     return (
@@ -100,7 +136,7 @@ export const EmployerDashboardScreen: React.FC = () => {
         <View style={styles.statsGrid}>
           <TouchableOpacity
             style={[styles.statCard, { backgroundColor: colors.peach }]}
-            onPress={() => navigation.navigate('MyJobs', { tab: 'Active' } as any)}
+            onPress={() => navigateToTab('MyJobs')}
           >
             <Text style={[styles.statNum, { color: colors.primaryDark }]}>
               {loading ? '-' : activeJobs.length}
@@ -109,24 +145,28 @@ export const EmployerDashboardScreen: React.FC = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.statCard, { backgroundColor: colors.mint }]}
-            onPress={() => navigation.navigate('MyJobs', { tab: 'Past' } as any)}
+            onPress={() => navigateToTab('MyJobs')}
           >
-            <Text style={[styles.statNum, { color: colors.mintDeep }]}>0</Text>
+            <Text style={[styles.statNum, { color: colors.mintDeep }]}>
+              {loading ? '-' : totalHires}
+            </Text>
             <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Total hires</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.statCard, { backgroundColor: colors.butter }]}
-            onPress={() => navigation.navigate('MyJobs', { tab: 'Past' } as any)}
+            onPress={() => navigateToTab('MyJobs')}
           >
-            <Text style={[styles.statNum, { color: colors.ink }]}>₱0</Text>
+            <Text style={[styles.statNum, { color: colors.ink }]}>
+              ₱{loading ? '-' : totalPaid.toLocaleString()}
+            </Text>
             <Text style={[styles.statLabel, { color: colors.inkSoft }]}>Total paid</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.statCard, { backgroundColor: colors.sky }]}
-            onPress={() => navigation.navigate('Profile')}
+            onPress={() => navigateToTab('Profile')}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={[styles.statNum, { color: colors.skyDeep }]}>0.0</Text>
+              <Text style={[styles.statNum, { color: colors.skyDeep }]}>{reputationFormatted}</Text>
               <Ionicons
                 name="star"
                 size={14}

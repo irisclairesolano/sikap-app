@@ -81,7 +81,8 @@ const HomeStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="EmployerDashboard">
     <Stack.Screen name="EmployerDashboard" component={EmployerDashboardScreen} />
     <Stack.Screen name="PostJob" component={PostJobScreen} />
-    <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
+    <Stack.Screen name="JobDetails" component={JobStatusManagementScreen} />
+    <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
     <Stack.Screen name="SendRequest" component={SendRequestScreen} />
     <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
