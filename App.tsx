@@ -1,3 +1,4 @@
+import React from 'react';
 import 'react-native-gesture-handler';
 import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
