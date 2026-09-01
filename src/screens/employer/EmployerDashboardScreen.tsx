@@ -261,7 +261,24 @@ export const EmployerDashboardScreen: React.FC = () => {
                       key={app.id || index}
                       style={styles.applicantCard}
                       activeOpacity={0.7}
-                      onPress={() => navigation.navigate('JobStatusManagement', { id: app.jobId })}
+                      onPress={() =>
+                        navigation.navigate('ApplicantDetail', {
+                          applicantId: Number(app.id),
+                          applicantName: app.worker?.name || 'Worker Applicant',
+                          jobTitle: app.jobTitle || '',
+                          status: app.status || 'pending',
+                          barangay: app.worker?.barangay,
+                          municipality: app.worker?.municipality,
+                          reputationScore: app.worker?.reputation_score,
+                          bio: app.worker?.bio,
+                          skills: app.worker?.skills,
+                          experiences: app.worker?.experiences,
+                          characterReferences: app.worker?.character_references,
+                          phone: app.worker?.phone,
+                          emergencyContactName: app.worker?.emergency_contact_name,
+                          emergencyContactPhone: app.worker?.emergency_contact_phone,
+                        })
+                      }
                     >
                       <View style={styles.applicantAvatar}>
                         <Text style={styles.applicantAvatarText}>
@@ -276,7 +293,11 @@ export const EmployerDashboardScreen: React.FC = () => {
                         <View style={styles.ratingRow}>
                           <Ionicons name="star" size={12} color={colors.gold} />
                           <Text style={styles.ratingText}>
-                            {app.worker?.reputation_score || 5.0} • {app.status}
+                            {app.worker?.reputation_score !== undefined &&
+                            app.worker?.reputation_score !== null
+                              ? app.worker.reputation_score
+                              : 5.0}{' '}
+                            • {app.status}
                           </Text>
                         </View>
                       </View>
