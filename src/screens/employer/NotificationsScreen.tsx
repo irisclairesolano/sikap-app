@@ -33,6 +33,7 @@ export const NotificationsScreen: React.FC = () => {
   }
 
   const notifications = data?.notifications.data || [];
+  const hasUnread = notifications.some((n) => n.read_at === null);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -44,11 +45,15 @@ export const NotificationsScreen: React.FC = () => {
           <Text style={styles.headerPillText}>Notifications</Text>
         </View>
         <TouchableOpacity
-          style={styles.markAllBtn}
-          onPress={() => markAllAsReadMutation.mutate()}
-          disabled={markAllAsReadMutation.isPending}
+          style={[styles.markAllBtn, !hasUnread && { opacity: 0.4 }]}
+          onPress={() => {
+            if (hasUnread && !markAllAsReadMutation.isPending) {
+              markAllAsReadMutation.mutate();
+            }
+          }}
+          disabled={!hasUnread || markAllAsReadMutation.isPending}
         >
-          <Text style={styles.markAllText}>
+          <Text style={[styles.markAllText, !hasUnread && { color: colors.inkLight }]}>
             {markAllAsReadMutation.isPending ? 'Marking...' : 'Mark all as read'}
           </Text>
         </TouchableOpacity>
