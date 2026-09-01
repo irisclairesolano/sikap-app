@@ -194,17 +194,26 @@ const RootNavigator: React.FC = () => {
     return <SuspendedFallback />;
   }
 
-  if (!isVerified) {
+  // 1. Email verification gating (All users must verify 6-digit OTP first)
+  const status = user.registration_status;
+  if (status === 'pending_email_verification') {
+    return (
+      <AuthNavigator
+        key={`pending-otp-${user.id}`}
+        initialRouteName="OTPVerify"
+        initialParams={{ userId: user.id, email: user.email, role: user.role || 'worker' }}
+      />
+    );
+  }
+
+  // 2. ID Upload & Review gating for Workers (Workers must upload government ID before working)
+  if (user.role === 'worker' && !isVerified) {
     let gateStart: keyof AuthStackParamList = 'PendingVerify';
     let params: any = undefined;
 
-    const status = user.registration_status;
-    if (status === 'pending_email_verification') {
-      gateStart = 'OTPVerify';
-      params = { userId: user.id, email: user.email, role: user.role || 'worker' };
-    } else if (status === 'pending_id_upload' || (!status && !user.document_url)) {
+    if (status === 'pending_id_upload' || (!status && !user.document_url)) {
       gateStart = 'IDUpload';
-      params = { userId: user.id, role: user.role || 'worker' };
+      params = { userId: user.id, role: user.role };
     } else if (
       status === 'pending_review' ||
       status === 'rejected' ||

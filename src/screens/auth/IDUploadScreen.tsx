@@ -197,10 +197,29 @@ const IDUploadScreen: React.FC = () => {
     uploadMutation.mutate();
   };
 
+  const handleBackPress = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      showAlert('Sign Out?', 'Do you want to sign out of your account?', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            await SecureStore.deleteItemAsync('auth_token').catch(() => {});
+            await SecureStore.deleteItemAsync('user_profile').catch(() => {});
+            notifyAuthChanged();
+          },
+        },
+      ]);
+    }
+  };
+
   return (
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
       <View style={[styles.appBar, { paddingHorizontal: 26 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
+        <TouchableOpacity onPress={handleBackPress} style={styles.iconBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.stepBadge}>
