@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
@@ -34,7 +34,13 @@ const ApplicationDetailScreen: React.FC = () => {
     (route.params as any)?.id ||
     (route.params as any)?.applicantId;
   const applicationId = Number(rawAppId);
-  const { data: appData, isLoading: queryLoading } = useApplication(applicationId);
+  const { data: appData, isLoading: queryLoading, refetch } = useApplication(applicationId);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   const status = appData?.status || route.params?.status;
   const jobTitle = appData?.job?.title || route.params?.jobTitle;
@@ -137,10 +143,12 @@ const ApplicationDetailScreen: React.FC = () => {
         return 1;
       case 'shortlisted':
       case 'pending_negotiation':
+      case 'employer_requested':
         return 2;
       case 'employer_confirmed':
         return 3;
       case 'accepted':
+      case 'hired':
         return 4;
       case 'completed':
         return 5;

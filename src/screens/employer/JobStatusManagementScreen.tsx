@@ -744,7 +744,7 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   headerPillText: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.inkMuted },
-  scrollContent: { padding: 20, gap: 16, paddingBottom: 60 },
+  scrollContent: { padding: 20, gap: 16, paddingBottom: 20 },
   statusBanner: {
     flexDirection: 'row',
     justifyContent: 'space-between',

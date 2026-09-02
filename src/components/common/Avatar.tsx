@@ -1,6 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Image } from 'expo-image';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { colors, fonts } from '../../theme';
 
 interface AvatarProps {
@@ -10,9 +9,10 @@ interface AvatarProps {
 }
 
 export const Avatar: React.FC<AvatarProps> = ({ name, size = 40, url }) => {
+  const [imageError, setImageError] = useState(false);
   const initial = name ? name.charAt(0).toUpperCase() : '?';
 
-  if (url) {
+  if (url && !imageError) {
     return (
       <Image
         source={{ uri: url }}
@@ -21,7 +21,7 @@ export const Avatar: React.FC<AvatarProps> = ({ name, size = 40, url }) => {
           height: size,
           borderRadius: size / 2,
         }}
-        contentFit="cover"
+        onError={() => setImageError(true)}
       />
     );
   }

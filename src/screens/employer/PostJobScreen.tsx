@@ -1098,7 +1098,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 24,
     paddingTop: 12,
-    paddingBottom: 40,
+    paddingBottom: 24,
   },
   title: {
     fontFamily: fonts.display,

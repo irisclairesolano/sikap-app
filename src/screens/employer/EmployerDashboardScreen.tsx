@@ -18,7 +18,7 @@ import { useAuthCheck } from '../../hooks/useAuthCheck';
 import Button from '../../components/common/Button';
 
 import { useFocusEffect } from '@react-navigation/native';
-import { jobsApi } from '../../api/jobs';
+import { useEmployerJobs } from '../../hooks/useEmployerJobs';
 import { JobPost } from '../../types';
 
 import { DashboardSkeleton } from '../../components/common/SkeletonLoader';
@@ -28,47 +28,23 @@ export const EmployerDashboardScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<EmployerStackParamList>>();
   const { user } = useAuthCheck();
 
-  const [activeJobs, setActiveJobs] = useState<JobPost[]>([]);
-  const [allJobs, setAllJobs] = useState<JobPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchJobs = async () => {
-    try {
-      const res = await jobsApi.getMyJobs();
-      const jobsList = res?.data || [];
-      setAllJobs(jobsList);
-      const active = jobsList.filter(
-        (j: JobPost) => (j.status as string) === 'open' || (j.status as string) === 'in_progress',
-      );
-      setActiveJobs(active);
-    } catch (error) {
-      console.log('Error fetching jobs:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: jobsResponse, isLoading: loading, refetch, isRefetching } = useEmployerJobs();
+  const [actionPage, setActionPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
   useFocusEffect(
     React.useCallback(() => {
-      fetchJobs();
-    }, []),
+      refetch();
+    }, [refetch]),
   );
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await fetchJobs();
-    setRefreshing(false);
-  };
-
-  const navigateToTab = (tabName: string) => {
-    const parent = navigation.getParent();
-    if (parent) {
-      parent.navigate(tabName as any);
-    } else {
-      navigation.navigate(tabName as any);
-    }
-  };
+  const allJobs: JobPost[] = jobsResponse?.data || [];
+  const activeJobs = allJobs.filter(
+    (j: JobPost) =>
+      (j.status as string) === 'open' ||
+      (j.status as string) === 'closed_in_progress' ||
+      (j.status as string) === 'in_progress',
+  );
 
   const totalHires = allJobs.reduce((acc, j) => {
     const hiredCount = (j.applications || []).filter(
@@ -95,7 +71,7 @@ export const EmployerDashboardScreen: React.FC = () => {
       ? Number(user.reputation_score).toFixed(1)
       : '5.0';
 
-  if (loading) {
+  if (loading && !jobsResponse) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <DashboardSkeleton />
@@ -104,6 +80,131 @@ export const EmployerDashboardScreen: React.FC = () => {
   }
 
   const getInitial = (name?: string) => (name ? name.charAt(0).toUpperCase() : 'E');
+
+  // Flatten all applications across jobs to create individual action items
+  const allActions = allJobs.flatMap((job) =>
+    (job.applications || []).map((app) => {
+      const isDone =
+        app.status === 'completed' || app.status === 'rejected' || app.status === 'withdrawn';
+      let title = 'Review application';
+      let description = `${app.worker?.name || 'Worker'} applied for ${job.title}`;
+      let stageBadge = 'Stage 1 · Review';
+      let badgeBg: string = colors.urgentSoft;
+      let badgeColor: string = colors.urgent;
+      let iconName: any = 'person-outline';
+      let borderColor: string = colors.urgentSoft;
+
+      switch (app.status as string) {
+        case 'pending':
+          title = `Review application`;
+          description = `${app.worker?.name || 'Worker'} applied for ${job.title}`;
+          stageBadge = 'Stage 1 · Review';
+          badgeBg = colors.urgentSoft;
+          badgeColor = colors.urgent;
+          iconName = 'people-outline';
+          borderColor = colors.urgentSoft;
+          break;
+        case 'employer_requested':
+        case 'pending_negotiation':
+          title = `Confirm terms & hire`;
+          description = `Shortlisted ${app.worker?.name || 'Worker'} for ${job.title}`;
+          stageBadge = 'Stage 2 · Negotiation';
+          badgeBg = colors.peach;
+          badgeColor = colors.primaryDark;
+          iconName = 'chatbubbles-outline';
+          borderColor = colors.peach;
+          break;
+        case 'employer_confirmed':
+          title = `Offer awaiting response`;
+          description = `Offer sent to ${app.worker?.name || 'Worker'} for ${job.title}`;
+          stageBadge = 'Stage 3 · Offer Sent';
+          badgeBg = colors.butter;
+          badgeColor = colors.ink;
+          iconName = 'time-outline';
+          borderColor = colors.butter;
+          break;
+        case 'accepted':
+        case 'hired':
+          title = `Job in progress`;
+          description = `${app.worker?.name || 'Worker'} is working on ${job.title}`;
+          stageBadge = 'Stage 4 · In Progress';
+          badgeBg = colors.mint;
+          badgeColor = colors.mintDeep;
+          iconName = 'construct-outline';
+          borderColor = colors.mint;
+          break;
+        case 'completed':
+          title = `Rate & review worker`;
+          description = `Completed job with ${app.worker?.name || 'Worker'} on ${job.title}`;
+          stageBadge = 'Stage 5 · Done';
+          badgeBg = '#E0DED4';
+          badgeColor = colors.inkSoft;
+          iconName = 'checkmark-done-circle-outline';
+          borderColor = colors.inkFaint;
+          break;
+        default:
+          title = `Application status: ${app.status}`;
+          description = `${app.worker?.name || 'Worker'} on ${job.title}`;
+          stageBadge = app.status;
+          badgeBg = colors.inkFaint;
+          badgeColor = colors.inkSoft;
+          iconName = 'information-circle-outline';
+          borderColor = colors.inkFaint;
+          break;
+      }
+
+      return {
+        id: app.id,
+        app,
+        job,
+        title,
+        description,
+        stageBadge,
+        badgeBg,
+        badgeColor,
+        iconName,
+        borderColor,
+        isDone,
+      };
+    }),
+  );
+
+  // Active items first, then completed items
+  const sortedActions = [...allActions].sort((a, b) => {
+    if (a.isDone === b.isDone) return 0;
+    return a.isDone ? 1 : -1;
+  });
+
+  const pendingCount = allActions.filter((a) => !a.isDone).length;
+  const totalActionPages = Math.ceil(sortedActions.length / ITEMS_PER_PAGE) || 1;
+  const paginatedActions = sortedActions.slice(
+    (actionPage - 1) * ITEMS_PER_PAGE,
+    actionPage * ITEMS_PER_PAGE,
+  );
+
+  // Flatten recent applicants
+  const allRecentApplicants = allJobs.flatMap((j) =>
+    (j.applications || []).map((app) => ({ ...app, jobTitle: j.title, jobId: j.id })),
+  );
+
+  const navigateToApplicantDetail = (app: any, jobTitle: string) => {
+    navigation.navigate('ApplicantDetail', {
+      applicantId: Number(app.id),
+      applicantName: app.worker?.name || 'Worker Applicant',
+      jobTitle: jobTitle || '',
+      status: app.status || 'pending',
+      barangay: app.worker?.barangay,
+      municipality: app.worker?.municipality,
+      reputationScore: app.worker?.reputation_score,
+      bio: app.worker?.workerProfile?.bio || (app.worker as any)?.bio,
+      skills: app.worker?.skills,
+      experiences: app.worker?.experiences,
+      characterReferences: app.worker?.character_references || undefined,
+      phone: app.worker?.phone || undefined,
+      emergencyContactName: (app.worker as any)?.emergency_contact_name,
+      emergencyContactPhone: (app.worker as any)?.emergency_contact_phone,
+    });
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -128,43 +229,29 @@ export const EmployerDashboardScreen: React.FC = () => {
       </View>
 
       <RefreshableContainer
-        onRefresh={fetchJobs}
+        onRefresh={async () => {
+          await refetch();
+        }}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Stats Grid */}
+        {/* Stats Grid - Informational & Non-clickable */}
         <View style={styles.statsGrid}>
-          <TouchableOpacity
-            style={[styles.statCard, { backgroundColor: colors.peach }]}
-            onPress={() => navigateToTab('MyJobs')}
-          >
-            <Text style={[styles.statNum, { color: colors.primaryDark }]}>
-              {loading ? '-' : activeJobs.length}
-            </Text>
+          <View style={[styles.statCard, { backgroundColor: colors.peach }]}>
+            <Text style={[styles.statNum, { color: colors.primaryDark }]}>{activeJobs.length}</Text>
             <Text style={[styles.statLabel, { color: colors.primaryDark }]}>Active jobs</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.statCard, { backgroundColor: colors.mint }]}
-            onPress={() => navigateToTab('MyJobs')}
-          >
-            <Text style={[styles.statNum, { color: colors.mintDeep }]}>
-              {loading ? '-' : totalHires}
-            </Text>
+          </View>
+          <View style={[styles.statCard, { backgroundColor: colors.mint }]}>
+            <Text style={[styles.statNum, { color: colors.mintDeep }]}>{totalHires}</Text>
             <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Total hires</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.statCard, { backgroundColor: colors.butter }]}
-            onPress={() => navigateToTab('MyJobs')}
-          >
+          </View>
+          <View style={[styles.statCard, { backgroundColor: colors.butter }]}>
             <Text style={[styles.statNum, { color: colors.ink }]}>
-              ₱{loading ? '-' : totalPaid.toLocaleString()}
+              ₱{totalPaid.toLocaleString()}
             </Text>
             <Text style={[styles.statLabel, { color: colors.inkSoft }]}>Total paid</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.statCard, { backgroundColor: colors.sky }]}
-            onPress={() => navigateToTab('Profile')}
-          >
+          </View>
+          <View style={[styles.statCard, { backgroundColor: colors.sky }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
               <Text style={[styles.statNum, { color: colors.skyDeep }]}>{reputationFormatted}</Text>
               <Ionicons
@@ -175,7 +262,7 @@ export const EmployerDashboardScreen: React.FC = () => {
               />
             </View>
             <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Reputation</Text>
-          </TouchableOpacity>
+          </View>
         </View>
 
         <Button
@@ -187,168 +274,201 @@ export const EmployerDashboardScreen: React.FC = () => {
           style={{ marginTop: 24 }}
         />
 
-        {/* Real Dynamic Action Required */}
-        {(() => {
-          const allApps = activeJobs.flatMap((j) =>
-            (j.applications || []).map((app) => ({ ...app, jobTitle: j.title, jobId: j.id })),
-          );
-          const pendingApps = allApps.filter(
-            (a) =>
-              (a.status as string) === 'pending' || (a.status as string) === 'pending_negotiation',
-          );
-          const hiredApps = allApps.filter(
-            (a) => (a.status as string) === 'hired' || (a.status as string) === 'accepted',
-          );
+        {/* Action Required Section */}
+        <View style={styles.actionHeader}>
+          <Text style={styles.sectionHeaderTitle}>Action required</Text>
+          <View style={styles.badgeCount}>
+            <Text style={styles.badgeCountText}>{pendingCount}</Text>
+          </View>
+        </View>
 
-          return (
-            <>
-              <View style={styles.actionHeader}>
-                <Text style={styles.sectionHeader}>Action required</Text>
-                <View style={styles.badgeCount}>
-                  <Text style={styles.badgeCountText}>{pendingApps.length + hiredApps.length}</Text>
+        <View style={styles.listContainer}>
+          {sortedActions.length === 0 ? (
+            <View style={[styles.actionCard, { borderColor: colors.inkFaint }]}>
+              <View style={[styles.actionIconBox, { backgroundColor: colors.paperBright }]}>
+                <Ionicons name="checkmark-circle-outline" size={24} color={colors.mintDeep} />
+              </View>
+              <View style={styles.jobDetails}>
+                <Text style={styles.jobTitle}>All caught up!</Text>
+                <Text style={styles.jobSubtitle}>No pending actions required right now</Text>
+              </View>
+            </View>
+          ) : (
+            paginatedActions.map((action) => (
+              <TouchableOpacity
+                key={action.id}
+                style={[
+                  styles.actionCard,
+                  {
+                    borderColor: action.borderColor,
+                    backgroundColor: action.isDone ? '#ECEAE2' : colors.paperBright,
+                    opacity: action.isDone ? 0.85 : 1,
+                  },
+                ]}
+                activeOpacity={0.7}
+                onPress={() => navigateToApplicantDetail(action.app, action.job.title)}
+              >
+                <View
+                  style={[
+                    styles.actionIconBox,
+                    {
+                      backgroundColor: action.isDone ? '#DEDCD2' : action.badgeBg,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={action.iconName}
+                    size={22}
+                    color={action.isDone ? colors.inkSoft : action.badgeColor}
+                  />
                 </View>
-              </View>
-
-              <View style={styles.listContainer}>
-                {pendingApps.length > 0 ? (
-                  <TouchableOpacity
-                    style={[styles.actionCard, { borderColor: colors.urgentSoft }]}
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      if (pendingApps.length === 1 && pendingApps[0].id) {
-                        navigation.navigate('ApplicantDetail', {
-                          applicantId: Number(pendingApps[0].id),
-                        });
-                      } else {
-                        navigation.navigate('JobStatusManagement', {
-                          id: Number(pendingApps[0].jobId),
-                        });
-                      }
-                    }}
-                  >
-                    <View style={[styles.actionIconBox, { backgroundColor: colors.urgentSoft }]}>
-                      <Ionicons name="people" size={24} color={colors.urgent} />
-                    </View>
-                    <View style={styles.jobDetails}>
-                      <Text style={styles.jobTitle}>Review new applicants</Text>
-                      <Text style={styles.jobSubtitle}>
-                        {pendingApps.length} applicant(s) waiting for review
-                      </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
-                  </TouchableOpacity>
-                ) : null}
-
-                {hiredApps.length > 0 ? (
-                  <TouchableOpacity
-                    style={[styles.actionCard, { borderColor: colors.mint }]}
-                    activeOpacity={0.7}
-                    onPress={() => navigation.navigate('MyJobs')}
-                  >
-                    <View style={[styles.actionIconBox, { backgroundColor: colors.mint }]}>
-                      <Ionicons name="checkmark-done" size={24} color={colors.mintDeep} />
-                    </View>
-                    <View style={styles.jobDetails}>
-                      <Text style={styles.jobTitle}>Active hired workers</Text>
-                      <Text style={styles.jobSubtitle}>
-                        {hiredApps.length} job(s) currently in progress
-                      </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
-                  </TouchableOpacity>
-                ) : null}
-
-                {pendingApps.length === 0 && hiredApps.length === 0 ? (
-                  <View style={[styles.actionCard, { borderColor: colors.inkFaint }]}>
-                    <View style={[styles.actionIconBox, { backgroundColor: colors.paperBright }]}>
-                      <Ionicons name="checkmark-circle-outline" size={24} color={colors.mintDeep} />
-                    </View>
-                    <View style={styles.jobDetails}>
-                      <Text style={styles.jobTitle}>All caught up!</Text>
-                      <Text style={styles.jobSubtitle}>No pending actions required right now</Text>
-                    </View>
-                  </View>
-                ) : null}
-              </View>
-
-              {/* Real Dynamic Recent Applicants */}
-              <Text style={[styles.sectionHeader, { marginTop: 32 }]}>Recent applicants</Text>
-
-              <View style={styles.listContainer}>
-                {allApps.length === 0 ? (
+                <View style={styles.jobDetails}>
                   <View
-                    style={[
-                      styles.applicantCard,
-                      { justifyContent: 'center', paddingVertical: 20 },
-                    ]}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}
                   >
-                    <Ionicons
-                      name="people-outline"
-                      size={28}
-                      color={colors.inkLight}
-                      style={{ marginRight: 12 }}
-                    />
-                    <View style={styles.jobDetails}>
-                      <Text style={styles.jobTitle}>No applicants yet</Text>
-                      <Text style={styles.jobSubtitle}>
-                        Applicants will appear here when workers apply
+                    <Text
+                      style={[
+                        styles.jobTitle,
+                        { color: action.isDone ? colors.inkSoft : colors.ink },
+                      ]}
+                    >
+                      {action.title}
+                    </Text>
+                    {action.isDone && (
+                      <View style={styles.doneMarker}>
+                        <Ionicons name="checkmark" size={10} color={colors.white} />
+                        <Text style={styles.doneMarkerText}>DONE</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.jobSubtitle} numberOfLines={1}>
+                    {action.description}
+                  </Text>
+                  <View style={{ marginTop: 4, alignSelf: 'flex-start' }}>
+                    <View
+                      style={[
+                        styles.stageBadgeContainer,
+                        { backgroundColor: action.isDone ? '#DEDCD2' : action.badgeBg },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.stageBadgeText,
+                          { color: action.isDone ? colors.inkSoft : action.badgeColor },
+                        ]}
+                      >
+                        {action.stageBadge}
                       </Text>
                     </View>
                   </View>
-                ) : (
-                  allApps.slice(0, 3).map((app, index) => (
-                    <TouchableOpacity
-                      key={app.id || index}
-                      style={styles.applicantCard}
-                      activeOpacity={0.7}
-                      onPress={() =>
-                        navigation.navigate('ApplicantDetail', {
-                          applicantId: Number(app.id),
-                          applicantName: app.worker?.name || 'Worker Applicant',
-                          jobTitle: (app as any).jobTitle || '',
-                          status: app.status || 'pending',
-                          barangay: app.worker?.barangay,
-                          municipality: app.worker?.municipality,
-                          reputationScore: app.worker?.reputation_score,
-                          bio: app.worker?.workerProfile?.bio || (app.worker as any)?.bio,
-                          skills: app.worker?.skills,
-                          experiences: app.worker?.experiences,
-                          characterReferences: app.worker?.character_references || undefined,
-                          phone: app.worker?.phone || undefined,
-                          emergencyContactName: (app.worker as any)?.emergency_contact_name,
-                          emergencyContactPhone: (app.worker as any)?.emergency_contact_phone,
-                        })
-                      }
-                    >
-                      <View style={styles.applicantAvatar}>
-                        <Text style={styles.applicantAvatarText}>
-                          {(app.worker?.name || 'W').charAt(0).toUpperCase()}
-                        </Text>
-                      </View>
-                      <View style={styles.jobDetails}>
-                        <Text style={styles.jobTitle}>
-                          {app.worker?.name || 'Worker Applicant'}
-                        </Text>
-                        <Text style={styles.jobSubtitle}>Applied for {app.jobTitle}</Text>
-                        <View style={styles.ratingRow}>
-                          <Ionicons name="star" size={12} color={colors.gold} />
-                          <Text style={styles.ratingText}>
-                            {app.worker?.reputation_score !== undefined &&
-                            app.worker?.reputation_score !== null
-                              ? app.worker.reputation_score
-                              : 5.0}{' '}
-                            • {app.status}
-                          </Text>
-                        </View>
-                      </View>
-                      <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
-                    </TouchableOpacity>
-                  ))
-                )}
+                </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={action.isDone ? colors.inkFaint : colors.inkLight}
+                />
+              </TouchableOpacity>
+            ))
+          )}
+
+          {/* Pagination Controls */}
+          {totalActionPages > 1 && (
+            <View style={styles.paginationRow}>
+              <TouchableOpacity
+                style={[styles.pageBtn, actionPage === 1 && styles.pageBtnDisabled]}
+                disabled={actionPage === 1}
+                onPress={() => setActionPage((p) => Math.max(1, p - 1))}
+              >
+                <Ionicons
+                  name="chevron-back"
+                  size={16}
+                  color={actionPage === 1 ? colors.inkFaint : colors.ink}
+                />
+                <Text style={[styles.pageBtnText, actionPage === 1 && styles.pageBtnTextDisabled]}>
+                  Previous
+                </Text>
+              </TouchableOpacity>
+
+              <Text style={styles.pageIndicator}>
+                Page {actionPage} of {totalActionPages}
+              </Text>
+
+              <TouchableOpacity
+                style={[styles.pageBtn, actionPage === totalActionPages && styles.pageBtnDisabled]}
+                disabled={actionPage === totalActionPages}
+                onPress={() => setActionPage((p) => Math.min(totalActionPages, p + 1))}
+              >
+                <Text
+                  style={[
+                    styles.pageBtnText,
+                    actionPage === totalActionPages && styles.pageBtnTextDisabled,
+                  ]}
+                >
+                  Next
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={actionPage === totalActionPages ? colors.inkFaint : colors.ink}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        {/* Real Dynamic Recent Applicants */}
+        <Text style={[styles.sectionHeaderTitle, { marginTop: 32, marginBottom: 12 }]}>
+          Recent applicants
+        </Text>
+
+        <View style={styles.listContainer}>
+          {allRecentApplicants.length === 0 ? (
+            <View style={[styles.applicantCard, { justifyContent: 'center', paddingVertical: 20 }]}>
+              <Ionicons
+                name="people-outline"
+                size={28}
+                color={colors.inkLight}
+                style={{ marginRight: 12 }}
+              />
+              <View style={styles.jobDetails}>
+                <Text style={styles.jobTitle}>No applicants yet</Text>
+                <Text style={styles.jobSubtitle}>
+                  Applicants will appear here when workers apply
+                </Text>
               </View>
-            </>
-          );
-        })()}
+            </View>
+          ) : (
+            allRecentApplicants.slice(0, 3).map((app, index) => (
+              <TouchableOpacity
+                key={app.id || index}
+                style={styles.applicantCard}
+                activeOpacity={0.7}
+                onPress={() => navigateToApplicantDetail(app, (app as any).jobTitle || '')}
+              >
+                <View style={styles.applicantAvatar}>
+                  <Text style={styles.applicantAvatarText}>
+                    {(app.worker?.name || 'W').charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+                <View style={styles.jobDetails}>
+                  <Text style={styles.jobTitle}>{app.worker?.name || 'Worker Applicant'}</Text>
+                  <Text style={styles.jobSubtitle}>Applied for {(app as any).jobTitle}</Text>
+                  <View style={styles.ratingRow}>
+                    <Ionicons name="star" size={12} color={colors.gold} />
+                    <Text style={styles.ratingText}>
+                      {app.worker?.reputation_score !== undefined &&
+                      app.worker?.reputation_score !== null
+                        ? app.worker.reputation_score
+                        : 5.0}{' '}
+                      • {app.status}
+                    </Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
       </RefreshableContainer>
     </SafeAreaView>
   );
@@ -404,7 +524,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 8,
-    paddingBottom: 40,
+    paddingBottom: 20,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -430,14 +550,73 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  sectionHeader: {
+  sectionHeaderTitle: {
     fontFamily: fonts.bodyBold,
     fontSize: 13,
     color: colors.inkMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginTop: 32,
-    marginBottom: 12,
+  },
+  doneMarker: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.inkSoft,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    gap: 2,
+  },
+  doneMarkerText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 9,
+    color: colors.white,
+    letterSpacing: 0.5,
+  },
+  stageBadgeContainer: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  stageBadgeText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  paginationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    marginTop: 4,
+  },
+  pageBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: colors.paperBright,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    gap: 4,
+  },
+  pageBtnDisabled: {
+    opacity: 0.4,
+    borderColor: 'transparent',
+  },
+  pageBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.ink,
+  },
+  pageBtnTextDisabled: {
+    color: colors.inkFaint,
+  },
+  pageIndicator: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkSoft,
   },
   listContainer: {
     gap: 10,

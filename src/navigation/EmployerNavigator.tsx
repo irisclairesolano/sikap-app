@@ -177,8 +177,24 @@ const EmployerNavigator: React.FC = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeStack} />
-      <Tab.Screen name="MyJobs" component={MyJobsStack} />
+      <Tab.Screen
+        name="Home"
+        component={HomeStack}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            (navigation as any).navigate('Home', { screen: 'EmployerDashboard' });
+          },
+        })}
+      />
+      <Tab.Screen
+        name="MyJobs"
+        component={MyJobsStack}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            (navigation as any).navigate('MyJobs', { screen: 'MyJobs' });
+          },
+        })}
+      />
       <Tab.Screen
         name="Notifications"
         component={NotificationsStack}
@@ -186,15 +202,28 @@ const EmployerNavigator: React.FC = () => {
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            (navigation as any).navigate('Notifications', { screen: 'Notifications' });
+          },
+        })}
       />
-      <Tab.Screen name="Profile" component={ProfileStack} />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileStack}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            (navigation as any).navigate('Profile', { screen: 'Profile' });
+          },
+        })}
+      />
     </Tab.Navigator>
   );
 };
 
 const JobDetailsScreen: React.FC = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Job Details</Text>
+    <Text>Job Details Screen</Text>
   </View>
 );
 

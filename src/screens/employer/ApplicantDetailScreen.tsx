@@ -18,6 +18,7 @@ import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { Avatar } from '../../components/common/Avatar';
 import { useApplication } from '../../hooks/useJobApplications';
+import { parseContactPlatforms } from '../common/ManageContactPlatformsScreen';
 
 type ApplicantDetailScreenRouteProp = RouteProp<EmployerStackParamList, 'ApplicantDetail'>;
 type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -557,12 +558,15 @@ const ApplicantDetailScreen: React.FC = () => {
             </View>
           </View>
         ) : (
-          characterReferences &&
-          characterReferences.length > 0 && (
-            <View style={styles.skillsSection}>
-              <Text style={styles.sectionEyebrow}>Character References</Text>
-              <View style={{ marginTop: 10, gap: 12 }}>
-                {characterReferences.map((ref: any) => {
+          <View style={styles.skillsSection}>
+            <Text style={styles.sectionEyebrow}>Character References</Text>
+            <View style={{ marginTop: 10, gap: 12 }}>
+              {!characterReferences || characterReferences.length === 0 ? (
+                <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
+                  No character references listed by worker.
+                </Text>
+              ) : (
+                characterReferences.map((ref: any) => {
                   const refPhone =
                     ref.contact_number || ref.phone || ref.contactNumber || ref.number;
                   return (
@@ -614,7 +618,7 @@ const ApplicantDetailScreen: React.FC = () => {
                             style={{
                               padding: 8,
                               borderRadius: 10,
-                              backgroundColor: colors.primary + '10',
+                              backgroundColor: colors.primary + '15',
                               alignItems: 'center',
                               justifyContent: 'center',
                             }}
@@ -626,7 +630,7 @@ const ApplicantDetailScreen: React.FC = () => {
                             style={{
                               padding: 8,
                               borderRadius: 10,
-                              backgroundColor: colors.primary + '10',
+                              backgroundColor: colors.primary + '15',
                               alignItems: 'center',
                               justifyContent: 'center',
                             }}
@@ -637,13 +641,13 @@ const ApplicantDetailScreen: React.FC = () => {
                       ) : null}
                     </View>
                   );
-                })}
-              </View>
+                })
+              )}
             </View>
-          )
+          </View>
         )}
 
-        {/* Contact Info Visibility Guards */}
+        {/* Contact Info & Direct Communication Channels */}
         {status === 'pending' || status === 'withdrawn' ? (
           <View style={styles.privacyShield}>
             <View style={styles.shieldHeader}>
@@ -656,39 +660,25 @@ const ApplicantDetailScreen: React.FC = () => {
               </View>
             </View>
             <Text style={styles.shieldDesc}>
-              Shortlist worker to review profile and hire to request contact information.
-            </Text>
-          </View>
-        ) : status === 'pending_negotiation' || status === 'employer_confirmed' ? (
-          <View style={styles.privacyShield}>
-            <View style={styles.shieldHeader}>
-              <View style={styles.shieldIcon}>
-                <Ionicons name="lock-closed" size={16} color={colors.primary} />
-              </View>
-              <View>
-                <Text style={styles.shieldTitle}>Contact Details Locked</Text>
-                <Text style={styles.shieldSub}>Waiting for offer acceptance</Text>
-              </View>
-            </View>
-            <Text style={styles.shieldDesc}>
-              Direct phone number and emergency contacts will unlock once the worker accepts your
-              hire offer.
+              Shortlist worker to unlock direct phone numbers, communication channels, and character
+              references for negotiation.
             </Text>
           </View>
         ) : (
           <View style={[styles.privacyShield, { borderColor: colors.mintDeep }]}>
             <View style={styles.shieldHeader}>
               <View style={[styles.shieldIcon, { backgroundColor: colors.mint }]}>
-                <Ionicons name="eye" size={16} color={colors.mintDeep} />
+                <Ionicons name="call" size={16} color={colors.mintDeep} />
               </View>
               <View>
-                <Text style={styles.shieldTitle}>Contact Details Unlocked</Text>
+                <Text style={styles.shieldTitle}>Contact Details & Channels</Text>
                 <Text style={[styles.shieldSub, { color: colors.mintDeep }]}>
-                  Hired worker contact details
+                  {stage >= 4 ? 'Hired worker contact details' : 'Direct negotiation channels'}
                 </Text>
               </View>
             </View>
             <View style={{ marginTop: 12, gap: 12 }}>
+              {/* Direct Phone */}
               <View
                 style={{
                   flexDirection: 'row',
@@ -705,7 +695,7 @@ const ApplicantDetailScreen: React.FC = () => {
                       textTransform: 'uppercase',
                     }}
                   >
-                    Phone
+                    Phone Number
                   </Text>
                   <Text
                     style={{
@@ -715,7 +705,7 @@ const ApplicantDetailScreen: React.FC = () => {
                       marginTop: 2,
                     }}
                   >
-                    {phone || '0912 345 6789'}
+                    {phone || 'Not provided'}
                   </Text>
                 </View>
                 {phone ? (
@@ -725,7 +715,7 @@ const ApplicantDetailScreen: React.FC = () => {
                       style={{
                         padding: 8,
                         borderRadius: 10,
-                        backgroundColor: colors.primary + '10',
+                        backgroundColor: colors.primary + '15',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
@@ -737,7 +727,7 @@ const ApplicantDetailScreen: React.FC = () => {
                       style={{
                         padding: 8,
                         borderRadius: 10,
-                        backgroundColor: colors.primary + '10',
+                        backgroundColor: colors.primary + '15',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
@@ -747,6 +737,90 @@ const ApplicantDetailScreen: React.FC = () => {
                   </View>
                 ) : null}
               </View>
+
+              {/* Communication Platforms (Viber, WhatsApp, Telegram, etc.) */}
+              {(() => {
+                const platforms = parseContactPlatforms(
+                  (appData?.worker as any)?.contact_platforms ||
+                    (route.params as any)?.contact_platforms,
+                );
+                if (platforms.length === 0) return null;
+
+                const openPlatformLink = (platform: string, val: string) => {
+                  const cleanVal = val.trim();
+                  if (platform.toLowerCase() === 'whatsapp') {
+                    const cleanPhone = cleanVal.replace(/[^0-9]/g, '');
+                    Linking.openURL(`https://wa.me/${cleanPhone}`);
+                  } else if (platform.toLowerCase() === 'viber') {
+                    Linking.openURL(`viber://chat?number=${cleanVal}`);
+                  } else if (platform.toLowerCase() === 'telegram') {
+                    const cleanUsername = cleanVal.replace(/^@/, '');
+                    Linking.openURL(`https://t.me/${cleanUsername}`);
+                  } else if (
+                    platform.toLowerCase() === 'facebook' ||
+                    platform.toLowerCase() === 'messenger'
+                  ) {
+                    Linking.openURL(
+                      cleanVal.startsWith('http') ? cleanVal : `https://m.me/${cleanVal}`,
+                    );
+                  } else if (cleanVal.startsWith('http')) {
+                    Linking.openURL(cleanVal);
+                  } else {
+                    Linking.openURL(`sms:${cleanVal}`);
+                  }
+                };
+
+                return (
+                  <View
+                    style={{
+                      borderTopWidth: 1,
+                      borderTopColor: colors.inkFaint,
+                      paddingTop: 10,
+                      gap: 8,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: fonts.body,
+                        color: colors.inkSoft,
+                        fontSize: 11,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      Preferred Communication Platforms
+                    </Text>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
+                      {platforms.map((p, idx) => (
+                        <TouchableOpacity
+                          key={idx}
+                          onPress={() => openPlatformLink(p.platform, p.value)}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 6,
+                            paddingVertical: 6,
+                            paddingHorizontal: 10,
+                            borderRadius: 10,
+                            backgroundColor: colors.paperBright,
+                            borderWidth: 1,
+                            borderColor: colors.mint,
+                          }}
+                        >
+                          <Ionicons name="chatbubble-ellipses" size={14} color={colors.mintDeep} />
+                          <Text
+                            style={{ fontFamily: fonts.bodyBold, fontSize: 12, color: colors.ink }}
+                          >
+                            {p.platform}: {p.value}
+                          </Text>
+                          <Ionicons name="open-outline" size={12} color={colors.inkSoft} />
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                );
+              })()}
+
+              {/* Emergency Contact (Stage 4+) */}
               {emergencyContactName && (
                 <View
                   style={{
@@ -781,20 +855,18 @@ const ApplicantDetailScreen: React.FC = () => {
                     </Text>
                   </View>
                   {emergencyContactPhone ? (
-                    <View style={{ flexDirection: 'row', gap: 8 }}>
-                      <TouchableOpacity
-                        onPress={() => Linking.openURL(`tel:${emergencyContactPhone}`)}
-                        style={{
-                          padding: 8,
-                          borderRadius: 10,
-                          backgroundColor: colors.primary + '10',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Ionicons name="call" size={16} color={colors.primary} />
-                      </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL(`tel:${emergencyContactPhone}`)}
+                      style={{
+                        padding: 8,
+                        borderRadius: 10,
+                        backgroundColor: colors.primary + '15',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Ionicons name="call" size={16} color={colors.primary} />
+                    </TouchableOpacity>
                   ) : null}
                 </View>
               )}

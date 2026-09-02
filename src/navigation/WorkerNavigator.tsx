@@ -236,9 +236,33 @@ const WorkerNavigator: React.FC = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Find" component={FindStack} />
-      <Tab.Screen name="Mine" component={ApplicationsStack} />
-      <Tab.Screen name="Saved" component={SavedStack} />
+      <Tab.Screen
+        name="Find"
+        component={FindStack}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            (navigation as any).navigate('Find', { screen: 'Home' });
+          },
+        })}
+      />
+      <Tab.Screen
+        name="Mine"
+        component={ApplicationsStack}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            (navigation as any).navigate('Mine', { screen: 'Applications' });
+          },
+        })}
+      />
+      <Tab.Screen
+        name="Saved"
+        component={SavedStack}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            (navigation as any).navigate('Saved', { screen: 'SavedJobs' });
+          },
+        })}
+      />
       <Tab.Screen
         name="Notifications"
         component={NotificationsStack}
@@ -246,8 +270,21 @@ const WorkerNavigator: React.FC = () => {
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            (navigation as any).navigate('Notifications', { screen: 'Notifications' });
+          },
+        })}
       />
-      <Tab.Screen name="Me" component={ProfileStack} />
+      <Tab.Screen
+        name="Me"
+        component={ProfileStack}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            (navigation as any).navigate('Me', { screen: 'Profile' });
+          },
+        })}
+      />
     </Tab.Navigator>
   );
 };

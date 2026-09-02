@@ -86,7 +86,7 @@ export const NotificationsScreen: React.FC = () => {
               return (
                 <TouchableOpacity
                   key={notif.id}
-                  style={[styles.notificationCard, isUnread && styles.unreadPrimary]}
+                  style={[styles.notificationCard, isUnread ? styles.unreadCard : styles.readCard]}
                   activeOpacity={0.7}
                   onPress={() => {
                     if (isUnread) {
@@ -122,14 +122,32 @@ export const NotificationsScreen: React.FC = () => {
                   <View
                     style={[
                       styles.iconBubble,
-                      { backgroundColor: isUnread ? colors.peach : colors.butter },
+                      { backgroundColor: isUnread ? colors.peach : '#DEDCD2' },
                     ]}
                   >
-                    <Ionicons name="notifications" size={18} color={colors.primary} />
+                    <Ionicons
+                      name="notifications"
+                      size={18}
+                      color={isUnread ? colors.primary : colors.inkSoft}
+                    />
                   </View>
                   <View style={styles.notificationContent}>
-                    <Text style={styles.notificationTitle}>{title}</Text>
-                    <Text style={styles.notificationBody}>{message}</Text>
+                    <Text
+                      style={[
+                        styles.notificationTitle,
+                        { color: isUnread ? colors.ink : colors.inkSoft },
+                      ]}
+                    >
+                      {title}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.notificationBody,
+                        { color: isUnread ? colors.ink : colors.inkSoft },
+                      ]}
+                    >
+                      {message}
+                    </Text>
                     <Text style={styles.notificationTime}>
                       {new Date(notif.created_at).toLocaleDateString()}
                     </Text>
@@ -174,15 +192,22 @@ const styles = StyleSheet.create({
   },
   notificationList: { marginTop: 12, gap: 10 },
   notificationCard: {
-    backgroundColor: colors.paperBright,
     borderRadius: 12,
     padding: 14,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
+  },
+  unreadCard: {
+    backgroundColor: colors.paperBright,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+    ...shadows.sm,
+  },
+  readCard: {
+    backgroundColor: '#ECEAE2',
     borderLeftWidth: 3,
     borderLeftColor: 'transparent',
-    ...shadows.sm,
   },
   unreadPrimary: { borderLeftColor: colors.primary },
   unreadMint: { borderLeftColor: colors.mintDeep },
