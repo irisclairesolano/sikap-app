@@ -77,6 +77,7 @@ export const MyJobsScreen: React.FC = () => {
     ({ item }: { item: JobPost }) => {
       const activeApp = (item.applications || []).find((a: any) =>
         [
+          'shortlisted',
           'employer_requested',
           'pending_negotiation',
           'employer_confirmed',

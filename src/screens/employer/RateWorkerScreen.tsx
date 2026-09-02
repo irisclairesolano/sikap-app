@@ -100,11 +100,13 @@ export const RateWorkerScreen: React.FC = () => {
         {/* Worker Info */}
         <View style={styles.workerInfoCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{workerName.charAt(0)}</Text>
+            <Text style={styles.avatarText}>
+              {(workerName || 'Worker').charAt(0).toUpperCase()}
+            </Text>
           </View>
           <View style={styles.workerDetails}>
-            <Text style={styles.workerName}>{workerName}</Text>
-            <Text style={styles.jobMeta}>{jobTitle}</Text>
+            <Text style={styles.workerName}>{workerName || 'Worker'}</Text>
+            <Text style={styles.jobMeta}>{jobTitle || 'Job'}</Text>
           </View>
         </View>
 

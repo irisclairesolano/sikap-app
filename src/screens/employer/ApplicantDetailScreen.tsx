@@ -932,7 +932,37 @@ const ApplicantDetailScreen: React.FC = () => {
           </View>
         )}
         {status === 'accepted' && (
-          <Button label="Job is in progress" variant="outline" size="lg" fullWidth disabled />
+          <View style={{ gap: 12 }}>
+            <Button
+              label="Mark Job as Completed"
+              variant="primary"
+              size="lg"
+              fullWidth
+              icon="checkmark-circle-outline"
+              onPress={() => {
+                const jobId = appData?.job?.id || (appData as any)?.job_id;
+                if (jobId) {
+                  navigation.navigate('MarkComplete', {
+                    id: jobId,
+                    jobTitle: jobTitle || appData?.job?.title || 'Job',
+                  });
+                } else {
+                  navigation.navigate('RateWorker', {
+                    id: applicantId,
+                    workerName: applicantName || 'Worker',
+                    jobTitle: jobTitle || 'Job',
+                  });
+                }
+              }}
+            />
+            <Button
+              label="Cancel Hire"
+              variant="ghost"
+              size="base"
+              fullWidth
+              onPress={navigateToCancelHire}
+            />
+          </View>
         )}
         {status === 'completed' && (
           <Button

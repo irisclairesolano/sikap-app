@@ -95,7 +95,9 @@ export const ProfileScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <View style={styles.iconBtn} />
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('EditProfile')}>
+          <Ionicons name="create-outline" size={22} color={colors.ink} />
+        </TouchableOpacity>
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>Public profile</Text>
         </View>

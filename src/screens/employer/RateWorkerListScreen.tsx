@@ -12,7 +12,10 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import Button from '../../components/common/Button';
 
 type RateWorkerListScreenRouteProp = RouteProp<EmployerStackParamList, 'RateWorkerList'>;
-type RateWorkerListScreenNavigationProp = NativeStackNavigationProp<EmployerStackParamList, 'RateWorkerList'>;
+type RateWorkerListScreenNavigationProp = NativeStackNavigationProp<
+  EmployerStackParamList,
+  'RateWorkerList'
+>;
 
 const RateWorkerListScreen: React.FC = () => {
   const route = useRoute<RateWorkerListScreenRouteProp>();
@@ -29,7 +32,9 @@ const RateWorkerListScreen: React.FC = () => {
 
   const reviewedApplicationIds = useMemo(() => {
     if (!reviewsData?.reviews) return new Set<number>();
-    return new Set(reviewsData.reviews.filter(r => r.reviewer_role === 'employer').map(r => r.id)); // wait, the review doesn't expose application_id in ReviewsResponse!
+    return new Set(
+      reviewsData.reviews.filter((r) => r.reviewer_role === 'employer').map((r) => r.id),
+    ); // wait, the review doesn't expose application_id in ReviewsResponse!
   }, [reviewsData]);
 
   if (isLoadingJob || isLoadingReviews) {
@@ -41,27 +46,28 @@ const RateWorkerListScreen: React.FC = () => {
   }
 
   const renderWorkerCard = ({ item }: { item: any }) => {
-    // Assuming backend returns application_id in reviews, but it doesn't currently. 
-    // For now we'll just show the Rate button always, and backend will throw 422 if already rated.
+    const workerName = item.worker?.name || 'Worker';
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{item.worker.name.charAt(0)}</Text>
+            <Text style={styles.avatarText}>{workerName.charAt(0).toUpperCase()}</Text>
           </View>
           <View style={styles.workerInfo}>
-            <Text style={styles.workerName}>{item.worker.name}</Text>
+            <Text style={styles.workerName}>{workerName}</Text>
             <Text style={styles.jobTitle}>{jobTitle}</Text>
           </View>
         </View>
         <Button
           label="Rate Worker"
           variant="primary"
-          onPress={() => navigation.navigate('RateWorker', { 
-            id: item.id, 
-            workerName: item.worker.name, 
-            jobTitle 
-          })}
+          onPress={() =>
+            navigation.navigate('RateWorker', {
+              id: item.id,
+              workerName,
+              jobTitle,
+            })
+          }
         />
       </View>
     );
@@ -70,7 +76,12 @@ const RateWorkerListScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('MyJobs')}>
+        <TouchableOpacity
+          style={styles.iconBtn}
+          onPress={() =>
+            navigation.canGoBack() ? navigation.goBack() : navigation.navigate('MyJobs')
+          }
+        >
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>
@@ -81,13 +92,17 @@ const RateWorkerListScreen: React.FC = () => {
 
       <View style={styles.content}>
         <Text style={styles.title}>Completed Workers</Text>
-        <Text style={styles.subtitle}>Select a worker to leave a rating and review for this job.</Text>
+        <Text style={styles.subtitle}>
+          Select a worker to leave a rating and review for this job.
+        </Text>
 
         {completedApplications.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="people-outline" size={48} color={colors.inkFaint} />
             <Text style={styles.emptyTitle}>No Workers Found</Text>
-            <Text style={styles.emptySubtitle}>There are no completed workers for this job yet.</Text>
+            <Text style={styles.emptySubtitle}>
+              There are no completed workers for this job yet.
+            </Text>
           </View>
         ) : (
           <FlatList
@@ -155,7 +170,13 @@ const styles = StyleSheet.create({
   jobTitle: { fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft, marginTop: 2 },
   emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 40 },
   emptyTitle: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink, marginTop: 16 },
-  emptySubtitle: { fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft, textAlign: 'center', marginTop: 8 },
+  emptySubtitle: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.inkSoft,
+    textAlign: 'center',
+    marginTop: 8,
+  },
 });
 
 export default RateWorkerListScreen;
