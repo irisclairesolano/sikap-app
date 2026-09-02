@@ -8,6 +8,7 @@ import {
   Modal,
   Linking,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
@@ -188,7 +189,18 @@ const ApplicantDetailScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={queryLoading}
+            onRefresh={refetch}
+            colors={[colors.primary, colors.primaryDark]}
+            tintColor={colors.primary}
+            progressBackgroundColor={colors.paperBright}
+          />
+        }
+      >
         {/* 5-Stage Tracker */}
         <View style={styles.stages}>
           <View style={stage >= 1 ? styles.stageActive : styles.stage}>

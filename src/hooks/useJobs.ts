@@ -39,8 +39,14 @@ export const useDeleteJob = () => {
       return apiClient<{ message: string }>(`/jobs/${id}`, { method: 'DELETE' });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myJobs'] });
       queryClient.invalidateQueries({ queryKey: ['employer-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['archivedJobs'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
+      queryClient.invalidateQueries({ queryKey: ['application'] });
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
   });
 };
@@ -52,7 +58,15 @@ export const useMarkJobComplete = () => {
       return apiClient<{ message: string }>(`/jobs/${id}/complete`, { method: 'PATCH' });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myJobs'] });
       queryClient.invalidateQueries({ queryKey: ['employer-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
+      queryClient.invalidateQueries({ queryKey: ['application'] });
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 };

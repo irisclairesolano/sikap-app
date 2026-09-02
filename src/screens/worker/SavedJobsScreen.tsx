@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
@@ -17,6 +17,12 @@ export const SavedJobsScreen: React.FC = () => {
   const { data, isLoading, isError, error, refetch, isFetching } = useSavedJobs();
   const { mutate: toggleSave } = useToggleSaveJob();
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   const handleJobPress = useCallback(
     (id: number) => {

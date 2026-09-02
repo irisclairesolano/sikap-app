@@ -17,6 +17,9 @@ export const useJobRequest = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
       queryClient.invalidateQueries({ queryKey: ['application'] });
+      queryClient.invalidateQueries({ queryKey: ['myJobs'] });
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
   });
@@ -29,6 +32,9 @@ export const useShortlist = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
       queryClient.invalidateQueries({ queryKey: ['application'] });
+      queryClient.invalidateQueries({ queryKey: ['myJobs'] });
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
   });
@@ -41,6 +47,12 @@ export const useConfirmHire = () => {
       applicationsApi.confirmHire(id, price),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
+      queryClient.invalidateQueries({ queryKey: ['application'] });
+      queryClient.invalidateQueries({ queryKey: ['myJobs'] });
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
   });
 };
@@ -51,6 +63,12 @@ export const useCancelHire = () => {
     mutationFn: (applicationId: number) => applicationsApi.cancelHire(applicationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
+      queryClient.invalidateQueries({ queryKey: ['application'] });
+      queryClient.invalidateQueries({ queryKey: ['myJobs'] });
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
   });
 };

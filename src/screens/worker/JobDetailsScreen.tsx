@@ -1,10 +1,18 @@
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Share, Alert } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Share,
+  Alert,
+  RefreshControl,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
 import { Image } from 'expo-image';
-import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { useRoute, useNavigation, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
@@ -27,7 +35,13 @@ export const JobDetailsScreen: React.FC = () => {
   const id = Number(route.params.id);
   const insets = useSafeAreaInsets();
 
-  const { data: job, isLoading, isError, error } = useJob(id);
+  const { data: job, isLoading, isError, error, refetch, isFetching } = useJob(id);
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
   const { data: savedJobsData } = useSavedJobs();
   const { mutate: toggleSave, isPending: isSaving } = useToggleSaveJob();
   const [reportSheetVisible, setReportSheetVisible] = useState(false);
@@ -131,7 +145,19 @@ export const JobDetailsScreen: React.FC = () => {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching && !isLoading}
+            onRefresh={refetch}
+            colors={[colors.primary, colors.primaryDark]}
+            tintColor={colors.primary}
+            progressBackgroundColor={colors.paperBright}
+          />
+        }
+      >
         {/* Category & Badges */}
         <View style={styles.badgesRow}>
           <View style={styles.categoryChip}>

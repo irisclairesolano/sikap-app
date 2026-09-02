@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Image } from 'expo-image';
 import {
   View,
@@ -7,10 +7,11 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,11 +37,31 @@ export const JobStatusManagementScreen: React.FC = () => {
     null,
   );
 
-  const { data: job, isLoading: isJobLoading, isError, error, refetch } = useJob(id);
-  const { data: applications = [], isLoading: isAppsLoading } = useJobApplications(id);
+  const {
+    data: job,
+    isLoading: isJobLoading,
+    isError,
+    error,
+    refetch: refetchJob,
+    isFetching: isJobFetching,
+  } = useJob(id);
+  const {
+    data: applications = [],
+    isLoading: isAppsLoading,
+    refetch: refetchApps,
+    isFetching: isAppsFetching,
+  } = useJobApplications(id);
   const { mutate: deleteJob } = useDeleteJob();
   const { showAlert } = useAlert();
 
+  useFocusEffect(
+    useCallback(() => {
+      refetchJob();
+      refetchApps();
+    }, [refetchJob, refetchApps]),
+  );
+
+  const isFetching = isJobFetching || isAppsFetching;
   const isLoading = isJobLoading || isAppsLoading;
 
   const getStageLabel = (status: string) => {
@@ -164,7 +185,7 @@ export const JobStatusManagementScreen: React.FC = () => {
           <Text style={{ fontFamily: fonts.bodyBold, color: colors.error, marginBottom: 12 }}>
             {error?.message || 'Failed to load job details.'}
           </Text>
-          <Button label="Retry" onPress={() => refetch()} />
+          <Button label="Retry" onPress={() => refetchJob()} />
         </View>
       </SafeAreaView>
     );
@@ -216,7 +237,20 @@ export const JobStatusManagementScreen: React.FC = () => {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching && !isLoading}
+            onRefresh={async () => {
+              await Promise.all([refetchJob(), refetchApps()]);
+            }}
+            colors={[colors.primary, colors.primaryDark]}
+            tintColor={colors.primary}
+            progressBackgroundColor={colors.paperBright}
+          />
+        }
+      >
         <View style={styles.statusBanner}>
           <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
             <Text style={[styles.statusBadgeText, { color: statusConfig.text }]}>

@@ -1,20 +1,32 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
-
-import { ActivityIndicator } from 'react-native';
 import { useReviews } from '../../hooks/useReviews';
 
 type ReviewsScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'Reviews'>;
 
 export const ReviewsScreen: React.FC = () => {
   const navigation = useNavigation<ReviewsScreenNavigationProp>();
-  const { data, isLoading, error } = useReviews();
+  const { data, isLoading, error, refetch, isFetching } = useReviews();
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   if (isLoading) {
     return (
@@ -40,7 +52,18 @@ export const ReviewsScreen: React.FC = () => {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching && !isLoading}
+            onRefresh={refetch}
+            colors={[colors.primary, colors.primaryDark]}
+            tintColor={colors.primary}
+            progressBackgroundColor={colors.paperBright}
+          />
+        }
+      >
         {/* Summary Card */}
         <View style={styles.summaryCard}>
           <View style={styles.scoreSection}>

@@ -1,7 +1,15 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
@@ -11,7 +19,6 @@ import {
   useMarkNotificationAsRead,
   useMarkAllNotificationsAsRead,
 } from '../../hooks/useNotifications';
-import { ActivityIndicator } from 'react-native';
 
 type NotificationsScreenNavigationProp = NativeStackNavigationProp<
   EmployerStackParamList,
@@ -20,9 +27,15 @@ type NotificationsScreenNavigationProp = NativeStackNavigationProp<
 
 export const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation<NotificationsScreenNavigationProp>();
-  const { data, isLoading } = useNotifications();
+  const { data, isLoading, refetch, isFetching } = useNotifications();
   const markAsReadMutation = useMarkNotificationAsRead();
   const markAllAsReadMutation = useMarkAllNotificationsAsRead();
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   if (isLoading) {
     return (
@@ -59,7 +72,18 @@ export const NotificationsScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching && !isLoading}
+            onRefresh={refetch}
+            colors={[colors.primary, colors.primaryDark]}
+            tintColor={colors.primary}
+            progressBackgroundColor={colors.paperBright}
+          />
+        }
+      >
         {/* Today Section */}
         <Text style={[styles.eyebrow, { color: colors.primary }]}>Today</Text>
 

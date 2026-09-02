@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,10 @@ import {
   TextInput,
   Modal,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { colors, fonts, shadows } from '../../theme';
@@ -94,10 +95,21 @@ export const ManageContactPlatformsScreen: React.FC = () => {
   const { showAlert } = useAlert();
   const { refetchProfile } = useAuth();
 
-  const { data: user, isLoading: profileLoading } = useQuery({
+  const {
+    data: user,
+    isLoading: profileLoading,
+    refetch,
+    isFetching,
+  } = useQuery({
     queryKey: ['profile'],
     queryFn: profileApi.getProfile,
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   const [platforms, setPlatforms] = useState<ContactPlatformSlot[]>(() => {
     const loaded = parseContactPlatforms(user?.contact_platforms);
@@ -189,7 +201,19 @@ export const ManageContactPlatformsScreen: React.FC = () => {
         <View style={styles.iconBtn} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching && !profileLoading}
+            onRefresh={refetch}
+            colors={[colors.primary, colors.primaryDark]}
+            tintColor={colors.primary}
+            progressBackgroundColor={colors.paperBright}
+          />
+        }
+      >
         {/* Intro Hero Banner */}
         <View style={styles.heroBanner}>
           <View style={styles.heroIconBox}>
