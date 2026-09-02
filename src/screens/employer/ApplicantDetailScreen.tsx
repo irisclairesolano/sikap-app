@@ -20,6 +20,7 @@ import Button from '../../components/common/Button';
 import { Avatar } from '../../components/common/Avatar';
 import { useApplication } from '../../hooks/useJobApplications';
 import { parseContactPlatforms } from '../common/ManageContactPlatformsScreen';
+import { openSafeContactLink } from '../../utils/linking';
 
 type ApplicantDetailScreenRouteProp = RouteProp<EmployerStackParamList, 'ApplicantDetail'>;
 type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -759,27 +760,7 @@ const ApplicantDetailScreen: React.FC = () => {
                 if (platforms.length === 0) return null;
 
                 const openPlatformLink = (platform: string, val: string) => {
-                  const cleanVal = val.trim();
-                  if (platform.toLowerCase() === 'whatsapp') {
-                    const cleanPhone = cleanVal.replace(/[^0-9]/g, '');
-                    Linking.openURL(`https://wa.me/${cleanPhone}`);
-                  } else if (platform.toLowerCase() === 'viber') {
-                    Linking.openURL(`viber://chat?number=${cleanVal}`);
-                  } else if (platform.toLowerCase() === 'telegram') {
-                    const cleanUsername = cleanVal.replace(/^@/, '');
-                    Linking.openURL(`https://t.me/${cleanUsername}`);
-                  } else if (
-                    platform.toLowerCase() === 'facebook' ||
-                    platform.toLowerCase() === 'messenger'
-                  ) {
-                    Linking.openURL(
-                      cleanVal.startsWith('http') ? cleanVal : `https://m.me/${cleanVal}`,
-                    );
-                  } else if (cleanVal.startsWith('http')) {
-                    Linking.openURL(cleanVal);
-                  } else {
-                    Linking.openURL(`sms:${cleanVal}`);
-                  }
+                  openSafeContactLink(platform, val);
                 };
 
                 return (

@@ -89,8 +89,47 @@ export const JobDetailsScreen: React.FC = () => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
+          <View style={styles.postedChip}>
+            <Text style={styles.postedText}>Job Status</Text>
+          </View>
+          <View style={{ width: 40 }} />
         </View>
-        <ErrorBanner message={error?.message || 'Failed to load job details.'} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <Ionicons
+            name="briefcase-outline"
+            size={54}
+            color={colors.inkLight}
+            style={{ marginBottom: 12 }}
+          />
+          <Text
+            style={{
+              fontFamily: fonts.display,
+              fontSize: 18,
+              color: colors.ink,
+              marginBottom: 8,
+              textAlign: 'center',
+            }}
+          >
+            Job Post Unavailable
+          </Text>
+          <Text
+            style={{
+              fontFamily: fonts.body,
+              fontSize: 13,
+              color: colors.inkSoft,
+              textAlign: 'center',
+              marginBottom: 20,
+            }}
+          >
+            This job post may have been closed, completed, or archived by the employer.
+          </Text>
+          <Button
+            label="Back to Job Feed"
+            variant="primary"
+            size="base"
+            onPress={() => navigation.goBack()}
+          />
+        </View>
       </SafeAreaView>
     );
   }

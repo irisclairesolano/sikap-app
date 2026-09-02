@@ -35,8 +35,10 @@ const ConfirmHireScreen: React.FC = () => {
   const { showAlert } = useAlert();
 
   const handleConfirm = () => {
+    const numPrice = parseFloat(price);
+    if (confirmHireMutation.isPending || isNaN(numPrice) || numPrice <= 0) return;
     confirmHireMutation.mutate(
-      { id: applicantId, price: parseFloat(price) },
+      { id: applicantId, price: numPrice },
       {
         onSuccess: () => {
           showAlert(

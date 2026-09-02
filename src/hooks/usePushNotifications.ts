@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { navigationRef } from '../../App';
 import { User } from '../types';
 import * as SecureStore from '../utils/storage';
+import { profileApi } from '../api/profile';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -59,6 +60,16 @@ export const usePushNotifications = (): PushNotificationState => {
           Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
         token = await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined);
         console.log('Expo Push Token:', token);
+
+        // Transmit token to backend if available and authenticated
+        if (token?.data) {
+          const authToken = await SecureStore.getItemAsync('auth_token');
+          if (authToken) {
+            profileApi
+              .updateProfile({ expo_push_token: token.data })
+              .catch((err) => console.log('Silent push token sync error:', err?.message));
+          }
+        }
       } catch (err) {
         console.log('Push notification token registration failed silently:', err);
       }

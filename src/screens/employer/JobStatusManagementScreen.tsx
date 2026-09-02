@@ -177,15 +177,48 @@ export const JobStatusManagementScreen: React.FC = () => {
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.headerPill}>
-            <Text style={styles.headerPillText}>Error</Text>
+            <Text style={styles.headerPillText}>Job Status</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
-        <View style={{ flex: 1, padding: 20, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontFamily: fonts.bodyBold, color: colors.error, marginBottom: 12 }}>
-            {error?.message || 'Failed to load job details.'}
+        <View style={{ flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center' }}>
+          <Ionicons
+            name="folder-open-outline"
+            size={54}
+            color={colors.inkLight}
+            style={{ marginBottom: 12 }}
+          />
+          <Text
+            style={{
+              fontFamily: fonts.display,
+              fontSize: 18,
+              color: colors.ink,
+              marginBottom: 8,
+              textAlign: 'center',
+            }}
+          >
+            Job Record Unavailable
           </Text>
-          <Button label="Retry" onPress={() => refetchJob()} />
+          <Text
+            style={{
+              fontFamily: fonts.body,
+              fontSize: 13,
+              color: colors.inkSoft,
+              textAlign: 'center',
+              marginBottom: 20,
+            }}
+          >
+            {error?.message || 'This job could not be found or may have been removed.'}
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <Button
+              label="Back to My Jobs"
+              variant="ghost"
+              size="base"
+              onPress={() => navigation.goBack()}
+            />
+            <Button label="Retry" variant="primary" size="base" onPress={() => refetchJob()} />
+          </View>
         </View>
       </SafeAreaView>
     );

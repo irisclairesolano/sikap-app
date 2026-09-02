@@ -38,8 +38,23 @@ export const useMarkNotificationAsRead = () => {
     mutationFn: async (id: string) => {
       return apiClient<any>(`/notifications/${id}/read`, { method: 'POST' });
     },
-    onSuccess: (data) => {
-      // Optimistically update or invalidate cache
+    onMutate: async (id: string) => {
+      queryClient.setQueryData<NotificationsResponse>(['notifications'], (old) => {
+        if (!old) return old;
+        const updatedList = old.notifications?.data?.map((item) =>
+          item.id === id ? { ...item, read_at: new Date().toISOString() } : item,
+        );
+        return {
+          ...old,
+          unread_count: Math.max(0, (old.unread_count || 1) - 1),
+          notifications: {
+            ...old.notifications,
+            data: updatedList || [],
+          },
+        };
+      });
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
@@ -50,6 +65,23 @@ export const useMarkAllNotificationsAsRead = () => {
   return useMutation({
     mutationFn: async () => {
       return apiClient<any>('/notifications/read-all', { method: 'POST' });
+    },
+    onMutate: async () => {
+      queryClient.setQueryData<NotificationsResponse>(['notifications'], (old) => {
+        if (!old) return old;
+        const updatedList = old.notifications?.data?.map((item) => ({
+          ...item,
+          read_at: item.read_at || new Date().toISOString(),
+        }));
+        return {
+          ...old,
+          unread_count: 0,
+          notifications: {
+            ...old.notifications,
+            data: updatedList || [],
+          },
+        };
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });

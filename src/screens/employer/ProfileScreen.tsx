@@ -13,6 +13,7 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { RefreshableContainer } from '../../components/common/RefreshableContainer';
 import { useAuth } from '../../hooks/useAuth';
 import { parseContactPlatforms } from '../common/ManageContactPlatformsScreen';
+import { openSafeContactLink } from '../../utils/linking';
 
 import { useEmployerJobs } from '../../hooks/useEmployerJobs';
 
@@ -273,8 +274,10 @@ export const ProfileScreen: React.FC = () => {
                 }
 
                 return (
-                  <View
+                  <TouchableOpacity
                     key={idx}
+                    activeOpacity={0.7}
+                    onPress={() => openSafeContactLink(slot.platform, slot.value)}
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -308,7 +311,8 @@ export const ProfileScreen: React.FC = () => {
                         {slot.value}
                       </Text>
                     </View>
-                  </View>
+                    <Ionicons name="open-outline" size={16} color={colors.inkLight} />
+                  </TouchableOpacity>
                 );
               })
             )}

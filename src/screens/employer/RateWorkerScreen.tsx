@@ -60,6 +60,7 @@ export const RateWorkerScreen: React.FC = () => {
   const isFormValid = quality > 0 && punctuality > 0 && communication > 0 && behavior > 0;
 
   const handleSubmit = () => {
+    if (isPending || !isFormValid) return;
     submitReview(
       {
         applicationId: id,

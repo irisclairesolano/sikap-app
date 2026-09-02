@@ -65,6 +65,7 @@ export const RateEmployerScreen: React.FC = () => {
   const isFormValid = clarity > 0 && fairness > 0 && respect > 0 && reliability > 0;
 
   const handleSubmit = () => {
+    if (isPending || !isFormValid) return;
     submitReview(
       {
         applicationId: id,
