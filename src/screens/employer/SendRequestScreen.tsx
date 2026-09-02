@@ -47,7 +47,7 @@ const SendRequestScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Send Job Request</Text>
       </View>
@@ -98,10 +98,10 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14,
     color: colors.inkSoft,
-    marginBottom: 32,
+    marginBottom: 20,
     lineHeight: 20,
   },
-  actionBtn: { marginBottom: 12 },
+  actionBtn: { marginBottom: 8 },
 });
 
 export default SendRequestScreen;

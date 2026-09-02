@@ -27,7 +27,7 @@ const AcceptHireScreen: React.FC = () => {
         showAlert(
           'Offer Accepted!',
           `You have accepted the offer for ${jobTitle}. You can now view ${employerName}'s contact details.`,
-          [{ text: 'OK', onPress: () => navigation.popToTop() }]
+          [{ text: 'OK', onPress: () => navigation.popToTop() }],
         );
       },
       onError: (err: any) => {
@@ -39,11 +39,9 @@ const AcceptHireScreen: React.FC = () => {
   const handleReject = () => {
     rejectOfferMutation.mutate(id, {
       onSuccess: () => {
-        showAlert(
-          'Offer Declined',
-          `You have declined the offer for ${jobTitle}.`,
-          [{ text: 'OK', onPress: () => navigation.popToTop() }]
-        );
+        showAlert('Offer Declined', `You have declined the offer for ${jobTitle}.`, [
+          { text: 'OK', onPress: () => navigation.popToTop() },
+        ]);
       },
       onError: (err: any) => {
         showAlert('Error', err.message || 'Failed to decline offer.');
@@ -54,15 +52,16 @@ const AcceptHireScreen: React.FC = () => {
   const isPending = acceptOfferMutation.isPending || rejectOfferMutation.isPending;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Review Offer</Text>
       </View>
       <View style={styles.content}>
         <Text style={styles.prompt}>
-          <Text style={styles.bold}>{employerName}</Text> has confirmed you for the <Text style={styles.bold}>{jobTitle}</Text> position.
+          <Text style={styles.bold}>{employerName}</Text> has confirmed you for the{' '}
+          <Text style={styles.bold}>{jobTitle}</Text> position.
         </Text>
-        
+
         {offeredPrice && (
           <View style={styles.priceBox}>
             <Text style={styles.priceLabel}>Agreed Price</Text>
@@ -71,7 +70,8 @@ const AcceptHireScreen: React.FC = () => {
         )}
 
         <Text style={styles.infoText}>
-          By accepting this offer, your contact details will be shared with the employer, and you commit to completing the job.
+          By accepting this offer, your contact details will be shared with the employer, and you
+          commit to completing the job.
         </Text>
 
         <Button
@@ -99,19 +99,31 @@ const styles = StyleSheet.create({
   header: { padding: 20, borderBottomWidth: 1, borderBottomColor: colors.inkFaint },
   headerTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
   content: { padding: 20 },
-  prompt: { fontFamily: fonts.body, fontSize: 16, color: colors.ink, marginBottom: 24, lineHeight: 24 },
+  prompt: {
+    fontFamily: fonts.body,
+    fontSize: 16,
+    color: colors.ink,
+    marginBottom: 24,
+    lineHeight: 24,
+  },
   bold: { fontFamily: fonts.bodyBold, color: colors.primary },
   priceBox: {
     backgroundColor: colors.butter,
-    padding: 20,
+    padding: 14,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   priceLabel: { fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft, marginBottom: 4 },
-  priceValue: { fontFamily: fonts.display, fontSize: 32, color: colors.primary },
-  infoText: { fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft, marginBottom: 32, lineHeight: 20 },
-  actionBtn: { marginBottom: 12 },
+  priceValue: { fontFamily: fonts.display, fontSize: 28, color: colors.primary },
+  infoText: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.inkSoft,
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  actionBtn: { marginBottom: 8 },
 });
 
 export default AcceptHireScreen;

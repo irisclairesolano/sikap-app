@@ -85,7 +85,7 @@ export const RateWorkerScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
@@ -221,8 +221,8 @@ const styles = StyleSheet.create({
     minHeight: 60,
     textAlignVertical: 'top',
   },
-  submitContainer: { marginTop: 24 },
-  submitBtn: { paddingVertical: 14 },
+  submitContainer: { marginTop: 16 },
+  submitBtn: {},
 });
 
 export default RateWorkerScreen;

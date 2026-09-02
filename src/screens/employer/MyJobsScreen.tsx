@@ -74,86 +74,116 @@ export const MyJobsScreen: React.FC = () => {
   };
 
   const renderJobCard = useCallback(
-    ({ item }: { item: JobPost }) => (
-      <TouchableOpacity
-        style={styles.jobCard}
-        onPress={() => {
-          if (!item.deleted_at) {
-            navigation.navigate('JobStatusManagement', { id: item.id, job: item });
-          }
-        }}
-        disabled={!!item.deleted_at}
-      >
-        <View style={styles.jobHeader}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text style={styles.jobCategory}>
-              {item.categories && item.categories.length > 0 ? item.categories[0] : 'General'}
-            </Text>
-            {!!(item.is_urgent || item.urgent) && (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: colors.peach,
-                  paddingVertical: 2,
-                  paddingHorizontal: 6,
-                  borderRadius: 8,
-                  gap: 2,
-                }}
-              >
-                <Ionicons name="flame" size={10} color={colors.error} />
-                <Text style={{ fontFamily: fonts.bodyBold, fontSize: 9, color: colors.error }}>
-                  URGENT
+    ({ item }: { item: JobPost }) => {
+      const activeApp = (item.applications || []).find((a: any) =>
+        [
+          'employer_requested',
+          'pending_negotiation',
+          'employer_confirmed',
+          'accepted',
+          'completed',
+        ].includes(a.status),
+      );
+
+      const handleJobPress = () => {
+        if (item.deleted_at) return;
+
+        if (activeApp) {
+          navigation.navigate('ApplicantDetail', {
+            applicantId: activeApp.id,
+            applicantName: activeApp.worker?.name || 'Worker Applicant',
+            jobTitle: item.title,
+            status: activeApp.status,
+            barangay: activeApp.worker?.barangay,
+            municipality: activeApp.worker?.municipality,
+            reputationScore: activeApp.worker?.reputation_score,
+            bio: activeApp.worker?.workerProfile?.bio || (activeApp.worker as any)?.bio,
+            skills: activeApp.worker?.skills,
+            experiences: activeApp.worker?.experiences,
+            characterReferences: activeApp.worker?.character_references || undefined,
+            phone: activeApp.worker?.phone || undefined,
+            emergencyContactName: (activeApp.worker as any)?.emergency_contact_name,
+            emergencyContactPhone: (activeApp.worker as any)?.emergency_contact_phone,
+          });
+        } else {
+          navigation.navigate('JobStatusManagement', { id: item.id, job: item });
+        }
+      };
+
+      return (
+        <TouchableOpacity
+          style={styles.jobCard}
+          onPress={handleJobPress}
+          disabled={!!item.deleted_at}
+        >
+          <View style={styles.jobHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.jobCategory}>
+                {item.categories && item.categories.length > 0 ? item.categories[0] : 'General'}
+              </Text>
+              {!!(item.is_urgent || item.urgent) && (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: colors.peach,
+                    paddingVertical: 2,
+                    paddingHorizontal: 6,
+                    borderRadius: 8,
+                    gap: 2,
+                  }}
+                >
+                  <Ionicons name="flame" size={10} color={colors.error} />
+                  <Text style={{ fontFamily: fonts.bodyBold, fontSize: 9, color: colors.error }}>
+                    URGENT
+                  </Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.jobTime}>{item.deleted_at ? 'Archived' : item.status}</Text>
+          </View>
+          <Text style={styles.jobTitle}>{item.title}</Text>
+
+          <View style={styles.jobFooter}>
+            {item.deleted_at ? (
+              <View style={styles.applicantsBadge}>
+                <Ionicons name="trash-outline" size={14} color={colors.inkSoft} />
+                <Text style={[styles.applicantsText, { color: colors.inkSoft }]}>Archived</Text>
+              </View>
+            ) : (
+              <View style={styles.applicantsBadge}>
+                <Ionicons name="people" size={14} color={colors.primary} />
+                <Text style={styles.applicantsText}>
+                  {item.applications?.length || 0} applicants
                 </Text>
               </View>
             )}
+
+            {item.deleted_at ? (
+              <TouchableOpacity
+                style={[styles.manageBtn, { backgroundColor: colors.primaryDark }]}
+                onPress={() => {
+                  restoreJob(item.id, {
+                    onSuccess: () => {
+                      showAlert('Success', 'Job restored successfully.');
+                    },
+                    onError: (err: any) => {
+                      showAlert('Error', err.message || 'Failed to restore job.');
+                    },
+                  });
+                }}
+              >
+                <Text style={styles.manageBtnText}>Restore</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.manageBtn} onPress={handleJobPress}>
+                <Text style={styles.manageBtnText}>{activeApp ? 'Active Stage' : 'Manage'}</Text>
+              </TouchableOpacity>
+            )}
           </View>
-          <Text style={styles.jobTime}>{item.deleted_at ? 'Archived' : item.status}</Text>
-        </View>
-        <Text style={styles.jobTitle}>{item.title}</Text>
-
-        <View style={styles.jobFooter}>
-          {item.deleted_at ? (
-            <View style={styles.applicantsBadge}>
-              <Ionicons name="trash-outline" size={14} color={colors.inkSoft} />
-              <Text style={[styles.applicantsText, { color: colors.inkSoft }]}>Archived</Text>
-            </View>
-          ) : (
-            <View style={styles.applicantsBadge}>
-              <Ionicons name="people" size={14} color={colors.primary} />
-              <Text style={styles.applicantsText}>{item.applications?.length || 0} applicants</Text>
-            </View>
-          )}
-
-          {item.deleted_at ? (
-            <TouchableOpacity
-              style={[styles.manageBtn, { backgroundColor: colors.primaryDark }]}
-              onPress={() => {
-                restoreJob(item.id, {
-                  onSuccess: () => {
-                    showAlert('Success', 'Job restored successfully.');
-                  },
-                  onError: (err: any) => {
-                    showAlert('Error', err.message || 'Failed to restore job.');
-                  },
-                });
-              }}
-            >
-              <Text style={styles.manageBtnText}>Restore</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.manageBtn}
-              onPress={() => {
-                navigation.navigate('JobStatusManagement', { id: item.id, job: item });
-              }}
-            >
-              <Text style={styles.manageBtnText}>Manage</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </TouchableOpacity>
-    ),
+        </TouchableOpacity>
+      );
+    },
     [navigation, restoreJob, showAlert],
   );
 

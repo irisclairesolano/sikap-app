@@ -353,6 +353,126 @@ export const JobStatusManagementScreen: React.FC = () => {
           </View>
         )}
 
+        {(() => {
+          const activeApp = applications.find((a) =>
+            [
+              'employer_requested',
+              'pending_negotiation',
+              'employer_confirmed',
+              'accepted',
+              'completed',
+            ].includes(a.status),
+          );
+          if (!activeApp) return null;
+
+          const getStageTitle = (st: string) => {
+            if (st === 'employer_requested' || st === 'pending_negotiation')
+              return 'Stage 2: Shortlisted & Negotiation';
+            if (st === 'employer_confirmed') return 'Stage 3: Offer Sent';
+            if (st === 'accepted') return 'Stage 4: Worker Hired';
+            if (st === 'completed') return 'Stage 5: Completed Job';
+            return 'Active Stage';
+          };
+
+          const getActionLabel = (st: string) => {
+            if (st === 'employer_requested' || st === 'pending_negotiation')
+              return 'Proceed to Confirm Hire →';
+            if (st === 'employer_confirmed') return 'View Offer Details →';
+            if (st === 'accepted') return 'Manage Active Job →';
+            if (st === 'completed') return 'Rate & Review Worker →';
+            return 'View Details →';
+          };
+
+          return (
+            <View
+              style={{
+                backgroundColor: colors.paperBright,
+                borderRadius: 16,
+                padding: 16,
+                marginBottom: 16,
+                borderWidth: 1.5,
+                borderColor: colors.primary,
+                ...shadows.sm,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 8,
+                }}
+              >
+                <Text
+                  style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.primaryDark }}
+                >
+                  {getStageTitle(activeApp.status)}
+                </Text>
+                <View
+                  style={{
+                    backgroundColor: colors.primaryTint,
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: 12,
+                  }}
+                >
+                  <Text style={{ fontFamily: fonts.bodyBold, fontSize: 10, color: colors.primary }}>
+                    CURRENT STAGE
+                  </Text>
+                </View>
+              </View>
+
+              <Text
+                style={{
+                  fontFamily: fonts.display,
+                  fontSize: 16,
+                  color: colors.ink,
+                  marginBottom: 4,
+                }}
+              >
+                {activeApp.worker?.name || 'Worker'}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: fonts.body,
+                  fontSize: 12,
+                  color: colors.inkSoft,
+                  marginBottom: 12,
+                }}
+              >
+                {activeApp.worker?.barangay
+                  ? `${activeApp.worker.barangay}, ${activeApp.worker.municipality}`
+                  : 'Worker Applicant'}
+              </Text>
+
+              <Button
+                label={getActionLabel(activeApp.status)}
+                variant="primary"
+                size="base"
+                fullWidth
+                onPress={() =>
+                  navigation.navigate('ApplicantDetail', {
+                    applicantId: activeApp.id,
+                    applicantName: activeApp.worker?.name || 'Worker Applicant',
+                    jobTitle: job?.title || '',
+                    status: activeApp.status,
+                    barangay: activeApp.worker?.barangay,
+                    municipality: activeApp.worker?.municipality,
+                    reputationScore: activeApp.worker?.reputation_score,
+                    bio: activeApp.worker?.workerProfile?.bio || (activeApp.worker as any)?.bio,
+                    skills: activeApp.worker?.skills,
+                    experiences: activeApp.worker?.experiences,
+                    characterReferences: activeApp.worker?.character_references || undefined,
+                    phone: activeApp.worker?.phone || undefined,
+                    emergencyContactName: (activeApp.worker as any)?.emergency_contact_name,
+                    emergencyContactPhone: (activeApp.worker as any)?.emergency_contact_phone,
+                  })
+                }
+              />
+            </View>
+          );
+        })()}
+
         <View style={styles.card}>
           <View
             style={{

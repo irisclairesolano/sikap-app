@@ -44,7 +44,7 @@ const MarkCompleteScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Complete Job</Text>
       </View>
@@ -96,10 +96,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     borderRadius: 8,
-    marginBottom: 32,
+    marginBottom: 18,
   },
   infoText: { fontFamily: fonts.body, fontSize: 14, color: colors.mintDeep, lineHeight: 20 },
-  actionBtn: { marginBottom: 12 },
+  actionBtn: { marginBottom: 8 },
 });
 
 export default MarkCompleteScreen;

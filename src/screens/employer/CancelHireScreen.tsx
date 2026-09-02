@@ -39,7 +39,7 @@ const CancelHireScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Cancel Hire</Text>
       </View>
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     borderRadius: 8,
-    marginBottom: 32,
+    marginBottom: 18,
   },
   warningText: {
     fontFamily: fonts.body,
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     color: colors.status.pending.text,
     lineHeight: 20,
   },
-  actionBtn: { marginBottom: 12 },
+  actionBtn: { marginBottom: 8 },
 });
 
 export default CancelHireScreen;
