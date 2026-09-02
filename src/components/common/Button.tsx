@@ -178,6 +178,8 @@ const styles = StyleSheet.create({
   },
   ghostBg: {
     backgroundColor: 'transparent',
+    paddingVertical: 8,
+    borderWidth: 0,
   },
   dangerBg: {
     backgroundColor: colors.error,

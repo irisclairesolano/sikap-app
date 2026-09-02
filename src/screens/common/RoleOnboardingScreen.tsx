@@ -212,7 +212,7 @@ export const RoleOnboardingScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.cancelBtn}
@@ -323,7 +323,7 @@ export const RoleOnboardingScreen: React.FC = () => {
             variant="ghost"
             onPress={handleBackPress}
             disabled={isOnboardingRole}
-            style={{ marginTop: 8 }}
+            style={{ marginTop: 4 }}
           />
         )}
       </View>
@@ -437,8 +437,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
+    paddingTop: 8,
+    paddingBottom: 8,
     backgroundColor: colors.paper,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,

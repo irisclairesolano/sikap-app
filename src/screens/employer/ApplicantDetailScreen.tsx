@@ -174,7 +174,7 @@ const ApplicantDetailScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
@@ -829,7 +829,7 @@ const ApplicantDetailScreen: React.FC = () => {
           </View>
         )}
         {status === 'pending_negotiation' && (
-          <View style={{ gap: 12 }}>
+          <View style={{ gap: 6 }}>
             <Button
               label="Proceed to Confirm Hire"
               variant="primary"
@@ -848,7 +848,7 @@ const ApplicantDetailScreen: React.FC = () => {
           </View>
         )}
         {status === 'employer_confirmed' && (
-          <View style={{ gap: 12 }}>
+          <View style={{ gap: 6 }}>
             <Button label="Waiting for worker..." variant="outline" size="lg" fullWidth disabled />
             <Button
               label="Cancel Hire"
@@ -1121,8 +1121,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
+    paddingTop: 8,
+    paddingBottom: 8,
     backgroundColor: colors.paper,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,

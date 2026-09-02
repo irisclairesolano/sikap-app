@@ -90,7 +90,7 @@ export const ApplyScreen: React.FC = () => {
 
   if (isJobLoading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <LoadingSpinner />
       </SafeAreaView>
     );
@@ -378,9 +378,7 @@ export const ApplyScreen: React.FC = () => {
           </View>
         </ScrollView>
 
-        <View
-          style={[styles.bottomBar, { paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 24 }]}
-        >
+        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
           <Button
             label="Send application"
             size="lg"
@@ -526,9 +524,9 @@ const styles = StyleSheet.create({
     color: colors.mintDeep,
   },
   bottomBar: {
-    paddingHorizontal: 26,
-    paddingTop: 16,
-    paddingBottom: 32,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 8,
     backgroundColor: colors.paperBright,
     shadowColor: colors.ink,
     shadowOffset: { width: 0, height: -2 },

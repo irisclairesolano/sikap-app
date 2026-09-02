@@ -387,7 +387,7 @@ export const JobDetailsScreen: React.FC = () => {
       </ScrollView>
 
       {/* Bottom CTA */}
-      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
         {job.is_applied || job.has_applied || job.application_id ? (
           <View style={styles.alreadyAppliedCard}>
             <View style={styles.alreadyAppliedRow}>
@@ -640,8 +640,8 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
+    paddingTop: 8,
+    paddingBottom: 8,
     backgroundColor: colors.paperBright,
     shadowColor: colors.ink,
     shadowOffset: { width: 0, height: -2 },

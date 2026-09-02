@@ -277,7 +277,7 @@ export const ManageContactPlatformsScreen: React.FC = () => {
       </ScrollView>
 
       {/* Footer Save Button */}
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 14) }]}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
         <Button
           label="Save Communication Links"
           variant="primary"
@@ -479,7 +479,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingTop: 8,
+    paddingBottom: 8,
     backgroundColor: colors.paper,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
