@@ -50,6 +50,13 @@ export const useAuth = () => {
   // Logout function
   const logout = async () => {
     try {
+      // Clear push token from backend so notifications aren't sent to this device for old account
+      try {
+        await profileApi.updateProfile({ expo_push_token: null });
+      } catch (_) {
+        // Silently ignore if network is unreachable during logout
+      }
+
       // Remove token and profile from SecureStore
       await SecureStore.deleteItemAsync('auth_token');
       await SecureStore.deleteItemAsync('user_profile');
@@ -59,6 +66,7 @@ export const useAuth = () => {
 
       // Reset user data
       queryClient.setQueryData(['profile'], null);
+      notifyAuthChanged();
     } catch (error) {
       console.error('Logout error:', error);
       throw error;

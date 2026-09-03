@@ -6,6 +6,7 @@ import { JobPost } from '../../types';
 import { useReactToJob } from '../../hooks/useReactToJob';
 import { getShareLink } from '../../api/jobs';
 import { ReportJobSheet } from './ReportJobSheet';
+import { triggerHaptic } from '../../utils/haptics';
 
 interface JobCardProps {
   job: JobPost;
@@ -61,7 +62,13 @@ export const JobCard = React.memo(function JobCard({
   const { mutate: toggleReact, isPending: isReacting } = useReactToJob();
 
   const handleReact = () => {
+    triggerHaptic('light');
     toggleReact(job.id);
+  };
+
+  const handleSave = () => {
+    triggerHaptic('light');
+    onSave?.();
   };
 
   const handleShare = async () => {
@@ -155,7 +162,7 @@ export const JobCard = React.memo(function JobCard({
           <View style={styles.rightContent}>
             {onSave && (
               <TouchableOpacity
-                onPress={onSave}
+                onPress={handleSave}
                 style={styles.saveBtn}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >

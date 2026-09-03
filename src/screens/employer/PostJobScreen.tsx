@@ -27,7 +27,10 @@ import { useCreateJob, useUpdateJob } from '../../hooks/useEmployerJobs';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import * as SecureStore from '../../utils/storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { triggerHaptic } from '../../utils/haptics';
 
+const DRAFT_STORAGE_KEY = 'sikap_post_job_draft_v1';
 const DURATION_UNITS = ['Hours', 'Days', 'Weeks', 'Months'];
 const DEFAULT_CATEGORIES = [
   'Construction',
@@ -182,23 +185,69 @@ export const PostJobScreen: React.FC = () => {
       if (jobToEdit.schedule_date) {
         setScheduleDate(new Date(jobToEdit.schedule_date));
       }
-    } else {
-      setTitle('');
-      setCategories([]);
-      setMunicipality('');
-      setBarangay('');
-      setPay('');
-      setSlots('');
-      setDuration('');
-      setDurationUnit('Days');
-      setDescription('');
-      setExactLocation('');
-      setToolsRequired('');
-      setPhotos([]);
-      setVideoUpload(null);
-      setScheduleDate(new Date());
     }
   }, [jobToEdit]);
+
+  // Load draft on mount for new jobs
+  useEffect(() => {
+    if (!isEditMode) {
+      AsyncStorage.getItem(DRAFT_STORAGE_KEY).then((raw) => {
+        if (raw) {
+          try {
+            const draft = JSON.parse(raw);
+            if (draft.title && !title) setTitle(draft.title);
+            if (draft.categories && draft.categories.length > 0 && categories.length === 0) {
+              setCategories(draft.categories);
+            }
+            if (draft.municipality && !municipality) setMunicipality(draft.municipality);
+            if (draft.barangay && !barangay) setBarangay(draft.barangay);
+            if (draft.pay && !pay) setPay(draft.pay);
+            if (draft.slots && !slots) setSlots(draft.slots);
+            if (draft.duration && !duration) setDuration(draft.duration);
+            if (draft.durationUnit) setDurationUnit(draft.durationUnit);
+            if (draft.description && !description) setDescription(draft.description);
+            if (draft.exactLocation && !exactLocation) setExactLocation(draft.exactLocation);
+            if (draft.toolsRequired && !toolsRequired) setToolsRequired(draft.toolsRequired);
+          } catch (_) {}
+        }
+      });
+    }
+  }, [isEditMode]);
+
+  // Auto-save draft on form field changes
+  useEffect(() => {
+    if (!isEditMode) {
+      if (title || description || pay || categories.length > 0) {
+        const draft = {
+          title,
+          categories,
+          municipality,
+          barangay,
+          pay,
+          slots,
+          duration,
+          durationUnit,
+          description,
+          exactLocation,
+          toolsRequired,
+        };
+        AsyncStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft)).catch(() => {});
+      }
+    }
+  }, [
+    isEditMode,
+    title,
+    categories,
+    municipality,
+    barangay,
+    pay,
+    slots,
+    duration,
+    durationUnit,
+    description,
+    exactLocation,
+    toolsRequired,
+  ]);
 
   const compressImage = async (uri: string) => {
     const manipResult = await ImageManipulator.manipulateAsync(uri, [{ resize: { width: 1080 } }], {
@@ -588,15 +637,18 @@ export const PostJobScreen: React.FC = () => {
       );
     } else {
       createJobMutation.mutate(payload, {
-        onSuccess: () => {
+        onSuccess: async () => {
           setIsPublishing(false);
           setUploadProgress(100);
+          await AsyncStorage.removeItem(DRAFT_STORAGE_KEY).catch(() => {});
+          triggerHaptic('success');
           showAlert('Job published!', 'Your job is now visible to workers.', [
             { text: 'OK', onPress: () => navigation.goBack() },
           ]);
         },
         onError: (err: any) => {
           setIsPublishing(false);
+          triggerHaptic('error');
           showAlert('Error', err.message || 'Failed to publish job.');
         },
       });

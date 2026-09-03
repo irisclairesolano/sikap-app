@@ -26,6 +26,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 
+import { OfflineNotice } from './src/components/common/OfflineNotice';
+
 export const navigationRef = createNavigationContainerRef<any>();
 
 export function navigate(name: string, params?: any) {
@@ -192,6 +194,7 @@ export default function App() {
               <NavigationContainer ref={navigationRef} linking={linking}>
                 <RootNavigator />
               </NavigationContainer>
+              <OfflineNotice />
             </ErrorBoundary>
             <StatusBar style="auto" />
           </AlertProvider>

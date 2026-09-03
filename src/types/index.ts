@@ -18,7 +18,7 @@ export interface User {
   date_of_birth?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
-  expo_push_token?: string;
+  expo_push_token?: string | null;
   worker_profile?: WorkerProfile;
   employer_profile?: EmployerProfile;
   has_worker_profile?: boolean;

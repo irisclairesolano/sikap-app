@@ -48,6 +48,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
               cachePolicy="memory-disk"
               source={{ uri: avatarUrl }}
               style={styles.avatarImage}
+              transition={200}
             />
           ) : (
             <Avatar name={employerName || 'Employer'} size={72} />
