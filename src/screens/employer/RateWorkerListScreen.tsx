@@ -33,8 +33,10 @@ const RateWorkerListScreen: React.FC = () => {
   const reviewedApplicationIds = useMemo(() => {
     if (!reviewsData?.reviews) return new Set<number>();
     return new Set(
-      reviewsData.reviews.filter((r) => r.reviewer_role === 'employer').map((r) => r.id),
-    ); // wait, the review doesn't expose application_id in ReviewsResponse!
+      reviewsData.reviews
+        .filter((r) => r.reviewer_role === 'employer' && r.application_id)
+        .map((r) => r.application_id as number),
+    );
   }, [reviewsData]);
 
   if (isLoadingJob || isLoadingReviews) {
@@ -47,6 +49,8 @@ const RateWorkerListScreen: React.FC = () => {
 
   const renderWorkerCard = ({ item }: { item: any }) => {
     const workerName = item.worker?.name || 'Worker';
+    const isReviewed = reviewedApplicationIds.has(item.id);
+
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -58,17 +62,25 @@ const RateWorkerListScreen: React.FC = () => {
             <Text style={styles.jobTitle}>{jobTitle}</Text>
           </View>
         </View>
-        <Button
-          label="Rate Worker"
-          variant="primary"
-          onPress={() =>
-            navigation.navigate('RateWorker', {
-              id: item.id,
-              workerName,
-              jobTitle,
-            })
-          }
-        />
+
+        {isReviewed ? (
+          <View style={styles.reviewedBadge}>
+            <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+            <Text style={styles.reviewedBadgeText}>Rating Submitted</Text>
+          </View>
+        ) : (
+          <Button
+            label="Rate Worker"
+            variant="primary"
+            onPress={() =>
+              navigation.navigate('RateWorker', {
+                id: item.id,
+                workerName,
+                jobTitle,
+              })
+            }
+          />
+        )}
       </View>
     );
   };
@@ -176,6 +188,23 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     textAlign: 'center',
     marginTop: 8,
+  },
+  reviewedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: colors.success + '15',
+    borderWidth: 1,
+    borderColor: colors.success + '30',
+  },
+  reviewedBadgeText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.success,
   },
 });
 

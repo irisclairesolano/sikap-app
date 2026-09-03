@@ -41,7 +41,7 @@ export const jobsApi = {
 
   markJobComplete: async (id: number) => {
     return apiClient<{ message: string }>(`/jobs/${id}/complete`, {
-      method: 'POST',
+      method: 'PATCH',
     });
   },
 };

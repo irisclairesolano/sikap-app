@@ -10,6 +10,8 @@ export interface Reviewer {
 
 export interface ReviewItem {
   id: number;
+  application_id?: number;
+  reviewee_id?: number;
   reviewer: Reviewer;
   reviewer_role: string;
   cat1: number;
@@ -18,6 +20,7 @@ export interface ReviewItem {
   cat4: number;
   overall_rating: number;
   comment: string | null;
+  created_at?: string;
 }
 
 export interface ReviewsResponse {
