@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, shadows } from '../../theme';
+import { triggerHaptic } from '../../utils/haptics';
 
 export interface ButtonProps extends TouchableOpacityProps {
   label?: string;
@@ -76,10 +77,11 @@ const Button: React.FC<ButtonProps> = ({
 
   const handlePress = (e: any) => {
     const now = Date.now();
-    if (now - lastPressTime.current < 800) {
+    if (now - lastPressTime.current < 350) {
       return;
     }
     lastPressTime.current = now;
+    triggerHaptic('light');
     onPress?.(e);
   };
 
@@ -96,7 +98,7 @@ const Button: React.FC<ButtonProps> = ({
       ]}
       onPress={handlePress}
       disabled={disabled || loading}
-      activeOpacity={0.85}
+      activeOpacity={0.7}
       accessibilityLabel={accessibilityLabel || displayLabel}
       accessibilityRole="button"
     >
