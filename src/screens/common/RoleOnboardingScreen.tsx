@@ -50,6 +50,8 @@ export const RoleOnboardingScreen: React.FC = () => {
     );
   };
 
+  const [isSkipping, setIsSkipping] = useState(false);
+
   const handleBackPress = () => {
     if (targetRole === 'employer') {
       showAlert(
@@ -61,10 +63,13 @@ export const RoleOnboardingScreen: React.FC = () => {
             text: 'Skip & Continue',
             onPress: async () => {
               try {
+                setIsSkipping(true);
                 await onboardRole({ targetRole, data: {} });
                 notifyAuthChanged();
               } catch (error: any) {
                 showAlert('Error', error.message || 'Failed to skip onboarding');
+              } finally {
+                setIsSkipping(false);
               }
             },
           },
@@ -195,10 +200,18 @@ export const RoleOnboardingScreen: React.FC = () => {
         const form = new FormData();
         if (selectedBusinessDocs.length > 0) {
           selectedBusinessDocs.forEach((doc, index) => {
+            const fileName = doc.name ?? `business-doc-${index}.pdf`;
+            const ext = fileName.split('.').pop()?.toLowerCase();
+            let mimeType = doc.mimeType || doc.type;
+            if (!mimeType || mimeType === 'unknown' || mimeType === '*/*') {
+              if (ext === 'png') mimeType = 'image/png';
+              else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
+              else mimeType = 'application/pdf';
+            }
             form.append('business_documents[]', {
               uri: doc.uri,
-              name: doc.name ?? `business-doc-${index}.pdf`,
-              type: doc.mimeType ?? 'application/pdf',
+              name: fileName,
+              type: mimeType,
             } as unknown as Blob);
           });
         }
@@ -328,13 +341,17 @@ export const RoleOnboardingScreen: React.FC = () => {
         )}
       </View>
 
-      {isOnboardingRole && (
+      {(isOnboardingRole || isSkipping) && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>
-            {targetRole === 'employer'
-              ? 'Uploading documents & completing setup...'
-              : 'Saving your skills & completing setup...'}
+            {isSkipping
+              ? 'Completing setup...'
+              : targetRole === 'employer'
+                ? selectedBusinessDocs.length > 0
+                  ? 'Uploading documents & completing setup...'
+                  : 'Completing setup...'
+                : 'Saving your skills & completing setup...'}
           </Text>
         </View>
       )}

@@ -216,10 +216,18 @@ export const EditProfileScreen: React.FC = () => {
         }
 
         selectedBusinessDocs.forEach((doc, idx) => {
+          const fileName = doc.name || `business-doc-${idx}.pdf`;
+          const ext = fileName.split('.').pop()?.toLowerCase();
+          let mimeType = doc.mimeType || doc.type;
+          if (!mimeType || mimeType === 'unknown' || mimeType === '*/*') {
+            if (ext === 'png') mimeType = 'image/png';
+            else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
+            else mimeType = 'application/pdf';
+          }
           formData.append('business_documents[]', {
             uri: doc.uri,
-            name: doc.name || `business-doc-${idx}.pdf`,
-            type: doc.mimeType || 'application/pdf',
+            name: fileName,
+            type: mimeType,
           } as any);
         });
 
