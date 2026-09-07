@@ -233,10 +233,9 @@ const RootNavigator: React.FC = () => {
 
   const needsOnboarding =
     (user.role === 'worker' &&
-      (!user.has_worker_profile ||
-        !user.worker_profile ||
-        (user.worker_profile.skills || []).length === 0)) ||
-    (user.role === 'employer' && (!user.has_employer_profile || !user.employer_profile));
+      !user.has_worker_profile &&
+      (!user.worker_profile || (user.worker_profile.skills || []).length === 0)) ||
+    (user.role === 'employer' && !user.has_employer_profile && !user.employer_profile);
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
