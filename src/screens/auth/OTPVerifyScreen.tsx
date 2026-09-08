@@ -42,7 +42,7 @@ const OTPVerifyScreen: React.FC = () => {
   };
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (countdown > 0) {
       interval = setInterval(() => {
         const remaining = Math.max(0, Math.round((targetTimeRef.current - Date.now()) / 1000));

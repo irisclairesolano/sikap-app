@@ -38,7 +38,8 @@ export const ReportScreen: React.FC = () => {
     // Map UI reason to backend enum
     let mappedType: 'harassment' | 'fake_account' | 'inappropriate_job' | 'other' = 'other';
     if (selectedReason === 'Harassment') mappedType = 'harassment';
-    if (selectedReason === 'Scam or Fraud' || selectedReason === 'Spam') mappedType = 'fake_account';
+    if (selectedReason === 'Scam or Fraud' || selectedReason === 'Spam')
+      mappedType = 'fake_account';
     if (selectedReason === 'Inappropriate Behavior') mappedType = 'inappropriate_job';
 
     submitReport(

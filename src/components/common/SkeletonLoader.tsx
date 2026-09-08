@@ -67,7 +67,9 @@ export const JobCardSkeleton: React.FC = () => (
 export const DashboardSkeleton: React.FC = () => (
   <Animated.View style={{ paddingHorizontal: 20, gap: 16, marginTop: 20 }}>
     {/* Header Skeleton */}
-    <Animated.View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Animated.View
+      style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+    >
       <Skeleton width={140} height={28} borderRadius={8} />
       <Skeleton width={40} height={40} borderRadius={20} />
     </Animated.View>

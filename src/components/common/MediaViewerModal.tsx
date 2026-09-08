@@ -28,14 +28,7 @@ const VideoPlayerContent: React.FC<{ url: string }> = ({ url }) => {
 
   if (!safeUrl) return null;
 
-  return (
-    <VideoView
-      style={styles.fullscreenVideo}
-      player={player}
-      allowsFullscreen
-      allowsPictureInPicture
-    />
-  );
+  return <VideoView style={styles.fullscreenVideo} player={player} nativeControls />;
 };
 
 export const MediaViewerModal: React.FC<MediaViewerModalProps> = ({ visible, media, onClose }) => {

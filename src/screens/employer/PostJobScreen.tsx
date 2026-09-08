@@ -1406,7 +1406,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   imgLoaderOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderRadius: 12,
     justifyContent: 'center',

@@ -2,9 +2,9 @@ name: Mobile App CI
 
 on:
   push:
-    branches: [ main, development, iris ]
+    branches: [main, development, iris]
   pull_request:
-    branches: [ main, development, iris ]
+    branches: [main, development, iris]
 
 jobs:
   test:
