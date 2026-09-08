@@ -113,6 +113,17 @@ export const usePushNotifications = (): PushNotificationState => {
           const numAppId = Number(appId);
           const numJobId = Number(jobId);
 
+          if (data?.conversation_id) {
+            navigationRef.navigate(role === 'employer' ? 'Employer' : 'Worker', {
+              screen: 'Messages',
+              params: {
+                screen: 'Chat',
+                params: { conversationId: data.conversation_id },
+              },
+            });
+            return;
+          }
+
           if (appId && !isNaN(numAppId)) {
             if (role === 'employer') {
               navigationRef.navigate('Employer', {

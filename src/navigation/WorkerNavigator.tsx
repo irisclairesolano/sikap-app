@@ -30,6 +30,10 @@ import { SavedJobsScreen } from '../screens/worker/SavedJobsScreen';
 import AcceptHireScreen from '../screens/worker/AcceptHireScreen';
 import EmployerPublicProfileScreen from '../screens/worker/EmployerPublicProfileScreen';
 
+import { useUnreadMessageCount } from '../hooks/useConversations';
+import ConversationsListScreen from '../screens/messages/ConversationsListScreen';
+import ChatScreen from '../screens/messages/ChatScreen';
+
 export type WorkerStackParamList = {
   Home: undefined;
   HomeEmpty: undefined;
@@ -70,11 +74,14 @@ export type WorkerStackParamList = {
   WorkHistory: undefined;
   CharacterReferences: undefined;
   Reviews: undefined;
+  Messages: undefined;
+  Chat: { conversationId: number; jobTitle?: string; otherUserName?: string };
 };
 
 export type WorkerTabParamList = {
   Find: undefined;
   Mine: undefined;
+  Messages: undefined;
   Saved: undefined;
   Notifications: undefined;
   Me: undefined;
@@ -82,6 +89,14 @@ export type WorkerTabParamList = {
 
 const Tab = createBottomTabNavigator<WorkerTabParamList>();
 const Stack = createNativeStackNavigator<WorkerStackParamList>();
+
+// Messages Stack
+const MessagesStack: React.FC = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="Messages" component={ConversationsListScreen} />
+    <Stack.Screen name="Chat" component={ChatScreen} />
+  </Stack.Navigator>
+);
 
 // Home Stack
 const FindStack: React.FC = () => {
@@ -208,6 +223,7 @@ const ProfileStack: React.FC = () => (
 const WorkerNavigator: React.FC = () => {
   const { data } = useNotifications();
   const unreadCount = data?.unread_count || 0;
+  const { data: unreadMessages } = useUnreadMessageCount();
 
   return (
     <Tab.Navigator
@@ -219,6 +235,8 @@ const WorkerNavigator: React.FC = () => {
             iconName = focused ? 'search' : 'search-outline';
           } else if (route.name === 'Mine') {
             iconName = focused ? 'document-text' : 'document-text-outline';
+          } else if (route.name === 'Messages') {
+            iconName = focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline';
           } else if (route.name === 'Saved') {
             iconName = focused ? 'bookmark' : 'bookmark-outline';
           } else if (route.name === 'Notifications') {
@@ -251,6 +269,19 @@ const WorkerNavigator: React.FC = () => {
         listeners={({ navigation }) => ({
           tabPress: () => {
             (navigation as any).navigate('Mine', { screen: 'Applications' });
+          },
+        })}
+      />
+      <Tab.Screen
+        name="Messages"
+        component={MessagesStack}
+        options={{
+          tabBarBadge: (unreadMessages ?? 0) > 0 ? unreadMessages : undefined,
+          tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
+        }}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            (navigation as any).navigate('Messages', { screen: 'Messages' });
           },
         })}
       />

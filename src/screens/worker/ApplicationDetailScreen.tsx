@@ -19,6 +19,7 @@ import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { useWithdrawApplication, useAcceptOffer, useRejectOffer } from '../../hooks/useApply';
 import { useApplication } from '../../hooks/useJobApplications';
+import { messagesApi } from '../../api/messages';
 
 type ApplicationDetailScreenRouteProp = RouteProp<WorkerStackParamList, 'ApplicationDetail'>;
 type ApplicationDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -52,6 +53,31 @@ const ApplicationDetailScreen: React.FC = () => {
   const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawApplication();
   const { showAlert } = useAlert();
   const [isMenuVisible, setMenuVisible] = useState(false);
+
+  const handleOpenChat = async () => {
+    try {
+      if (appData?.conversation_id) {
+        navigation.navigate('Chat', {
+          conversationId: appData.conversation_id,
+          jobTitle: appData.job?.title || jobTitle,
+          otherUserName: employerName,
+        });
+        return;
+      }
+      const res = await messagesApi.getConversations();
+      const currentAppId = appData?.id ?? applicationId;
+      const conv = res.data.find((c) => c.application_id === currentAppId);
+      if (conv) {
+        navigation.navigate('Chat', {
+          conversationId: conv.id,
+          jobTitle: conv.job_title || appData?.job?.title || jobTitle,
+          otherUserName: conv.other_user?.name || employerName,
+        });
+      }
+    } catch {
+      // handle silently
+    }
+  };
 
   if (queryLoading && !jobTitle) {
     return (
@@ -477,6 +503,28 @@ const ApplicationDetailScreen: React.FC = () => {
             onPress={handleWithdraw}
             loading={isWithdrawing}
           />
+        )}
+        {(status === 'pending_negotiation' ||
+          status === 'employer_confirmed' ||
+          status === 'accepted' ||
+          status === 'completed' ||
+          status === 'rejected') && (
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: colors.primary,
+              borderRadius: 12,
+              paddingVertical: 14,
+              marginTop: 12,
+              gap: 8,
+            }}
+            onPress={handleOpenChat}
+          >
+            <Ionicons name="chatbubble-ellipses-outline" size={18} color={colors.white} />
+            <Text style={{ color: colors.white, fontWeight: '600', fontSize: 15 }}>Open Chat</Text>
+          </TouchableOpacity>
         )}
         {stage === 3 && (
           <Button

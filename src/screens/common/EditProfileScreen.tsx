@@ -18,6 +18,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { profileApi } from '../../api/profile';
@@ -571,10 +572,19 @@ export const EditProfileScreen: React.FC = () => {
                     Current Documents:
                   </Text>
                   {user.business_documents.map((docUrl: string, idx: number) => {
-                    const docName = docUrl.split('/').pop() || `document_${idx + 1}`;
+                    const docName = docUrl.split('/').pop()?.split('?')[0] || `document_${idx + 1}`;
                     return (
-                      <View
+                      <TouchableOpacity
                         key={idx}
+                        activeOpacity={0.7}
+                        onPress={() => {
+                          if (docUrl) {
+                            Linking.openURL(docUrl).catch((err) => {
+                              console.error('Failed to open document URL:', err);
+                              showAlert('Error', 'Could not open document.');
+                            });
+                          }
+                        }}
                         style={{
                           flexDirection: 'row',
                           alignItems: 'center',
@@ -598,7 +608,19 @@ export const EditProfileScreen: React.FC = () => {
                         >
                           {docName}
                         </Text>
-                      </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          <Text
+                            style={{
+                              fontFamily: fonts.bodyBold,
+                              fontSize: 11,
+                              color: colors.primary,
+                            }}
+                          >
+                            View / Download
+                          </Text>
+                          <Ionicons name="open-outline" size={14} color={colors.primary} />
+                        </View>
+                      </TouchableOpacity>
                     );
                   })}
                 </View>

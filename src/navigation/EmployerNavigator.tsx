@@ -27,6 +27,10 @@ import SendRequestScreen from '../screens/employer/SendRequestScreen';
 import CancelHireScreen from '../screens/employer/CancelHireScreen';
 import MarkCompleteScreen from '../screens/employer/MarkCompleteScreen';
 
+import { useUnreadMessageCount } from '../hooks/useConversations';
+import ConversationsListScreen from '../screens/messages/ConversationsListScreen';
+import ChatScreen from '../screens/messages/ChatScreen';
+
 export type EmployerStackParamList = {
   Home: undefined;
   EmployerDashboard: undefined;
@@ -65,17 +69,28 @@ export type EmployerStackParamList = {
   Notifications: undefined;
   Profile: undefined;
   RoleOnboarding: { targetRole: 'worker' | 'employer' };
+  Messages: undefined;
+  Chat: { conversationId: number; jobTitle?: string; otherUserName?: string };
 };
 
 export type EmployerTabParamList = {
   Home: undefined;
   MyJobs: undefined;
+  Messages: undefined;
   Notifications: undefined;
   Profile: undefined;
 };
 
 const Tab = createBottomTabNavigator<EmployerTabParamList>();
 const Stack = createNativeStackNavigator<EmployerStackParamList>();
+
+// Messages Stack
+const MessagesStack: React.FC = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="Messages" component={ConversationsListScreen} />
+    <Stack.Screen name="Chat" component={ChatScreen} />
+  </Stack.Navigator>
+);
 
 // Home Stack
 const HomeStack: React.FC = () => (
@@ -164,6 +179,7 @@ const ProfileStack: React.FC = () => (
 const EmployerNavigator: React.FC = () => {
   const { data } = useNotifications();
   const unreadCount = data?.unread_count || 0;
+  const { data: unreadMessages } = useUnreadMessageCount();
 
   return (
     <Tab.Navigator
@@ -175,6 +191,8 @@ const EmployerNavigator: React.FC = () => {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'MyJobs') {
             iconName = focused ? 'briefcase' : 'briefcase-outline';
+          } else if (route.name === 'Messages') {
+            iconName = focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline';
           } else if (route.name === 'Notifications') {
             iconName = focused ? 'notifications' : 'notifications-outline';
           } else if (route.name === 'Profile') {
@@ -205,6 +223,19 @@ const EmployerNavigator: React.FC = () => {
         listeners={({ navigation }) => ({
           tabPress: () => {
             (navigation as any).navigate('MyJobs', { screen: 'MyJobs' });
+          },
+        })}
+      />
+      <Tab.Screen
+        name="Messages"
+        component={MessagesStack}
+        options={{
+          tabBarBadge: (unreadMessages ?? 0) > 0 ? unreadMessages : undefined,
+          tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
+        }}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            (navigation as any).navigate('Messages', { screen: 'Messages' });
           },
         })}
       />

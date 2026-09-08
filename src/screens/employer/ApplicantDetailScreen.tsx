@@ -21,6 +21,7 @@ import { Avatar } from '../../components/common/Avatar';
 import { useApplication } from '../../hooks/useJobApplications';
 import { parseContactPlatforms } from '../common/ManageContactPlatformsScreen';
 import { openSafeContactLink } from '../../utils/linking';
+import { messagesApi } from '../../api/messages';
 
 type ApplicantDetailScreenRouteProp = RouteProp<EmployerStackParamList, 'ApplicantDetail'>;
 type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -65,6 +66,31 @@ const ApplicantDetailScreen: React.FC = () => {
     appData?.worker?.emergency_contact_name || route.params?.emergencyContactName;
   const emergencyContactPhone =
     appData?.worker?.emergency_contact_phone || route.params?.emergencyContactPhone;
+
+  const handleOpenChat = async () => {
+    try {
+      if (appData?.conversation_id) {
+        navigation.navigate('Chat', {
+          conversationId: appData.conversation_id,
+          jobTitle: appData.job?.title || jobTitle,
+          otherUserName: applicantName,
+        });
+        return;
+      }
+      const res = await messagesApi.getConversations();
+      const currentAppId = appData?.id ?? appId;
+      const conv = res.data.find((c) => c.application_id === currentAppId);
+      if (conv) {
+        navigation.navigate('Chat', {
+          conversationId: conv.id,
+          jobTitle: conv.job_title || appData?.job?.title || jobTitle,
+          otherUserName: conv.other_user?.name || applicantName,
+        });
+      }
+    } catch {
+      // handle silently
+    }
+  };
 
   if (queryLoading && !applicantName) {
     return (
@@ -202,6 +228,29 @@ const ApplicantDetailScreen: React.FC = () => {
           />
         }
       >
+        {(status === 'pending_negotiation' ||
+          status === 'employer_confirmed' ||
+          status === 'accepted') && (
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: colors.primary,
+              borderRadius: 12,
+              paddingVertical: 14,
+              marginHorizontal: 16,
+              marginBottom: 16,
+              gap: 8,
+            }}
+            onPress={handleOpenChat}
+          >
+            <Ionicons name="chatbubble-ellipses-outline" size={18} color={colors.white} />
+            <Text style={{ color: colors.white, fontWeight: '600', fontSize: 15 }}>
+              Message Worker
+            </Text>
+          </TouchableOpacity>
+        )}
         {/* 5-Stage Tracker */}
         <View style={styles.stages}>
           <View style={stage >= 1 ? styles.stageActive : styles.stage}>

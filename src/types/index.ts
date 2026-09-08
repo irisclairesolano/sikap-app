@@ -83,6 +83,7 @@ export interface Application {
   final_agreed_price: number | null; // only at employer_confirmed or accepted
   references_revealed: boolean; // true at Stage 2
   contact_revealed: boolean; // true at Stage 4
+  conversation_id?: number | null;
   job: JobPost;
   worker: {
     id: number;
@@ -267,4 +268,64 @@ export interface ReportRequest {
   reportable_id: number;
   type: string;
   description: string;
+}
+
+// ─── Messaging ───────────────────────────────────────────────────────────────
+
+export interface ConversationUser {
+  id: number;
+  name: string;
+  avatar_url?: string | null;
+  role: 'worker' | 'employer';
+}
+
+export interface Conversation {
+  id: number;
+  application_id: number;
+  job_title: string;
+  application_status?: string;
+  status: 'open' | 'locked' | 'unlock_requested';
+  other_user: ConversationUser | null;
+  last_message_preview?: string | null;
+  last_message_at?: string | null;
+  unread_count: number;
+}
+
+export type MessageType = 'text' | 'image' | 'system' | 'action_card';
+
+export type CardType =
+  | 'confirm_hire'
+  | 'accept_or_reject'
+  | 'cancel_hire'
+  | 'employer_contact_reveal'
+  | 'worker_contact_reveal'
+  | 'mark_complete'
+  | 'flag_offline'
+  | 'unlock_request';
+
+export interface Message {
+  id: number;
+  conversation_id: number;
+  sender_id: number | null;
+  body?: string | null;
+  image_url?: string | null;
+  message_type: MessageType;
+  card_type?: CardType | null;
+  card_data?: Record<string, unknown> | null;
+  card_resolved: boolean;
+  card_resolved_at?: string | null;
+  card_resolved_by?: number | null;
+  read_at?: string | null;
+  created_at: string;
+  sender?: {
+    id: number;
+    name: string;
+    avatar_url?: string | null;
+  } | null;
+}
+
+export interface PaginatedMessages {
+  data: Message[];
+  next_cursor?: string | null;
+  next_page_url?: string | null;
 }

@@ -197,8 +197,8 @@ export const RoleOnboardingScreen: React.FC = () => {
         await onboardRole({ targetRole, data: { skill_ids: selectedSkills } });
       } else {
         // employer
-        const form = new FormData();
         if (selectedBusinessDocs.length > 0) {
+          const form = new FormData();
           selectedBusinessDocs.forEach((doc, index) => {
             const fileName = doc.name ?? `business-doc-${index}.pdf`;
             const ext = fileName.split('.').pop()?.toLowerCase();
@@ -214,8 +214,11 @@ export const RoleOnboardingScreen: React.FC = () => {
               type: mimeType,
             } as unknown as Blob);
           });
+          await onboardRole({ targetRole, data: form });
+        } else {
+          // If no documents were selected, send plain JSON payload so no multipart overhead occurs
+          await onboardRole({ targetRole, data: {} });
         }
-        await onboardRole({ targetRole, data: form });
       }
 
       notifyAuthChanged();
