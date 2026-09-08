@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useMemo } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BARANGAYS_BY_MUNICIPALITY, MUNICIPALITIES } from '../../constants/locations';
 import { colors, fonts } from '../../theme';
 
@@ -21,6 +22,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   municipalityError,
   barangayError,
 }) => {
+  const insets = useSafeAreaInsets();
   const [municipalityModalVisible, setMunicipalityModalVisible] = React.useState(false);
   const [barangayModalVisible, setBarangayModalVisible] = React.useState(false);
 
@@ -59,16 +61,25 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         onRequestClose={() => setMunicipalityModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <TouchableOpacity
+            style={styles.backdropTouchable}
+            activeOpacity={1}
+            onPress={() => setMunicipalityModalVisible(false)}
+          />
+          <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 16) }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Select Municipality</Text>
-              <TouchableOpacity onPress={() => setMunicipalityModalVisible(false)}>
+              <TouchableOpacity
+                onPress={() => setMunicipalityModalVisible(false)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
                 <Ionicons name="close" size={24} color={colors.ink} />
               </TouchableOpacity>
             </View>
             <ScrollView
               style={styles.optionsList}
-              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: Math.max(insets.bottom + 24, 36) }}
+              showsVerticalScrollIndicator={true}
               keyboardShouldPersistTaps="handled"
             >
               {municipalityOptions.map((option) => (
@@ -85,7 +96,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         </View>
       </Modal>
     ),
-    [municipalityModalVisible, municipalityOptions, handleMunicipalitySelect],
+    [municipalityModalVisible, municipalityOptions, handleMunicipalitySelect, insets.bottom],
   );
 
   // Memoize barangay modal content
@@ -98,16 +109,25 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         onRequestClose={() => setBarangayModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <TouchableOpacity
+            style={styles.backdropTouchable}
+            activeOpacity={1}
+            onPress={() => setBarangayModalVisible(false)}
+          />
+          <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 16) }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Select Barangay</Text>
-              <TouchableOpacity onPress={() => setBarangayModalVisible(false)}>
+              <TouchableOpacity
+                onPress={() => setBarangayModalVisible(false)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
                 <Ionicons name="close" size={24} color={colors.ink} />
               </TouchableOpacity>
             </View>
             <ScrollView
               style={styles.optionsList}
-              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: Math.max(insets.bottom + 24, 36) }}
+              showsVerticalScrollIndicator={true}
               keyboardShouldPersistTaps="handled"
             >
               {barangayOptions.map((option) => (
@@ -124,7 +144,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         </View>
       </Modal>
     ),
-    [barangayModalVisible, barangayOptions, handleBarangaySelect],
+    [barangayModalVisible, barangayOptions, handleBarangaySelect, insets.bottom],
   );
 
   return (
@@ -257,11 +277,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
+  backdropTouchable: {
+    ...StyleSheet.absoluteFill,
+  },
   modalContent: {
     backgroundColor: colors.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: '70%',
+    maxHeight: '75%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -279,8 +302,7 @@ const styles = StyleSheet.create({
   },
   optionsList: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
-    maxHeight: 400,
+    maxHeight: 450,
   },
   optionItem: {
     paddingVertical: 12,
