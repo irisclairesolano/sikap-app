@@ -87,7 +87,7 @@ const Stack = createNativeStackNavigator<EmployerStackParamList>();
 // Messages Stack
 const MessagesStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Messages" component={ConversationsListScreen} />
+    <Stack.Screen name="ConversationsList" component={ConversationsListScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
   </Stack.Navigator>
 );
@@ -235,7 +235,7 @@ const EmployerNavigator: React.FC = () => {
         }}
         listeners={({ navigation }) => ({
           tabPress: () => {
-            (navigation as any).navigate('Messages', { screen: 'Messages' });
+            (navigation as any).navigate('Messages', { screen: 'ConversationsList' });
           },
         })}
       />
