@@ -389,14 +389,14 @@ const ApplicationDetailScreen: React.FC = () => {
 
             <View style={styles.butterNotice}>
               <Ionicons
-                name="information-circle"
+                name="chatbubble-ellipses-outline"
                 size={18}
                 color={colors.primaryDark}
                 style={{ marginTop: 1 }}
               />
               <Text style={styles.butterNoticeText}>
-                <Text style={{ fontWeight: '700' }}>Talk outside the app</Text>, then come back when
-                you've agreed on a price.
+                <Text style={{ fontWeight: '700' }}>Message in chat or call</Text> to discuss
+                details and agree on a price.
               </Text>
             </View>
           </View>

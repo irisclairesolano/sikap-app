@@ -222,7 +222,9 @@ export const EmployerDashboardScreen: React.FC = () => {
         </View>
         <TouchableOpacity
           style={styles.iconButton}
-          onPress={() => navigation.navigate('Notifications')}
+          onPress={() =>
+            (navigation as any).navigate('Notifications', { screen: 'NotificationsList' })
+          }
         >
           <Ionicons name="notifications-outline" size={24} color={colors.ink} />
         </TouchableOpacity>

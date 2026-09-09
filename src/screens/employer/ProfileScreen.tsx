@@ -12,14 +12,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { RefreshableContainer } from '../../components/common/RefreshableContainer';
 import { useAuth } from '../../hooks/useAuth';
-import { parseContactPlatforms } from '../common/ManageContactPlatformsScreen';
-import { openSafeContactLink } from '../../utils/linking';
-
 import { useEmployerJobs } from '../../hooks/useEmployerJobs';
 
 type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
   EmployerStackParamList,
-  'Profile'
+  'ProfileMain'
 >;
 
 export const ProfileScreen: React.FC = () => {
@@ -108,59 +105,6 @@ export const ProfileScreen: React.FC = () => {
       </View>
 
       <RefreshableContainer onRefresh={handleRefresh} contentContainerStyle={styles.scrollContent}>
-        {(!profileUser?.contact_platforms || profileUser.contact_platforms.length === 0) && (
-          <TouchableOpacity
-            style={{
-              backgroundColor: colors.paperCream,
-              borderRadius: 14,
-              padding: 14,
-              marginBottom: 16,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 12,
-              borderWidth: 1,
-              borderColor: colors.inkFaint,
-            }}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate('ManageContactPlatforms' as any)}
-          >
-            <View
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 10,
-                backgroundColor: colors.peach,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Ionicons name="logo-whatsapp" size={20} color={colors.primary} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  fontFamily: fonts.bodyBold,
-                  fontSize: 13,
-                  color: colors.ink,
-                }}
-              >
-                Complete contact details
-              </Text>
-              <Text
-                style={{
-                  fontFamily: fonts.body,
-                  fontSize: 11,
-                  color: colors.inkSoft,
-                  marginTop: 2,
-                }}
-              >
-                Add preferred contact channels so shortlisted applicants can reach you easily.
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.primary} />
-          </TouchableOpacity>
-        )}
-
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
@@ -235,87 +179,6 @@ export const ProfileScreen: React.FC = () => {
           <View style={[styles.statBox, { backgroundColor: colors.butter }]}>
             <Text style={[styles.statValue, { color: colors.ink }]}>{employer.totalPaid}</Text>
             <Text style={[styles.statLabel, { color: colors.inkSoft }]}>Total paid</Text>
-          </View>
-        </View>
-
-        {/* Communication Platforms */}
-        <View style={styles.reviewSection}>
-          <View style={styles.reviewHeader}>
-            <Text style={styles.sectionEyebrow}>Communication Platforms</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('ManageContactPlatforms' as any)}>
-              <Text style={styles.viewAllText}>Edit</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={{ marginTop: 10, gap: 10 }}>
-            {parseContactPlatforms(profileUser?.contact_platforms).length === 0 ? (
-              <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
-                No communication platforms added yet. Add up to 3 links (WhatsApp, FB, Phone).
-              </Text>
-            ) : (
-              parseContactPlatforms(profileUser?.contact_platforms).map((slot, idx) => {
-                const pName = slot.platform.toLowerCase();
-                let iconName: any = 'logo-whatsapp';
-                let iconColor = '#25D366';
-                if (pName.includes('facebook') || pName.includes('messenger')) {
-                  iconName = 'logo-facebook';
-                  iconColor = '#1877F2';
-                } else if (pName.includes('instagram')) {
-                  iconName = 'logo-instagram';
-                  iconColor = '#E4405F';
-                } else if (pName.includes('viber')) {
-                  iconName = 'call';
-                  iconColor = '#7360F2';
-                } else if (pName.includes('telegram')) {
-                  iconName = 'paper-plane';
-                  iconColor = '#229ED9';
-                } else if (pName.includes('phone') || pName.includes('sms')) {
-                  iconName = 'call-outline';
-                  iconColor = '#1E293B';
-                }
-
-                return (
-                  <TouchableOpacity
-                    key={idx}
-                    activeOpacity={0.7}
-                    onPress={() => openSafeContactLink(slot.platform, slot.value)}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 12,
-                      backgroundColor: colors.paperBright,
-                      padding: 12,
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: colors.inkFaint,
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 34,
-                        height: 34,
-                        borderRadius: 10,
-                        backgroundColor: iconColor + '18',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Ionicons name={iconName} size={18} color={iconColor} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink }}>
-                        {slot.platform}
-                      </Text>
-                      <Text
-                        style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}
-                      >
-                        {slot.value}
-                      </Text>
-                    </View>
-                    <Ionicons name="open-outline" size={16} color={colors.inkLight} />
-                  </TouchableOpacity>
-                );
-              })
-            )}
           </View>
         </View>
 

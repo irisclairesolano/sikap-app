@@ -14,7 +14,6 @@ import RateWorkerListScreen from '../screens/employer/RateWorkerListScreen';
 import MyJobsScreen from '../screens/employer/MyJobsScreen';
 import JobStatusManagementScreen from '../screens/employer/JobStatusManagementScreen';
 import EditProfileScreen from '../screens/common/EditProfileScreen';
-import ManageContactPlatformsScreen from '../screens/common/ManageContactPlatformsScreen';
 import SettingsScreen from '../screens/common/SettingsScreen';
 import ReportScreen from '../screens/common/ReportScreen';
 import RoleOnboardingScreen from '../screens/common/RoleOnboardingScreen';
@@ -61,15 +60,18 @@ export type EmployerStackParamList = {
   RateWorker: { id: number; workerName: string; jobTitle: string };
   Report: { id: number };
   EditProfile: undefined;
-  ManageContactPlatforms: undefined;
   Settings: undefined;
   Reviews: undefined;
-  MyJobs: undefined;
+  MyJobsList: undefined;
+  MyJobs?: undefined;
   JobStatusManagement: { id: number; job?: any };
-  Notifications: undefined;
-  Profile: undefined;
+  NotificationsList: undefined;
+  Notifications?: undefined;
+  ProfileMain: undefined;
+  Profile?: undefined;
   RoleOnboarding: { targetRole: 'worker' | 'employer' };
   Messages: undefined;
+  ConversationsList: undefined;
   Chat: { conversationId: number; jobTitle?: string; otherUserName?: string };
 };
 
@@ -108,7 +110,6 @@ const HomeStack: React.FC = () => (
     <Stack.Screen name="RateWorker" component={RateWorkerScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-    <Stack.Screen name="ManageContactPlatforms" component={ManageContactPlatformsScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
@@ -118,7 +119,7 @@ const HomeStack: React.FC = () => (
 // My Jobs Stack
 const MyJobsStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="MyJobs" component={MyJobsScreen} />
+    <Stack.Screen name="MyJobsList" component={MyJobsScreen} />
     <Stack.Screen name="PostJob" component={PostJobScreen} />
     <Stack.Screen name="JobDetails" component={JobStatusManagementScreen} />
     <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
@@ -131,7 +132,6 @@ const MyJobsStack: React.FC = () => (
     <Stack.Screen name="MarkComplete" component={MarkCompleteScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-    <Stack.Screen name="ManageContactPlatforms" component={ManageContactPlatformsScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
@@ -141,7 +141,7 @@ const MyJobsStack: React.FC = () => (
 // Notifications Stack
 const NotificationsStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Notifications" component={NotificationsScreen} />
+    <Stack.Screen name="NotificationsList" component={NotificationsScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
     <Stack.Screen name="JobDetails" component={JobStatusManagementScreen} />
     <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
@@ -154,7 +154,6 @@ const NotificationsStack: React.FC = () => (
     <Stack.Screen name="RateWorker" component={RateWorkerScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-    <Stack.Screen name="ManageContactPlatforms" component={ManageContactPlatformsScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
@@ -164,9 +163,8 @@ const NotificationsStack: React.FC = () => (
 // Profile Stack
 const ProfileStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Profile" component={ProfileScreen} />
+    <Stack.Screen name="ProfileMain" component={ProfileScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-    <Stack.Screen name="ManageContactPlatforms" component={ManageContactPlatformsScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
@@ -222,7 +220,7 @@ const EmployerNavigator: React.FC = () => {
         component={MyJobsStack}
         listeners={({ navigation }) => ({
           tabPress: () => {
-            (navigation as any).navigate('MyJobs', { screen: 'MyJobs' });
+            (navigation as any).navigate('MyJobs', { screen: 'MyJobsList' });
           },
         })}
       />
@@ -248,7 +246,7 @@ const EmployerNavigator: React.FC = () => {
         }}
         listeners={({ navigation }) => ({
           tabPress: () => {
-            (navigation as any).navigate('Notifications', { screen: 'Notifications' });
+            (navigation as any).navigate('Notifications', { screen: 'NotificationsList' });
           },
         })}
       />
@@ -257,7 +255,7 @@ const EmployerNavigator: React.FC = () => {
         component={ProfileStack}
         listeners={({ navigation }) => ({
           tabPress: () => {
-            (navigation as any).navigate('Profile', { screen: 'Profile' });
+            (navigation as any).navigate('Profile', { screen: 'ProfileMain' });
           },
         })}
       />

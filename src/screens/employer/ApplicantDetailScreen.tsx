@@ -19,8 +19,6 @@ import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { Avatar } from '../../components/common/Avatar';
 import { useApplication } from '../../hooks/useJobApplications';
-import { parseContactPlatforms } from '../common/ManageContactPlatformsScreen';
-import { openSafeContactLink } from '../../utils/linking';
 import { messagesApi } from '../../api/messages';
 
 type ApplicantDetailScreenRouteProp = RouteProp<EmployerStackParamList, 'ApplicantDetail'>;
@@ -722,8 +720,8 @@ const ApplicantDetailScreen: React.FC = () => {
               </View>
             </View>
             <Text style={styles.shieldDesc}>
-              Shortlist worker to unlock direct phone numbers, communication channels, and character
-              references for negotiation.
+              Shortlist worker to unlock direct phone numbers, in-app chat, and character references
+              for negotiation.
             </Text>
           </View>
         ) : (
@@ -733,9 +731,9 @@ const ApplicantDetailScreen: React.FC = () => {
                 <Ionicons name="call" size={16} color={colors.mintDeep} />
               </View>
               <View>
-                <Text style={styles.shieldTitle}>Contact Details & Channels</Text>
+                <Text style={styles.shieldTitle}>Contact Details</Text>
                 <Text style={[styles.shieldSub, { color: colors.mintDeep }]}>
-                  {stage >= 4 ? 'Hired worker contact details' : 'Direct negotiation channels'}
+                  {stage >= 4 ? 'Hired worker contact number' : 'Direct contact number'}
                 </Text>
               </View>
             </View>
@@ -799,68 +797,6 @@ const ApplicantDetailScreen: React.FC = () => {
                   </View>
                 ) : null}
               </View>
-
-              {/* Communication Platforms (Viber, WhatsApp, Telegram, etc.) */}
-              {(() => {
-                const platforms = parseContactPlatforms(
-                  (appData?.worker as any)?.contact_platforms ||
-                    (route.params as any)?.contact_platforms,
-                );
-                if (platforms.length === 0) return null;
-
-                const openPlatformLink = (platform: string, val: string) => {
-                  openSafeContactLink(platform, val);
-                };
-
-                return (
-                  <View
-                    style={{
-                      borderTopWidth: 1,
-                      borderTopColor: colors.inkFaint,
-                      paddingTop: 10,
-                      gap: 8,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontFamily: fonts.body,
-                        color: colors.inkSoft,
-                        fontSize: 11,
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      Preferred Communication Platforms
-                    </Text>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
-                      {platforms.map((p, idx) => (
-                        <TouchableOpacity
-                          key={idx}
-                          onPress={() => openPlatformLink(p.platform, p.value)}
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 6,
-                            paddingVertical: 6,
-                            paddingHorizontal: 10,
-                            borderRadius: 10,
-                            backgroundColor: colors.paperBright,
-                            borderWidth: 1,
-                            borderColor: colors.mint,
-                          }}
-                        >
-                          <Ionicons name="chatbubble-ellipses" size={14} color={colors.mintDeep} />
-                          <Text
-                            style={{ fontFamily: fonts.bodyBold, fontSize: 12, color: colors.ink }}
-                          >
-                            {p.platform}: {p.value}
-                          </Text>
-                          <Ionicons name="open-outline" size={12} color={colors.inkSoft} />
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </View>
-                );
-              })()}
 
               {/* Emergency Contact (Stage 4+) */}
               {emergencyContactName && (
