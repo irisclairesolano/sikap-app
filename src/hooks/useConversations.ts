@@ -6,8 +6,8 @@ export function useConversations() {
   return useQuery({
     queryKey: ['conversations'],
     queryFn: () => messagesApi.getConversations().then((res) => res.data),
-    refetchInterval: 10_000,
-    staleTime: 5_000,
+    refetchInterval: 5_000,
+    staleTime: 2_500,
   });
 }
 
@@ -15,8 +15,8 @@ export function useUnreadMessageCount() {
   return useQuery({
     queryKey: ['conversations', 'unread-count'],
     queryFn: () => messagesApi.getUnreadCount().then((res) => res.unread_count),
-    refetchInterval: 10_000,
-    staleTime: 5_000,
+    refetchInterval: 5_000,
+    staleTime: 2_500,
     select: (count) => count ?? 0,
   });
 }

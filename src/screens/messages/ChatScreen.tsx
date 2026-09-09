@@ -88,6 +88,74 @@ const ChatScreen: React.FC = () => {
 
   const messages = data?.messages || [];
 
+  // Find latest unresolved action card (if any)
+  const activeActionCard = [...messages]
+    .reverse()
+    .find((m) => m.message_type === 'action_card' && !m.card_resolved);
+
+  const [isPinnedCardExpanded, setIsPinnedCardExpanded] = useState(false);
+
+  const getPinnedCardDetails = (card: typeof activeActionCard) => {
+    if (!card || !card.card_type) return null;
+    switch (card.card_type) {
+      case 'confirm_hire':
+        return {
+          icon: 'cash-outline' as const,
+          label: user?.role === 'employer' ? 'Set Price & Confirm Hire' : 'Awaiting Employer Offer',
+          color: colors.primary,
+          bg: colors.peach,
+        };
+      case 'accept_or_reject':
+        return {
+          icon: 'document-text-outline' as const,
+          label:
+            user?.role === 'worker'
+              ? `Offer Received (₱${String(card.card_data?.price ?? '')})`
+              : 'Offer Sent to Worker',
+          color: colors.success,
+          bg: '#DCFCE7',
+        };
+      case 'cancel_hire':
+        return {
+          icon: 'close-circle-outline' as const,
+          label: 'Hiring Cancellation',
+          color: colors.error,
+          bg: '#FEE2E2',
+        };
+      case 'employer_contact_reveal':
+        return {
+          icon: 'call-outline' as const,
+          label: 'Employer Contact Info',
+          color: colors.primary,
+          bg: colors.sky,
+        };
+      case 'worker_contact_reveal':
+        return {
+          icon: 'call-outline' as const,
+          label: 'Worker Contact Info',
+          color: colors.primary,
+          bg: colors.sky,
+        };
+      default:
+        return {
+          icon: 'flash-outline' as const,
+          label: 'Pending Action',
+          color: colors.primary,
+          bg: colors.primaryTint,
+        };
+    }
+  };
+
+  const pinnedDetails = getPinnedCardDetails(activeActionCard);
+
+  const handleJumpToCard = () => {
+    if (!activeActionCard) return;
+    const cardIndex = messages.findIndex((m) => m.id === activeActionCard.id);
+    if (cardIndex >= 0) {
+      flatListRef.current?.scrollToIndex({ index: cardIndex, animated: true, viewPosition: 0.5 });
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -100,18 +168,84 @@ const ChatScreen: React.FC = () => {
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerName}>{otherUserName || conversation?.other_user?.name}</Text>
-            <Text style={styles.headerJob}>{jobTitle || conversation?.job_title}</Text>
+            <Text style={styles.headerName} numberOfLines={1}>
+              {otherUserName || conversation?.other_user?.name}
+            </Text>
+            <Text style={styles.headerJob} numberOfLines={1}>
+              {jobTitle || conversation?.job_title}
+            </Text>
           </View>
-          {isLocked && (
-            <Ionicons
-              name="lock-closed"
-              size={20}
-              color={colors.inkMuted}
-              style={styles.lockIcon}
-            />
+          {isLocked ? (
+            <View style={styles.lockedPill}>
+              <Ionicons name="lock-closed" size={12} color={colors.inkMuted} />
+              <Text style={styles.lockedPillText}>Locked</Text>
+            </View>
+          ) : (
+            <View style={styles.activeDot} />
           )}
         </View>
+
+        {/* Minimalist Pinned Action Card */}
+        {pinnedDetails && activeActionCard && (
+          <View style={styles.pinnedWrapper}>
+            <TouchableOpacity
+              style={[styles.pinnedBar, { borderLeftColor: pinnedDetails.color }]}
+              activeOpacity={0.8}
+              onPress={() => setIsPinnedCardExpanded((prev) => !prev)}
+            >
+              <View style={[styles.pinnedIconBadge, { backgroundColor: pinnedDetails.bg }]}>
+                <Ionicons name={pinnedDetails.icon} size={15} color={pinnedDetails.color} />
+              </View>
+              <View style={styles.pinnedTextContainer}>
+                <View style={styles.pinnedLabelRow}>
+                  <Ionicons
+                    name="pin"
+                    size={11}
+                    color={colors.primary}
+                    style={{ marginRight: 3 }}
+                  />
+                  <Text style={styles.pinnedEyebrow}>PINNED ACTION</Text>
+                </View>
+                <Text style={styles.pinnedTitle} numberOfLines={1}>
+                  {pinnedDetails.label}
+                </Text>
+              </View>
+              <View style={styles.pinnedButtonsRow}>
+                <TouchableOpacity
+                  style={styles.jumpBtn}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleJumpToCard();
+                  }}
+                >
+                  <Text style={styles.jumpBtnText}>Jump</Text>
+                  <Ionicons name="arrow-down" size={12} color={colors.primary} />
+                </TouchableOpacity>
+                <Ionicons
+                  name={isPinnedCardExpanded ? 'chevron-up' : 'chevron-down'}
+                  size={16}
+                  color={colors.inkMuted}
+                />
+              </View>
+            </TouchableOpacity>
+
+            {/* Expandable Inline Card Drawer */}
+            {isPinnedCardExpanded && (
+              <View style={styles.pinnedDrawer}>
+                <ActionCard
+                  message={activeActionCard}
+                  currentUserId={user?.id || 0}
+                  currentUserRole={user?.role as 'worker' | 'employer'}
+                  conversationId={conversationId}
+                  onActionComplete={() => {
+                    refetch();
+                    setIsPinnedCardExpanded(false);
+                  }}
+                />
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Lock Banner */}
         {(isLocked || isUnlockRequested) && (
@@ -214,16 +348,116 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderBottomColor: colors.inkFaint,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  backBtn: { marginRight: 16 },
+  backBtn: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
   headerTitleContainer: { flex: 1 },
   headerName: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
-  headerJob: { fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted, marginTop: 2 },
-  lockIcon: { marginLeft: 8 },
+  headerJob: { fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted, marginTop: 1 },
+  lockedPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.paper,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
+  lockedPillText: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkMuted,
+  },
+  activeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.success,
+  },
+  pinnedWrapper: {
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.inkFaint,
+    zIndex: 10,
+  },
+  pinnedBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    backgroundColor: colors.paperBright,
+    borderLeftWidth: 3.5,
+  },
+  pinnedIconBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  pinnedTextContainer: {
+    flex: 1,
+  },
+  pinnedLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  pinnedEyebrow: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 9,
+    letterSpacing: 0.6,
+    color: colors.primary,
+    textTransform: 'uppercase',
+  },
+  pinnedTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.ink,
+    marginTop: 1,
+  },
+  pinnedButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  jumpBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: colors.primaryTint,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  jumpBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.primary,
+  },
+  pinnedDrawer: {
+    padding: 12,
+    backgroundColor: colors.paper,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+  },
   lockBanner: {
     flexDirection: 'row',
     alignItems: 'center',

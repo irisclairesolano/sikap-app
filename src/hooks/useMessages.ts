@@ -9,8 +9,8 @@ export function useMessages(conversationId: number) {
       messagesApi.getMessages(conversationId, pageParam as string | undefined),
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     initialPageParam: undefined as string | undefined,
-    refetchInterval: 8_000,
-    staleTime: 4_000,
+    refetchInterval: 3_000,
+    staleTime: 1_000,
     select: (data) => ({
       pages: data.pages,
       pageParams: data.pageParams,
@@ -27,7 +27,70 @@ export function useSendMessage(conversationId: number) {
 
   return useMutation({
     mutationFn: (body: string) => messagesApi.sendMessage(conversationId, body),
-    onSuccess: () => {
+    onMutate: async (newBody: string) => {
+      // Cancel outgoing refetches so they don't overwrite optimistic update
+      await queryClient.cancelQueries({ queryKey: ['messages', conversationId] });
+
+      // Snapshot the previous value
+      const previousMessages = queryClient.getQueryData(['messages', conversationId]);
+
+      // Get current logged-in user profile from query cache
+      const currentUser = queryClient.getQueryData<any>(['profile']);
+
+      const optimisticMessage: Message = {
+        id: -Date.now(),
+        conversation_id: conversationId,
+        sender_id: currentUser?.id ?? null,
+        body: newBody,
+        image_url: null,
+        message_type: 'text',
+        card_resolved: false,
+        created_at: new Date().toISOString(),
+        sender: currentUser
+          ? {
+              id: currentUser.id,
+              name: currentUser.name || 'You',
+              avatar_url: currentUser.avatar_url,
+            }
+          : null,
+      };
+
+      queryClient.setQueryData(['messages', conversationId], (old: any) => {
+        if (!old || !old.pages || old.pages.length === 0) {
+          return {
+            pageParams: [undefined],
+            pages: [
+              {
+                data: [optimisticMessage],
+                next_cursor: null,
+              },
+            ],
+          };
+        }
+
+        const newPages = [...old.pages];
+        const lastPageIndex = newPages.length - 1;
+        const lastPage = newPages[lastPageIndex];
+
+        newPages[lastPageIndex] = {
+          ...lastPage,
+          data: [...(lastPage.data || []), optimisticMessage],
+        };
+
+        return {
+          ...old,
+          pages: newPages,
+        };
+      });
+
+      return { previousMessages };
+    },
+    onError: (_err, _newBody, context) => {
+      if (context?.previousMessages) {
+        queryClient.setQueryData(['messages', conversationId], context.previousMessages);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
@@ -39,7 +102,7 @@ export function useSendImage(conversationId: number) {
 
   return useMutation({
     mutationFn: (imageUri: string) => messagesApi.sendImage(conversationId, imageUri),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
