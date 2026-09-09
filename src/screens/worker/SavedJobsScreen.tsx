@@ -45,6 +45,15 @@ export const SavedJobsScreen: React.FC = () => {
 
   const renderHeader = () => (
     <View style={styles.header}>
+      {navigation.canGoBack() && (
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+        </TouchableOpacity>
+      )}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Text style={styles.headline}>Saved Jobs</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingRight: 20 }}>
@@ -121,8 +130,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.paper,
   },
   header: {
-    paddingTop: 24,
+    paddingTop: 16,
     paddingBottom: 16,
+  },
+  backButton: {
+    paddingHorizontal: 20,
+    paddingBottom: 12,
   },
   headline: {
     fontFamily: fonts.display,

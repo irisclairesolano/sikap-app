@@ -377,10 +377,11 @@ export const EditProfileScreen: React.FC = () => {
                 mode="date"
                 display="default"
                 maximumDate={new Date()}
-                onChange={(event, selectedDate) => {
+                onValueChange={(_event, selectedDate) => {
                   setShowDatePicker(false);
                   if (selectedDate) setDateOfBirth(selectedDate);
                 }}
+                onDismiss={() => setShowDatePicker(false)}
               />
             )}
           </View>

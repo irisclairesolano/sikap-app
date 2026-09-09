@@ -82,7 +82,6 @@ export type WorkerTabParamList = {
   Find: undefined;
   Mine: undefined;
   Messages: undefined;
-  Saved: undefined;
   Notifications: undefined;
   Me: undefined;
 };
@@ -154,20 +153,11 @@ const FindStack: React.FC = () => {
       <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
       <Stack.Screen name="Report" component={ReportScreen} />
       <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
+      <Stack.Screen name="SavedJobs" component={SavedJobsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     </Stack.Navigator>
   );
 };
-
-// Saved Stack
-const SavedStack: React.FC = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="SavedJobs" component={SavedJobsScreen} />
-    <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
-    <Stack.Screen name="Apply" component={ApplyScreen} />
-    <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
-  </Stack.Navigator>
-);
 
 // Applications Stack
 const ApplicationsStack: React.FC = () => (
@@ -231,8 +221,6 @@ const WorkerNavigator: React.FC = () => {
             iconName = focused ? 'document-text' : 'document-text-outline';
           } else if (route.name === 'Messages') {
             iconName = focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline';
-          } else if (route.name === 'Saved') {
-            iconName = focused ? 'bookmark' : 'bookmark-outline';
           } else if (route.name === 'Notifications') {
             iconName = focused ? 'notifications' : 'notifications-outline';
           } else if (route.name === 'Me') {
@@ -276,15 +264,6 @@ const WorkerNavigator: React.FC = () => {
         listeners={({ navigation }) => ({
           tabPress: () => {
             (navigation as any).navigate('Messages', { screen: 'ConversationsList' });
-          },
-        })}
-      />
-      <Tab.Screen
-        name="Saved"
-        component={SavedStack}
-        listeners={({ navigation }) => ({
-          tabPress: () => {
-            (navigation as any).navigate('Saved', { screen: 'SavedJobs' });
           },
         })}
       />

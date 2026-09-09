@@ -891,10 +891,11 @@ export const PostJobScreen: React.FC = () => {
                   mode="date"
                   display="default"
                   minimumDate={new Date()}
-                  onChange={(event, selectedDate) => {
+                  onValueChange={(_event, selectedDate) => {
                     setShowDatePicker(false);
                     if (selectedDate) setScheduleDate(selectedDate);
                   }}
+                  onDismiss={() => setShowDatePicker(false)}
                 />
               )}
             </View>

@@ -159,14 +159,22 @@ export const JobFeedScreen: React.FC = () => {
             </Text>
           </View>
         </View>
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() =>
-            (navigation as any).navigate('Notifications', { screen: 'NotificationsList' })
-          }
-        >
-          <Ionicons name="notifications-outline" size={24} color={colors.ink} />
-        </TouchableOpacity>
+        <View style={styles.appBarRight}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => (navigation as any).navigate('SavedJobs')}
+          >
+            <Ionicons name="bookmark-outline" size={24} color={colors.ink} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() =>
+              (navigation as any).navigate('Notifications', { screen: 'NotificationsList' })
+            }
+          >
+            <Ionicons name="notifications-outline" size={24} color={colors.ink} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.searchRow}>
@@ -404,10 +412,15 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   iconButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'flex-end',
+    width: 36,
+    height: 36,
+    alignItems: 'center',
     justifyContent: 'center',
+  },
+  appBarRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   headline: {
     fontFamily: fonts.display,
