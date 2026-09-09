@@ -51,11 +51,15 @@ const asyncStoragePersister = createAsyncStoragePersister({
   storage: AsyncStorage,
 });
 
-persistQueryClient({
-  queryClient: queryClient as any,
-  persister: asyncStoragePersister,
-  maxAge: 1000 * 60 * 60 * 24, // 24 hours
-});
+try {
+  persistQueryClient({
+    queryClient: queryClient as any,
+    persister: asyncStoragePersister,
+    maxAge: 1000 * 60 * 60 * 24, // 24 hours
+  });
+} catch (e) {
+  console.warn('Failed to initialize query persister:', e);
+}
 
 const linking = {
   prefixes: [Linking.createURL('/'), 'sikap://'],

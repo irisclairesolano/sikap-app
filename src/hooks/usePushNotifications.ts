@@ -9,15 +9,19 @@ import { User } from '../types';
 import * as SecureStore from '../utils/storage';
 import { profileApi } from '../api/profile';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+} catch (e) {
+  console.warn('Failed to set notification handler:', e);
+}
 
 export interface PushNotificationState {
   expoPushToken?: Notifications.ExpoPushToken;
@@ -36,12 +40,16 @@ export const usePushNotifications = (): PushNotificationState => {
     let token;
 
     if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-      });
+      try {
+        await Notifications.setNotificationChannelAsync('default', {
+          name: 'default',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FF231F7C',
+        });
+      } catch (e) {
+        console.warn('Failed to set Android notification channel:', e);
+      }
     }
 
     if (Device.isDevice) {
