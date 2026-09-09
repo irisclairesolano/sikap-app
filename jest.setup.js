@@ -13,13 +13,17 @@ jest.mock('expo-video', () => {
   };
 });
 
-jest.mock('expo-av', () => {
-  const React = require('react');
-  return {
-    Video: (props) => React.createElement('View', props),
-    ResizeMode: { CONTAIN: 'contain' },
-  };
-});
+jest.mock(
+  'expo-av',
+  () => {
+    const React = require('react');
+    return {
+      Video: (props) => React.createElement('View', props),
+      ResizeMode: { CONTAIN: 'contain' },
+    };
+  },
+  { virtual: true },
+);
 
 jest.mock('expo-image', () => {
   const React = require('react');

@@ -160,7 +160,7 @@ class ErrorBoundary extends React.Component<
 }
 
 export default function App() {
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Raleway_700Bold: require('./assets/raleway/Raleway-Bold.ttf'),
     Raleway_900Black: require('./assets/raleway/Raleway-Heavy.ttf'),
     Raleway_700Bold_Italic: require('./assets/raleway/Raleway-Bold.ttf'),
@@ -174,7 +174,7 @@ export default function App() {
     Manrope_800ExtraBold,
   });
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded && !fontError) {
     return (
       <View
         style={{

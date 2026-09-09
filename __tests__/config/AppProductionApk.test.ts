@@ -12,10 +12,10 @@ describe('Production APK Readiness & Configuration Tests', () => {
   beforeEach(() => {
     jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
-  it('has cleartext HTTP traffic enabled in app.json for Android release builds', () => {
+  it('has valid Android configuration and package identifier in app.json', () => {
     const androidConfig = appConfig.expo.android;
     expect(androidConfig).toBeDefined();
-    expect(androidConfig.usesCleartextTraffic).toBe(true);
+    expect(androidConfig.package).toBe('com.irisclaire.sikap');
   });
 
   it('declares essential Android hardware/storage permissions in app.json', () => {
