@@ -77,7 +77,16 @@ const OTPVerifyScreen: React.FC = () => {
           queryClient.setQueryData(['profile'], response.user);
         }
         notifyAuthChanged();
-        navigation.navigate('IDUpload' as any, { userId: response.user_id, role } as any);
+
+        const userRole = response?.user?.role || role;
+        const regStatus = response?.registration_status || response?.user?.registration_status;
+
+        // Employers or already-approved users should not be forced to IDUpload
+        if (userRole === 'employer' || regStatus === 'approved') {
+          return;
+        }
+
+        navigation.navigate('IDUpload' as any, { userId: response.user_id, role: userRole } as any);
         return;
       }
       setBanner('OTP verified. Please log in to continue.');
