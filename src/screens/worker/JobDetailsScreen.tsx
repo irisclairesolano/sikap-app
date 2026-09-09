@@ -121,14 +121,18 @@ export const JobDetailsScreen: React.FC = () => {
               marginBottom: 20,
             }}
           >
-            This job post may have been closed, completed, or archived by the employer.
+            {error?.message ||
+              'This job post may have been closed, completed, or archived by the employer.'}
           </Text>
-          <Button
-            label="Back to Job Feed"
-            variant="primary"
-            size="base"
-            onPress={() => navigation.goBack()}
-          />
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <Button label="Retry" variant="outline" size="base" onPress={() => refetch()} />
+            <Button
+              label="Back to Job Feed"
+              variant="primary"
+              size="base"
+              onPress={() => navigation.goBack()}
+            />
+          </View>
         </View>
       </SafeAreaView>
     );
