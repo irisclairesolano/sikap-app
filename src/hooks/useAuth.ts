@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from '../utils/storage';
 import { authApi } from '../api/auth';
 import { profileApi } from '../api/profile';
-import { notifyAuthChanged } from '../store/authEvents';
+import { notifyAuthChanged, setGuestInitialRoute } from '../store/authEvents';
 import { LoginRequest, RegisterRequest, User } from '../types';
 
 export const useAuth = () => {
@@ -15,6 +15,7 @@ export const useAuth = () => {
       if (data.user && data.user.role !== 'worker' && data.user.role !== 'employer') {
         throw new Error('FUTURE_ROLE');
       }
+      setGuestInitialRoute('Login');
       await SecureStore.setItemAsync('auth_token', data.token);
       await SecureStore.setItemAsync('user_profile', JSON.stringify(data.user));
       queryClient.setQueryData(['profile'], data.user);
@@ -66,6 +67,7 @@ export const useAuth = () => {
 
       // Reset user data
       queryClient.setQueryData(['profile'], null);
+      setGuestInitialRoute('Login');
       notifyAuthChanged();
     } catch (error) {
       console.error('Logout error:', error);

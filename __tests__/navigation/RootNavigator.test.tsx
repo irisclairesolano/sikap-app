@@ -229,6 +229,33 @@ describe('RootNavigator', () => {
     );
   });
 
+  it('renders AuthNavigator with initialRouteName="PendingVerify" when employer status is rejected', async () => {
+    const mockUser = {
+      id: 888,
+      email: 'rejectedemployer@example.com',
+      role: 'employer',
+      registration_status: 'rejected',
+      verification_status: 'rejected',
+      rejection_reason: 'no ID uploaded',
+      has_employer_profile: true,
+    };
+
+    (useAuthCheck as jest.Mock).mockReturnValue({
+      user: mockUser,
+      isLoading: false,
+      isVerified: false,
+    });
+
+    await renderWithProviders(<RootNavigator />);
+
+    expect(AuthNavigator).toHaveBeenCalledWith(
+      expect.objectContaining({
+        initialRouteName: 'PendingVerify',
+      }),
+      undefined,
+    );
+  });
+
   it('allows unverified employers with onboarded profile to access main app without ID gating', async () => {
     const mockUser = {
       id: 555,

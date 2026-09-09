@@ -12,6 +12,7 @@ import EmployerNavigator from './EmployerNavigator';
 import WorkerNavigator from './WorkerNavigator';
 import RoleOnboardingScreen from '../screens/common/RoleOnboardingScreen';
 import { colors, fonts } from '../theme';
+import { getGuestInitialRoute } from '../store/authEvents';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -183,7 +184,8 @@ const RootNavigator: React.FC = () => {
   }
 
   if (!user) {
-    return <AuthNavigator key="guest" />;
+    const guestRoute = getGuestInitialRoute();
+    return <AuthNavigator key={`guest-${guestRoute}`} initialRouteName={guestRoute} />;
   }
 
   if (user.role === 'admin') {
@@ -206,7 +208,13 @@ const RootNavigator: React.FC = () => {
     );
   }
 
-  // 2. ID Upload & Review gating for Workers (Workers must upload government ID before working)
+  // 2. Rejection gating (Workers & Employers whose application was rejected)
+  const isRejected = status === 'rejected' || user.verification_status === 'rejected';
+  if (isRejected) {
+    return <AuthNavigator key={`rejected-${user.id}`} initialRouteName="PendingVerify" />;
+  }
+
+  // 3. ID Upload & Review gating for Workers (Workers must upload government ID before working)
   if (user.role === 'worker' && !isVerified) {
     let gateStart: keyof AuthStackParamList = 'PendingVerify';
     let params: any = undefined;
@@ -214,11 +222,7 @@ const RootNavigator: React.FC = () => {
     if (status === 'pending_id_upload' || (!status && !user.document_url)) {
       gateStart = 'IDUpload';
       params = { userId: user.id, role: user.role };
-    } else if (
-      status === 'pending_review' ||
-      status === 'rejected' ||
-      (!status && user.document_url)
-    ) {
+    } else if (status === 'pending_review' || (!status && user.document_url)) {
       gateStart = 'PendingVerify';
     }
 

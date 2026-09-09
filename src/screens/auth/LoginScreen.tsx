@@ -41,6 +41,14 @@ const LoginScreen: React.FC = () => {
     loginMutation.mutate(credentials, {
       onSuccess: (data) => {
         const status = data?.user?.registration_status;
+        const verificationStatus = data?.user?.verification_status;
+
+        if (status === 'rejected' || verificationStatus === 'rejected') {
+          navigation.navigate('PendingVerify');
+          setBanner('');
+          return;
+        }
+
         const navigateByStatus = (status: string) => {
           const user = data?.user;
           const role = (user?.role === 'admin' ? 'worker' : user?.role) || 'worker';
@@ -61,10 +69,7 @@ const LoginScreen: React.FC = () => {
               // notifyAuthChanged() will trigger AuthNavigator re-render and go to Dashboard
               break;
             case 'rejected':
-              // Instead of just showing banner, navigate to Welcome so they can register
-              // or navigate to PendingVerify if RootNavigator hasn't caught it yet
-              setBanner('Your previous application was rejected.');
-              navigation.navigate('Welcome');
+              navigation.navigate('PendingVerify');
               break;
             default:
               break;
@@ -85,8 +90,9 @@ const LoginScreen: React.FC = () => {
             err.metadata?.registration_status === 'rejected' ||
             err.message.includes('registration was rejected')
           ) {
-            setBanner('Your previous application was rejected. Please register again.');
-            navigation.navigate('Welcome');
+            setBanner(
+              'Your previous application was rejected. Please log in to re-upload your ID.',
+            );
             return;
           }
           setBanner(err.message === 'UNAUTHORIZED' ? 'Invalid credentials.' : err.message);

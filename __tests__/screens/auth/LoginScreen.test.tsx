@@ -90,7 +90,7 @@ describe('LoginScreen', () => {
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
-  it('triggers navigation to "Welcome" when login succeeds with a rejected status', async () => {
+  it('triggers navigation to "PendingVerify" when login succeeds with a rejected status', async () => {
     mockMutate.mockImplementation((credentials, options) => {
       if (options?.onSuccess) {
         options.onSuccess({
@@ -116,11 +116,11 @@ describe('LoginScreen', () => {
         { email: 'user@example.com', password: 'password123' },
         expect.any(Object),
       );
-      expect(mockNavigate).toHaveBeenCalledWith('Welcome');
+      expect(mockNavigate).toHaveBeenCalledWith('PendingVerify');
     });
   });
 
-  it('triggers navigation to "Welcome" when login fails with ApiClientError containing rejected status', async () => {
+  it('shows error banner when login fails with ApiClientError containing rejected status', async () => {
     mockMutate.mockImplementation((credentials, options) => {
       if (options?.onError) {
         const error = new ApiClientError('Your registration was rejected', 400, undefined, {
@@ -137,9 +137,8 @@ describe('LoginScreen', () => {
     await fireEvent.press(getByRole('button', { name: 'Sign in' }));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('Welcome');
       expect(
-        getByText('Your previous application was rejected. Please register again.'),
+        getByText('Your previous application was rejected. Please log in to re-upload your ID.'),
       ).toBeTruthy();
     });
   });

@@ -1,12 +1,13 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, AppState, Linking } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, AppState, ScrollView } from 'react-native';
 import * as SecureStore from '../../utils/storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 import Button from '../../components/common/Button';
 import { AuthStackParamList } from '../../navigation/authTypes';
-import { notifyAuthChanged } from '../../store/authEvents';
+import { notifyAuthChanged, setGuestInitialRoute } from '../../store/authEvents';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthCheck } from '../../hooks/useAuthCheck';
@@ -16,10 +17,13 @@ type NavProp = NativeStackNavigationProp<AuthStackParamList, 'PendingVerify'>;
 const PendingVerifyScreen: React.FC = () => {
   const navigation = useNavigation<NavProp>();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const appState = useRef(AppState.currentState);
   const { user } = useAuthCheck();
-  const isRejected = user?.registration_status === 'rejected';
+  const isRejected =
+    user?.registration_status === 'rejected' || user?.verification_status === 'rejected';
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
@@ -51,9 +55,28 @@ const PendingVerifyScreen: React.FC = () => {
   };
 
   const signOut = async () => {
-    await SecureStore.deleteItemAsync('auth_token').catch(() => {});
-    await SecureStore.deleteItemAsync('user_profile').catch(() => {});
-    notifyAuthChanged();
+    if (isSigningOut) return;
+    setIsSigningOut(true);
+    try {
+      setGuestInitialRoute('Login');
+      await SecureStore.deleteItemAsync('auth_token').catch(() => {});
+      await SecureStore.deleteItemAsync('user_profile').catch(() => {});
+      queryClient.clear();
+      queryClient.setQueryData(['profile'], null);
+      notifyAuthChanged();
+      try {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      } catch {
+        navigation.navigate('Login');
+      }
+    } catch (err) {
+      console.error('Sign out error:', err);
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   const handleContactUs = () => {
@@ -70,7 +93,11 @@ const PendingVerifyScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 24) }]}
+        showsVerticalScrollIndicator={false}
+      >
         <View
           style={[styles.iconWrapper, isRejected && { backgroundColor: colors.status.rejected.bg }]}
         >
@@ -104,11 +131,15 @@ const PendingVerifyScreen: React.FC = () => {
 
         <Text style={[styles.body, isRejected && { textAlign: 'left', fontSize: 14 }]}>
           {isRejected ? (
-            'The submitted ID could not be verified due to one or more of the following issues:\n\n' +
-            '• The image was blurry, cropped, or not fully visible.\n' +
-            '• The ID details did not match the information provided in your profile.\n' +
-            '• The document type is not supported or expired.\n\n' +
-            'Please re-submit a valid government-issued ID with clear, complete details. Ensure the photo is sharp, all corners are visible, and the document is current.'
+            user?.rejection_reason ? (
+              `Reason: ${user.rejection_reason}\n\nPlease re-submit a valid government-issued ID with clear, complete details. Ensure the photo is sharp, all corners are visible, and the document is current.`
+            ) : (
+              'The submitted ID could not be verified due to one or more of the following issues:\n\n' +
+              '• The image was blurry, cropped, or not fully visible.\n' +
+              '• The ID details did not match the information provided in your profile.\n' +
+              '• The document type is not supported or expired.\n\n' +
+              'Please re-submit a valid government-issued ID with clear, complete details. Ensure the photo is sharp, all corners are visible, and the document is current.'
+            )
           ) : (
             <>
               Our admin team is reviewing your{' '}
@@ -119,7 +150,24 @@ const PendingVerifyScreen: React.FC = () => {
         </Text>
 
         <View style={styles.footer}>
-          {!isRejected && (
+          {isRejected ? (
+            <>
+              <Button
+                label="Re-upload ID"
+                variant="primary"
+                fullWidth
+                size="lg"
+                disabled={isSigningOut}
+                onPress={() => {
+                  navigation.navigate('IDUpload', {
+                    userId: user?.id || 0,
+                    role: (user?.role as 'worker' | 'employer') || 'worker',
+                  });
+                }}
+              />
+              <View style={{ height: 12 }} />
+            </>
+          ) : (
             <>
               <Button
                 label={isRefreshing ? 'Checking...' : 'Refresh Status'}
@@ -127,16 +175,19 @@ const PendingVerifyScreen: React.FC = () => {
                 fullWidth
                 size="lg"
                 onPress={handleRefresh}
-                disabled={isRefreshing}
+                disabled={isRefreshing || isSigningOut}
               />
               <View style={{ height: 12 }} />
             </>
           )}
+
           <Button
-            label={isRejected ? 'Register Again' : 'Sign out'}
-            variant={isRejected ? 'primary' : 'soft'}
+            label="Sign out"
+            variant="soft"
             fullWidth
             size="lg"
+            loading={isSigningOut}
+            disabled={isSigningOut}
             onPress={signOut}
           />
           <View style={{ height: 12 }} />
@@ -145,10 +196,11 @@ const PendingVerifyScreen: React.FC = () => {
             variant="ghost"
             fullWidth
             size="lg"
+            disabled={isSigningOut}
             onPress={handleContactUs}
           />
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -171,12 +223,16 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
-  content: {
+  scroll: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     paddingHorizontal: 28,
     paddingBottom: 28,
     alignItems: 'center',
   },
+
   iconWrapper: {
     width: 96,
     height: 96,
