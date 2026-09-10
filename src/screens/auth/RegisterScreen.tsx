@@ -196,9 +196,11 @@ const RegisterScreen: React.FC = () => {
               <Input
                 label="Mobile Number"
                 value={value}
+                maxLength={11}
                 onChangeText={(text) => {
-                  onChange(text);
-                  const validation = validatePhone(text);
+                  const cleaned = text.replace(/[^0-9]/g, '').slice(0, 11);
+                  onChange(cleaned);
+                  const validation = validatePhone(cleaned);
                   setFieldStatus((prev) => ({ ...prev, phone: validation.status }));
                   setFieldStatusText((prev) => ({ ...prev, phone: validation.message }));
                 }}

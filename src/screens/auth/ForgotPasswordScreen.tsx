@@ -37,12 +37,12 @@ const ForgotPasswordScreen: React.FC = () => {
     setLoading(true);
     try {
       await authApi.forgotPassword(email);
-      // Even if user not found, we might want to navigate to OTP screen for security,
-      // but backend returns 404 for UX as per our implementation.
-      navigation.navigate('ResetOTPVerify', { email });
+      showAlert('Notice', `The email has been sent to ${email}`, [
+        { text: 'OK', onPress: () => navigation.navigate('ResetOTPVerify', { email }) },
+      ]);
     } catch (err: any) {
-      // If the backend returns 404, we can still show a generic message or the error.
-      showAlert('Notice', 'If an account exists with this email, an OTP has been sent.', [
+      // If the backend returns 404, we can still show a notice or the error.
+      showAlert('Notice', `The email has been sent to ${email}`, [
         { text: 'OK', onPress: () => navigation.navigate('ResetOTPVerify', { email }) },
       ]);
     } finally {

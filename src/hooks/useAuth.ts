@@ -19,7 +19,6 @@ export const useAuth = () => {
       await SecureStore.setItemAsync('auth_token', data.token);
       await SecureStore.setItemAsync('user_profile', JSON.stringify(data.user));
       queryClient.setQueryData(['profile'], data.user);
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
       notifyAuthChanged();
     },
     onError: (error) => {

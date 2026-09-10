@@ -173,7 +173,17 @@ export const NotificationsScreen: React.FC = () => {
                       {message}
                     </Text>
                     <Text style={styles.notificationTime}>
-                      {new Date(notif.created_at).toLocaleDateString()}
+                      {new Date(notif.created_at).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}{' '}
+                      •{' '}
+                      {new Date(notif.created_at).toLocaleTimeString(undefined, {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
                     </Text>
                   </View>
                 </TouchableOpacity>

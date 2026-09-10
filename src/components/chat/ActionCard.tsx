@@ -101,7 +101,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               handleAction('confirm', () =>
                 apiClient(`/applications/${String(card_data.application_id)}/confirm`, {
                   method: 'PATCH',
-                  body: JSON.stringify({ final_agreed_price: price }),
+                  body: JSON.stringify({ price, final_agreed_price: price }),
                 }),
               );
             }}

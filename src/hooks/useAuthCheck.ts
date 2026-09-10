@@ -78,7 +78,7 @@ export const useAuthCheck = () => {
 
   return {
     user: token ? user : null,
-    isLoading: isLoadingToken || (!!token && isLoadingProfile),
+    isLoading: isLoadingToken || (!!token && !user && isLoadingProfile),
     isVerified,
   };
 };

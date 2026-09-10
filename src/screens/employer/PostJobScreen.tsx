@@ -284,8 +284,10 @@ export const PostJobScreen: React.FC = () => {
         type: mimeType || 'video/mp4',
       } as any);
 
+      const apiUrl =
+        process.env.EXPO_PUBLIC_API_URL || 'https://sikap-backend-singapore.onrender.com/api/v1';
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', `${process.env.EXPO_PUBLIC_API_URL}/jobs/upload-video`);
+      xhr.open('POST', `${apiUrl}/jobs/upload-video`);
       xhr.setRequestHeader('Accept', 'application/json');
       if (token) {
         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
@@ -348,8 +350,10 @@ export const PostJobScreen: React.FC = () => {
         type: 'image/jpeg',
       } as any);
 
+      const apiUrl =
+        process.env.EXPO_PUBLIC_API_URL || 'https://sikap-backend-singapore.onrender.com/api/v1';
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', `${process.env.EXPO_PUBLIC_API_URL}/jobs/upload-photo`);
+      xhr.open('POST', `${apiUrl}/jobs/upload-photo`);
       xhr.setRequestHeader('Accept', 'application/json');
       if (token) {
         xhr.setRequestHeader('Authorization', `Bearer ${token}`);

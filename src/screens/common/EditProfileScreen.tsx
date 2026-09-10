@@ -42,9 +42,26 @@ export const EditProfileScreen: React.FC = () => {
     user?.worker_profile?.bio || user?.employer_profile?.description || '',
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [existingBusinessDocs, setExistingBusinessDocs] = useState<string[]>(
+    user?.business_documents || [],
+  );
   const [selectedBusinessDocs, setSelectedBusinessDocs] = useState<any[]>([]);
 
+  React.useEffect(() => {
+    if (user?.business_documents) {
+      setExistingBusinessDocs(user.business_documents);
+    }
+  }, [user?.business_documents]);
+
   const handlePickBusinessDocs = async () => {
+    const remainingSlots = 3 - existingBusinessDocs.length;
+    if (remainingSlots <= 0) {
+      showAlert(
+        'Limit Reached',
+        'You can only have up to 3 business documents. Please delete an existing document first.',
+      );
+      return;
+    }
     try {
       const pick = await DocumentPicker.getDocumentAsync({
         type: ['image/*', 'application/pdf'],
@@ -53,8 +70,11 @@ export const EditProfileScreen: React.FC = () => {
       });
 
       if (!pick.canceled && pick.assets) {
-        if (pick.assets.length > 3) {
-          showAlert('Too Many Files', 'You can only upload up to 3 business documents.');
+        if (pick.assets.length > remainingSlots) {
+          showAlert(
+            'Too Many Files',
+            `You can only add ${remainingSlots} more document(s) (maximum 3 total).`,
+          );
           return;
         }
 
@@ -215,6 +235,10 @@ export const EditProfileScreen: React.FC = () => {
           formData.append('name', name);
         }
 
+        if (user?.role === 'employer') {
+          formData.append('existing_business_documents', JSON.stringify(existingBusinessDocs));
+        }
+
         selectedBusinessDocs.forEach((doc, idx) => {
           const fileName = doc.name || `business-doc-${idx}.pdf`;
           const ext = fileName.split('.').pop()?.toLowerCase();
@@ -242,6 +266,10 @@ export const EditProfileScreen: React.FC = () => {
           bio: user?.role === 'worker' ? bio : undefined,
           description: user?.role === 'employer' ? bio : undefined,
         };
+
+        if (user?.role === 'employer') {
+          updateData.existing_business_documents = existingBusinessDocs;
+        }
 
         if (!isVerified && name) {
           updateData.name = name;
@@ -443,7 +471,7 @@ export const EditProfileScreen: React.FC = () => {
             <View style={styles.formGroup}>
               <Text style={styles.label}>Business Permit / Documents</Text>
 
-              {user.business_documents && user.business_documents.length > 0 && (
+              {existingBusinessDocs && existingBusinessDocs.length > 0 && (
                 <View style={{ marginBottom: 12, gap: 8 }}>
                   <Text
                     style={{
@@ -453,22 +481,13 @@ export const EditProfileScreen: React.FC = () => {
                       textTransform: 'uppercase',
                     }}
                   >
-                    Current Documents:
+                    Current Documents ({existingBusinessDocs.length}/3):
                   </Text>
-                  {user.business_documents.map((docUrl: string, idx: number) => {
+                  {existingBusinessDocs.map((docUrl: string, idx: number) => {
                     const docName = docUrl.split('/').pop()?.split('?')[0] || `document_${idx + 1}`;
                     return (
-                      <TouchableOpacity
+                      <View
                         key={idx}
-                        activeOpacity={0.7}
-                        onPress={() => {
-                          if (docUrl) {
-                            Linking.openURL(docUrl).catch((err) => {
-                              console.error('Failed to open document URL:', err);
-                              showAlert('Error', 'Could not open document.');
-                            });
-                          }
-                        }}
                         style={{
                           flexDirection: 'row',
                           alignItems: 'center',
@@ -492,19 +511,57 @@ export const EditProfileScreen: React.FC = () => {
                         >
                           {docName}
                         </Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                          <Text
-                            style={{
-                              fontFamily: fonts.bodyBold,
-                              fontSize: 11,
-                              color: colors.primary,
-                            }}
-                          >
-                            View / Download
-                          </Text>
-                          <Ionicons name="open-outline" size={14} color={colors.primary} />
-                        </View>
-                      </TouchableOpacity>
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => {
+                            if (docUrl) {
+                              Linking.openURL(docUrl).catch((err) => {
+                                console.error('Failed to open document URL:', err);
+                                showAlert('Error', 'Could not open document.');
+                              });
+                            }
+                          }}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 4,
+                            paddingHorizontal: 6,
+                            paddingVertical: 4,
+                          }}
+                        >
+                          <Ionicons name="open-outline" size={16} color={colors.primary} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => {
+                            showAlert(
+                              'Delete Document',
+                              'Are you sure you want to remove this business document? Click Save Profile to apply.',
+                              [
+                                { text: 'Cancel', style: 'cancel' },
+                                {
+                                  text: 'Delete',
+                                  style: 'destructive',
+                                  onPress: () => {
+                                    setExistingBusinessDocs((prev) =>
+                                      prev.filter((_, i) => i !== idx),
+                                    );
+                                  },
+                                },
+                              ],
+                            );
+                          }}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 4,
+                            paddingHorizontal: 6,
+                            paddingVertical: 4,
+                          }}
+                        >
+                          <Ionicons name="trash-outline" size={16} color="#DC2626" />
+                        </TouchableOpacity>
+                      </View>
                     );
                   })}
                 </View>
