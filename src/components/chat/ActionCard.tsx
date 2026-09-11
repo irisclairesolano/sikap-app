@@ -12,6 +12,7 @@ import { Message } from '../../types';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { apiClient } from '../../api/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ActionCardProps {
   message: Message;
@@ -27,6 +28,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
   conversationId,
   onActionComplete,
 }) => {
+  const queryClient = useQueryClient();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [priceInput, setPriceInput] = useState('');
   const [showPhone, setShowPhone] = useState(false);
@@ -46,17 +48,26 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
     return (
       <View style={styles.resolvedCard}>
-        <Text style={styles.resolvedText}>✅ {title} — Done</Text>
+        <Text style={styles.resolvedText}>{title} — Done</Text>
       </View>
     );
   }
 
   if (!card_data) return null;
 
-  const handleAction = async (actionId: string, apiCall: () => Promise<any>) => {
+  const handleAction = async (
+    actionId: string,
+    apiCall: () => Promise<any>,
+    invalidateKeys?: unknown[][],
+  ) => {
     setLoadingAction(actionId);
     try {
       await apiCall();
+      if (invalidateKeys) {
+        for (const key of invalidateKeys) {
+          queryClient.invalidateQueries({ queryKey: key });
+        }
+      }
       onActionComplete();
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Action failed.');
@@ -98,11 +109,18 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 Alert.alert('Invalid Price', 'Please enter a valid price.');
                 return;
               }
-              handleAction('confirm', () =>
-                apiClient(`/applications/${String(card_data.application_id)}/confirm`, {
-                  method: 'PATCH',
-                  body: JSON.stringify({ price, final_agreed_price: price }),
-                }),
+              handleAction(
+                'confirm',
+                () =>
+                  apiClient(`/applications/${String(card_data.application_id)}/confirm`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ price, final_agreed_price: price }),
+                  }),
+                [
+                  ['application', Number(card_data.application_id)],
+                  ['applications'],
+                  ['conversations'],
+                ],
               );
             }}
             disabled={!!loadingAction}
@@ -110,7 +128,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             {loadingAction === 'confirm' ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.primaryButtonText}>Confirm Hire →</Text>
+              <Text style={styles.primaryButtonText}>Confirm</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -139,10 +157,17 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <TouchableOpacity
               style={[styles.actionBtn, { backgroundColor: colors.success }]}
               onPress={() =>
-                handleAction('accept', () =>
-                  apiClient(`/applications/${String(card_data.application_id)}/accept`, {
-                    method: 'PATCH',
-                  }),
+                handleAction(
+                  'accept',
+                  () =>
+                    apiClient(`/applications/${String(card_data.application_id)}/accept`, {
+                      method: 'PATCH',
+                    }),
+                  [
+                    ['application', Number(card_data.application_id)],
+                    ['applications'],
+                    ['conversations'],
+                  ],
                 )
               }
               disabled={!!loadingAction}
@@ -150,16 +175,23 @@ const ActionCard: React.FC<ActionCardProps> = ({
               {loadingAction === 'accept' ? (
                 <ActivityIndicator color={colors.white} />
               ) : (
-                <Text style={styles.actionBtnText}>✓ Accept Offer</Text>
+                <Text style={styles.actionBtnText}>Accept</Text>
               )}
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionBtn, { backgroundColor: colors.error }]}
               onPress={() =>
-                handleAction('reject', () =>
-                  apiClient(`/applications/${String(card_data.application_id)}/reject`, {
-                    method: 'PATCH',
-                  }),
+                handleAction(
+                  'reject',
+                  () =>
+                    apiClient(`/applications/${String(card_data.application_id)}/reject`, {
+                      method: 'PATCH',
+                    }),
+                  [
+                    ['application', Number(card_data.application_id)],
+                    ['applications'],
+                    ['conversations'],
+                  ],
                 )
               }
               disabled={!!loadingAction}
@@ -167,7 +199,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               {loadingAction === 'reject' ? (
                 <ActivityIndicator color={colors.white} />
               ) : (
-                <Text style={styles.actionBtnText}>✗ Reject Offer</Text>
+                <Text style={styles.actionBtnText}>Reject</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -196,10 +228,17 @@ const ActionCard: React.FC<ActionCardProps> = ({
                   text: 'Yes',
                   style: 'destructive',
                   onPress: () =>
-                    handleAction('cancel', () =>
-                      apiClient(`/applications/${String(card_data.application_id)}/cancel-hire`, {
-                        method: 'PATCH',
-                      }),
+                    handleAction(
+                      'cancel',
+                      () =>
+                        apiClient(`/applications/${String(card_data.application_id)}/cancel-hire`, {
+                          method: 'PATCH',
+                        }),
+                      [
+                        ['application', Number(card_data.application_id)],
+                        ['applications'],
+                        ['conversations'],
+                      ],
                     ),
                 },
               ]);
@@ -303,7 +342,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             {loadingAction === 'complete' ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.primaryButtonText}>Mark as Complete ✓</Text>
+              <Text style={styles.primaryButtonText}>Mark Complete</Text>
             )}
           </TouchableOpacity>
         </View>

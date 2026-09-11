@@ -242,7 +242,7 @@ export const JobFeedScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <FlatList
         data={isLoading ? [1, 2, 3] : isError ? [] : jobsList}
         keyExtractor={(item, index) =>

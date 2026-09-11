@@ -15,7 +15,7 @@ type AcceptHireScreenNavigationProp = NativeStackNavigationProp<WorkerStackParam
 const AcceptHireScreen: React.FC = () => {
   const route = useRoute<AcceptHireScreenRouteProp>();
   const navigation = useNavigation<AcceptHireScreenNavigationProp>();
-  const { id, employerName, jobTitle, offeredPrice } = route.params;
+  const { id, employerName, jobTitle, offeredPrice, conversationId } = route.params;
 
   const acceptOfferMutation = useAcceptOffer();
   const rejectOfferMutation = useRejectOffer();
@@ -26,8 +26,23 @@ const AcceptHireScreen: React.FC = () => {
       onSuccess: () => {
         showAlert(
           'Offer Accepted!',
-          `You have accepted the offer for ${jobTitle}. You can now view ${employerName}'s contact details.`,
-          [{ text: 'OK', onPress: () => navigation.popToTop() }],
+          `You have accepted the offer for ${jobTitle}. Open the chat to coordinate job details.`,
+          [
+            {
+              text: 'Go to Chat',
+              onPress: () => {
+                if (conversationId) {
+                  navigation.navigate('Chat' as any, {
+                    conversationId,
+                    jobTitle,
+                    otherUserName: employerName,
+                  });
+                } else {
+                  navigation.goBack();
+                }
+              },
+            },
+          ],
         );
       },
       onError: (err: any) => {
@@ -40,7 +55,7 @@ const AcceptHireScreen: React.FC = () => {
     rejectOfferMutation.mutate(id, {
       onSuccess: () => {
         showAlert('Offer Declined', `You have declined the offer for ${jobTitle}.`, [
-          { text: 'OK', onPress: () => navigation.popToTop() },
+          { text: 'OK', onPress: () => navigation.goBack() },
         ]);
       },
       onError: (err: any) => {

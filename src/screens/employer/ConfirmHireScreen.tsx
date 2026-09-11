@@ -28,7 +28,15 @@ type ConfirmHireScreenNavigationProp = NativeStackNavigationProp<
 const ConfirmHireScreen: React.FC = () => {
   const route = useRoute<ConfirmHireScreenRouteProp>();
   const navigation = useNavigation<ConfirmHireScreenNavigationProp>();
-  const { applicantId, applicantName, jobTitle } = route.params;
+  const {
+    applicantId,
+    applicantName,
+    jobTitle,
+    barangay,
+    municipality,
+    reputationScore,
+    conversationId,
+  } = route.params;
 
   const [price, setPrice] = useState<string>('');
   const confirmHireMutation = useConfirmHire();
@@ -40,11 +48,27 @@ const ConfirmHireScreen: React.FC = () => {
     confirmHireMutation.mutate(
       { id: applicantId, price: numPrice },
       {
-        onSuccess: () => {
+        onSuccess: (data: any) => {
+          const convId = data?.conversation_id || conversationId;
           showAlert(
             'Hire Confirmed!',
-            `${applicantName} has been hired for ${jobTitle}. You can now view their contact details.`,
-            [{ text: 'OK', onPress: () => navigation.popToTop() }],
+            `${applicantName} has been hired for ${jobTitle}. Open the chat to coordinate job details.`,
+            [
+              {
+                text: 'Go to Chat',
+                onPress: () => {
+                  if (convId) {
+                    navigation.navigate('Chat' as any, {
+                      conversationId: convId,
+                      jobTitle,
+                      otherUserName: applicantName,
+                    });
+                  } else {
+                    navigation.goBack();
+                  }
+                },
+              },
+            ],
           );
         },
         onError: (err: any) => {
@@ -114,7 +138,10 @@ const ConfirmHireScreen: React.FC = () => {
                   <Ionicons name="checkmark-circle" size={12} color="white" />
                 </View>
               </View>
-              <Text style={styles.applicantStats}>San Rafael • 4.8 • 12 hires</Text>
+              <Text style={styles.applicantStats}>
+                {[barangay, municipality].filter(Boolean).join(', ') || 'Local Worker'}
+                {reputationScore != null ? ` • ${Number(reputationScore).toFixed(1)} ★` : ''}
+              </Text>
             </View>
           </View>
 

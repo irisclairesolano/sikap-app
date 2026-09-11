@@ -29,7 +29,7 @@ const CancelHireScreen: React.FC = () => {
         showAlert(
           'Hire Cancelled',
           `You have successfully cancelled the hire for ${applicantName}.`,
-          [{ text: 'OK', onPress: () => navigation.popToTop() }],
+          [{ text: 'OK', onPress: () => navigation.goBack() }],
         );
       },
       onError: (err: any) => {

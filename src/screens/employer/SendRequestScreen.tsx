@@ -29,7 +29,7 @@ const SendRequestScreen: React.FC = () => {
         showAlert(
           'Request Sent!',
           `You have sent a job request to ${applicantName}. Their references will now be visible to you.`,
-          [{ text: 'OK', onPress: () => navigation.popToTop() }],
+          [{ text: 'OK', onPress: () => navigation.goBack() }],
         );
       },
       onError: (err: any) => {

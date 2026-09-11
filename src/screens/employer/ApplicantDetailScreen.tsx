@@ -86,7 +86,7 @@ const ApplicantDetailScreen: React.FC = () => {
         });
       }
     } catch {
-      // handle silently
+      Alert.alert('Error', "Couldn't open chat. Please check your connection and try again.");
     }
   };
 
@@ -181,6 +181,10 @@ const ApplicantDetailScreen: React.FC = () => {
       applicantId,
       applicantName: applicantName || 'Applicant',
       jobTitle: jobTitle || 'Job',
+      barangay,
+      municipality,
+      reputationScore,
+      conversationId: appData?.conversation_id,
     });
   };
 
@@ -858,12 +862,11 @@ const ApplicantDetailScreen: React.FC = () => {
         {status === 'pending' && (
           <View style={{ gap: 6 }}>
             <Button
-              label="Shortlist applicant"
+              label="Shortlist"
               variant="primary"
               size="lg"
               fullWidth
               onPress={navigateToSendRequest}
-              icon="star"
             />
             <Text
               style={{
@@ -881,15 +884,14 @@ const ApplicantDetailScreen: React.FC = () => {
         {status === 'pending_negotiation' && (
           <View style={{ gap: 6 }}>
             <Button
-              label="Proceed to Confirm Hire"
+              label="Confirm"
               variant="primary"
               size="lg"
               fullWidth
-              icon="arrow-forward"
               onPress={navigateToConfirmHire}
             />
             <Button
-              label="Cancel Hire"
+              label="Cancel"
               variant="ghost"
               size="base"
               fullWidth
@@ -900,23 +902,15 @@ const ApplicantDetailScreen: React.FC = () => {
         {status === 'employer_confirmed' && (
           <View style={{ gap: 6 }}>
             <Button label="Waiting for worker..." variant="outline" size="lg" fullWidth disabled />
-            <Button
-              label="Cancel Hire"
-              variant="ghost"
-              size="base"
-              fullWidth
-              onPress={navigateToCancelHire}
-            />
           </View>
         )}
         {status === 'accepted' && (
           <View style={{ gap: 12 }}>
             <Button
-              label="Mark Job as Completed"
+              label="Mark Complete"
               variant="primary"
               size="lg"
               fullWidth
-              icon="checkmark-circle-outline"
               onPress={() => {
                 const jobId = appData?.job?.id || (appData as any)?.job_id;
                 if (jobId) {
@@ -933,22 +927,14 @@ const ApplicantDetailScreen: React.FC = () => {
                 }
               }}
             />
-            <Button
-              label="Cancel Hire"
-              variant="ghost"
-              size="base"
-              fullWidth
-              onPress={navigateToCancelHire}
-            />
           </View>
         )}
         {status === 'completed' && (
           <Button
-            label="Rate Worker"
+            label="Rate"
             variant="primary"
             size="lg"
             fullWidth
-            icon="star"
             onPress={() =>
               navigation.navigate('RateWorker', {
                 id: applicantId,

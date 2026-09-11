@@ -73,7 +73,7 @@ export const EmployerDashboardScreen: React.FC = () => {
 
   if (loading && !jobsResponse) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <DashboardSkeleton />
       </SafeAreaView>
     );
@@ -207,7 +207,7 @@ export const EmployerDashboardScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.appBar}>
         <View style={styles.appBarLeft}>
           <View style={styles.avatar}>

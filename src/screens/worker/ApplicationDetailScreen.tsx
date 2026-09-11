@@ -75,7 +75,7 @@ const ApplicationDetailScreen: React.FC = () => {
         });
       }
     } catch {
-      // handle silently
+      showAlert('Error', "Couldn't open chat. Please check your connection and try again.");
     }
   };
 
@@ -539,6 +539,7 @@ const ApplicationDetailScreen: React.FC = () => {
                 jobTitle: jobTitle || 'Job',
                 employerName: employerName || 'Employer',
                 offeredPrice: compensation ? String(compensation) : undefined,
+                conversationId: appData?.conversation_id,
               })
             }
           />

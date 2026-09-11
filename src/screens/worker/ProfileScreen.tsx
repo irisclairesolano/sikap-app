@@ -41,7 +41,10 @@ export const ProfileScreen: React.FC = () => {
 
   if (isLoading || !user) {
     return (
-      <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+      <SafeAreaView
+        style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}
+        edges={['top', 'left', 'right']}
+      >
         <Text style={{ fontFamily: fonts.body, color: colors.inkMuted }}>Loading profile...</Text>
       </SafeAreaView>
     );
@@ -86,7 +89,7 @@ export const ProfileScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <View style={styles.iconBtn} />
         <View style={styles.headerPill}>

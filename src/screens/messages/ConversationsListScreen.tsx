@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { useConversations } from '../../hooks/useConversations';
 import { colors, fonts } from '../../theme';
@@ -18,9 +19,21 @@ interface Props {
   navigation: any;
 }
 
-const formatTime = (dateString: string) => {
+const formatConversationTime = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  } else if (diffDays === 1) {
+    return 'Yesterday';
+  } else if (diffDays < 7) {
+    return date.toLocaleDateString([], { weekday: 'short' });
+  } else {
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  }
 };
 
 const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
@@ -111,7 +124,14 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                 }
               >
                 <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>{item.other_user?.name?.charAt(0) || '?'}</Text>
+                  {item.other_user?.avatar_url ? (
+                    <Image
+                      source={{ uri: item.other_user.avatar_url }}
+                      style={styles.avatarImage}
+                    />
+                  ) : (
+                    <Text style={styles.avatarText}>{item.other_user?.name?.charAt(0) || '?'}</Text>
+                  )}
                 </View>
                 <View style={styles.middle}>
                   <View style={styles.nameRow}>
@@ -119,7 +139,9 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                       {item.other_user?.name || 'Unknown'}
                     </Text>
                     {item.last_message_at && (
-                      <Text style={styles.time}>{formatTime(item.last_message_at)}</Text>
+                      <Text style={styles.time}>
+                        {formatConversationTime(item.last_message_at)}
+                      </Text>
                     )}
                   </View>
                   <View style={styles.jobBadge}>
@@ -270,6 +292,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.inkFaint,
+  },
+  avatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   avatarText: {
     color: colors.primary,

@@ -43,7 +43,10 @@ export const ProfileScreen: React.FC = () => {
 
   if (isLoading || (!user && !authUser)) {
     return (
-      <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+      <SafeAreaView
+        style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}
+        edges={['top', 'left', 'right']}
+      >
         <LoadingSpinner />
       </SafeAreaView>
     );
@@ -91,7 +94,7 @@ export const ProfileScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('EditProfile')}>
           <Ionicons name="create-outline" size={22} color={colors.ink} />

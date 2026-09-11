@@ -53,7 +53,15 @@ export type EmployerStackParamList = {
     emergencyContactPhone?: string;
   };
   SendRequest: { id: number; applicantName: string; jobTitle: string };
-  ConfirmHire: { applicantId: number; applicantName: string; jobTitle: string };
+  ConfirmHire: {
+    applicantId: number;
+    applicantName: string;
+    jobTitle: string;
+    barangay?: string;
+    municipality?: string;
+    reputationScore?: number;
+    conversationId?: number;
+  };
   CancelHire: { id: number; applicantName: string; jobTitle: string };
   MarkComplete: { id: number; jobTitle: string };
   RateWorkerList: { jobId: number; jobTitle: string };

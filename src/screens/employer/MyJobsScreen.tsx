@@ -189,7 +189,7 @@ export const MyJobsScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <View style={styles.iconBtn} />
         <View style={styles.headerPill}>

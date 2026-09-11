@@ -163,7 +163,10 @@ export const JobStatusManagementScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+      <SafeAreaView
+        style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}
+        edges={['top', 'left', 'right']}
+      >
         <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
@@ -171,7 +174,7 @@ export const JobStatusManagementScreen: React.FC = () => {
 
   if (isError || !job) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
@@ -259,7 +262,7 @@ export const JobStatusManagementScreen: React.FC = () => {
   const statusConfig = getStatusConfig(job.status);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />

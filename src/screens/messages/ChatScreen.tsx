@@ -57,15 +57,26 @@ const ChatScreen: React.FC = () => {
   const isLocked = status === 'locked';
   const isUnlockRequested = status === 'unlock_requested';
 
+  const messages = data?.messages || [];
+  const messageCount = messages.length;
+
   useEffect(() => {
-    markRead.mutate();
-  }, []);
+    if (messageCount > 0) {
+      markRead.mutate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messageCount]);
 
   const handleSendText = () => {
-    if (!inputText.trim() || sendMessage.isPending) return;
-    sendMessage.mutate(inputText.trim(), {
+    const textToSend = inputText.trim();
+    if (!textToSend) return;
+    setInputText('');
+    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
+    sendMessage.mutate(textToSend, {
+      onError: () => {
+        setInputText(textToSend);
+      },
       onSuccess: () => {
-        setInputText('');
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
       },
     });
@@ -86,12 +97,26 @@ const ChatScreen: React.FC = () => {
     }
   };
 
-  const messages = data?.messages || [];
+  // Cards that each role should see pinned
+  const EMPLOYER_CARD_TYPES = ['confirm_hire', 'cancel_hire', 'mark_complete', 'unlock_request'];
+  const WORKER_CARD_TYPES = [
+    'accept_or_reject',
+    'flag_offline',
+    'unlock_request',
+    'employer_contact_reveal',
+  ];
+  const relevantCardTypes = user?.role === 'employer' ? EMPLOYER_CARD_TYPES : WORKER_CARD_TYPES;
 
-  // Find latest unresolved action card (if any)
+  // Find latest unresolved action card relevant to current user role
   const activeActionCard = [...messages]
     .reverse()
-    .find((m) => m.message_type === 'action_card' && !m.card_resolved);
+    .find(
+      (m) =>
+        m.message_type === 'action_card' &&
+        !m.card_resolved &&
+        m.card_type != null &&
+        relevantCardTypes.includes(m.card_type),
+    );
 
   const [isPinnedCardExpanded, setIsPinnedCardExpanded] = useState(false);
 
@@ -250,7 +275,11 @@ const ChatScreen: React.FC = () => {
         {/* Lock Banner */}
         {(isLocked || isUnlockRequested) && (
           <View style={styles.lockBanner}>
-            <Text style={styles.lockBannerText}>This conversation is archived.</Text>
+            <Text style={styles.lockBannerText}>
+              {isUnlockRequested
+                ? 'Reopen request pending employer approval.'
+                : 'This chat was locked when the job concluded.'}
+            </Text>
             {user?.role === 'employer' ? (
               <TouchableOpacity
                 style={styles.bannerBtn}
@@ -307,10 +336,27 @@ const ChatScreen: React.FC = () => {
           }}
         />
 
+        {/* First-message restriction notice for workers */}
+        {status === 'open' &&
+          user?.role === 'worker' &&
+          messages.filter(
+            (m) =>
+              m.message_type !== 'action_card' &&
+              m.message_type !== 'system' &&
+              m.sender_id !== null,
+          ).length === 0 && (
+            <View style={styles.firstMsgNotice}>
+              <Ionicons name="information-circle-outline" size={14} color={colors.inkMuted} />
+              <Text style={styles.firstMsgNoticeText}>
+                The employer will send the first message to start the conversation.
+              </Text>
+            </View>
+          )}
+
         {/* Input Bar */}
         {status === 'open' && (
-          <SafeAreaView edges={['bottom']} style={styles.inputContainer}>
-            <TouchableOpacity onPress={handlePickImage} style={styles.iconBtn}>
+          <View style={styles.inputContainer}>
+            <TouchableOpacity onPress={handlePickImage} style={styles.iconBtn} activeOpacity={0.6}>
               <Ionicons name="image-outline" size={24} color={colors.inkMuted} />
             </TouchableOpacity>
             <TextInput
@@ -322,20 +368,24 @@ const ChatScreen: React.FC = () => {
               multiline
               maxLength={1000}
             />
+            {inputText.length > 800 && (
+              <Text style={[styles.charCounter, inputText.length > 950 && { color: colors.error }]}>
+                {inputText.length}/1000
+              </Text>
+            )}
             <TouchableOpacity
               onPress={handleSendText}
               style={styles.iconBtn}
-              disabled={!inputText.trim() || sendMessage.isPending}
+              activeOpacity={0.6}
+              disabled={!inputText.trim()}
             >
               <Ionicons
                 name="send"
                 size={24}
-                color={
-                  inputText.trim() && !sendMessage.isPending ? colors.primary : colors.inkLight
-                }
+                color={inputText.trim() ? colors.primary : colors.inkLight}
               />
             </TouchableOpacity>
-          </SafeAreaView>
+          </View>
         )}
       </SafeAreaView>
     </KeyboardAvoidingView>
@@ -510,6 +560,30 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14,
     color: colors.ink,
+  },
+  firstMsgNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.paper,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+  },
+  firstMsgNoticeText: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkMuted,
+    flex: 1,
+    lineHeight: 16,
+  },
+  charCounter: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    color: colors.inkMuted,
+    alignSelf: 'center',
+    paddingHorizontal: 4,
   },
 });
 

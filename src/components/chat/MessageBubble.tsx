@@ -60,7 +60,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage }) 
       </View>
       <View style={[styles.footer, isOwnMessage ? styles.ownFooter : styles.otherFooter]}>
         <Text style={styles.timestamp}>{formatTime(message.created_at)}</Text>
-        {isOwnMessage && <Text style={styles.receipt}>{message.read_at ? '✓✓' : '✓'}</Text>}
+        {isOwnMessage && (
+          <Text style={[styles.receipt, message.read_at ? styles.receiptRead : null]}>
+            {message.read_at ? '✓✓' : '✓'}
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -156,6 +160,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 10,
     color: colors.inkLight,
+  },
+  receiptRead: {
+    color: '#3B82F6',
   },
 });
 

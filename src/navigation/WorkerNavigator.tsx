@@ -61,7 +61,13 @@ export type WorkerStackParamList = {
     status?: string;
     compensation?: string;
   };
-  AcceptHire: { id: number; jobTitle: string; employerName: string; offeredPrice?: string };
+  AcceptHire: {
+    id: number;
+    jobTitle: string;
+    employerName: string;
+    offeredPrice?: string;
+    conversationId?: number;
+  };
   HireReceipt: { id: number };
   RateEmployer: { id: number; employerName: string; jobTitle: string };
   Report: { id: number };

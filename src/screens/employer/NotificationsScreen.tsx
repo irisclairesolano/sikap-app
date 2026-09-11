@@ -39,7 +39,10 @@ export const NotificationsScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+      <SafeAreaView
+        style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}
+        edges={['top', 'left', 'right']}
+      >
         <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
@@ -49,7 +52,7 @@ export const NotificationsScreen: React.FC = () => {
   const hasUnread = notifications.some((n) => n.read_at === null);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
