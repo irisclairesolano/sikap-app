@@ -22,6 +22,12 @@ interface ActionCardProps {
   onActionComplete: () => void;
 }
 
+const formatCurrency = (val: unknown) => {
+  const num = typeof val === 'number' ? val : parseFloat(String(val ?? '0'));
+  if (isNaN(num)) return '₱0.00';
+  return `₱${num.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
 const ActionCard: React.FC<ActionCardProps> = ({
   message,
   currentUserRole,
@@ -48,6 +54,12 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
     return (
       <View style={styles.resolvedCard}>
+        <Ionicons
+          name="checkmark-circle"
+          size={15}
+          color={colors.mintDeep}
+          style={{ marginRight: 6 }}
+        />
         <Text style={styles.resolvedText}>{title} — Done</Text>
       </View>
     );
@@ -152,7 +164,10 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <Ionicons name="document-text-outline" size={20} color={colors.ink} />
             <Text style={styles.title}>Job Offer</Text>
           </View>
-          <Text style={styles.subtitle}>Agreed price: ₱{String(card_data.price ?? '')}</Text>
+          <Text style={styles.subtitle}>
+            Agreed price:{' '}
+            <Text style={styles.priceHighlight}>{formatCurrency(card_data.price)}</Text>
+          </Text>
           <View style={styles.rowButtons}>
             <TouchableOpacity
               style={[styles.actionBtn, { backgroundColor: colors.success }]}
@@ -533,17 +548,26 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 14,
   },
+  priceHighlight: {
+    fontFamily: fonts.bodyBold,
+    color: colors.primaryDark,
+    fontSize: 15,
+  },
   resolvedCard: {
     marginHorizontal: 16,
     marginVertical: 8,
     backgroundColor: colors.paper,
-    padding: 16,
-    borderRadius: 16,
+    padding: 12,
+    borderRadius: 14,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
   },
   resolvedText: {
     fontFamily: fonts.bodyBold,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.inkMuted,
   },
   neutralCard: {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Image,
+  TextInput,
 } from 'react-native';
 import { useConversations } from '../../hooks/useConversations';
 import { colors, fonts } from '../../theme';
@@ -39,11 +40,18 @@ const formatConversationTime = (dateString: string) => {
 const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
   const { data, isLoading, isError, refetch } = useConversations();
   const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
   const isWorker = user?.role === 'worker';
   const canGoBack = navigation.canGoBack();
 
   const conversations = data || [];
-  const totalUnread = conversations.reduce((acc, c) => acc + (c.unread_count || 0), 0);
+  const filteredConversations = conversations.filter((c) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    const name = (c.other_user?.name || '').toLowerCase();
+    const job = (c.job_title || '').toLowerCase();
+    return name.includes(q) || job.includes(q);
+  });
 
   const renderHeader = () => (
     <View style={styles.header}>
@@ -89,21 +97,72 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       {renderHeader()}
 
+      {conversations.length > 0 && (
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <Ionicons name="search-outline" size={17} color={colors.inkMuted} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by name or job..."
+              placeholderTextColor={colors.inkLight}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              returnKeyType="search"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setSearchQuery('')}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="close-circle" size={17} color={colors.inkMuted} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      )}
+
       {conversations.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconCircle}>
-            <Ionicons name="chatbubbles-outline" size={44} color={colors.inkLight} />
+            <Ionicons name="chatbubbles-outline" size={44} color={colors.primary} />
           </View>
           <Text style={styles.emptyTitle}>No conversations yet</Text>
           <Text style={styles.emptySubtitle}>
             {isWorker
               ? 'Your chats will appear here once an employer sends you a job request.'
-              : 'Send a job request to a worker to start messaging.'}
+              : 'Send a job request to a worker from your applicants to start chatting.'}
           </Text>
+          <TouchableOpacity
+            style={styles.emptyActionButton}
+            activeOpacity={0.8}
+            onPress={() => {
+              if (isWorker) {
+                navigation.navigate('Find' as any);
+              } else {
+                navigation.navigate('MyJobs' as any);
+              }
+            }}
+          >
+            <Ionicons
+              name={isWorker ? 'briefcase-outline' : 'people-outline'}
+              size={18}
+              color={colors.white}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.emptyActionButtonText}>
+              {isWorker ? 'Explore Jobs' : 'View My Jobs'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : filteredConversations.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="search" size={40} color={colors.inkLight} style={{ marginBottom: 12 }} />
+          <Text style={styles.emptyTitle}>No results</Text>
+          <Text style={styles.emptySubtitle}>No conversations matching "{searchQuery}"</Text>
         </View>
       ) : (
         <FlatList
-          data={conversations}
+          data={filteredConversations}
           keyExtractor={(item) => item.id.toString()}
           refreshControl={
             <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.primary} />
@@ -144,10 +203,23 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                       </Text>
                     )}
                   </View>
-                  <View style={styles.jobBadge}>
-                    <Text style={styles.jobBadgeText} numberOfLines={1}>
-                      {item.job_title}
-                    </Text>
+                  <View style={styles.badgeRow}>
+                    <View style={styles.jobBadge}>
+                      <Text style={styles.jobBadgeText} numberOfLines={1}>
+                        {item.job_title}
+                      </Text>
+                    </View>
+                    {isLocked && (
+                      <View style={styles.concludedBadge}>
+                        <Ionicons
+                          name="checkmark-circle-outline"
+                          size={11}
+                          color={colors.inkMuted}
+                          style={{ marginRight: 2 }}
+                        />
+                        <Text style={styles.concludedBadgeText}>Concluded</Text>
+                      </View>
+                    )}
                   </View>
                   <View style={styles.previewRow}>
                     {isLocked && (
@@ -324,18 +396,81 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.inkMuted,
   },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 6,
+    backgroundColor: colors.paper,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.ink,
+    paddingVertical: 0,
+  },
+  emptyActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    marginTop: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  emptyActionButtonText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.white,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
   jobBadge: {
     alignSelf: 'flex-start',
     backgroundColor: colors.primaryTint,
     borderRadius: 6,
     paddingHorizontal: 7,
     paddingVertical: 2,
-    marginTop: 4,
   },
   jobBadgeText: {
     fontFamily: fonts.bodyBold,
     fontSize: 10,
     color: colors.primary,
+  },
+  concludedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.paperBright,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
+  concludedBadgeText: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    color: colors.inkMuted,
   },
   previewRow: {
     flexDirection: 'row',

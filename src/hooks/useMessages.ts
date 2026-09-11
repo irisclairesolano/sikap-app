@@ -102,6 +102,64 @@ export function useSendImage(conversationId: number) {
 
   return useMutation({
     mutationFn: (imageUri: string) => messagesApi.sendImage(conversationId, imageUri),
+    onMutate: async (imageUri: string) => {
+      await queryClient.cancelQueries({ queryKey: ['messages', conversationId] });
+      const previousMessages = queryClient.getQueryData(['messages', conversationId]);
+      const currentUser = queryClient.getQueryData<any>(['profile']);
+
+      const optimisticMessage: Message = {
+        id: -Date.now(),
+        conversation_id: conversationId,
+        sender_id: currentUser?.id ?? null,
+        body: null,
+        image_url: imageUri,
+        message_type: 'image',
+        card_resolved: false,
+        created_at: new Date().toISOString(),
+        sender: currentUser
+          ? {
+              id: currentUser.id,
+              name: currentUser.name || 'You',
+              avatar_url: currentUser.avatar_url,
+            }
+          : null,
+      };
+
+      queryClient.setQueryData(['messages', conversationId], (old: any) => {
+        if (!old || !old.pages || old.pages.length === 0) {
+          return {
+            pageParams: [undefined],
+            pages: [
+              {
+                data: [optimisticMessage],
+                next_cursor: null,
+              },
+            ],
+          };
+        }
+
+        const newPages = [...old.pages];
+        const lastPageIndex = newPages.length - 1;
+        const lastPage = newPages[lastPageIndex];
+
+        newPages[lastPageIndex] = {
+          ...lastPage,
+          data: [...(lastPage.data || []), optimisticMessage],
+        };
+
+        return {
+          ...old,
+          pages: newPages,
+        };
+      });
+
+      return { previousMessages };
+    },
+    onError: (_err, _imageUri, context) => {
+      if (context?.previousMessages) {
+        queryClient.setQueryData(['messages', conversationId], context.previousMessages);
+      }
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });

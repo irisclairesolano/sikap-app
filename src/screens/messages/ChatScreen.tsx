@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -192,6 +193,20 @@ const ChatScreen: React.FC = () => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
+          <View style={styles.headerAvatar}>
+            {conversation?.other_user?.avatar_url ? (
+              <Image
+                source={{ uri: conversation.other_user.avatar_url }}
+                style={styles.headerAvatarImage}
+              />
+            ) : (
+              <View style={styles.headerAvatarFallback}>
+                <Text style={styles.headerAvatarText}>
+                  {(otherUserName || conversation?.other_user?.name || '?').charAt(0)}
+                </Text>
+              </View>
+            )}
+          </View>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerName} numberOfLines={1}>
               {otherUserName || conversation?.other_user?.name}
@@ -214,7 +229,11 @@ const ChatScreen: React.FC = () => {
         {pinnedDetails && activeActionCard && (
           <View style={styles.pinnedWrapper}>
             <TouchableOpacity
-              style={[styles.pinnedBar, { borderLeftColor: pinnedDetails.color }]}
+              style={[
+                styles.pinnedBar,
+                { borderLeftColor: pinnedDetails.color },
+                activeActionCard.card_type === 'accept_or_reject' && styles.pinnedBarAlert,
+              ]}
               activeOpacity={0.8}
               onPress={() => setIsPinnedCardExpanded((prev) => !prev)}
             >
@@ -414,7 +433,30 @@ const styles = StyleSheet.create({
     height: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    marginRight: 4,
+  },
+  headerAvatar: {
+    marginRight: 10,
+  },
+  headerAvatarImage: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+  },
+  headerAvatarFallback: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.peach,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
+  headerAvatarText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
+    color: colors.primaryDark,
   },
   headerTitleContainer: { flex: 1 },
   headerName: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
@@ -442,10 +484,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
   },
   pinnedWrapper: {
-    backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderBottomColor: colors.inkFaint,
-    zIndex: 10,
+    backgroundColor: colors.paperBright,
   },
   pinnedBar: {
     flexDirection: 'row',
@@ -454,6 +495,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     backgroundColor: colors.paperBright,
     borderLeftWidth: 3.5,
+  },
+  pinnedBarAlert: {
+    backgroundColor: '#F0FDF4',
+    borderBottomWidth: 1,
+    borderBottomColor: '#BBF7D0',
   },
   pinnedIconBadge: {
     width: 28,
