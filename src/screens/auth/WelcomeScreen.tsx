@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/authTypes';
@@ -28,36 +28,43 @@ const WelcomeScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Wordmark size={28} />
-        </View>
-
-        <View style={styles.heroCard}>
-          <Text style={styles.eyebrow}>BUILT FOR INFORMAL WORK</Text>
-          <Text style={styles.title}>
-            Find Work.{'\n'}
-            Build Your{'\n'}
-            <Text style={styles.titleItalic}>Kabuhayan.</Text>
-          </Text>
-          <Text style={styles.lede}>
-            Trusted local employers. Privacy every step. Free for workers, always.
-          </Text>
-        </View>
-
-        <View style={styles.valueProps}>
-          <View style={styles.valueItem}>
-            <Ionicons name="checkmark-circle" size={14} color={colors.mintDeep} />
-            <Text style={styles.valueText}>Free</Text>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom', 'left', 'right']}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.topSection}>
+          <View style={styles.header}>
+            <Wordmark size={28} />
           </View>
-          <View style={styles.valueItem}>
-            <Ionicons name="shield-checkmark" size={14} color={colors.mintDeep} />
-            <Text style={styles.valueText}>Private</Text>
+
+          <View style={styles.heroCard}>
+            <Text style={styles.eyebrow}>BUILT FOR INFORMAL WORK</Text>
+            <Text style={styles.title}>
+              Find Work.{'\n'}
+              Build Your{'\n'}
+              <Text style={styles.titleItalic}>Kabuhayan.</Text>
+            </Text>
+            <Text style={styles.lede}>
+              Trusted local employers. Privacy every step. Free for workers, always.
+            </Text>
           </View>
-          <View style={styles.valueItem}>
-            <Ionicons name="location" size={14} color={colors.mintDeep} />
-            <Text style={styles.valueText}>Sorsogon-wide</Text>
+
+          <View style={styles.valueProps}>
+            <View style={styles.valueItem}>
+              <Ionicons name="checkmark-circle" size={14} color={colors.mintDeep} />
+              <Text style={styles.valueText}>Free</Text>
+            </View>
+            <View style={styles.valueItem}>
+              <Ionicons name="shield-checkmark" size={14} color={colors.mintDeep} />
+              <Text style={styles.valueText}>Private</Text>
+            </View>
+            <View style={styles.valueItem}>
+              <Ionicons name="location" size={14} color={colors.mintDeep} />
+              <Text style={styles.valueText}>Sorsogon-wide</Text>
+            </View>
           </View>
         </View>
 
@@ -69,7 +76,7 @@ const WelcomeScreen: React.FC = () => {
             fullWidth
             onPress={() => navigateToRegister('worker')}
           />
-          <View style={{ height: 14 }} />
+          <View style={{ height: 12 }} />
           <Button
             label="I'm an Employer"
             variant="secondary"
@@ -85,7 +92,7 @@ const WelcomeScreen: React.FC = () => {
             </Text>
           </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -95,11 +102,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.paper,
   },
-  container: {
-    flex: 1,
-    paddingHorizontal: 26,
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
     paddingTop: 16,
-    paddingBottom: 28,
+    paddingBottom: 24,
+  },
+  topSection: {
+    flexShrink: 0,
   },
   header: {
     alignItems: 'flex-start',
@@ -107,10 +118,10 @@ const styles = StyleSheet.create({
   heroCard: {
     backgroundColor: colors.peach,
     borderRadius: 12,
-    paddingTop: 32,
-    paddingHorizontal: 24,
-    paddingBottom: 28,
-    marginTop: 32,
+    paddingTop: 24,
+    paddingHorizontal: 22,
+    paddingBottom: 22,
+    marginTop: 20,
   },
   eyebrow: {
     fontFamily: fonts.bodyBold,
@@ -118,14 +129,14 @@ const styles = StyleSheet.create({
     color: colors.primaryDark,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   title: {
     fontFamily: fonts.display,
-    fontSize: 40,
+    fontSize: 36,
     color: colors.ink,
-    letterSpacing: -1.4,
-    lineHeight: 38,
+    letterSpacing: -1.2,
+    lineHeight: 36,
   },
   titleItalic: {
     fontFamily: fonts.displayItalic,
@@ -133,16 +144,16 @@ const styles = StyleSheet.create({
   },
   lede: {
     fontFamily: fonts.body,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.inkSoft,
-    lineHeight: 22,
-    marginTop: 16,
+    lineHeight: 20,
+    marginTop: 12,
   },
   valueProps: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 14,
-    marginTop: 18,
+    marginTop: 16,
   },
   valueItem: {
     flexDirection: 'row',
@@ -155,12 +166,13 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
   },
   footer: {
-    marginTop: 'auto',
+    marginTop: 24,
+    paddingTop: 4,
   },
   loginRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: 18,
   },
   loginText: {
     fontFamily: fonts.body,

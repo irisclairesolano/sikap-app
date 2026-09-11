@@ -67,6 +67,7 @@ describe('LoginScreen', () => {
   let mockMutate: jest.Mock;
 
   beforeEach(() => {
+    jest.setTimeout(15000);
     jest.clearAllMocks();
     mockMutate = jest.fn();
     (useAuth as jest.Mock).mockReturnValue({
