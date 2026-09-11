@@ -20,6 +20,7 @@ import Button from '../../components/common/Button';
 import { Avatar } from '../../components/common/Avatar';
 import { useApplication } from '../../hooks/useJobApplications';
 import { messagesApi } from '../../api/messages';
+import { useAlert } from '../../contexts/AlertContext';
 
 type ApplicantDetailScreenRouteProp = RouteProp<EmployerStackParamList, 'ApplicantDetail'>;
 type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -30,6 +31,7 @@ type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
 const ApplicantDetailScreen: React.FC = () => {
   const route = useRoute<ApplicantDetailScreenRouteProp>();
   const navigation = useNavigation<ApplicantDetailScreenNavigationProp>();
+  const { showAlert } = useAlert();
   const [isMenuVisible, setMenuVisible] = useState(false);
   const [expandedExpIds, setExpandedExpIds] = useState<Record<number, boolean>>({});
 
@@ -86,7 +88,7 @@ const ApplicantDetailScreen: React.FC = () => {
         });
       }
     } catch {
-      Alert.alert('Error', "Couldn't open chat. Please check your connection and try again.");
+      showAlert('Error', "Couldn't open chat. Please check your connection and try again.");
     }
   };
 
@@ -184,7 +186,7 @@ const ApplicantDetailScreen: React.FC = () => {
       barangay,
       municipality,
       reputationScore,
-      conversationId: appData?.conversation_id,
+      conversationId: appData?.conversation_id ?? undefined,
     });
   };
 

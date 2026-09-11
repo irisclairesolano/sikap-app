@@ -539,7 +539,7 @@ const ApplicationDetailScreen: React.FC = () => {
                 jobTitle: jobTitle || 'Job',
                 employerName: employerName || 'Employer',
                 offeredPrice: compensation ? String(compensation) : undefined,
-                conversationId: appData?.conversation_id,
+                conversationId: appData?.conversation_id ?? undefined,
               })
             }
           />
