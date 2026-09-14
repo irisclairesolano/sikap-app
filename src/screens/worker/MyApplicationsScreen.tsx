@@ -44,11 +44,10 @@ export const MyApplicationsScreen: React.FC = () => {
       case 'Needs Action':
         return app.status === 'employer_confirmed' || app.status === 'completed';
       case 'Active':
-        return app.status === 'accepted' || app.status === 'hired';
+        return app.status === 'accepted';
       case 'In Review':
         return (
           app.status === 'pending' ||
-          app.status === 'shortlisted' ||
           app.status === 'pending_negotiation' ||
           app.status === 'employer_requested'
         );
@@ -67,11 +66,10 @@ export const MyApplicationsScreen: React.FC = () => {
       'Needs Action': applications.filter(
         (a) => a.status === 'employer_confirmed' || a.status === 'completed',
       ).length,
-      Active: applications.filter((a) => a.status === 'accepted' || a.status === 'hired').length,
+      Active: applications.filter((a) => a.status === 'accepted').length,
       'In Review': applications.filter(
         (a) =>
           a.status === 'pending' ||
-          a.status === 'shortlisted' ||
           a.status === 'pending_negotiation' ||
           a.status === 'employer_requested',
       ).length,

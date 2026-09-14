@@ -159,8 +159,8 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
 
   const priceType = hasAgreedPrice
     ? 'Agreed'
-    : job?.compensation_type
-      ? `/${job.compensation_type.replace('_', ' ')}`
+    : job?.duration_unit
+      ? `/${job.duration_unit}`
       : '/day';
 
   // Location display
@@ -267,7 +267,7 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
               const isPassedOrCurrent = s <= stageInfo.stage;
               const isCurrent = s === stageInfo.stage;
 
-              let fillColor = colors.inkFaint;
+              let fillColor: string = colors.inkFaint;
               if (isPassedOrCurrent) {
                 if (stageInfo.stage === 3)
                   fillColor = '#E11D48'; // Urgent Offer
