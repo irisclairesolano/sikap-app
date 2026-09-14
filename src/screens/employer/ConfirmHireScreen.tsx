@@ -51,8 +51,8 @@ const ConfirmHireScreen: React.FC = () => {
         onSuccess: (data: any) => {
           const convId = data?.conversation_id || conversationId;
           showAlert(
-            'Hire Confirmed!',
-            `${applicantName} has been hired for ${jobTitle}. Open the chat to coordinate job details.`,
+            'Offer Sent!',
+            `Your hire offer of ₱${numPrice.toLocaleString()} has been sent to ${applicantName}. Once they accept, the job will officially begin.`,
             [
               {
                 text: 'Go to Chat',
@@ -89,7 +89,7 @@ const ConfirmHireScreen: React.FC = () => {
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.headerPill}>
-            <Text style={styles.headerPillText}>Confirm hire</Text>
+            <Text style={styles.headerPillText}>Send hire offer</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
@@ -205,7 +205,7 @@ const ConfirmHireScreen: React.FC = () => {
 
         <View style={styles.footer}>
           <Button
-            label={`Confirm at ₱${price || '0'}`}
+            label={`Send Offer at ₱${price || '0'}`}
             variant="primary"
             size="lg"
             fullWidth

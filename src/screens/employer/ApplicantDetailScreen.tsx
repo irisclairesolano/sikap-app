@@ -36,7 +36,8 @@ const ApplicantDetailScreen: React.FC = () => {
   const [expandedExpIds, setExpandedExpIds] = useState<Record<number, boolean>>({});
 
   const appId = route.params.applicantId || (route.params as any).applicationId;
-  const { data: appData, isLoading: queryLoading, refetch } = useApplication(appId);
+  const { data: rawAppData, isLoading: queryLoading, refetch } = useApplication(appId);
+  const appData = ((rawAppData as any)?.data ?? rawAppData) as any;
 
   useFocusEffect(
     React.useCallback(() => {
@@ -886,7 +887,7 @@ const ApplicantDetailScreen: React.FC = () => {
         {status === 'pending_negotiation' && (
           <View style={{ gap: 6 }}>
             <Button
-              label="Confirm"
+              label="Send Offer"
               variant="primary"
               size="lg"
               fullWidth
@@ -899,6 +900,17 @@ const ApplicantDetailScreen: React.FC = () => {
               fullWidth
               onPress={navigateToCancelHire}
             />
+            <Text
+              style={{
+                fontFamily: fonts.body,
+                fontSize: 12,
+                color: colors.inkSoft,
+                textAlign: 'center',
+                marginTop: 2,
+              }}
+            >
+              Send a formal price offer. The worker must accept before the hire is confirmed.
+            </Text>
           </View>
         )}
         {status === 'employer_confirmed' && (

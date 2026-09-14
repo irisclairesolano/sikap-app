@@ -36,7 +36,8 @@ const ApplicationDetailScreen: React.FC = () => {
     (route.params as any)?.id ||
     (route.params as any)?.applicantId;
   const applicationId = Number(rawAppId);
-  const { data: appData, isLoading: queryLoading, refetch } = useApplication(applicationId);
+  const { data: rawAppData, isLoading: queryLoading, refetch } = useApplication(applicationId);
+  const appData = ((rawAppData as any)?.data ?? rawAppData) as any;
 
   useFocusEffect(
     React.useCallback(() => {

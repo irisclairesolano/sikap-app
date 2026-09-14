@@ -43,7 +43,8 @@ export const applicationsApi = {
     return apiClient<{ phone: string }>(`/applications/${applicationId}/contact`);
   },
 
-  getById: async (applicationId: number) => {
-    return apiClient<Application>(`/applications/${applicationId}`);
+  getById: async (applicationId: number): Promise<Application> => {
+    const res = await apiClient<any>(`/applications/${applicationId}`);
+    return (res?.data ?? res) as Application;
   },
 };

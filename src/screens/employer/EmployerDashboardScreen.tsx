@@ -48,10 +48,12 @@ export const EmployerDashboardScreen: React.FC = () => {
 
   const totalHires = allJobs.reduce((acc, j) => {
     const hiredCount = (j.applications || []).filter(
-      (a: any) =>
-        a.status === 'accepted' || a.status === 'completed' || a.status === 'employer_confirmed',
+      (a: any) => a.status === 'accepted' || a.status === 'completed',
     ).length;
-    return acc + (j.accepted_count || hiredCount);
+    if (j.applications && Array.isArray(j.applications)) {
+      return acc + hiredCount;
+    }
+    return acc + (j.status === 'completed' ? j.accepted_count || 0 : 0);
   }, 0);
 
   const totalPaid = allJobs.reduce((acc, j) => {

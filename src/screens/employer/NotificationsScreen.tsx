@@ -129,7 +129,11 @@ export const NotificationsScreen: React.FC = () => {
                     const jobId = parsedData?.job_id || parsedData?.jobId;
 
                     if (appId) {
-                      navigation.navigate('ApplicantDetail', { applicantId: Number(appId) });
+                      navigation.navigate('ApplicantDetail', {
+                        applicantId: Number(appId),
+                        jobTitle: parsedData?.job_title || parsedData?.jobTitle || '',
+                        applicantName: parsedData?.worker_name || parsedData?.applicantName || '',
+                      });
                     } else if (jobId) {
                       navigation.navigate('JobStatusManagement', { id: Number(jobId) });
                     }
