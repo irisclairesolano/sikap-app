@@ -74,8 +74,14 @@ export const JobCard = React.memo(function JobCard({
   const handleShare = async () => {
     try {
       const result = await getShareLink(job.id);
+      const payText = job.compensation ? ` (₱${Number(job.compensation).toLocaleString()})` : '';
+      const locationText = [job.barangay, job.municipality].filter(Boolean).join(', ');
+      const message = `Check out this job on SIKAP: ${job.title}${payText}${locationText ? ` in ${locationText}` : ''}!\n\nOpen in SIKAP App: sikap://jobs/${job.id}\nWeb Preview: ${result.share_link}`;
+
       await Share.share({
-        message: `Check out this job on SIKAP!\n\n${result.job_title}\n${result.share_link}`,
+        title: job.title,
+        message,
+        url: result.share_link,
       });
     } catch {
       // Share title only — never expose raw internal IDs

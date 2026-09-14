@@ -55,9 +55,9 @@ export const ProfileScreen: React.FC = () => {
     location: `${user.barangay}, ${user.municipality}`,
     verified: user.verification_status === 'approved',
     reputation: user.reputation_score,
-    ratings: 0, // TODO: Implement ratings count
-    jobsDone: 0, // TODO: Implement jobs done
-    memberSince: 'New', // TODO: Implement member since calculation based on created_at
+    ratings: (user as any).ratings_count ?? 0,
+    jobsDone: (user as any).completed_jobs_count ?? 0,
+    memberSince: (user as any).member_since || 'New',
     skills: user.worker_profile?.skills || [],
     bio: user.worker_profile?.bio || '',
     experiences: user.worker_profile?.experiences || [],

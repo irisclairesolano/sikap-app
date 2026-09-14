@@ -64,8 +64,14 @@ export const JobDetailsScreen: React.FC = () => {
     if (!job) return;
     try {
       const result = await getShareLink(job.id);
+      const payText = job.compensation ? ` (₱${Number(job.compensation).toLocaleString()})` : '';
+      const locationText = [job.barangay, job.municipality].filter(Boolean).join(', ');
+      const message = `Check out this job on SIKAP: ${job.title}${payText}${locationText ? ` in ${locationText}` : ''}!\n\nOpen in SIKAP App: sikap://jobs/${job.id}\nWeb Preview: ${result.share_link}`;
+
       await Share.share({
-        message: `Check out this job on SIKAP!\n\n${result.job_title}\n${result.share_link}`,
+        title: job.title,
+        message,
+        url: result.share_link,
       });
     } catch (err: any) {
       if (err?.response?.status === 410) {
@@ -379,7 +385,10 @@ export const JobDetailsScreen: React.FC = () => {
                 reputationScore: job.employer?.reputation_score,
                 barangay: job.barangay,
                 municipality: job.municipality,
-                businessDocuments: job.employer?.employer_profile?.business_documents || [],
+                businessDocuments:
+                  job.employer?.business_documents ||
+                  job.employer?.employer_profile?.business_documents ||
+                  [],
               });
             }}
           >

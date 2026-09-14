@@ -43,7 +43,7 @@ export const MyApplicationsScreen: React.FC = () => {
       );
     }
     if (filterName === 'Pending') return app.status === 'pending';
-    if (filterName === 'Completed') return app.status === 'completed' || app.status === 'rejected';
+    if (filterName === 'Completed') return app.status === 'completed';
     if (filterName === 'Withdrawn') return app.status === 'withdrawn';
     return true;
   };

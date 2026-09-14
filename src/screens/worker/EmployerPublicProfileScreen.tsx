@@ -71,10 +71,15 @@ export const EmployerPublicProfileScreen: React.FC = () => {
               <Ionicons name="shield-checkmark" size={14} color={colors.mintDeep} />
               <Text style={styles.verifiedText}>Verified Employer</Text>
             </View>
-          ) : (
+          ) : businessDocuments && businessDocuments.length > 0 ? (
             <View style={styles.unverifiedChip}>
               <Ionicons name="time-outline" size={14} color={colors.inkMuted} />
-              <Text style={styles.unverifiedText}>Pending Verification</Text>
+              <Text style={styles.unverifiedText}>Verification Pending</Text>
+            </View>
+          ) : (
+            <View style={styles.unverifiedChip}>
+              <Ionicons name="alert-circle-outline" size={14} color={colors.inkMuted} />
+              <Text style={styles.unverifiedText}>Unverified Employer</Text>
             </View>
           )}
 
@@ -117,20 +122,36 @@ export const EmployerPublicProfileScreen: React.FC = () => {
           <View style={styles.docCard}>
             <View style={styles.docHeader}>
               <Ionicons
-                name={verificationBadge ? 'ribbon' : 'document-text-outline'}
+                name={
+                  verificationBadge
+                    ? 'ribbon'
+                    : businessDocuments && businessDocuments.length > 0
+                      ? 'document-text-outline'
+                      : 'alert-circle-outline'
+                }
                 size={20}
-                color={verificationBadge ? colors.primary : colors.inkSoft}
+                color={
+                  verificationBadge
+                    ? colors.primary
+                    : businessDocuments && businessDocuments.length > 0
+                      ? '#D97706'
+                      : colors.inkMuted
+                }
               />
               <Text style={styles.docTitle}>
                 {verificationBadge
-                  ? 'Business License & Documents Verified'
-                  : 'Submitted Documents'}
+                  ? 'Business Document Verified'
+                  : businessDocuments && businessDocuments.length > 0
+                    ? 'Documents Under Review'
+                    : 'Business Document Not Verified'}
               </Text>
             </View>
             <Text style={styles.docDesc}>
               {verificationBadge
-                ? 'This employer has completed identity and business permit checks with SIKAP Admins.'
-                : 'Permits and identity documents are reviewed by SIKAP administrators.'}
+                ? 'This employer has completed business document verification with SIKAP Admins.'
+                : businessDocuments && businessDocuments.length > 0
+                  ? 'Business documents have been submitted and are currently undergoing verification by SIKAP administrators.'
+                  : 'This employer has not yet completed business document verification with SIKAP Admins.'}
             </Text>
 
             {businessDocuments && businessDocuments.length > 0 && (
