@@ -1075,8 +1075,6 @@ export const PostJobScreen: React.FC = () => {
             label={isEditMode ? 'Save changes' : 'Publish job'}
             size="lg"
             fullWidth
-            icon={isEditMode ? 'checkmark' : 'arrow-forward'}
-            iconPosition="right"
             loading={createJobMutation.isPending || updateJobMutation.isPending || isPublishing}
             disabled={
               !isAllPhotosUploaded ||

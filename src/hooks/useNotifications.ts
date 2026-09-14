@@ -26,9 +26,9 @@ export const useNotifications = () => {
       const response = await apiClient<NotificationsResponse>('/notifications');
       return response;
     },
-    staleTime: 30 * 1000,
-    // Keep unread badges synced in background as fallback
-    refetchInterval: 10000,
+    staleTime: 0,
+    // Keep notifications and unread badges responsive
+    refetchInterval: 3000,
   });
 };
 

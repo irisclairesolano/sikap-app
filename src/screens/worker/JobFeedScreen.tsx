@@ -168,9 +168,7 @@ export const JobFeedScreen: React.FC = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() =>
-              (navigation as any).navigate('Notifications', { screen: 'NotificationsList' })
-            }
+            onPress={() => (navigation as any).navigate('Notifications')}
           >
             <Ionicons name="notifications-outline" size={24} color={colors.ink} />
           </TouchableOpacity>

@@ -10,6 +10,7 @@ import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import { profileApi } from '../../api/profile';
 import { useAuth } from '../../hooks/useAuth';
+import { useReviews } from '../../hooks/useReviews';
 type ProfileScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'ProfileMain'>;
 
 export const ProfileScreen: React.FC = () => {
@@ -33,6 +34,8 @@ export const ProfileScreen: React.FC = () => {
     }, [refetch]),
   );
 
+  const { data: reviewsData } = useReviews();
+
   const [imageError, setImageError] = useState(false);
 
   React.useEffect(() => {
@@ -54,14 +57,20 @@ export const ProfileScreen: React.FC = () => {
     name: user.name,
     location: `${user.barangay}, ${user.municipality}`,
     verified: user.verification_status === 'approved',
-    reputation: user.reputation_score,
-    ratings: (user as any).ratings_count ?? 0,
+    reputation: reviewsData?.reputation_score ?? user.reputation_score ?? 5.0,
+    ratings: reviewsData?.reviews_count ?? (user as any).ratings_count ?? 0,
     jobsDone: (user as any).completed_jobs_count ?? 0,
     memberSince: (user as any).member_since || 'New',
     skills: user.worker_profile?.skills || [],
     bio: user.worker_profile?.bio || '',
     experiences: user.worker_profile?.experiences || [],
-    recentReview: null as null | { employer: string; stars: number; comment: string }, // TODO: Implement recent review fetch
+    recentReview: reviewsData?.reviews?.[0]
+      ? {
+          employer: reviewsData.reviews[0].reviewer?.name || 'Employer',
+          stars: Math.round(reviewsData.reviews[0].overall_rating),
+          comment: reviewsData.reviews[0].comment || '',
+        }
+      : null,
   };
 
   const hasSkills = (user?.worker_profile?.skills?.length || 0) > 0;
@@ -72,6 +81,7 @@ export const ProfileScreen: React.FC = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     await queryClient.invalidateQueries({ queryKey: ['profile'] });
+    await queryClient.invalidateQueries({ queryKey: ['reviews'] });
     await refetchProfile();
     setRefreshing(false);
   };
@@ -114,7 +124,7 @@ export const ProfileScreen: React.FC = () => {
           <TouchableOpacity
             style={styles.setupBanner}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate('Find' as any, { screen: 'HomeEmpty' })}
+            onPress={() => (navigation as any).navigate('Find')}
           >
             <View style={styles.setupBannerIcon}>
               <Ionicons name="alert-circle" size={24} color={colors.primaryDark} />

@@ -161,6 +161,7 @@ const FindStack: React.FC = () => {
       <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
       <Stack.Screen name="SavedJobs" component={SavedJobsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      <Stack.Screen name="Chat" component={ChatScreen} />
     </Stack.Navigator>
   );
 };
@@ -177,6 +178,7 @@ const ApplicationsStack: React.FC = () => (
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="Apply" component={ApplyScreen} />
     <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
+    <Stack.Screen name="Chat" component={ChatScreen} />
   </Stack.Navigator>
 );
 
@@ -193,6 +195,7 @@ const NotificationsStack: React.FC = () => (
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    <Stack.Screen name="Chat" component={ChatScreen} />
   </Stack.Navigator>
 );
 
@@ -242,24 +245,8 @@ const WorkerNavigator: React.FC = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen
-        name="Find"
-        component={FindStack}
-        listeners={({ navigation }) => ({
-          tabPress: () => {
-            (navigation as any).navigate('Find', { screen: 'Home' });
-          },
-        })}
-      />
-      <Tab.Screen
-        name="Mine"
-        component={ApplicationsStack}
-        listeners={({ navigation }) => ({
-          tabPress: () => {
-            (navigation as any).navigate('Mine', { screen: 'Applications' });
-          },
-        })}
-      />
+      <Tab.Screen name="Find" component={FindStack} />
+      <Tab.Screen name="Mine" component={ApplicationsStack} />
       <Tab.Screen
         name="Messages"
         component={MessagesStack}
@@ -267,11 +254,6 @@ const WorkerNavigator: React.FC = () => {
           tabBarBadge: (unreadMessages ?? 0) > 0 ? unreadMessages : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
-        listeners={({ navigation }) => ({
-          tabPress: () => {
-            (navigation as any).navigate('Messages', { screen: 'ConversationsList' });
-          },
-        })}
       />
       <Tab.Screen
         name="Notifications"
@@ -280,21 +262,8 @@ const WorkerNavigator: React.FC = () => {
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
-        listeners={({ navigation }) => ({
-          tabPress: () => {
-            (navigation as any).navigate('Notifications', { screen: 'NotificationsList' });
-          },
-        })}
       />
-      <Tab.Screen
-        name="Me"
-        component={ProfileStack}
-        listeners={({ navigation }) => ({
-          tabPress: () => {
-            (navigation as any).navigate('Me', { screen: 'ProfileMain' });
-          },
-        })}
-      />
+      <Tab.Screen name="Me" component={ProfileStack} />
     </Tab.Navigator>
   );
 };

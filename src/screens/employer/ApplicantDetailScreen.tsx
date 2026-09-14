@@ -35,8 +35,15 @@ const ApplicantDetailScreen: React.FC = () => {
   const [isMenuVisible, setMenuVisible] = useState(false);
   const [expandedExpIds, setExpandedExpIds] = useState<Record<number, boolean>>({});
 
-  const appId = route.params.applicantId || (route.params as any).applicationId;
-  const { data: rawAppData, isLoading: queryLoading, refetch } = useApplication(appId);
+  const rawAppId = route.params.applicantId || (route.params as any).applicationId;
+  const appId = rawAppId ? Number(rawAppId) : 0;
+  const {
+    data: rawAppData,
+    isLoading: queryLoading,
+    isError,
+    error,
+    refetch,
+  } = useApplication(appId);
   const appData = ((rawAppData as any)?.data ?? rawAppData) as any;
 
   useFocusEffect(
@@ -45,9 +52,9 @@ const ApplicantDetailScreen: React.FC = () => {
     }, [refetch]),
   );
 
-  const status = appData?.status || route.params.status;
-  const applicantName = appData?.worker?.name || route.params.applicantName;
-  const jobTitle = appData?.job?.title || route.params.jobTitle;
+  const status = appData?.status || route.params.status || 'pending';
+  const applicantName = appData?.worker?.name || route.params.applicantName || 'Worker';
+  const jobTitle = appData?.job?.title || route.params.jobTitle || 'Job';
   const applicantId = appId;
 
   const barangay = appData?.worker?.barangay || route.params.barangay;
@@ -56,12 +63,12 @@ const ApplicantDetailScreen: React.FC = () => {
     appData?.worker?.reputation_score !== undefined && appData?.worker?.reputation_score !== null
       ? appData.worker.reputation_score
       : route.params.reputationScore;
-  const experiences = appData?.worker?.experiences || route.params?.experiences;
-  const reviews = appData?.worker?.reviews || route.params?.reviews;
+  const experiences = appData?.worker?.experiences || route.params?.experiences || [];
+  const reviews = appData?.worker?.reviews || route.params?.reviews || [];
   const bio = appData?.worker?.workerProfile?.bio || appData?.worker?.bio || route.params?.bio;
-  const skills = appData?.worker?.skills || route.params?.skills;
+  const skills = appData?.worker?.skills || route.params?.skills || [];
   const characterReferences =
-    appData?.worker?.character_references || route.params?.characterReferences;
+    appData?.worker?.character_references || route.params?.characterReferences || [];
   const phone = appData?.worker?.phone || route.params?.phone;
   const emergencyContactName =
     appData?.worker?.emergency_contact_name || route.params?.emergencyContactName;
@@ -93,7 +100,7 @@ const ApplicantDetailScreen: React.FC = () => {
     }
   };
 
-  if (queryLoading && !applicantName) {
+  if (queryLoading && !appData) {
     return (
       <SafeAreaView
         style={{
@@ -104,11 +111,70 @@ const ApplicantDetailScreen: React.FC = () => {
         }}
       >
         <ActivityIndicator size="large" color={colors.primary} />
+        <Text
+          style={{
+            fontFamily: fonts.body,
+            fontSize: 14,
+            color: colors.inkMuted,
+            marginTop: 12,
+          }}
+        >
+          Loading applicant profile...
+        </Text>
       </SafeAreaView>
     );
   }
 
-  if (!queryLoading && !appData && !applicantName) {
+  const hasFallbackInfo = Boolean(route.params.applicantName || route.params.jobTitle);
+
+  if (isError && !appData && !hasFallbackInfo) {
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: colors.paper,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 24,
+        }}
+      >
+        <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+        <Text
+          style={{
+            fontFamily: fonts.bodyBold,
+            fontSize: 18,
+            color: colors.ink,
+            marginTop: 12,
+            textAlign: 'center',
+          }}
+        >
+          Failed to Load Profile
+        </Text>
+        <Text
+          style={{
+            fontFamily: fonts.body,
+            fontSize: 14,
+            color: colors.inkMuted,
+            marginTop: 4,
+            textAlign: 'center',
+          }}
+        >
+          {error?.message || 'Unable to retrieve applicant details.'}
+        </Text>
+        <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
+          <Button
+            label="Go Back"
+            variant="outline"
+            size="base"
+            onPress={() => navigation.goBack()}
+          />
+          <Button label="Retry" variant="primary" size="base" onPress={() => refetch()} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!queryLoading && !appData && !route.params.applicantName) {
     return (
       <SafeAreaView
         style={{
@@ -174,6 +240,16 @@ const ApplicantDetailScreen: React.FC = () => {
 
   const stage = getStage();
 
+  const isReferencesLocked =
+    appData?.references_locked ??
+    appData?.worker?.references_locked ??
+    (status === 'pending' || status === 'withdrawn' || stage === 1);
+
+  const isContactLocked =
+    appData?.contact_locked ??
+    appData?.worker?.contact_locked ??
+    (status === 'pending' || status === 'withdrawn' || stage === 1);
+
   const handleReport = () => {
     setMenuVisible(false);
     navigation.navigate('Report' as any, { id: applicantId, type: 'user' });
@@ -238,7 +314,6 @@ const ApplicantDetailScreen: React.FC = () => {
           status === 'accepted') && (
           <TouchableOpacity
             style={{
-              flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: colors.primary,
@@ -246,11 +321,9 @@ const ApplicantDetailScreen: React.FC = () => {
               paddingVertical: 14,
               marginHorizontal: 16,
               marginBottom: 16,
-              gap: 8,
             }}
             onPress={handleOpenChat}
           >
-            <Ionicons name="chatbubble-ellipses-outline" size={18} color={colors.white} />
             <Text style={{ color: colors.white, fontWeight: '600', fontSize: 15 }}>
               Message Worker
             </Text>
@@ -609,7 +682,7 @@ const ApplicantDetailScreen: React.FC = () => {
           </View>
         </View>
         {/* Character References */}
-        {status === 'pending' || status === 'withdrawn' ? (
+        {isReferencesLocked ? (
           <View style={styles.skillsSection}>
             <Text style={styles.sectionEyebrow}>Character References</Text>
             <View style={styles.privacyShield}>
@@ -715,7 +788,7 @@ const ApplicantDetailScreen: React.FC = () => {
         )}
 
         {/* Contact Info & Direct Communication Channels */}
-        {status === 'pending' || status === 'withdrawn' ? (
+        {isContactLocked ? (
           <View style={styles.privacyShield}>
             <View style={styles.shieldHeader}>
               <View style={styles.shieldIcon}>

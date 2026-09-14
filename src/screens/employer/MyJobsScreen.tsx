@@ -152,11 +152,27 @@ export const MyJobsScreen: React.FC = () => {
                 <Text style={[styles.applicantsText, { color: colors.inkSoft }]}>Archived</Text>
               </View>
             ) : (
-              <View style={styles.applicantsBadge}>
-                <Ionicons name="people" size={14} color={colors.primary} />
-                <Text style={styles.applicantsText}>
-                  {item.applications?.length || 0} applicants
-                </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  flexWrap: 'wrap',
+                  flex: 1,
+                }}
+              >
+                <View style={styles.applicantsBadge}>
+                  <Ionicons name="people" size={14} color={colors.primary} />
+                  <Text style={styles.applicantsText}>
+                    {item.applications?.length || 0} applicants
+                  </Text>
+                </View>
+                <View style={[styles.applicantsBadge, { backgroundColor: colors.peach }]}>
+                  <Ionicons name="heart" size={14} color={colors.error} />
+                  <Text style={[styles.applicantsText, { color: colors.primaryDark }]}>
+                    {item.reactions_count || 0} interested
+                  </Text>
+                </View>
               </View>
             )}
 

@@ -598,6 +598,11 @@ export const JobStatusManagementScreen: React.FC = () => {
                 Slots: {job.accepted_count} / {job.slots} hired
               </Text>
             </View>
+
+            <View style={styles.metaItem}>
+              <Ionicons name="heart-outline" size={16} color={colors.error} />
+              <Text style={styles.metaValue}>{job.reactions_count || 0} interested</Text>
+            </View>
           </View>
 
           <View style={styles.divider} />
@@ -754,7 +759,6 @@ export const JobStatusManagementScreen: React.FC = () => {
             <>
               <Button label="Edit Job Post" onPress={handleEditJob} style={styles.actionBtn} />
               <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelJob}>
-                <Ionicons name="close-circle-outline" size={20} color={colors.error} />
                 <Text style={styles.cancelBtnText}>Cancel / Archive Job</Text>
               </TouchableOpacity>
             </>
@@ -768,7 +772,6 @@ export const JobStatusManagementScreen: React.FC = () => {
                 style={styles.actionBtn}
               />
               <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelJob}>
-                <Ionicons name="close-circle-outline" size={20} color={colors.error} />
                 <Text style={styles.cancelBtnText}>Cancel Job</Text>
               </TouchableOpacity>
             </>
@@ -779,9 +782,8 @@ export const JobStatusManagementScreen: React.FC = () => {
               style={[styles.cancelBtn, { borderColor: colors.inkSoft }]}
               onPress={handleDeleteJob}
             >
-              <Ionicons name="archive-outline" size={20} color={colors.inkSoft} />
               <Text style={[styles.cancelBtnText, { color: colors.inkSoft }]}>
-                Archive Job History
+                {job.status === 'cancelled' ? 'Delete Job Post' : 'Archive Job Post'}
               </Text>
             </TouchableOpacity>
           )}

@@ -121,6 +121,7 @@ const HomeStack: React.FC = () => (
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
+    <Stack.Screen name="Chat" component={ChatScreen} />
   </Stack.Navigator>
 );
 
@@ -143,6 +144,7 @@ const MyJobsStack: React.FC = () => (
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
+    <Stack.Screen name="Chat" component={ChatScreen} />
   </Stack.Navigator>
 );
 
@@ -214,24 +216,8 @@ const EmployerNavigator: React.FC = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeStack}
-        listeners={({ navigation }) => ({
-          tabPress: () => {
-            (navigation as any).navigate('Home', { screen: 'EmployerDashboard' });
-          },
-        })}
-      />
-      <Tab.Screen
-        name="MyJobs"
-        component={MyJobsStack}
-        listeners={({ navigation }) => ({
-          tabPress: () => {
-            (navigation as any).navigate('MyJobs', { screen: 'MyJobsList' });
-          },
-        })}
-      />
+      <Tab.Screen name="Home" component={HomeStack} />
+      <Tab.Screen name="MyJobs" component={MyJobsStack} />
       <Tab.Screen
         name="Messages"
         component={MessagesStack}
@@ -239,11 +225,6 @@ const EmployerNavigator: React.FC = () => {
           tabBarBadge: (unreadMessages ?? 0) > 0 ? unreadMessages : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
-        listeners={({ navigation }) => ({
-          tabPress: () => {
-            (navigation as any).navigate('Messages', { screen: 'ConversationsList' });
-          },
-        })}
       />
       <Tab.Screen
         name="Notifications"
@@ -252,21 +233,8 @@ const EmployerNavigator: React.FC = () => {
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
-        listeners={({ navigation }) => ({
-          tabPress: () => {
-            (navigation as any).navigate('Notifications', { screen: 'NotificationsList' });
-          },
-        })}
       />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileStack}
-        listeners={({ navigation }) => ({
-          tabPress: () => {
-            (navigation as any).navigate('Profile', { screen: 'ProfileMain' });
-          },
-        })}
-      />
+      <Tab.Screen name="Profile" component={ProfileStack} />
     </Tab.Navigator>
   );
 };

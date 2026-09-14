@@ -209,7 +209,6 @@ const ConfirmHireScreen: React.FC = () => {
             variant="primary"
             size="lg"
             fullWidth
-            icon={<Ionicons name="lock-closed" size={18} color="white" />}
             onPress={handleConfirm}
             disabled={!price}
             loading={confirmHireMutation.isPending}

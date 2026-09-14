@@ -366,38 +366,25 @@ const ApplicationDetailScreen: React.FC = () => {
               may reach out to discuss the work and price.
             </Text>
 
-            <View style={[styles.shieldCard, { marginTop: 14 }]}>
-              <View style={styles.shieldHeader}>
-                <View style={[styles.shieldBadge, { backgroundColor: colors.peach }]}>
-                  <Ionicons name="eye" size={18} color={colors.primary} />
+            <View style={styles.minimalistSharedBox}>
+              <View style={styles.minimalistSharedHeader}>
+                <Ionicons name="eye-outline" size={16} color={colors.primary} />
+                <Text style={styles.minimalistSharedTitle}>
+                  Contact & references shared with employer
+                </Text>
+              </View>
+              <View style={styles.minimalistChipsRow}>
+                <View style={styles.minimalistChip}>
+                  <Ionicons name="call-outline" size={13} color={colors.primaryDark} />
+                  <Text style={styles.minimalistChipText}>Mobile number</Text>
                 </View>
-                <View>
-                  <Text style={[styles.shieldSub, { color: colors.primary }]}>
-                    Now visible to employer
-                  </Text>
-                  <Text style={styles.shieldTitle}>References + contact unlocked</Text>
+                <View style={styles.minimalistChip}>
+                  <Ionicons name="people-outline" size={13} color={colors.primaryDark} />
+                  <Text style={styles.minimalistChipText}>Character references</Text>
                 </View>
               </View>
-              <View style={styles.shieldRow}>
-                <Text style={styles.shieldLabel}>Character References</Text>
-                <Text style={[styles.shieldStatus, { color: colors.primary }]}>Revealed</Text>
-              </View>
-              <View style={styles.shieldRow}>
-                <Text style={styles.shieldLabel}>Mobile Number</Text>
-                <Text style={[styles.shieldStatus, { color: colors.primary }]}>Revealed</Text>
-              </View>
-            </View>
-
-            <View style={styles.butterNotice}>
-              <Ionicons
-                name="chatbubble-ellipses-outline"
-                size={18}
-                color={colors.primaryDark}
-                style={{ marginTop: 1 }}
-              />
-              <Text style={styles.butterNoticeText}>
-                <Text style={{ fontWeight: '700' }}>Message in chat or call</Text> to discuss
-                details and agree on a price.
+              <Text style={styles.minimalistSharedFootnote}>
+                You can message or call each other to discuss work details and agree on a price.
               </Text>
             </View>
           </View>
@@ -496,72 +483,93 @@ const ApplicationDetailScreen: React.FC = () => {
           />
         )}
         {stage === 2 && status !== 'withdrawn' && (
-          <Button
-            label={isWithdrawing ? 'Withdrawing...' : 'Withdraw application'}
-            variant="ghost"
-            size="lg"
-            fullWidth
-            onPress={handleWithdraw}
-            loading={isWithdrawing}
-          />
-        )}
-        {(status === 'pending_negotiation' ||
-          status === 'employer_confirmed' ||
-          status === 'accepted' ||
-          status === 'completed' ||
-          status === 'rejected') && (
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: colors.primary,
-              borderRadius: 12,
-              paddingVertical: 14,
-              marginTop: 12,
-              gap: 8,
-            }}
-            onPress={handleOpenChat}
-          >
-            <Ionicons name="chatbubble-ellipses-outline" size={18} color={colors.white} />
-            <Text style={{ color: colors.white, fontWeight: '600', fontSize: 15 }}>Open Chat</Text>
-          </TouchableOpacity>
+          <>
+            <Button
+              label="Open Chat"
+              variant="primary"
+              size="lg"
+              fullWidth
+              onPress={handleOpenChat}
+            />
+            <Button
+              label={isWithdrawing ? 'Withdrawing...' : 'Withdraw application'}
+              variant="ghost"
+              size="base"
+              fullWidth
+              onPress={handleWithdraw}
+              loading={isWithdrawing}
+            />
+          </>
         )}
         {stage === 3 && (
-          <Button
-            label="Review Offer"
-            variant="primary"
-            size="lg"
-            fullWidth
-            icon={<Ionicons name="arrow-forward" size={18} color="white" />}
-            onPress={() =>
-              navigation.navigate('AcceptHire', {
-                id: applicationId,
-                jobTitle: jobTitle || 'Job',
-                employerName: employerName || 'Employer',
-                offeredPrice: compensation ? String(compensation) : undefined,
-                conversationId: appData?.conversation_id ?? undefined,
-              })
-            }
-          />
+          <>
+            <Button
+              label="Review Offer"
+              variant="primary"
+              size="lg"
+              fullWidth
+              onPress={() =>
+                navigation.navigate('AcceptHire', {
+                  id: applicationId,
+                  jobTitle: jobTitle || 'Job',
+                  employerName: employerName || 'Employer',
+                  offeredPrice: compensation ? String(compensation) : undefined,
+                  conversationId: appData?.conversation_id ?? undefined,
+                })
+              }
+            />
+            <Button
+              label="Open Chat"
+              variant="outline"
+              size="lg"
+              fullWidth
+              onPress={handleOpenChat}
+            />
+          </>
         )}
         {stage === 4 && (
-          <Button label="Job is in progress" variant="ghost" size="lg" fullWidth disabled />
+          <>
+            <Button
+              label="Open Chat"
+              variant="primary"
+              size="lg"
+              fullWidth
+              onPress={handleOpenChat}
+            />
+            <Button label="Job is in progress" variant="ghost" size="base" fullWidth disabled />
+          </>
         )}
         {stage === 5 && (
+          <>
+            <Button
+              label="Rate Employer"
+              variant="primary"
+              size="lg"
+              fullWidth
+              onPress={() =>
+                navigation.navigate('RateEmployer', {
+                  id: applicationId,
+                  employerName: employerName || 'Employer',
+                  jobTitle: jobTitle || 'Job',
+                })
+              }
+            />
+            <Button
+              label="Open Chat"
+              variant="outline"
+              size="lg"
+              fullWidth
+              onPress={handleOpenChat}
+            />
+          </>
+        )}
+        {status === 'rejected' && (
           <Button
-            label="Rate Employer"
-            variant="primary"
+            label="Open Chat"
+            variant="outline"
             size="lg"
             fullWidth
-            icon={<Ionicons name="star" size={18} color="white" />}
-            onPress={() =>
-              navigation.navigate('RateEmployer', {
-                id: applicationId,
-                employerName: employerName || 'Employer',
-                jobTitle: jobTitle || 'Job',
-              })
-            }
+            onPress={handleOpenChat}
           />
         )}
       </View>
@@ -651,6 +659,51 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: colors.inkFaint,
+  },
+  minimalistSharedBox: {
+    backgroundColor: colors.paperBright,
+    borderRadius: 14,
+    padding: 14,
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
+  minimalistSharedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  minimalistSharedTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.ink,
+  },
+  minimalistChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 10,
+  },
+  minimalistChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.peach,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  minimalistChipText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.primaryDark,
+  },
+  minimalistSharedFootnote: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkMuted,
+    lineHeight: 17,
   },
   shieldHeader: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   shieldBadge: {
@@ -744,11 +797,11 @@ const styles = StyleSheet.create({
   employerSubCard: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, marginTop: 2 },
   footer: {
     paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingVertical: 12,
     backgroundColor: colors.paper,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
+    gap: 10,
   },
   modalOverlay: {
     flex: 1,

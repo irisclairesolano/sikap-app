@@ -133,6 +133,7 @@ export const NotificationsScreen: React.FC = () => {
                         applicantId: Number(appId),
                         jobTitle: parsedData?.job_title || parsedData?.jobTitle || '',
                         applicantName: parsedData?.worker_name || parsedData?.applicantName || '',
+                        status: 'pending',
                       });
                     } else if (jobId) {
                       navigation.navigate('JobStatusManagement', { id: Number(jobId) });

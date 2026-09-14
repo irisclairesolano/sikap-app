@@ -21,12 +21,16 @@ import {
   Manrope_700Bold,
   Manrope_800ExtraBold,
 } from '@expo-google-fonts/manrope';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, LogBox } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 
 import { OfflineNotice } from './src/components/common/OfflineNotice';
+
+// Suppress upstream @react-navigation/bottom-tabs v7 internal warning:
+// CommonActions.navigate(route) in BottomTabBar.js triggers this routers warning
+LogBox.ignoreLogs([/Passing an object as the argument to 'navigate' is deprecated/]);
 
 export const navigationRef = createNavigationContainerRef<any>();
 

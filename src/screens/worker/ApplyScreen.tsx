@@ -282,7 +282,6 @@ export const ApplyScreen: React.FC = () => {
               size="lg"
               fullWidth
               onPress={handleGoToApplicationStatus}
-              icon={<Ionicons name="document-text-outline" size={20} color="white" />}
             />
             <Button
               label="Back to Job Feed"
@@ -290,7 +289,6 @@ export const ApplyScreen: React.FC = () => {
               size="lg"
               fullWidth
               onPress={handleBackToJobs}
-              icon={<Ionicons name="arrow-back" size={20} color={colors.primary} />}
             />
           </View>
         </ScrollView>

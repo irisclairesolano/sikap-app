@@ -224,9 +224,7 @@ export const EmployerDashboardScreen: React.FC = () => {
         </View>
         <TouchableOpacity
           style={styles.iconButton}
-          onPress={() =>
-            (navigation as any).navigate('Notifications', { screen: 'NotificationsList' })
-          }
+          onPress={() => (navigation as any).navigate('Notifications')}
         >
           <Ionicons name="notifications-outline" size={24} color={colors.ink} />
         </TouchableOpacity>
@@ -273,7 +271,6 @@ export const EmployerDashboardScreen: React.FC = () => {
           label="Post a new job"
           size="lg"
           fullWidth
-          icon="add-circle-outline"
           onPress={() => navigation.navigate('PostJob')}
           style={{ marginTop: 24 }}
         />
