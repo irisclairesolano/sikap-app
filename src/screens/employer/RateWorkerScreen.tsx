@@ -53,6 +53,7 @@ export const RateWorkerScreen: React.FC = () => {
   const [communication, setCommunication] = useState(0);
   const [behavior, setBehavior] = useState(0);
   const [note, setNote] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const { mutate: submitReview, isPending } = useSubmitReview();
   const { showAlert } = useAlert();
@@ -60,7 +61,8 @@ export const RateWorkerScreen: React.FC = () => {
   const isFormValid = quality > 0 && punctuality > 0 && communication > 0 && behavior > 0;
 
   const handleSubmit = () => {
-    if (isPending || !isFormValid) return;
+    if (isPending || isSubmitted || !isFormValid) return;
+    setIsSubmitted(true);
     submitReview(
       {
         applicationId: id,
@@ -79,6 +81,7 @@ export const RateWorkerScreen: React.FC = () => {
           ]);
         },
         onError: (err: any) => {
+          setIsSubmitted(false);
           showAlert('Error', err.message || 'Failed to submit review.');
         },
       },
@@ -147,8 +150,8 @@ export const RateWorkerScreen: React.FC = () => {
           <Button
             title="Submit rating"
             onPress={handleSubmit}
-            disabled={!isFormValid || isPending}
-            loading={isPending}
+            disabled={!isFormValid || isPending || isSubmitted}
+            loading={isPending || isSubmitted}
             style={styles.submitBtn}
           />
         </View>

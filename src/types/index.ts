@@ -83,6 +83,13 @@ export interface Application {
   references_revealed: boolean; // true at Stage 2
   contact_revealed: boolean; // true at Stage 4
   conversation_id?: number | null;
+  has_reviewed?: boolean;
+  user_review?: {
+    id: number;
+    overall_rating: number;
+    comment?: string | null;
+    created_at?: string;
+  } | null;
   job: JobPost;
   worker: {
     id: number;

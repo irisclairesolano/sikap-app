@@ -42,7 +42,9 @@ export const MyApplicationsScreen: React.FC = () => {
       case 'All':
         return true;
       case 'Needs Action':
-        return app.status === 'employer_confirmed' || app.status === 'completed';
+        return (
+          app.status === 'employer_confirmed' || (app.status === 'completed' && !app.has_reviewed)
+        );
       case 'Active':
         return app.status === 'accepted';
       case 'In Review':
@@ -64,7 +66,7 @@ export const MyApplicationsScreen: React.FC = () => {
     return {
       All: applications.length,
       'Needs Action': applications.filter(
-        (a) => a.status === 'employer_confirmed' || a.status === 'completed',
+        (a) => a.status === 'employer_confirmed' || (a.status === 'completed' && !a.has_reviewed),
       ).length,
       Active: applications.filter((a) => a.status === 'accepted').length,
       'In Review': applications.filter(
@@ -84,7 +86,7 @@ export const MyApplicationsScreen: React.FC = () => {
   }, [applications]);
 
   const unratedCompletedCount = useMemo(() => {
-    return applications.filter((a) => a.status === 'completed').length;
+    return applications.filter((a) => a.status === 'completed' && !a.has_reviewed).length;
   }, [applications]);
 
   const filteredAndSortedApps = useMemo(() => {

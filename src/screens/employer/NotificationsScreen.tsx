@@ -128,6 +128,19 @@ export const NotificationsScreen: React.FC = () => {
                     const appId = parsedData?.application_id || parsedData?.applicationId;
                     const jobId = parsedData?.job_id || parsedData?.jobId;
 
+                    const notifType = parsedData?.type || notif.data?.type;
+                    if (notifType === 'review_received') {
+                      navigation.navigate('Profile');
+                      return;
+                    }
+                    if (notifType === 'rate_worker_reminder' && jobId) {
+                      navigation.navigate('RateWorkerList', {
+                        jobId: Number(jobId),
+                        jobTitle: parsedData?.job_title || 'Job',
+                      });
+                      return;
+                    }
+
                     if (appId) {
                       navigation.navigate('ApplicantDetail', {
                         applicantId: Number(appId),

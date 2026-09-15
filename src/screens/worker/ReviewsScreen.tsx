@@ -38,7 +38,7 @@ export const ReviewsScreen: React.FC = () => {
 
   const reputationScore = data?.reputation_score || 0;
   const reviewsCount = data?.reviews_count || 0;
-  const reviewsList = data?.reviews || [];
+  const reviewsList = (data?.reviews || []).filter((r) => r.reviewer_role !== 'worker');
 
   return (
     <SafeAreaView style={styles.safeArea}>

@@ -54,18 +54,16 @@ export const RateEmployerScreen: React.FC = () => {
   const [respect, setRespect] = useState(0);
   const [reliability, setReliability] = useState(0);
   const [note, setNote] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const { mutate: submitReview, isPending } = useSubmitReview();
   const { showAlert } = useAlert();
 
-  // We map to cat1 - cat4. Since there are 5 states here and backend only supports 4 categories,
-  // wait, the backend `SubmitReviewPayload` takes cat1, cat2, cat3, cat4.
-  // The UI has: Clarity, Fairness, Respectfulness, Reliability.
-  // So we don't need 'safety'. We will use clarity, fairness, respect, reliability.
   const isFormValid = clarity > 0 && fairness > 0 && respect > 0 && reliability > 0;
 
   const handleSubmit = () => {
-    if (isPending || !isFormValid) return;
+    if (isPending || isSubmitted || !isFormValid) return;
+    setIsSubmitted(true);
     submitReview(
       {
         applicationId: id,
@@ -84,6 +82,7 @@ export const RateEmployerScreen: React.FC = () => {
           ]);
         },
         onError: (err: any) => {
+          setIsSubmitted(false);
           showAlert('Error', err.message || 'Failed to submit review.');
         },
       },
@@ -150,8 +149,8 @@ export const RateEmployerScreen: React.FC = () => {
           <Button
             title="Submit rating"
             onPress={handleSubmit}
-            disabled={!isFormValid || isPending}
-            loading={isPending}
+            disabled={!isFormValid || isPending || isSubmitted}
+            loading={isPending || isSubmitted}
             style={styles.submitBtn}
           />
         </View>

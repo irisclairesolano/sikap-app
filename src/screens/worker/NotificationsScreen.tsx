@@ -136,6 +136,12 @@ export const NotificationsScreen: React.FC = () => {
                       notif.data?.job_id ||
                       notif.data?.jobId;
 
+                    const notifType = parsedData?.type || notif.data?.type;
+                    if (notifType === 'review_received') {
+                      navigation.navigate('Reviews');
+                      return;
+                    }
+
                     if (appId && !isNaN(Number(appId))) {
                       navigation.navigate('ApplicationDetail', { applicationId: Number(appId) });
                     } else if (jobId && !isNaN(Number(jobId))) {

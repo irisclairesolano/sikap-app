@@ -24,7 +24,7 @@ jest.mock('expo-haptics', () => ({
 describe('Official SIKAP OfflineNotice Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (global as any).fetch = jest.fn();
+    (globalThis as any).fetch = jest.fn();
   });
 
   it('renders nothing when online', async () => {
@@ -47,7 +47,7 @@ describe('Official SIKAP OfflineNotice Component', () => {
   it('handles retry button tap and triggers connection health check', async () => {
     jest.spyOn(onlineManager, 'isOnline').mockReturnValue(false);
     const mockFetch = jest.fn().mockResolvedValue({ ok: true });
-    (global as any).fetch = mockFetch;
+    (globalThis as any).fetch = mockFetch;
 
     const result = await render(<OfflineNotice />);
     const retryBtn = result.getByTestId('sikap-offline-retry-btn');

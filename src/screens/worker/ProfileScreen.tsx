@@ -64,13 +64,22 @@ export const ProfileScreen: React.FC = () => {
     skills: user.worker_profile?.skills || [],
     bio: user.worker_profile?.bio || '',
     experiences: user.worker_profile?.experiences || [],
-    recentReview: reviewsData?.reviews?.[0]
-      ? {
-          employer: reviewsData.reviews[0].reviewer?.name || 'Employer',
-          stars: Math.round(reviewsData.reviews[0].overall_rating),
-          comment: reviewsData.reviews[0].comment || '',
-        }
-      : null,
+    recentReview: (() => {
+      const receivedReviews = (reviewsData?.reviews || []).filter(
+        (r) =>
+          r.reviewer?.id !== user.id &&
+          (!r.reviewee_id || r.reviewee_id === user.id) &&
+          r.reviewer_role !== 'worker',
+      );
+      const topReview = receivedReviews[0];
+      return topReview
+        ? {
+            employer: topReview.reviewer?.name || 'Employer',
+            stars: Math.round(topReview.overall_rating),
+            comment: topReview.comment || '',
+          }
+        : null;
+    })(),
   };
 
   const hasSkills = (user?.worker_profile?.skills?.length || 0) > 0;

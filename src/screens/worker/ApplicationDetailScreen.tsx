@@ -384,7 +384,8 @@ const ApplicationDetailScreen: React.FC = () => {
                 </View>
               </View>
               <Text style={styles.minimalistSharedFootnote}>
-                You can message or call each other to discuss work details and agree on a price.
+                You can message each other in chat to discuss work schedule, requirements, and agree
+                on a price.
               </Text>
             </View>
           </View>
@@ -456,14 +457,45 @@ const ApplicationDetailScreen: React.FC = () => {
             <View style={[styles.priceCard, { backgroundColor: colors.sky }]}>
               <Text style={styles.priceEyebrow}>Job Completed</Text>
               <Text style={styles.priceNum}>₱{compensation || '1,800'}</Text>
-              <Text style={styles.priceDesc}>Job finished. Awaiting review.</Text>
+              <Text style={styles.priceDesc}>
+                {appData?.has_reviewed
+                  ? 'Job finished and rated. Thank you!'
+                  : 'Job finished. Awaiting review.'}
+              </Text>
             </View>
 
-            <View style={[styles.mintNotice, { backgroundColor: colors.peach }]}>
-              <Ionicons name="star" size={20} color={colors.primary} />
-              <Text style={[styles.mintNoticeText, { color: colors.primary }]}>
-                <Text style={{ fontWeight: '700', color: colors.primaryDark }}>Job complete! </Text>
-                Please rate your employer to help the community.
+            <View
+              style={[
+                styles.mintNotice,
+                { backgroundColor: appData?.has_reviewed ? '#DCFCE7' : colors.peach },
+              ]}
+            >
+              <Ionicons
+                name={appData?.has_reviewed ? 'checkmark-circle' : 'star'}
+                size={20}
+                color={appData?.has_reviewed ? '#15803D' : colors.primary}
+              />
+              <Text
+                style={[
+                  styles.mintNoticeText,
+                  { color: appData?.has_reviewed ? '#15803D' : colors.primary },
+                ]}
+              >
+                {appData?.has_reviewed ? (
+                  <>
+                    <Text style={{ fontWeight: '700', color: '#15803D' }}>Review submitted! </Text>
+                    {appData.user_review?.overall_rating
+                      ? `You rated this employer ★ ${Number(appData.user_review.overall_rating).toFixed(1)}.`
+                      : 'Thank you for your rating and review.'}
+                  </>
+                ) : (
+                  <>
+                    <Text style={{ fontWeight: '700', color: colors.primaryDark }}>
+                      Job complete!{' '}
+                    </Text>
+                    Please rate your employer to help the community.
+                  </>
+                )}
               </Text>
             </View>
           </View>
@@ -541,22 +573,24 @@ const ApplicationDetailScreen: React.FC = () => {
         )}
         {stage === 5 && (
           <>
-            <Button
-              label="Rate Employer"
-              variant="primary"
-              size="lg"
-              fullWidth
-              onPress={() =>
-                navigation.navigate('RateEmployer', {
-                  id: applicationId,
-                  employerName: employerName || 'Employer',
-                  jobTitle: jobTitle || 'Job',
-                })
-              }
-            />
+            {!appData?.has_reviewed && (
+              <Button
+                label="Rate Employer"
+                variant="primary"
+                size="lg"
+                fullWidth
+                onPress={() =>
+                  navigation.navigate('RateEmployer', {
+                    id: applicationId,
+                    employerName: employerName || 'Employer',
+                    jobTitle: jobTitle || 'Job',
+                  })
+                }
+              />
+            )}
             <Button
               label="Open Chat"
-              variant="outline"
+              variant={appData?.has_reviewed ? 'primary' : 'outline'}
               size="lg"
               fullWidth
               onPress={handleOpenChat}

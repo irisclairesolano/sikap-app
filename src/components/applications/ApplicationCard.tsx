@@ -26,7 +26,7 @@ export const getCategoryStyles = (category?: string) => {
   }
 };
 
-export const getApplicationStageInfo = (status: string) => {
+export const getApplicationStageInfo = (status: string, hasReviewed?: boolean) => {
   switch (status) {
     case 'pending':
       return {
@@ -78,13 +78,15 @@ export const getApplicationStageInfo = (status: string) => {
     case 'completed':
       return {
         stage: 5,
-        badgeLabel: 'Completed',
-        badgeIcon: 'ribbon-outline' as const,
-        badgeBg: '#E0F2FE',
-        badgeColor: '#0369A1',
-        stepLabel: 'Step 5 of 5: Job Finished',
-        nextStep: 'Job complete! Please rate your employer to help the community.',
-        isUrgent: true,
+        badgeLabel: hasReviewed ? 'Completed · Rated' : 'Completed',
+        badgeIcon: hasReviewed ? ('checkmark-circle' as const) : ('ribbon-outline' as const),
+        badgeBg: hasReviewed ? '#DCFCE7' : '#E0F2FE',
+        badgeColor: hasReviewed ? '#15803D' : '#0369A1',
+        stepLabel: hasReviewed ? 'Step 5 of 5: Job Finished & Rated' : 'Step 5 of 5: Job Finished',
+        nextStep: hasReviewed
+          ? 'Job finished and rated. Thank you for your feedback!'
+          : 'Job complete! Please rate your employer to help the community.',
+        isUrgent: !hasReviewed,
       };
     case 'withdrawn':
       return {
@@ -138,6 +140,13 @@ const formatRelativeTime = (dateStr?: string) => {
   return date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
 };
 
+const formatAppliedDate = (dateStr?: string) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
 export const ApplicationCard: React.FC<ApplicationCardProps> = ({
   application,
   onPress,
@@ -145,7 +154,7 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
   onRateEmployer,
 }) => {
   const { job, status } = application;
-  const stageInfo = getApplicationStageInfo(status);
+  const stageInfo = getApplicationStageInfo(status, application.has_reviewed);
   const catStyles = getCategoryStyles(job?.categories?.[0] || job?.category || 'Other');
 
   // Compensation display
@@ -168,7 +177,8 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
     ? `${job.barangay}, ${job.municipality || 'Bulan'}`
     : job?.municipality || 'Bulan';
 
-  const timeText = formatRelativeTime(application.applied_at || application.created_at);
+  const appliedDateRaw = application.applied_at || application.created_at;
+  const appliedRelative = formatRelativeTime(appliedDateRaw);
 
   return (
     <TouchableOpacity
@@ -219,7 +229,7 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
         </View>
       </View>
 
-      {/* Glanceable Info Chips (Pay, Location, Time) */}
+      {/* Glanceable Info Chips (Pay, Location, Applied Time) */}
       <View style={styles.metaRow}>
         {displayPrice && (
           <View
@@ -246,15 +256,15 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
           </Text>
         </View>
 
-        {timeText ? (
-          <View style={styles.metaChip}>
+        {appliedRelative ? (
+          <View style={[styles.metaChip, styles.metaChipApplied]}>
             <Ionicons
-              name="time-outline"
+              name="calendar-outline"
               size={12}
-              color={colors.inkMuted}
+              color={colors.primarySoft}
               style={{ marginRight: 3 }}
             />
-            <Text style={styles.metaChipText}>{timeText}</Text>
+            <Text style={styles.metaChipAppliedText}>Applied {appliedRelative}</Text>
           </View>
         ) : null}
       </View>
@@ -274,7 +284,7 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
                 else if (stageInfo.stage === 4)
                   fillColor = '#15803D'; // Active Hire
                 else if (stageInfo.stage === 5)
-                  fillColor = '#0369A1'; // Completed
+                  fillColor = application.has_reviewed ? '#15803D' : '#0369A1'; // Completed / Rated
                 else fillColor = colors.primary; // Step 1 & 2
               }
 
@@ -330,7 +340,7 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
           </TouchableOpacity>
         )}
 
-        {stageInfo.stage === 5 && (
+        {stageInfo.stage === 5 && !application.has_reviewed && (
           <TouchableOpacity
             style={styles.quickActionBtnPrimary}
             onPress={() => (onRateEmployer ? onRateEmployer(application) : onPress())}
@@ -338,6 +348,18 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
           >
             <Text style={styles.quickActionBtnPrimaryText}>Rate Employer</Text>
           </TouchableOpacity>
+        )}
+
+        {stageInfo.stage === 5 && application.has_reviewed && (
+          <View style={styles.reviewedBadgeRow}>
+            <Ionicons name="checkmark-circle" size={14} color="#15803D" />
+            <Text style={styles.reviewedBadgeText}>
+              Rated{' '}
+              {application.user_review?.overall_rating
+                ? `★ ${Number(application.user_review.overall_rating).toFixed(1)}`
+                : 'Submitted'}
+            </Text>
+          </View>
         )}
       </View>
     </TouchableOpacity>
@@ -563,5 +585,30 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 12,
     color: colors.white,
+  },
+  metaChipApplied: {
+    backgroundColor: '#F1F5F9',
+    borderColor: '#E2E8F0',
+    borderWidth: 1,
+  },
+  metaChipAppliedText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 11,
+    color: colors.inkSoft,
+  },
+  reviewedBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#DCFCE7',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    gap: 5,
+    alignSelf: 'flex-start',
+  },
+  reviewedBadgeText: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 11.5,
+    color: '#15803D',
   },
 });
