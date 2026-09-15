@@ -1,6 +1,7 @@
 import * as SecureStore from '../utils/storage';
+import { onlineManager } from '@tanstack/react-query';
 
-const BASE_URL =
+export const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || 'https://sikap-backend-singapore.onrender.com/api/v1';
 
 console.log('🔗 API Base URL:', BASE_URL);
@@ -82,6 +83,7 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
 
     if (isNetworkOrDnsError) {
       console.warn(`⚠️ Network connection issue for ${endpoint}:`, errorMsg);
+      onlineManager.setOnline(false);
       throw new Error(
         'Unable to connect to the server. Please check your internet connection and try again.',
       );
@@ -90,7 +92,11 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
     throw error;
   }
 
-  console.log(`dY"- API Response: ${endpoint}`, {
+  if (!onlineManager.isOnline()) {
+    onlineManager.setOnline(true);
+  }
+
+  console.log(`🔗 API Response: ${endpoint}`, {
     status: res.status,
     ok: res.ok,
   });
