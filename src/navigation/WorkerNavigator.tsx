@@ -251,7 +251,7 @@ const WorkerNavigator: React.FC = () => {
         component={ApplicationsStack}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
-            navigation.navigate('Mine', { screen: 'Applications' });
+            (navigation as any).navigate('Mine', { screen: 'Applications' });
           },
         })}
       />

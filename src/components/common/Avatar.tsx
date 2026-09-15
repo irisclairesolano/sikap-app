@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { colors, fonts } from '../../theme';
 
 interface AvatarProps {
@@ -12,10 +13,17 @@ export const Avatar: React.FC<AvatarProps> = ({ name, size = 40, url }) => {
   const [imageError, setImageError] = useState(false);
   const initial = name ? name.charAt(0).toUpperCase() : '?';
 
+  useEffect(() => {
+    setImageError(false);
+  }, [url]);
+
   if (url && !imageError) {
     return (
       <Image
         source={{ uri: url }}
+        cachePolicy="memory-disk"
+        priority="high"
+        transition={150}
         style={{
           width: size,
           height: size,

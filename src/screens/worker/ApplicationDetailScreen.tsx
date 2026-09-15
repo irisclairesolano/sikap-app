@@ -394,7 +394,7 @@ const ApplicationDetailScreen: React.FC = () => {
         {/* STAGE 3: OFFER */}
         {stage === 3 && (
           <View>
-            <View style={styles.priceCard}>
+            <View style={[styles.priceCard, styles.priceCardAmber]}>
               <View
                 style={{
                   flexDirection: 'row',
@@ -402,7 +402,7 @@ const ApplicationDetailScreen: React.FC = () => {
                   alignItems: 'flex-start',
                 }}
               >
-                <Text style={styles.priceEyebrow}>Final agreed price</Text>
+                <Text style={[styles.priceEyebrow, { color: '#854D0E' }]}>Final agreed price</Text>
                 <View style={styles.lockBadge}>
                   <Ionicons name="lock-closed" size={16} color={colors.primary} />
                 </View>
@@ -411,10 +411,10 @@ const ApplicationDetailScreen: React.FC = () => {
               <Text style={styles.priceDesc}>3 days • Carpentry • Bulan</Text>
             </View>
 
-            <View style={styles.mintNotice}>
-              <Ionicons name="checkmark-circle" size={20} color={colors.mintDeep} />
+            <View style={[styles.mintNotice, styles.mintNoticeEmerald]}>
+              <Ionicons name="checkmark-circle" size={20} color="#15803D" />
               <Text style={styles.mintNoticeText}>
-                <Text style={{ fontWeight: '700', color: colors.ink }}>Slot locked. </Text>
+                <Text style={{ fontWeight: '700', color: '#14532D' }}>Slot locked. </Text>
                 No price surprises, no ghosting.
               </Text>
             </View>
@@ -435,16 +435,16 @@ const ApplicationDetailScreen: React.FC = () => {
         {/* STAGE 4: HIRED */}
         {stage === 4 && (
           <View>
-            <View style={styles.priceCard}>
-              <Text style={styles.priceEyebrow}>Active Contract</Text>
+            <View style={[styles.priceCard, styles.priceCardMint]}>
+              <Text style={[styles.priceEyebrow, { color: '#166534' }]}>Active Contract</Text>
               <Text style={styles.priceNum}>₱{compensation || '1,800'}</Text>
               <Text style={styles.priceDesc}>Agreed price locked.</Text>
             </View>
 
-            <View style={styles.mintNotice}>
-              <Ionicons name="briefcase" size={20} color={colors.mintDeep} />
+            <View style={[styles.mintNotice, styles.mintNoticeEmerald]}>
+              <Ionicons name="briefcase" size={20} color="#15803D" />
               <Text style={styles.mintNoticeText}>
-                <Text style={{ fontWeight: '700', color: colors.ink }}>You are hired! </Text>
+                <Text style={{ fontWeight: '700', color: '#14532D' }}>You are hired! </Text>
                 Proceed to the job location on the agreed date.
               </Text>
             </View>
@@ -454,8 +454,8 @@ const ApplicationDetailScreen: React.FC = () => {
         {/* STAGE 5: COMPLETED */}
         {stage === 5 && (
           <View>
-            <View style={[styles.priceCard, { backgroundColor: colors.sky }]}>
-              <Text style={styles.priceEyebrow}>Job Completed</Text>
+            <View style={[styles.priceCard, styles.priceCardSky]}>
+              <Text style={[styles.priceEyebrow, { color: '#075985' }]}>Job Completed</Text>
               <Text style={styles.priceNum}>₱{compensation || '1,800'}</Text>
               <Text style={styles.priceDesc}>
                 {appData?.has_reviewed
@@ -467,18 +467,18 @@ const ApplicationDetailScreen: React.FC = () => {
             <View
               style={[
                 styles.mintNotice,
-                { backgroundColor: appData?.has_reviewed ? '#DCFCE7' : colors.peach },
+                appData?.has_reviewed ? styles.mintNoticeEmerald : styles.mintNoticeRose,
               ]}
             >
               <Ionicons
                 name={appData?.has_reviewed ? 'checkmark-circle' : 'star'}
                 size={20}
-                color={appData?.has_reviewed ? '#15803D' : colors.primary}
+                color={appData?.has_reviewed ? '#15803D' : '#E11D48'}
               />
               <Text
                 style={[
                   styles.mintNoticeText,
-                  { color: appData?.has_reviewed ? '#15803D' : colors.primary },
+                  { color: appData?.has_reviewed ? '#166534' : '#9F1239' },
                 ]}
               >
                 {appData?.has_reviewed ? (
@@ -779,11 +779,32 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     flex: 1,
   },
-  priceCard: { backgroundColor: colors.butter, borderRadius: 20, padding: 24, marginTop: 16 },
+  priceCard: {
+    borderRadius: 20,
+    borderWidth: 1.5,
+    padding: 24,
+    marginTop: 16,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  priceCardAmber: {
+    backgroundColor: 'rgba(254, 252, 232, 0.90)',
+    borderColor: 'rgba(254, 240, 138, 0.70)',
+  },
+  priceCardMint: {
+    backgroundColor: 'rgba(240, 253, 244, 0.90)',
+    borderColor: 'rgba(187, 247, 208, 0.70)',
+  },
+  priceCardSky: {
+    backgroundColor: 'rgba(240, 249, 255, 0.90)',
+    borderColor: 'rgba(186, 230, 253, 0.70)',
+  },
   priceEyebrow: {
     fontFamily: fonts.bodyBold,
     fontSize: 11,
-    color: colors.ink,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -792,22 +813,37 @@ const styles = StyleSheet.create({
     height: 36,
     backgroundColor: 'white',
     borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
     alignItems: 'center',
     justifyContent: 'center',
     ...shadows.sm,
   },
-  priceNum: { fontFamily: fonts.bodyBold, fontSize: 40, color: colors.ink, marginTop: 18 },
-  priceDesc: { fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft, marginTop: 8 },
+  priceNum: { fontFamily: fonts.bodyBold, fontSize: 40, color: '#0F172A', marginTop: 18 },
+  priceDesc: { fontFamily: fonts.body, fontSize: 14, color: '#475569', marginTop: 8 },
   mintNotice: {
-    backgroundColor: colors.mint,
-    borderRadius: 12,
+    borderRadius: 14,
+    borderWidth: 1.5,
     padding: 14,
     marginTop: 12,
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 1,
   },
-  mintNoticeText: { fontFamily: fonts.body, fontSize: 13, color: colors.mintDeep, flex: 1 },
+  mintNoticeEmerald: {
+    backgroundColor: 'rgba(240, 253, 244, 0.92)',
+    borderColor: 'rgba(187, 247, 208, 0.70)',
+  },
+  mintNoticeRose: {
+    backgroundColor: 'rgba(255, 241, 242, 0.92)',
+    borderColor: 'rgba(254, 205, 211, 0.70)',
+  },
+  mintNoticeText: { fontFamily: fonts.body, fontSize: 13, flex: 1 },
   employerContactCard: {
     backgroundColor: colors.paperBright,
     borderRadius: 12,

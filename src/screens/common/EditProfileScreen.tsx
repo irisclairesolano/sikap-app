@@ -191,8 +191,8 @@ export const EditProfileScreen: React.FC = () => {
           setIsUploading(true);
           const manipResult = await ImageManipulator.manipulateAsync(
             localAvatarUri,
-            [{ resize: { width: 800 } }],
-            { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG },
+            [{ resize: { width: 400 } }],
+            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG },
           );
           const res = await profileApi.uploadAvatar(manipResult.uri);
           if (res?.avatar_url && user) {
@@ -330,6 +330,8 @@ export const EditProfileScreen: React.FC = () => {
               ) : getAvatarUrl() && !imageError ? (
                 <Image
                   cachePolicy="memory-disk"
+                  priority="high"
+                  transition={150}
                   source={{ uri: getAvatarUrl()! }}
                   style={styles.avatarImage}
                   onError={() => setImageError(true)}

@@ -222,7 +222,7 @@ const EmployerNavigator: React.FC = () => {
         component={MyJobsStack}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
-            navigation.navigate('MyJobs', { screen: 'MyJobsList' });
+            (navigation as any).navigate('MyJobs', { screen: 'MyJobsList' });
           },
         })}
       />

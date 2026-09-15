@@ -33,6 +33,7 @@ export const ProfileScreen: React.FC = () => {
   } = useQuery({
     queryKey: ['profile'],
     queryFn: profileApi.getProfile,
+    initialData: () => (queryClient.getQueryData(['profile']) as any) || authUser,
   });
 
   useFocusEffect(
@@ -93,6 +94,15 @@ export const ProfileScreen: React.FC = () => {
     setRefreshing(false);
   };
 
+  const formatScore = (val: number | string | undefined | null) => {
+    if (val === undefined || val === null || val === '' || val === 'N/A') return 'N/A';
+    const num = Number(val);
+    if (isNaN(num) || num <= 0) return '0.0';
+    if (num % 1 === 0) return num.toFixed(1);
+    if (Number(num.toFixed(1)) === num) return num.toFixed(1);
+    return Number(num.toFixed(2)).toString();
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -100,51 +110,64 @@ export const ProfileScreen: React.FC = () => {
           <Ionicons name="create-outline" size={22} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>Public profile</Text>
+          <Text style={styles.headerPillText}>Employer Profile</Text>
         </View>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Settings')}>
-          <Ionicons name="settings-outline" size={24} color={colors.ink} />
+        <TouchableOpacity
+          style={styles.iconBtn}
+          onPress={() => navigation.navigate('Settings' as any)}
+        >
+          <Ionicons name="settings-outline" size={22} color={colors.ink} />
         </TouchableOpacity>
       </View>
 
-      <RefreshableContainer onRefresh={handleRefresh} contentContainerStyle={styles.scrollContent}>
+      <RefreshableContainer
+        onRefresh={handleRefresh}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
             {getAvatarUrl() ? (
               <Image
-                cachePolicy="memory-disk"
                 source={{ uri: getAvatarUrl()! }}
                 style={styles.avatarImage}
+                contentFit="cover"
               />
             ) : (
-              <Text style={styles.avatarText}>{employer.name.charAt(0)}</Text>
+              <Text style={styles.avatarText}>
+                {(employer.name || 'E').charAt(0).toUpperCase()}
+              </Text>
             )}
           </View>
           <View style={styles.profileInfo}>
             <View style={styles.nameRow}>
               <Text style={styles.nameText}>{employer.name}</Text>
               {employer.verified && (
-                <Ionicons name="checkmark-circle" size={18} color={colors.mintDeep} />
+                <Ionicons name="checkmark-circle" size={16} color={colors.mintDeep} />
               )}
             </View>
-            <Text style={styles.locationText}>
-              <Ionicons name="location" size={11} color={colors.primary} /> {employer.location}
-            </Text>
+            <Text style={styles.locationText}>{employer.location}</Text>
+            {employer.verified && (
+              <View style={styles.verifiedBadge}>
+                <Text style={styles.verifiedBadgeText}>Verified Employer</Text>
+              </View>
+            )}
           </View>
         </View>
 
+        {/* Bio Section */}
         {!!employer.bio && (
           <View style={styles.bioCard}>
             <Text style={styles.bioTitle}>About</Text>
             <Text style={styles.bioText}>{employer.bio}</Text>
           </View>
         )}
-        <View style={[styles.reputationCard, { backgroundColor: colors.sky }]}>
+        <View style={styles.reputationCard}>
           <Text style={styles.reputationEyebrow}>Reputation</Text>
           <View style={styles.reputationRow}>
             <Text style={styles.reputationScore}>
-              {employer.ratings > 0 ? employer.reputation : 'N/A'}
+              {employer.ratings > 0 ? formatScore(employer.reputation) : 'N/A'}
             </Text>
             <View style={styles.reputationStars}>
               {employer.ratings > 0 ? (
@@ -161,7 +184,7 @@ export const ProfileScreen: React.FC = () => {
                   ))}
                 </View>
               ) : null}
-              <Text style={[styles.reputationCount, { color: colors.skyDeep }]}>
+              <Text style={styles.reputationCount}>
                 {employer.ratings > 0 ? `${employer.ratings} ratings` : 'No ratings yet'}
               </Text>
             </View>
@@ -171,17 +194,17 @@ export const ProfileScreen: React.FC = () => {
 
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
-          <View style={[styles.statBox, { backgroundColor: colors.peach }]}>
-            <Text style={[styles.statValue, { color: colors.ink }]}>{employer.activeJobs}</Text>
-            <Text style={[styles.statLabel, { color: colors.primaryDark }]}>Active jobs</Text>
+          <View style={[styles.statBox, styles.statBoxRose]}>
+            <Text style={[styles.statValue, { color: '#0F172A' }]}>{employer.activeJobs}</Text>
+            <Text style={[styles.statLabel, { color: '#9F1239' }]}>Active jobs</Text>
           </View>
-          <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
-            <Text style={[styles.statValue, { color: colors.ink }]}>{employer.hired}</Text>
-            <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Hires</Text>
+          <View style={[styles.statBox, styles.statBoxMint]}>
+            <Text style={[styles.statValue, { color: '#0F172A' }]}>{employer.hired}</Text>
+            <Text style={[styles.statLabel, { color: '#166534' }]}>Hires</Text>
           </View>
-          <View style={[styles.statBox, { backgroundColor: colors.butter }]}>
-            <Text style={[styles.statValue, { color: colors.ink }]}>{employer.totalPaid}</Text>
-            <Text style={[styles.statLabel, { color: colors.inkSoft }]}>Total paid</Text>
+          <View style={[styles.statBox, styles.statBoxAmber]}>
+            <Text style={[styles.statValue, { color: '#0F172A' }]}>{employer.totalPaid}</Text>
+            <Text style={[styles.statLabel, { color: '#854D0E' }]}>Total paid</Text>
           </View>
         </View>
 
@@ -272,15 +295,22 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   reputationCard: {
-    backgroundColor: colors.peach,
+    backgroundColor: 'rgba(240, 249, 255, 0.90)',
     borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(186, 230, 253, 0.70)',
     padding: 20,
     marginBottom: 16,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
   },
   reputationEyebrow: {
     fontFamily: fonts.bodyBold,
     fontSize: 11,
-    color: colors.skyDeep,
+    color: '#0369A1',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -290,7 +320,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 6,
   },
-  reputationScore: { fontFamily: fonts.bodyBold, fontSize: 52, lineHeight: 60, color: colors.ink },
+  reputationScore: { fontFamily: fonts.bodyBold, fontSize: 52, lineHeight: 60, color: '#0F172A' },
   reputationStars: { alignItems: 'flex-end', paddingBottom: 6 },
   starsRow: { flexDirection: 'row', gap: 2 },
   reputationCount: {
@@ -302,15 +332,38 @@ const styles = StyleSheet.create({
   reputationTagline: {
     fontFamily: fonts.displayItalic,
     fontSize: 14,
-    color: colors.skyDeep,
+    color: '#475569',
     marginTop: 8,
   },
-  statsGrid: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  statBox: { flex: 1, borderRadius: 12, padding: 12, alignItems: 'center' },
-  statValue: { fontFamily: fonts.bodyBold, fontSize: 18 },
+  statsGrid: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+  statBox: {
+    flex: 1,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 14,
+    alignItems: 'center',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  statBoxRose: {
+    backgroundColor: 'rgba(255, 241, 242, 0.90)',
+    borderColor: 'rgba(255, 205, 210, 0.65)',
+  },
+  statBoxMint: {
+    backgroundColor: 'rgba(240, 253, 244, 0.90)',
+    borderColor: 'rgba(187, 247, 208, 0.65)',
+  },
+  statBoxAmber: {
+    backgroundColor: 'rgba(254, 252, 232, 0.90)',
+    borderColor: 'rgba(254, 240, 138, 0.65)',
+  },
+  statValue: { fontFamily: fonts.bodyBold, fontSize: 20 },
   statLabel: {
     fontFamily: fonts.bodyBold,
-    fontSize: 10,
+    fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginTop: 4,

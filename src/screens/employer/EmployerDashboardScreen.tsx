@@ -68,10 +68,14 @@ export const EmployerDashboardScreen: React.FC = () => {
     return acc + paid;
   }, 0);
 
-  const reputationFormatted =
-    user?.reputation_score !== undefined && user?.reputation_score !== null
-      ? Number(user.reputation_score).toFixed(1)
-      : '5.0';
+  const reputationFormatted = (() => {
+    if (user?.reputation_score === undefined || user?.reputation_score === null) return '5.0';
+    const num = Number(user.reputation_score);
+    if (isNaN(num) || num <= 0) return '0.0';
+    if (num % 1 === 0) return num.toFixed(1);
+    if (Number(num.toFixed(1)) === num) return num.toFixed(1);
+    return Number(num.toFixed(2)).toString();
+  })();
 
   if (loading && !jobsResponse) {
     return (
@@ -237,33 +241,45 @@ export const EmployerDashboardScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Stats Grid - Informational & Non-clickable */}
+        {/* Stats Grid - Glassmorphic Tiles */}
         <View style={styles.statsGrid}>
-          <View style={[styles.statCard, { backgroundColor: colors.peach }]}>
-            <Text style={[styles.statNum, { color: colors.primaryDark }]}>{activeJobs.length}</Text>
-            <Text style={[styles.statLabel, { color: colors.primaryDark }]}>Active jobs</Text>
+          <View style={[styles.statCard, styles.statCardRose]}>
+            <View style={styles.statPillHeader}>
+              <View style={[styles.statDot, { backgroundColor: '#E11D48' }]} />
+              <Text style={[styles.statLabel, { color: '#9F1239' }]}>Active jobs</Text>
+            </View>
+            <Text style={[styles.statNum, { color: '#0F172A' }]}>{activeJobs.length}</Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: colors.mint }]}>
-            <Text style={[styles.statNum, { color: colors.mintDeep }]}>{totalHires}</Text>
-            <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Total hires</Text>
+          <View style={[styles.statCard, styles.statCardMint]}>
+            <View style={styles.statPillHeader}>
+              <View style={[styles.statDot, { backgroundColor: '#15803D' }]} />
+              <Text style={[styles.statLabel, { color: '#166534' }]}>Total hires</Text>
+            </View>
+            <Text style={[styles.statNum, { color: '#0F172A' }]}>{totalHires}</Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: colors.butter }]}>
-            <Text style={[styles.statNum, { color: colors.ink }]}>
+          <View style={[styles.statCard, styles.statCardAmber]}>
+            <View style={styles.statPillHeader}>
+              <View style={[styles.statDot, { backgroundColor: '#D97706' }]} />
+              <Text style={[styles.statLabel, { color: '#854D0E' }]}>Total paid</Text>
+            </View>
+            <Text style={[styles.statNum, { color: '#0F172A' }]}>
               ₱{totalPaid.toLocaleString()}
             </Text>
-            <Text style={[styles.statLabel, { color: colors.inkSoft }]}>Total paid</Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: colors.sky }]}>
+          <View style={[styles.statCard, styles.statCardSky]}>
+            <View style={styles.statPillHeader}>
+              <View style={[styles.statDot, { backgroundColor: '#0284C7' }]} />
+              <Text style={[styles.statLabel, { color: '#075985' }]}>Reputation</Text>
+            </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={[styles.statNum, { color: colors.skyDeep }]}>{reputationFormatted}</Text>
+              <Text style={[styles.statNum, { color: '#0F172A' }]}>{reputationFormatted}</Text>
               <Ionicons
                 name="star"
                 size={14}
-                color={colors.skyDeep}
-                style={{ marginLeft: 2, marginBottom: 4 }}
+                color={colors.gold}
+                style={{ marginLeft: 3, marginBottom: 2 }}
               />
             </View>
-            <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Reputation</Text>
           </View>
         </View>
 
@@ -535,15 +551,49 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '48.5%',
-    borderRadius: 14,
-    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  statCardRose: {
+    backgroundColor: 'rgba(255, 241, 242, 0.90)',
+    borderColor: 'rgba(255, 205, 210, 0.65)',
+  },
+  statCardMint: {
+    backgroundColor: 'rgba(240, 253, 244, 0.90)',
+    borderColor: 'rgba(187, 247, 208, 0.65)',
+  },
+  statCardAmber: {
+    backgroundColor: 'rgba(254, 252, 232, 0.90)',
+    borderColor: 'rgba(254, 240, 138, 0.65)',
+  },
+  statCardSky: {
+    backgroundColor: 'rgba(240, 249, 255, 0.90)',
+    borderColor: 'rgba(186, 230, 253, 0.65)',
+  },
+  statPillHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  statDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   statNum: {
     fontFamily: fonts.numericBold,
-    fontSize: 26,
-    marginBottom: 4,
+    fontSize: 24,
+    color: '#0F172A',
   },
   statLabel: {
     fontFamily: fonts.bodyBold,

@@ -9,8 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -197,6 +197,9 @@ const ChatScreen: React.FC = () => {
             {conversation?.other_user?.avatar_url ? (
               <Image
                 source={{ uri: conversation.other_user.avatar_url }}
+                cachePolicy="memory-disk"
+                priority="high"
+                transition={150}
                 style={styles.headerAvatarImage}
               />
             ) : (

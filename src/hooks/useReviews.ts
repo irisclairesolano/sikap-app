@@ -26,6 +26,7 @@ export interface ReviewItem {
 export interface ReviewsResponse {
   reputation_score: number;
   reviews_count: number;
+  distribution?: Record<number, number>;
   reviews: ReviewItem[];
 }
 

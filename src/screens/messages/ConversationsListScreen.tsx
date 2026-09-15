@@ -7,9 +7,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Image,
   TextInput,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useConversations } from '../../hooks/useConversations';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -186,6 +186,9 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                   {item.other_user?.avatar_url ? (
                     <Image
                       source={{ uri: item.other_user.avatar_url }}
+                      cachePolicy="memory-disk"
+                      priority="high"
+                      transition={150}
                       style={styles.avatarImage}
                     />
                   ) : (

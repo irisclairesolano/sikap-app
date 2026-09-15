@@ -26,6 +26,7 @@ export const ProfileScreen: React.FC = () => {
   } = useQuery({
     queryKey: ['profile'],
     queryFn: profileApi.getProfile,
+    initialData: () => queryClient.getQueryData(['profile']),
   });
 
   useFocusEffect(
@@ -35,12 +36,6 @@ export const ProfileScreen: React.FC = () => {
   );
 
   const { data: reviewsData } = useReviews();
-
-  const [imageError, setImageError] = useState(false);
-
-  React.useEffect(() => {
-    setImageError(false);
-  }, [user?.avatar_url]);
 
   if (isLoading || !user) {
     return (
@@ -107,6 +102,15 @@ export const ProfileScreen: React.FC = () => {
     return `${apiBase}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
+  const formatScore = (val: number | string | undefined | null) => {
+    if (val === undefined || val === null || val === '' || val === 'N/A') return 'N/A';
+    const num = Number(val);
+    if (isNaN(num) || num <= 0) return '0.0';
+    if (num % 1 === 0) return num.toFixed(1);
+    if (Number(num.toFixed(1)) === num) return num.toFixed(1);
+    return Number(num.toFixed(2)).toString();
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -152,14 +156,16 @@ export const ProfileScreen: React.FC = () => {
         <TouchableOpacity
           style={styles.profileHeader}
           onPress={() => navigation.navigate('EditProfile')}
+          activeOpacity={0.8}
         >
           <View style={styles.avatarContainer}>
-            {getAvatarUrl() && !imageError ? (
+            {getAvatarUrl() ? (
               <Image
                 cachePolicy="memory-disk"
+                priority="high"
+                transition={150}
                 source={{ uri: getAvatarUrl()! }}
                 style={styles.avatarImage}
-                onError={() => setImageError(true)}
               />
             ) : (
               <Text style={styles.avatarText}>{worker.name.charAt(0)}</Text>
@@ -183,7 +189,7 @@ export const ProfileScreen: React.FC = () => {
           <Text style={styles.reputationEyebrow}>Reputation</Text>
           <View style={styles.reputationRow}>
             <Text style={styles.reputationScore}>
-              {worker.ratings > 0 ? worker.reputation : 'N/A'}
+              {worker.ratings > 0 ? formatScore(worker.reputation) : 'N/A'}
             </Text>
             <View style={styles.reputationStars}>
               {worker.ratings > 0 ? (
@@ -208,13 +214,13 @@ export const ProfileScreen: React.FC = () => {
 
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
-          <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
-            <Text style={[styles.statValue, { color: colors.mintDeep }]}>{worker.jobsDone}</Text>
-            <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Jobs done</Text>
+          <View style={[styles.statBox, styles.statBoxMint]}>
+            <Text style={[styles.statValue, { color: '#0F172A' }]}>{worker.jobsDone}</Text>
+            <Text style={[styles.statLabel, { color: '#166534' }]}>Jobs done</Text>
           </View>
-          <View style={[styles.statBox, { backgroundColor: colors.sky }]}>
-            <Text style={[styles.statValue, { color: colors.skyDeep }]}>{worker.memberSince}</Text>
-            <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Member</Text>
+          <View style={[styles.statBox, styles.statBoxSky]}>
+            <Text style={[styles.statValue, { color: '#0F172A' }]}>{worker.memberSince}</Text>
+            <Text style={[styles.statLabel, { color: '#0369A1' }]}>Member</Text>
           </View>
         </View>
 
@@ -451,15 +457,22 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   reputationCard: {
-    backgroundColor: colors.peach,
+    backgroundColor: 'rgba(255, 255, 255, 0.90)',
     borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
     padding: 20,
     marginBottom: 16,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
   },
   reputationEyebrow: {
     fontFamily: fonts.bodyBold,
     fontSize: 11,
-    color: colors.primaryDark,
+    color: '#9F1239',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -469,7 +482,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 6,
   },
-  reputationScore: { fontFamily: fonts.bodyBold, fontSize: 52, lineHeight: 60, color: colors.ink },
+  reputationScore: { fontFamily: fonts.bodyBold, fontSize: 52, lineHeight: 60, color: '#0F172A' },
   reputationStars: { alignItems: 'flex-end', paddingBottom: 6 },
   starsRow: { flexDirection: 'row', gap: 2 },
   reputationCount: {
@@ -481,11 +494,30 @@ const styles = StyleSheet.create({
   reputationTagline: {
     fontFamily: fonts.displayItalic,
     fontSize: 14,
-    color: colors.primaryDark,
+    color: '#475569',
     marginTop: 8,
   },
-  statsGrid: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  statBox: { flex: 1, borderRadius: 12, padding: 12, alignItems: 'center' },
+  statsGrid: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+  statBox: {
+    flex: 1,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 14,
+    alignItems: 'center',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  statBoxMint: {
+    backgroundColor: 'rgba(240, 253, 244, 0.82)',
+    borderColor: 'rgba(34, 197, 94, 0.20)',
+  },
+  statBoxSky: {
+    backgroundColor: 'rgba(240, 249, 255, 0.82)',
+    borderColor: 'rgba(56, 189, 248, 0.22)',
+  },
   statValue: { fontFamily: fonts.bodyBold, fontSize: 18 },
   statLabel: {
     fontFamily: fonts.bodyBold,

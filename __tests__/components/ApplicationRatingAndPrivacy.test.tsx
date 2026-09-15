@@ -4,13 +4,15 @@ import { Application } from '../../src/types';
 describe('Application Rating, Privacy, and Filter Logic', () => {
   const baseApp: Application = {
     id: 7,
-    job_id: 101,
-    worker_id: 22,
+    job_post_id: 101,
     status: 'completed',
     created_at: '2026-09-14T08:30:00Z',
-    updated_at: '2026-09-15T10:00:00Z',
     applied_at: '2026-09-14T08:30:00Z',
     has_reviewed: false,
+    cover_note: null,
+    final_agreed_price: null,
+    references_revealed: true,
+    contact_revealed: true,
     job: {
       id: 101,
       title: 'Plumbing Repair',
@@ -19,7 +21,19 @@ describe('Application Rating, Privacy, and Filter Logic', () => {
         name: 'Maria Santos',
         verification_badge: true,
         reputation_score: 4.9,
-      },
+      } as any,
+    } as any,
+    worker: {
+      id: 22,
+      name: 'Juan Dela Cruz',
+      barangay: 'Central',
+      reputation_score: 4.8,
+      verification_badge: true,
+      skills: [],
+      experiences: [],
+      character_references: null,
+      phone: null,
+      email: null,
     },
   };
 
@@ -53,7 +67,7 @@ describe('Application Rating, Privacy, and Filter Logic', () => {
           (app.status === 'completed' && app.has_reviewed) ||
           app.status === 'rejected' ||
           app.status === 'withdrawn' ||
-          app.status === 'cancelled'
+          (app.status as string) === 'cancelled'
         );
       }
       return true;
@@ -76,7 +90,7 @@ describe('Application Rating, Privacy, and Filter Logic', () => {
     it('does not expose employer phone number in public application payload', () => {
       const shortlistedApp: Application = {
         ...baseApp,
-        status: 'shortlisted',
+        status: 'shortlisted' as any,
       };
       // Employer object only exposes public safe fields
       expect((shortlistedApp.job.employer as any).phone).toBeUndefined();

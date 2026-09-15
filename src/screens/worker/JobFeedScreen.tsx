@@ -140,6 +140,8 @@ export const JobFeedScreen: React.FC = () => {
           {user?.avatar_url ? (
             <Image
               cachePolicy="memory-disk"
+              priority="high"
+              transition={150}
               source={{
                 uri: user.avatar_url.startsWith('http')
                   ? user.avatar_url

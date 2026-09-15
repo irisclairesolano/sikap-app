@@ -46,6 +46,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
           {avatarUrl ? (
             <Image
               cachePolicy="memory-disk"
+              priority="high"
               source={{ uri: avatarUrl }}
               style={styles.avatarImage}
               transition={200}

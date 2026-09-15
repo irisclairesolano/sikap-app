@@ -63,6 +63,15 @@ const ApplicantDetailScreen: React.FC = () => {
     appData?.worker?.reputation_score !== undefined && appData?.worker?.reputation_score !== null
       ? appData.worker.reputation_score
       : route.params.reputationScore;
+
+  const formatScore = (val: number | string | undefined | null) => {
+    if (val === undefined || val === null || val === '' || val === 'N/A') return 'N/A';
+    const num = Number(val);
+    if (isNaN(num) || num <= 0) return '0.0';
+    if (num % 1 === 0) return num.toFixed(1);
+    if (Number(num.toFixed(1)) === num) return num.toFixed(1);
+    return Number(num.toFixed(2)).toString();
+  };
   const experiences = appData?.worker?.experiences || route.params?.experiences || [];
   const reviews = appData?.worker?.reviews || route.params?.reviews || [];
   const bio = appData?.worker?.workerProfile?.bio || appData?.worker?.bio || route.params?.bio;
@@ -429,7 +438,9 @@ const ApplicantDetailScreen: React.FC = () => {
           <Text style={styles.reputationEyebrow}>Reputation</Text>
           <View style={styles.reputationRow}>
             <Text style={styles.reputationScore}>
-              {reputationScore !== undefined && reputationScore !== null ? reputationScore : 'N/A'}
+              {reputationScore !== undefined && reputationScore !== null
+                ? formatScore(reputationScore)
+                : 'N/A'}
             </Text>
             <View style={styles.reputationStars}>
               <Text style={styles.reputationCount}>
@@ -444,15 +455,15 @@ const ApplicantDetailScreen: React.FC = () => {
 
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
-          <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
-            <Text style={[styles.statValue, { color: colors.mintDeep }]}>
+          <View style={[styles.statBox, styles.statBoxMint]}>
+            <Text style={[styles.statValue, { color: '#0F172A' }]}>
               {appData?.worker?.completed_jobs_count ?? 0}
             </Text>
-            <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Completed Jobs</Text>
+            <Text style={[styles.statLabel, { color: '#166534' }]}>Completed Jobs</Text>
           </View>
-          <View style={[styles.statBox, { backgroundColor: colors.sky }]}>
-            <Text style={[styles.statValue, { color: colors.skyDeep }]}>Active</Text>
-            <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Worker</Text>
+          <View style={[styles.statBox, styles.statBoxSky]}>
+            <Text style={[styles.statValue, { color: '#0F172A' }]}>Active</Text>
+            <Text style={[styles.statLabel, { color: '#0369A1' }]}>Worker</Text>
           </View>
         </View>
 
@@ -1148,15 +1159,22 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   reputationCard: {
-    backgroundColor: colors.peach,
+    backgroundColor: 'rgba(255, 241, 242, 0.90)',
     borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 205, 210, 0.70)',
     padding: 24,
     marginBottom: 16,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
   },
   reputationEyebrow: {
     fontFamily: fonts.bodyBold,
     fontSize: 12,
-    color: colors.primaryDark,
+    color: '#9F1239',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -1170,7 +1188,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 52,
     lineHeight: 60,
-    color: colors.ink,
+    color: '#0F172A',
   },
   reputationStars: {
     alignItems: 'flex-end',
@@ -1189,7 +1207,7 @@ const styles = StyleSheet.create({
   reputationTagline: {
     fontFamily: fonts.displayItalic,
     fontSize: 14,
-    color: colors.primaryDark,
+    color: '#475569',
     marginTop: 12,
   },
   statsGrid: {
@@ -1200,12 +1218,26 @@ const styles = StyleSheet.create({
   statBox: {
     flex: 1,
     borderRadius: 16,
+    borderWidth: 1.5,
     padding: 16,
     alignItems: 'center',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  statBoxMint: {
+    backgroundColor: 'rgba(240, 253, 244, 0.90)',
+    borderColor: 'rgba(187, 247, 208, 0.65)',
+  },
+  statBoxSky: {
+    backgroundColor: 'rgba(240, 249, 255, 0.90)',
+    borderColor: 'rgba(186, 230, 253, 0.65)',
   },
   statValue: {
     fontFamily: fonts.bodyBold,
-    fontSize: 18,
+    fontSize: 20,
   },
   statLabel: {
     fontFamily: fonts.bodyBold,
