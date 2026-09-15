@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import CustomAlert, { AlertButton } from '../components/common/CustomAlert';
+import { sanitizeErrorMessage } from '../utils/errorSanitizer';
 
 interface AlertConfig {
   title: string;
@@ -20,7 +21,9 @@ export const AlertProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [config, setConfig] = useState<AlertConfig>({ title: '' });
 
   const showAlert = (title: string, message?: string, buttons?: AlertButton[]) => {
-    setConfig({ title, message, buttons });
+    const cleanTitle = sanitizeErrorMessage(title);
+    const cleanMessage = message ? sanitizeErrorMessage(message) : undefined;
+    setConfig({ title: cleanTitle, message: cleanMessage, buttons });
     setVisible(true);
   };
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { colors, fonts } from '../../theme';
 import Button from './Button';
+import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
 
 export interface AlertButton {
   text: string;
@@ -24,6 +25,9 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
   buttons = [{ text: 'OK' }],
   onRequestClose,
 }) => {
+  const cleanTitle = sanitizeErrorMessage(title);
+  const cleanMessage = message ? sanitizeErrorMessage(message) : undefined;
+
   return (
     <Modal
       visible={visible}
@@ -33,8 +37,8 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
     >
       <View style={styles.overlay}>
         <View style={styles.alertBox}>
-          <Text style={styles.title}>{title}</Text>
-          {message ? <Text style={styles.message}>{message}</Text> : null}
+          <Text style={styles.title}>{cleanTitle}</Text>
+          {cleanMessage ? <Text style={styles.message}>{cleanMessage}</Text> : null}
 
           <View style={styles.buttonContainer}>
             {buttons.map((btn, index) => (

@@ -14,6 +14,7 @@ import { colors, fonts } from '../../theme';
 import { LoginRequest } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 import { Wordmark } from '../../components/common/Wordmark';
+import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -95,10 +96,14 @@ const LoginScreen: React.FC = () => {
             );
             return;
           }
-          setBanner(err.message === 'UNAUTHORIZED' ? 'Invalid credentials.' : err.message);
+          setBanner(
+            err.message === 'UNAUTHORIZED'
+              ? 'Invalid credentials.'
+              : sanitizeErrorMessage(err.message),
+          );
           return;
         }
-        setBanner(err instanceof Error ? err.message : 'Login failed');
+        setBanner(sanitizeErrorMessage(err instanceof Error ? err.message : 'Login failed'));
       },
     });
   };

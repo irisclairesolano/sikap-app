@@ -15,6 +15,7 @@ import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { OtpInput } from 'react-native-otp-entry';
 import { notifyAuthChanged } from '../../store/authEvents';
+import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'OTPVerify'>;
 type RouteProps = RouteProp<AuthStackParamList, 'OTPVerify'>;
@@ -100,9 +101,10 @@ const OTPVerifyScreen: React.FC = () => {
         else if (err.status === 422) setBanner('Invalid OTP code. Please try again.');
         else if (err.status === 429)
           setBanner('Too many attempts. Please wait and try again later.');
-        else setBanner(err.message || 'Verification failed. Please try again.');
+        else
+          setBanner(sanitizeErrorMessage(err.message || 'Verification failed. Please try again.'));
       } else if (err instanceof Error) {
-        setBanner(`Error: ${err.message}`);
+        setBanner(sanitizeErrorMessage(err.message));
       } else {
         setBanner('An unexpected error occurred. Please try again.');
       }

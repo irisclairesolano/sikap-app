@@ -8,6 +8,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import { ApiClientError } from '../../api/client';
+import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
 import Button from '../../components/common/Button';
 import LocationPicker from '../../components/common/LocationPicker';
 import { AuthStackParamList } from '../../navigation/authTypes';
@@ -82,10 +83,12 @@ const RegisterStep2Screen: React.FC = () => {
             navigation.navigate('Login');
           }, 2500);
         } else {
-          setBanner(err.message || 'Registration failed. Please try again.');
+          setBanner(sanitizeErrorMessage(err.message || 'Registration failed. Please try again.'));
         }
-      } else if (err instanceof Error || (err && err.message)) {
-        setBanner(`Registration failed: ${err.message || 'Unknown error'}`);
+      } else if (err instanceof Error || (err && (err as any).message)) {
+        setBanner(
+          sanitizeErrorMessage((err as any).message || 'Registration failed. Please try again.'),
+        );
       } else {
         setBanner('An unexpected error occurred.');
       }

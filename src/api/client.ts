@@ -1,5 +1,6 @@
 import * as SecureStore from '../utils/storage';
 import { onlineManager } from '@tanstack/react-query';
+import { sanitizeErrorMessage } from '../utils/errorSanitizer';
 
 export const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || 'https://sikap-backend-singapore.onrender.com/api/v1';
@@ -73,23 +74,14 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
     }
 
     const errorMsg = error?.message || String(error);
-    const isNetworkOrDnsError =
-      errorMsg.includes('UnknownHostException') ||
-      errorMsg.includes('No address associated') ||
-      errorMsg.includes('Network request failed') ||
-      errorMsg.includes('Failed to fetch') ||
-      errorMsg.includes('network error') ||
-      error?.name === 'TypeError';
+    const sanitizedMsg = sanitizeErrorMessage(errorMsg);
 
-    if (isNetworkOrDnsError) {
+    if (sanitizedMsg.includes('Unable to connect to the server') || error?.name === 'TypeError') {
       console.warn(`⚠️ Network connection issue for ${endpoint}:`, errorMsg);
       onlineManager.setOnline(false);
-      throw new Error(
-        'Unable to connect to the server. Please check your internet connection and try again.',
-      );
     }
 
-    throw error;
+    throw new Error(sanitizedMsg);
   }
 
   if (!onlineManager.isOnline()) {
@@ -179,7 +171,8 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
           : (errBody.message ?? 'Something went wrong');
     }
 
-    throw new ApiClientError(displayMessage, res.status, errBody.errors, errBody);
+    const cleanDisplayMessage = sanitizeErrorMessage(displayMessage);
+    throw new ApiClientError(cleanDisplayMessage, res.status, errBody.errors, errBody);
   }
 
   // Log successful response before parsing
