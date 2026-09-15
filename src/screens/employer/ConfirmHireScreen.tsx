@@ -95,27 +95,27 @@ const ConfirmHireScreen: React.FC = () => {
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* 4-Stage Tracker */}
+          {/* 5-Stage Tracker */}
           <View style={styles.stages}>
-            <View style={styles.stage}>
+            <View style={styles.stageActive}>
               <View style={[styles.stageCircle, styles.stageDone]}>
                 <Ionicons name="checkmark" size={14} color="white" />
               </View>
               <Text style={styles.stageLabel}>Applied</Text>
             </View>
-            <View style={[styles.stageDivider, styles.stageDone]} />
-            <View style={styles.stage}>
+            <View style={[styles.stageDivider, styles.stageDoneDivider]} />
+            <View style={styles.stageActive}>
               <View style={[styles.stageCircle, styles.stageDone]}>
                 <Ionicons name="checkmark" size={14} color="white" />
               </View>
-              <Text style={styles.stageLabel}>Shortlisted</Text>
+              <Text style={styles.stageLabel}>Shortlist</Text>
             </View>
-            <View style={styles.stageDivider} />
+            <View style={[styles.stageDivider, styles.stageDoneDivider]} />
             <View style={styles.stageActive}>
               <View style={[styles.stageCircle, styles.stageCircleActive]}>
                 <Text style={styles.stageCircleTextActive}>3</Text>
               </View>
-              <Text style={styles.stageLabel}>Confirm</Text>
+              <Text style={styles.stageLabel}>Offer</Text>
             </View>
             <View style={styles.stageDivider} />
             <View style={styles.stage}>
@@ -123,6 +123,13 @@ const ConfirmHireScreen: React.FC = () => {
                 <Text style={styles.stageCircleText}>4</Text>
               </View>
               <Text style={styles.stageLabel}>Hired</Text>
+            </View>
+            <View style={styles.stageDivider} />
+            <View style={styles.stage}>
+              <View style={styles.stageCircle}>
+                <Text style={styles.stageCircleText}>5</Text>
+              </View>
+              <Text style={styles.stageLabel}>Done</Text>
             </View>
           </View>
 
@@ -307,6 +314,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.inkFaint,
     marginHorizontal: 8,
     marginBottom: 16,
+  },
+  stageDoneDivider: {
+    backgroundColor: colors.mintDeep,
   },
   applicantCard: {
     flexDirection: 'row',

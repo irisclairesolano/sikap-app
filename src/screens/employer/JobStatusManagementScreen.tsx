@@ -470,16 +470,24 @@ export const JobStatusManagementScreen: React.FC = () => {
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
+                  gap: 8,
                   marginBottom: 8,
                 }}
               >
                 <Text
-                  style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.primaryDark }}
+                  style={{
+                    flex: 1,
+                    fontFamily: fonts.bodyBold,
+                    fontSize: 13,
+                    color: colors.primaryDark,
+                  }}
+                  numberOfLines={1}
                 >
                   {getStageTitle(activeApp.status)}
                 </Text>
                 <View
                   style={{
+                    flexShrink: 0,
                     backgroundColor: colors.primaryTint,
                     paddingHorizontal: 8,
                     paddingVertical: 3,

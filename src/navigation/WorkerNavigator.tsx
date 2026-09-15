@@ -246,7 +246,15 @@ const WorkerNavigator: React.FC = () => {
       })}
     >
       <Tab.Screen name="Find" component={FindStack} />
-      <Tab.Screen name="Mine" component={ApplicationsStack} />
+      <Tab.Screen
+        name="Mine"
+        component={ApplicationsStack}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            navigation.navigate('Mine', { screen: 'Applications' });
+          },
+        })}
+      />
       <Tab.Screen
         name="Messages"
         component={MessagesStack}

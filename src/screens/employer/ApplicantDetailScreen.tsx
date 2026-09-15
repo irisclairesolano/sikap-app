@@ -309,26 +309,6 @@ const ApplicantDetailScreen: React.FC = () => {
           />
         }
       >
-        {(status === 'pending_negotiation' ||
-          status === 'employer_confirmed' ||
-          status === 'accepted') && (
-          <TouchableOpacity
-            style={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: colors.primary,
-              borderRadius: 12,
-              paddingVertical: 14,
-              marginHorizontal: 16,
-              marginBottom: 16,
-            }}
-            onPress={handleOpenChat}
-          >
-            <Text style={{ color: colors.white, fontWeight: '600', fontSize: 15 }}>
-              Message Worker
-            </Text>
-          </TouchableOpacity>
-        )}
         {/* 5-Stage Tracker */}
         <View style={styles.stages}>
           <View style={stage >= 1 ? styles.stageActive : styles.stage}>
@@ -430,6 +410,18 @@ const ApplicantDetailScreen: React.FC = () => {
               {barangay ? `${barangay}, ${municipality}` : 'Worker'}
             </Text>
           </View>
+          {(status === 'pending_negotiation' ||
+            status === 'employer_confirmed' ||
+            status === 'accepted') && (
+            <TouchableOpacity
+              style={styles.profileMessageBtn}
+              onPress={handleOpenChat}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="chatbubble-ellipses" size={16} color={colors.primary} />
+              <Text style={styles.profileMessageBtnText}>Message</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Reputation Card */}
@@ -1123,6 +1115,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.inkSoft,
     marginTop: 4,
+  },
+  profileMessageBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: colors.primaryTint,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  profileMessageBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.primary,
   },
   verifiedBadge: {
     backgroundColor: colors.mint,

@@ -217,7 +217,15 @@ const EmployerNavigator: React.FC = () => {
       })}
     >
       <Tab.Screen name="Home" component={HomeStack} />
-      <Tab.Screen name="MyJobs" component={MyJobsStack} />
+      <Tab.Screen
+        name="MyJobs"
+        component={MyJobsStack}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            navigation.navigate('MyJobs', { screen: 'MyJobsList' });
+          },
+        })}
+      />
       <Tab.Screen
         name="Messages"
         component={MessagesStack}
