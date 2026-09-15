@@ -45,6 +45,9 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
 
   if (!isFormData) {
     headers['Content-Type'] = 'application/json';
+  } else {
+    delete headers['Content-Type'];
+    delete headers['content-type'];
   }
 
   // Add a 60 second timeout for Render cold starts
@@ -62,11 +65,28 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
   } catch (error: any) {
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
-      console.log(`dY"- API Timeout: ${endpoint}`);
+      console.log(`⏱️ API Timeout: ${endpoint}`);
       throw new Error(
         'The server is taking too long to respond (likely waking up). Please try again.',
       );
     }
+
+    const errorMsg = error?.message || String(error);
+    const isNetworkOrDnsError =
+      errorMsg.includes('UnknownHostException') ||
+      errorMsg.includes('No address associated') ||
+      errorMsg.includes('Network request failed') ||
+      errorMsg.includes('Failed to fetch') ||
+      errorMsg.includes('network error') ||
+      error?.name === 'TypeError';
+
+    if (isNetworkOrDnsError) {
+      console.warn(`⚠️ Network connection issue for ${endpoint}:`, errorMsg);
+      throw new Error(
+        'Unable to connect to the server. Please check your internet connection and try again.',
+      );
+    }
+
     throw error;
   }
 

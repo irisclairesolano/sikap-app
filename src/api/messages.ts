@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import { Conversation, Message, PaginatedMessages } from '../types';
+import { appendFileToFormData } from '../utils/formData';
 
 export const messagesApi = {
   /**
@@ -39,8 +40,7 @@ export const messagesApi = {
     const filename = imageUri.split('/').pop() ?? 'image.jpg';
     const match = /\.([a-zA-Z]+)$/.exec(filename);
     const type = match ? `image/${match[1].toLowerCase()}` : 'image/jpeg';
-    // @ts-expect-error – React Native FormData accepts this object shape
-    formData.append('image', { uri: imageUri, name: filename, type });
+    await appendFileToFormData(formData, 'image', imageUri, filename, type);
     return apiClient<Message>(`/conversations/${conversationId}/messages`, {
       method: 'POST',
       body: formData,

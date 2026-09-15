@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import { User, WorkerExperience, CharacterReference } from '../types';
+import { appendFileToFormData } from '../utils/formData';
 
 export const profileApi = {
   // Get current user profile
@@ -29,11 +30,7 @@ export const profileApi = {
     const match = /\.(\w+)$/.exec(filename);
     const type = match ? `image/${match[1]}` : 'image/jpeg';
 
-    formData.append('avatar', {
-      uri: imageUri,
-      name: filename,
-      type,
-    } as any);
+    await appendFileToFormData(formData, 'avatar', imageUri, filename, type);
 
     const response = await apiClient<any>('/profile/avatar', {
       method: 'POST',

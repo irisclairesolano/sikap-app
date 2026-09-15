@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as SecureStore from '../../utils/storage';
+import { appendFileToFormData } from '../../utils/formData';
 import React, { useEffect, useState } from 'react';
 import {
   ScrollView,
@@ -77,26 +78,47 @@ const IDUploadScreen: React.FC = () => {
       form.append('role', userRole);
 
       const idUri = await compressImage(selectedFile.uri);
-      form.append('id_file', {
-        uri: idUri,
-        name: selectedFile.name ?? 'government-id.jpg',
-        type: 'image/jpeg',
-      } as unknown as Blob);
+      await appendFileToFormData(
+        form,
+        'id_file',
+        idUri,
+        selectedFile.name ?? 'government-id.jpg',
+        'image/jpeg',
+      );
 
       const backUri = await compressImage(selectedFileBack.uri);
-      form.append('id_back_file', {
-        uri: backUri,
-        name: selectedFileBack.name ?? 'government-id-back.jpg',
-        type: 'image/jpeg',
-      } as unknown as Blob);
+      await appendFileToFormData(
+        form,
+        'id_back_file',
+        backUri,
+        selectedFileBack.name ?? 'government-id-back.jpg',
+        'image/jpeg',
+      );
 
-      if (selectedSelfie) {
+      if (userRole === 'worker' && selectedSelfie) {
         const selfieUri = await compressImage(selectedSelfie.uri);
-        form.append('selfie_file', {
-          uri: selfieUri,
-          name: selectedSelfie.name ?? 'selfie.jpg',
-          type: 'image/jpeg',
-        } as unknown as Blob);
+        await appendFileToFormData(
+          form,
+          'selfie_file',
+          selfieUri,
+          selectedSelfie.name ?? 'selfie.jpg',
+          'image/jpeg',
+        );
+      }
+
+      if (userRole === 'employer' && selectedBusinessDocs.length > 0) {
+        for (let i = 0; i < selectedBusinessDocs.length; i++) {
+          const doc = selectedBusinessDocs[i];
+          const fileName = doc.name ?? `business-doc-${i}.pdf`;
+          const ext = fileName.split('.').pop()?.toLowerCase();
+          let mimeType = doc.mimeType || doc.type;
+          if (!mimeType || mimeType === 'unknown' || mimeType === '*/*') {
+            if (ext === 'png') mimeType = 'image/png';
+            else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
+            else mimeType = 'application/pdf';
+          }
+          await appendFileToFormData(form, 'business_documents[]', doc.uri, fileName, mimeType);
+        }
       }
 
       await authApi.uploadId(form);

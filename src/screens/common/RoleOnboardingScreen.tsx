@@ -21,6 +21,7 @@ import { apiClient } from '../../api/client';
 import { Skill } from '../../types';
 import Input from '../../components/common/Input';
 import { skillsApi } from '../../api/skills';
+import { appendFileToFormData } from '../../utils/formData';
 
 export const RoleOnboardingScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -199,7 +200,8 @@ export const RoleOnboardingScreen: React.FC = () => {
         // employer
         if (selectedBusinessDocs.length > 0) {
           const form = new FormData();
-          selectedBusinessDocs.forEach((doc, index) => {
+          for (let index = 0; index < selectedBusinessDocs.length; index++) {
+            const doc = selectedBusinessDocs[index];
             const fileName = doc.name ?? `business-doc-${index}.pdf`;
             const ext = fileName.split('.').pop()?.toLowerCase();
             let mimeType = doc.mimeType || doc.type;
@@ -208,12 +210,8 @@ export const RoleOnboardingScreen: React.FC = () => {
               else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
               else mimeType = 'application/pdf';
             }
-            form.append('business_documents[]', {
-              uri: doc.uri,
-              name: fileName,
-              type: mimeType,
-            } as unknown as Blob);
-          });
+            await appendFileToFormData(form, 'business_documents[]', doc.uri, fileName, mimeType);
+          }
           await onboardRole({ targetRole, data: form });
         } else {
           // If no documents were selected, send plain JSON payload so no multipart overhead occurs

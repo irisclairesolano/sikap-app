@@ -7,6 +7,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as SecureStore from '../../utils/storage';
+import { appendFileToFormData } from '../../utils/formData';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -239,7 +240,8 @@ export const EditProfileScreen: React.FC = () => {
           formData.append('existing_business_documents', JSON.stringify(existingBusinessDocs));
         }
 
-        selectedBusinessDocs.forEach((doc, idx) => {
+        for (let idx = 0; idx < selectedBusinessDocs.length; idx++) {
+          const doc = selectedBusinessDocs[idx];
           const fileName = doc.name || `business-doc-${idx}.pdf`;
           const ext = fileName.split('.').pop()?.toLowerCase();
           let mimeType = doc.mimeType || doc.type;
@@ -248,12 +250,8 @@ export const EditProfileScreen: React.FC = () => {
             else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
             else mimeType = 'application/pdf';
           }
-          formData.append('business_documents[]', {
-            uri: doc.uri,
-            name: fileName,
-            type: mimeType,
-          } as any);
-        });
+          await appendFileToFormData(formData, 'business_documents[]', doc.uri, fileName, mimeType);
+        }
 
         res = await profileApi.updateProfile(formData);
       } else {
