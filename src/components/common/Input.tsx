@@ -188,22 +188,18 @@ const styles = StyleSheet.create({
   inputContainer: {
     paddingHorizontal: 14,
     paddingVertical: 0,
-    borderWidth: 1.5,
-    borderColor: 'rgba(226, 232, 240, 0.85)',
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.80)',
     borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.82)',
-    borderBottomWidth: 1.5, // Override RNE default
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1, // Override RNE default
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.03,
-    shadowRadius: 6,
+    shadowRadius: 4,
   },
   inputContainerFocused: {
     borderColor: colors.primary,
-    borderTopColor: colors.primary,
-    borderLeftColor: colors.primary,
   },
   containerValid: {
     borderColor: colors.success,
