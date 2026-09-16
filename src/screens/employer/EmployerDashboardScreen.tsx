@@ -241,44 +241,62 @@ export const EmployerDashboardScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Stats Grid - Glassmorphic Tiles */}
-        <View style={styles.statsGrid}>
-          <View style={[styles.statCard, styles.statCardRose]}>
-            <View style={styles.statPillHeader}>
-              <View style={[styles.statDot, { backgroundColor: '#E11D48' }]} />
-              <Text style={[styles.statLabel, { color: '#9F1239' }]}>Active jobs</Text>
+        {/* Stats Grid - Frosted Crystal Glass */}
+        <View style={styles.statsWrapper}>
+          <View style={styles.ambientGlowCyan} pointerEvents="none" />
+          <View style={styles.ambientGlowRose} pointerEvents="none" />
+          <View style={styles.ambientGlowAmber} pointerEvents="none" />
+
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <View style={styles.statTopRow}>
+                <View
+                  style={[styles.statIconBadge, { backgroundColor: 'rgba(244, 63, 94, 0.12)' }]}
+                >
+                  <Ionicons name="briefcase-outline" size={14} color="#E11D48" />
+                </View>
+                <Text style={styles.statLabel}>Active jobs</Text>
+              </View>
+              <Text style={styles.statNum}>{activeJobs.length}</Text>
             </View>
-            <Text style={[styles.statNum, { color: '#0F172A' }]}>{activeJobs.length}</Text>
-          </View>
-          <View style={[styles.statCard, styles.statCardMint]}>
-            <View style={styles.statPillHeader}>
-              <View style={[styles.statDot, { backgroundColor: '#15803D' }]} />
-              <Text style={[styles.statLabel, { color: '#166534' }]}>Total hires</Text>
+
+            <View style={styles.statCard}>
+              <View style={styles.statTopRow}>
+                <View
+                  style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}
+                >
+                  <Ionicons name="people-outline" size={14} color="#16A34A" />
+                </View>
+                <Text style={styles.statLabel}>Total hires</Text>
+              </View>
+              <Text style={styles.statNum}>{totalHires}</Text>
             </View>
-            <Text style={[styles.statNum, { color: '#0F172A' }]}>{totalHires}</Text>
-          </View>
-          <View style={[styles.statCard, styles.statCardAmber]}>
-            <View style={styles.statPillHeader}>
-              <View style={[styles.statDot, { backgroundColor: '#D97706' }]} />
-              <Text style={[styles.statLabel, { color: '#854D0E' }]}>Total paid</Text>
+
+            <View style={styles.statCard}>
+              <View style={styles.statTopRow}>
+                <View
+                  style={[styles.statIconBadge, { backgroundColor: 'rgba(245, 158, 11, 0.12)' }]}
+                >
+                  <Ionicons name="cash-outline" size={14} color="#D97706" />
+                </View>
+                <Text style={styles.statLabel}>Total paid</Text>
+              </View>
+              <Text style={styles.statNum}>₱{totalPaid.toLocaleString()}</Text>
             </View>
-            <Text style={[styles.statNum, { color: '#0F172A' }]}>
-              ₱{totalPaid.toLocaleString()}
-            </Text>
-          </View>
-          <View style={[styles.statCard, styles.statCardSky]}>
-            <View style={styles.statPillHeader}>
-              <View style={[styles.statDot, { backgroundColor: '#0284C7' }]} />
-              <Text style={[styles.statLabel, { color: '#075985' }]}>Reputation</Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={[styles.statNum, { color: '#0F172A' }]}>{reputationFormatted}</Text>
-              <Ionicons
-                name="star"
-                size={14}
-                color={colors.gold}
-                style={{ marginLeft: 3, marginBottom: 2 }}
-              />
+
+            <View style={styles.statCard}>
+              <View style={styles.statTopRow}>
+                <View
+                  style={[styles.statIconBadge, { backgroundColor: 'rgba(234, 179, 8, 0.12)' }]}
+                >
+                  <Ionicons name="star" size={14} color="#EAB308" />
+                </View>
+                <Text style={styles.statLabel}>Reputation</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
+                <Text style={styles.statNum}>{reputationFormatted}</Text>
+                <Text style={styles.statMaxScore}>/5.0</Text>
+              </View>
             </View>
           </View>
         </View>
@@ -543,6 +561,37 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 20,
   },
+  statsWrapper: {
+    position: 'relative',
+    marginTop: 6,
+  },
+  ambientGlowCyan: {
+    position: 'absolute',
+    top: -15,
+    left: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(56, 189, 248, 0.18)',
+  },
+  ambientGlowRose: {
+    position: 'absolute',
+    bottom: -15,
+    right: 15,
+    width: 150,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: 'rgba(251, 113, 133, 0.16)',
+  },
+  ambientGlowAmber: {
+    position: 'absolute',
+    top: 50,
+    left: '35%',
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: 'rgba(251, 191, 36, 0.12)',
+  },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -551,55 +600,50 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '48.5%',
-    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.76)',
+    borderRadius: 18,
     borderWidth: 1.5,
-    paddingVertical: 16,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    paddingVertical: 14,
     paddingHorizontal: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
     shadowRadius: 16,
-    elevation: 2,
+    elevation: 3,
   },
-  statCardRose: {
-    backgroundColor: 'rgba(255, 241, 242, 0.90)',
-    borderColor: 'rgba(255, 205, 210, 0.65)',
-  },
-  statCardMint: {
-    backgroundColor: 'rgba(240, 253, 244, 0.90)',
-    borderColor: 'rgba(187, 247, 208, 0.65)',
-  },
-  statCardAmber: {
-    backgroundColor: 'rgba(254, 252, 232, 0.90)',
-    borderColor: 'rgba(254, 240, 138, 0.65)',
-  },
-  statCardSky: {
-    backgroundColor: 'rgba(240, 249, 255, 0.90)',
-    borderColor: 'rgba(186, 230, 253, 0.65)',
-  },
-  statPillHeader: {
+  statTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 6,
+    gap: 7,
+    marginBottom: 8,
   },
-  statDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  statIconBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statNum: {
     fontFamily: fonts.numericBold,
-    fontSize: 24,
+    fontSize: 22,
     color: '#0F172A',
+    letterSpacing: -0.3,
+  },
+  statMaxScore: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.inkLight,
   },
   statLabel: {
     fontFamily: fonts.bodyBold,
     fontSize: 11,
+    color: colors.inkMuted,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   },
   sectionHeaderTitle: {
     fontFamily: fonts.bodyBold,

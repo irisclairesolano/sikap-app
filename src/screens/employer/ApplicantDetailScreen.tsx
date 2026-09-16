@@ -433,37 +433,53 @@ const ApplicantDetailScreen: React.FC = () => {
           )}
         </View>
 
-        {/* Reputation Card */}
-        <View style={styles.reputationCard}>
-          <Text style={styles.reputationEyebrow}>Reputation</Text>
-          <View style={styles.reputationRow}>
-            <Text style={styles.reputationScore}>
-              {reputationScore !== undefined && reputationScore !== null
-                ? formatScore(reputationScore)
-                : 'N/A'}
-            </Text>
-            <View style={styles.reputationStars}>
-              <Text style={styles.reputationCount}>
-                {reputationScore !== undefined && reputationScore !== null
-                  ? 'Reputation Score'
-                  : 'No ratings yet'}
-              </Text>
+        {/* Reputation Card - Frosted Crystal Glass */}
+        <View style={styles.reputationCardWrapper}>
+          <View style={styles.ambientGlowRose} pointerEvents="none" />
+          <View style={styles.reputationCard}>
+            <View style={styles.reputationHeaderRow}>
+              <View style={styles.reputationBadge}>
+                <Ionicons name="shield-checkmark" size={13} color="#E11D48" />
+              </View>
+              <Text style={styles.reputationEyebrow}>Worker Reputation</Text>
             </View>
+            <View style={styles.reputationRow}>
+              <Text style={styles.reputationScore}>
+                {reputationScore !== undefined && reputationScore !== null
+                  ? formatScore(reputationScore)
+                  : 'N/A'}
+              </Text>
+              <View style={styles.reputationStars}>
+                <Text style={styles.reputationCount}>
+                  {reputationScore !== undefined && reputationScore !== null
+                    ? 'Reputation Score'
+                    : 'No ratings yet'}
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.reputationTagline}>Their score travels with them.</Text>
           </View>
-          <Text style={styles.reputationTagline}>Their score travels with them.</Text>
         </View>
 
-        {/* Stats Grid */}
-        <View style={styles.statsGrid}>
-          <View style={[styles.statBox, styles.statBoxMint]}>
-            <Text style={[styles.statValue, { color: '#0F172A' }]}>
-              {appData?.worker?.completed_jobs_count ?? 0}
-            </Text>
-            <Text style={[styles.statLabel, { color: '#166534' }]}>Completed Jobs</Text>
-          </View>
-          <View style={[styles.statBox, styles.statBoxSky]}>
-            <Text style={[styles.statValue, { color: '#0F172A' }]}>Active</Text>
-            <Text style={[styles.statLabel, { color: '#0369A1' }]}>Worker</Text>
+        {/* Stats Grid - Frosted Crystal Glass */}
+        <View style={styles.statsWrapper}>
+          <View style={styles.ambientGlowMint} pointerEvents="none" />
+          <View style={styles.ambientGlowBlue} pointerEvents="none" />
+          <View style={styles.statsGrid}>
+            <View style={styles.statBox}>
+              <View style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}>
+                <Ionicons name="checkmark-done-outline" size={15} color="#16A34A" />
+              </View>
+              <Text style={styles.statValue}>{appData?.worker?.completed_jobs_count ?? 0}</Text>
+              <Text style={styles.statLabel}>Completed Jobs</Text>
+            </View>
+            <View style={styles.statBox}>
+              <View style={[styles.statIconBadge, { backgroundColor: 'rgba(2, 132, 199, 0.12)' }]}>
+                <Ionicons name="shield-outline" size={15} color="#0284C7" />
+              </View>
+              <Text style={styles.statValue}>Active</Text>
+              <Text style={styles.statLabel}>Worker Status</Text>
+            </View>
           </View>
         </View>
 
@@ -1158,25 +1174,52 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+  reputationCardWrapper: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  ambientGlowRose: {
+    position: 'absolute',
+    top: -10,
+    right: 20,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(244, 63, 94, 0.14)',
+  },
   reputationCard: {
-    backgroundColor: 'rgba(255, 241, 242, 0.90)',
+    backgroundColor: 'rgba(255, 255, 255, 0.78)',
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 205, 210, 0.70)',
-    padding: 24,
-    marginBottom: 16,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    padding: 22,
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 3,
+  },
+  reputationHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  reputationBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: 'rgba(244, 63, 94, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   reputationEyebrow: {
     fontFamily: fonts.bodyBold,
-    fontSize: 12,
-    color: '#9F1239',
+    fontSize: 11,
+    color: '#E11D48',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 0.8,
   },
   reputationRow: {
     flexDirection: 'row',
@@ -1185,9 +1228,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   reputationScore: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 52,
-    lineHeight: 60,
+    fontFamily: fonts.numericBold,
+    fontSize: 48,
+    lineHeight: 56,
     color: '#0F172A',
   },
   reputationStars: {
@@ -1206,45 +1249,73 @@ const styles = StyleSheet.create({
   },
   reputationTagline: {
     fontFamily: fonts.displayItalic,
-    fontSize: 14,
+    fontSize: 13,
     color: '#475569',
-    marginTop: 12,
+    marginTop: 10,
+  },
+  statsWrapper: {
+    position: 'relative',
+    marginBottom: 20,
+  },
+  ambientGlowMint: {
+    position: 'absolute',
+    top: -10,
+    left: 10,
+    width: 120,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(34, 197, 94, 0.14)',
+  },
+  ambientGlowBlue: {
+    position: 'absolute',
+    bottom: -10,
+    right: 15,
+    width: 130,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(56, 189, 248, 0.16)',
   },
   statsGrid: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 20,
   },
   statBox: {
     flex: 1,
-    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.76)',
+    borderRadius: 18,
     borderWidth: 1.5,
-    padding: 16,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
     alignItems: 'center',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
     elevation: 2,
   },
-  statBoxMint: {
-    backgroundColor: 'rgba(240, 253, 244, 0.90)',
-    borderColor: 'rgba(187, 247, 208, 0.65)',
-  },
-  statBoxSky: {
-    backgroundColor: 'rgba(240, 249, 255, 0.90)',
-    borderColor: 'rgba(186, 230, 253, 0.65)',
+  statIconBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
   },
   statValue: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 20,
+    fontFamily: fonts.numericBold,
+    fontSize: 18,
+    color: '#0F172A',
   },
   statLabel: {
     fontFamily: fonts.bodyBold,
-    fontSize: 11,
+    fontSize: 10,
+    color: colors.inkMuted,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginTop: 4,
+    letterSpacing: 0.3,
+    marginTop: 3,
   },
   skillsSection: {
     marginBottom: 24,

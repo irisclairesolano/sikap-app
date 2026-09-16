@@ -95,23 +95,38 @@ export const EmployerPublicProfileScreen: React.FC = () => {
           )}
         </View>
 
-        {/* Reputation Score Card */}
+        {/* Reputation Score Card - Frosted Crystal Glass */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Employer Reputation</Text>
-          <View style={styles.reputationCard}>
-            <View style={styles.scoreHeroRow}>
-              <Text style={styles.bigScore}>
-                {reputationScore ? Number(reputationScore).toFixed(1) : '5.0'}
-              </Text>
-              <View style={{ gap: 4 }}>
-                <View style={{ flexDirection: 'row', gap: 3 }}>
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Ionicons key={s} name="star" size={18} color={colors.gold} />
-                  ))}
-                </View>
-                <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
-                  Overall Employer Rating
+          <View style={styles.reputationWrapper}>
+            <View style={styles.ambientGlowAzure} pointerEvents="none" />
+            <View style={styles.ambientGlowGold} pointerEvents="none" />
+            <View style={styles.reputationCard}>
+              <View style={styles.scoreHeroRow}>
+                <Text style={styles.bigScore}>
+                  {reputationScore
+                    ? Number(reputationScore) % 1 === 0
+                      ? Number(reputationScore).toFixed(1)
+                      : Number(reputationScore).toString()
+                    : '5.0'}
                 </Text>
+                <View style={{ gap: 4 }}>
+                  <View style={{ flexDirection: 'row', gap: 3 }}>
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Ionicons
+                        key={s}
+                        name="star"
+                        size={18}
+                        color={
+                          s <= Math.round(Number(reputationScore || 5)) ? colors.gold : '#E2E8F0'
+                        }
+                      />
+                    ))}
+                  </View>
+                  <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
+                    Overall Employer Rating
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
@@ -306,13 +321,40 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.inkSoft,
   },
+  reputationWrapper: {
+    position: 'relative',
+  },
+  ambientGlowAzure: {
+    position: 'absolute',
+    top: -12,
+    left: 20,
+    width: 140,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(56, 189, 248, 0.16)',
+  },
+  ambientGlowGold: {
+    position: 'absolute',
+    bottom: -12,
+    right: 20,
+    width: 140,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(234, 179, 8, 0.14)',
+  },
   reputationCard: {
-    backgroundColor: colors.white,
-    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.78)',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
     padding: 18,
-    borderWidth: 1,
-    borderColor: colors.inkFaint,
-    ...shadows.sm,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 3,
   },
   section: {
     marginTop: 20,

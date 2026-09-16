@@ -184,43 +184,61 @@ export const ProfileScreen: React.FC = () => {
           </View>
         </TouchableOpacity>
 
-        {/* Reputation Card */}
-        <View style={styles.reputationCard}>
-          <Text style={styles.reputationEyebrow}>Reputation</Text>
-          <View style={styles.reputationRow}>
-            <Text style={styles.reputationScore}>
-              {worker.ratings > 0 ? formatScore(worker.reputation) : 'N/A'}
-            </Text>
-            <View style={styles.reputationStars}>
-              {worker.ratings > 0 ? (
-                <View style={styles.starsRow}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Ionicons
-                      key={star}
-                      name="star"
-                      size={14}
-                      color={star <= Math.round(worker.reputation) ? colors.gold : colors.inkFaint}
-                    />
-                  ))}
-                </View>
-              ) : null}
-              <Text style={styles.reputationCount}>
-                {worker.ratings > 0 ? `${worker.ratings} ratings` : 'No ratings yet'}
-              </Text>
+        {/* Reputation Card - Frosted Crystal Glass */}
+        <View style={styles.reputationCardWrapper}>
+          <View style={styles.ambientGlowRose} pointerEvents="none" />
+          <View style={styles.reputationCard}>
+            <View style={styles.reputationHeaderRow}>
+              <View style={styles.reputationBadge}>
+                <Ionicons name="shield-checkmark" size={13} color="#E11D48" />
+              </View>
+              <Text style={styles.reputationEyebrow}>Worker Reputation</Text>
             </View>
+            <View style={styles.reputationRow}>
+              <Text style={styles.reputationScore}>
+                {worker.ratings > 0 ? formatScore(worker.reputation) : 'N/A'}
+              </Text>
+              <View style={styles.reputationStars}>
+                {worker.ratings > 0 ? (
+                  <View style={styles.starsRow}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Ionicons
+                        key={star}
+                        name="star"
+                        size={14}
+                        color={star <= Math.round(worker.reputation) ? colors.gold : '#E2E8F0'}
+                      />
+                    ))}
+                  </View>
+                ) : null}
+                <Text style={styles.reputationCount}>
+                  {worker.ratings > 0 ? `${worker.ratings} verified ratings` : 'No ratings yet'}
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.reputationTagline}>Your score travels with you.</Text>
           </View>
-          <Text style={styles.reputationTagline}>Your score travels with you.</Text>
         </View>
 
-        {/* Stats Grid */}
-        <View style={styles.statsGrid}>
-          <View style={[styles.statBox, styles.statBoxMint]}>
-            <Text style={[styles.statValue, { color: '#0F172A' }]}>{worker.jobsDone}</Text>
-            <Text style={[styles.statLabel, { color: '#166534' }]}>Jobs done</Text>
-          </View>
-          <View style={[styles.statBox, styles.statBoxSky]}>
-            <Text style={[styles.statValue, { color: '#0F172A' }]}>{worker.memberSince}</Text>
-            <Text style={[styles.statLabel, { color: '#0369A1' }]}>Member</Text>
+        {/* Stats Grid - Frosted Crystal Glass */}
+        <View style={styles.statsWrapper}>
+          <View style={styles.ambientGlowMint} pointerEvents="none" />
+          <View style={styles.ambientGlowBlue} pointerEvents="none" />
+          <View style={styles.statsGrid}>
+            <View style={styles.statBox}>
+              <View style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}>
+                <Ionicons name="checkmark-done-outline" size={15} color="#16A34A" />
+              </View>
+              <Text style={styles.statValue}>{worker.jobsDone}</Text>
+              <Text style={styles.statLabel}>Jobs done</Text>
+            </View>
+            <View style={styles.statBox}>
+              <View style={[styles.statIconBadge, { backgroundColor: 'rgba(2, 132, 199, 0.12)' }]}>
+                <Ionicons name="calendar-outline" size={15} color="#0284C7" />
+              </View>
+              <Text style={styles.statValue}>{worker.memberSince}</Text>
+              <Text style={styles.statLabel}>Member</Text>
+            </View>
           </View>
         </View>
 
@@ -456,25 +474,52 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+  reputationCardWrapper: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  ambientGlowRose: {
+    position: 'absolute',
+    top: -10,
+    right: 20,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(244, 63, 94, 0.14)',
+  },
   reputationCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.90)',
+    backgroundColor: 'rgba(255, 255, 255, 0.78)',
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.95)',
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
     padding: 20,
-    marginBottom: 16,
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 3,
+  },
+  reputationHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  reputationBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: 'rgba(244, 63, 94, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   reputationEyebrow: {
     fontFamily: fonts.bodyBold,
     fontSize: 11,
-    color: '#9F1239',
+    color: '#E11D48',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 0.8,
   },
   reputationRow: {
     flexDirection: 'row',
@@ -482,7 +527,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 6,
   },
-  reputationScore: { fontFamily: fonts.bodyBold, fontSize: 52, lineHeight: 60, color: '#0F172A' },
+  reputationScore: {
+    fontFamily: fonts.numericBold,
+    fontSize: 48,
+    lineHeight: 56,
+    color: '#0F172A',
+  },
   reputationStars: { alignItems: 'flex-end', paddingBottom: 6 },
   starsRow: { flexDirection: 'row', gap: 2 },
   reputationCount: {
@@ -493,38 +543,66 @@ const styles = StyleSheet.create({
   },
   reputationTagline: {
     fontFamily: fonts.displayItalic,
-    fontSize: 14,
+    fontSize: 13,
     color: '#475569',
     marginTop: 8,
   },
-  statsGrid: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+  statsWrapper: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  ambientGlowMint: {
+    position: 'absolute',
+    top: -10,
+    left: 10,
+    width: 120,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(34, 197, 94, 0.14)',
+  },
+  ambientGlowBlue: {
+    position: 'absolute',
+    bottom: -10,
+    right: 15,
+    width: 130,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(56, 189, 248, 0.16)',
+  },
+  statsGrid: { flexDirection: 'row', gap: 10 },
   statBox: {
     flex: 1,
-    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.76)',
+    borderRadius: 18,
     borderWidth: 1.5,
-    padding: 14,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    paddingVertical: 14,
+    paddingHorizontal: 8,
     alignItems: 'center',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
     elevation: 2,
   },
-  statBoxMint: {
-    backgroundColor: 'rgba(240, 253, 244, 0.82)',
-    borderColor: 'rgba(34, 197, 94, 0.20)',
+  statIconBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
   },
-  statBoxSky: {
-    backgroundColor: 'rgba(240, 249, 255, 0.82)',
-    borderColor: 'rgba(56, 189, 248, 0.22)',
-  },
-  statValue: { fontFamily: fonts.bodyBold, fontSize: 18 },
+  statValue: { fontFamily: fonts.numericBold, fontSize: 18, color: '#0F172A' },
   statLabel: {
     fontFamily: fonts.bodyBold,
     fontSize: 10,
+    color: colors.inkMuted,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginTop: 4,
+    letterSpacing: 0.3,
+    marginTop: 3,
   },
   skillsSection: { marginBottom: 16 },
   sectionEyebrow: {

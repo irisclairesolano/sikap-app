@@ -92,40 +92,44 @@ export const ReviewsScreen: React.FC = () => {
           />
         }
       >
-        {/* Summary Card (Glassmorphic) */}
-        <View style={styles.summaryCard}>
-          <View style={styles.scoreSection}>
-            <Text style={styles.scoreNumber}>{formatScore(reputationScore)}</Text>
-            <View style={styles.starsRow}>
-              {[1, 2, 3, 4, 5].map((s) => (
-                <Ionicons
-                  key={s}
-                  name={s <= Math.round(reputationScore) ? 'star' : 'star-outline'}
-                  size={14}
-                  color={colors.gold}
-                />
-              ))}
+        {/* Summary Card (Frosted Crystal Glass) */}
+        <View style={styles.summaryWrapper}>
+          <View style={styles.ambientGlowGold} pointerEvents="none" />
+          <View style={styles.ambientGlowSky} pointerEvents="none" />
+          <View style={styles.summaryCard}>
+            <View style={styles.scoreSection}>
+              <Text style={styles.scoreNumber}>{formatScore(reputationScore)}</Text>
+              <View style={styles.starsRow}>
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Ionicons
+                    key={s}
+                    name={s <= Math.round(reputationScore) ? 'star' : 'star-outline'}
+                    size={14}
+                    color={colors.gold}
+                  />
+                ))}
+              </View>
+              <Text style={styles.reviewsCount}>
+                {reviewsCount} {reviewsCount === 1 ? 'review' : 'reviews'}
+              </Text>
             </View>
-            <Text style={styles.reviewsCount}>
-              {reviewsCount} {reviewsCount === 1 ? 'review' : 'reviews'}
-            </Text>
-          </View>
 
-          <View style={styles.distributionSection}>
-            {[5, 4, 3, 2, 1].map((star) => {
-              const count = distribution[star] || 0;
-              const pct = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
-              return (
-                <View key={star} style={styles.distRow}>
-                  <Text style={styles.distLabel}>{star}</Text>
-                  <Ionicons name="star" size={9} color={colors.gold} />
-                  <View style={styles.barBackground}>
-                    {pct > 0 && <View style={[styles.barFill, { width: `${pct}%` }]} />}
+            <View style={styles.distributionSection}>
+              {[5, 4, 3, 2, 1].map((star) => {
+                const count = distribution[star] || 0;
+                const pct = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
+                return (
+                  <View key={star} style={styles.distRow}>
+                    <Text style={styles.distLabel}>{star}</Text>
+                    <Ionicons name="star" size={9} color={colors.gold} />
+                    <View style={styles.barBackground}>
+                      {pct > 0 && <View style={[styles.barFill, { width: `${pct}%` }]} />}
+                    </View>
+                    <Text style={styles.distCount}>{count}</Text>
                   </View>
-                  <Text style={styles.distCount}>{count}</Text>
-                </View>
-              );
-            })}
+                );
+              })}
+            </View>
           </View>
         </View>
 
@@ -207,23 +211,47 @@ const styles = StyleSheet.create({
   },
   headerPillText: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.inkMuted },
   scrollContent: { padding: 20, paddingBottom: 40 },
+  summaryWrapper: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  ambientGlowGold: {
+    position: 'absolute',
+    top: -15,
+    left: 15,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(234, 179, 8, 0.16)',
+  },
+  ambientGlowSky: {
+    position: 'absolute',
+    bottom: -15,
+    right: 15,
+    width: 150,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(56, 189, 248, 0.16)',
+  },
   summaryCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.90)',
+    backgroundColor: 'rgba(255, 255, 255, 0.78)',
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.95)',
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
     padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 18,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
     elevation: 3,
   },
   scoreSection: { alignItems: 'center', minWidth: 90 },
-  scoreNumber: { fontFamily: fonts.display, fontSize: 44, color: colors.ink, lineHeight: 48 },
+  scoreNumber: { fontFamily: fonts.display, fontSize: 44, color: '#0F172A', lineHeight: 48 },
   starsRow: { flexDirection: 'row', gap: 2, marginTop: 4 },
   reviewsCount: {
     fontFamily: fonts.bodyBold,
@@ -236,8 +264,8 @@ const styles = StyleSheet.create({
   distLabel: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.inkSoft, width: 8 },
   barBackground: {
     flex: 1,
-    height: 5,
-    backgroundColor: 'rgba(0,0,0,0.06)',
+    height: 6,
+    backgroundColor: 'rgba(15, 23, 42, 0.06)',
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -251,13 +279,20 @@ const styles = StyleSheet.create({
   },
   reviewsList: { marginTop: 16, gap: 12 },
   emptyCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.inkFaint,
+    backgroundColor: 'rgba(255, 255, 255, 0.76)',
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
     padding: 28,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    elevation: 2,
   },
   emptyTitle: {
     fontFamily: fonts.bodyBold,
@@ -274,15 +309,17 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   reviewCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.90)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: 'rgba(255, 255, 255, 0.76)',
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
     padding: 16,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
     elevation: 2,
   },
   reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
