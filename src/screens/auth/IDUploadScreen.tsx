@@ -289,62 +289,88 @@ const IDUploadScreen: React.FC = () => {
           </Text>
         </View>
 
-        {/* ID Upload Box */}
-        <TouchableOpacity
-          style={styles.uploadArea}
-          onPress={() => handleFileSelect('id')}
-          disabled={uploadMutation.isPending}
-        >
-          <View style={styles.cameraIconBox}>
-            <Ionicons name="camera" size={28} color={colors.white} />
-          </View>
-          <Text style={styles.uploadTitle}>
-            {selectedFile ? 'ID Front Uploaded ✓' : 'Upload a photo of your ID (Front)'}
-          </Text>
-          <Text style={styles.uploadSubtitle}>
-            {selectedFile
-              ? `${selectedFile.name}`
-              : "PhilSys • Driver's License • Voter's ID\nPRC • Postal ID"}
-          </Text>
-        </TouchableOpacity>
+        {/* Three Separate Upload Cards with ambient glows */}
+        <View style={styles.cardsWrapper}>
+          <View style={styles.ambientGlowPeach} />
+          <View style={styles.ambientGlowSky} />
+          <View style={styles.ambientGlowMint} />
 
-        {/* Back of ID Upload Box */}
-        <TouchableOpacity
-          style={[styles.uploadArea, { marginTop: 16 }]}
-          onPress={() => handleFileSelect('back')}
-          disabled={uploadMutation.isPending}
-        >
-          <View style={styles.cameraIconBox}>
-            <Ionicons name="camera" size={28} color={colors.white} />
-          </View>
-          <Text style={styles.uploadTitle}>
-            {selectedFileBack ? 'ID Back Uploaded ✓' : 'Upload a photo of your ID (Back)'}
-          </Text>
-          <Text style={styles.uploadSubtitle}>
-            {selectedFileBack ? `${selectedFileBack.name}` : 'Back side of your ID'}
-          </Text>
-        </TouchableOpacity>
+          <View style={styles.cardsContainer}>
+            {/* Card 1: ID Front */}
+            <TouchableOpacity
+              style={[styles.uploadCard, selectedFile && styles.uploadCardSelected]}
+              onPress={() => handleFileSelect('id')}
+              disabled={uploadMutation.isPending}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.cameraIconBox, selectedFile && styles.cameraIconBoxSelected]}>
+                <Ionicons
+                  name={selectedFile ? 'checkmark-circle' : 'camera'}
+                  size={28}
+                  color={colors.white}
+                />
+              </View>
+              <Text style={styles.uploadTitle}>
+                {selectedFile ? 'ID Front Uploaded ✓' : 'Upload a photo of your ID (Front)'}
+              </Text>
+              <Text style={styles.uploadSubtitle}>
+                {selectedFile
+                  ? `${selectedFile.name}`
+                  : "PhilSys • Driver's License • Voter's ID\nPRC • Postal ID"}
+              </Text>
+            </TouchableOpacity>
 
-        {/* Selfie Upload Box (Added for backend requirement) */}
-        <TouchableOpacity
-          style={[styles.uploadArea, { marginTop: 16 }]}
-          onPress={() => handleFileSelect('selfie')}
-          disabled={uploadMutation.isPending}
-        >
-          <View style={styles.cameraIconBox}>
-            <Ionicons name="person" size={24} color={colors.white} />
-          </View>
-          <Text style={styles.uploadTitle}>
-            {selectedSelfie ? 'Selfie Uploaded ✓' : 'Upload a selfie holding your ID'}
-          </Text>
-          <Text style={styles.uploadSubtitle}>
-            {selectedSelfie
-              ? `${selectedSelfie.name}`
-              : 'Please ensure your face and ID are clear.'}
-          </Text>
-        </TouchableOpacity>
+            {/* Card 2: ID Back */}
+            <TouchableOpacity
+              style={[styles.uploadCard, selectedFileBack && styles.uploadCardSelected]}
+              onPress={() => handleFileSelect('back')}
+              disabled={uploadMutation.isPending}
+              activeOpacity={0.8}
+            >
+              <View
+                style={[styles.cameraIconBox, selectedFileBack && styles.cameraIconBoxSelected]}
+              >
+                <Ionicons
+                  name={selectedFileBack ? 'checkmark-circle' : 'camera'}
+                  size={28}
+                  color={colors.white}
+                />
+              </View>
+              <Text style={styles.uploadTitle}>
+                {selectedFileBack ? 'ID Back Uploaded ✓' : 'Upload a photo of your ID (Back)'}
+              </Text>
+              <Text style={styles.uploadSubtitle}>
+                {selectedFileBack ? `${selectedFileBack.name}` : 'Back side of your ID'}
+              </Text>
+            </TouchableOpacity>
 
-        <View style={{ marginTop: 12 }}>
+            {/* Card 3: Selfie */}
+            <TouchableOpacity
+              style={[styles.uploadCard, selectedSelfie && styles.uploadCardSelected]}
+              onPress={() => handleFileSelect('selfie')}
+              disabled={uploadMutation.isPending}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.cameraIconBox, selectedSelfie && styles.cameraIconBoxSelected]}>
+                <Ionicons
+                  name={selectedSelfie ? 'checkmark-circle' : 'person'}
+                  size={26}
+                  color={colors.white}
+                />
+              </View>
+              <Text style={styles.uploadTitle}>
+                {selectedSelfie ? 'Selfie Uploaded ✓' : 'Upload a selfie holding your ID'}
+              </Text>
+              <Text style={styles.uploadSubtitle}>
+                {selectedSelfie
+                  ? `${selectedSelfie.name}`
+                  : 'Please ensure your face and ID are clear.'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={{ marginTop: 2, marginBottom: 8 }}>
           <Button
             label="Choose from gallery"
             variant="ghost"
@@ -459,46 +485,88 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
     marginBottom: 20,
   },
-  uploadArea: {
-    backgroundColor: 'rgba(255, 255, 255, 0.82)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 197, 208, 0.70)',
-    borderStyle: 'dashed',
-    borderRadius: 22,
-    paddingVertical: 32,
-    paddingHorizontal: 18,
+  cardsWrapper: {
+    position: 'relative',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  ambientGlowPeach: {
+    position: 'absolute',
+    top: 15,
+    right: -10,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(255, 197, 208, 0.30)',
+  },
+  ambientGlowSky: {
+    position: 'absolute',
+    top: '36%',
+    left: -15,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(176, 226, 255, 0.30)',
+  },
+  ambientGlowMint: {
+    position: 'absolute',
+    bottom: 10,
+    right: -5,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(152, 251, 152, 0.25)',
+  },
+  cardsContainer: {
+    gap: 16,
+  },
+  uploadCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderRadius: 24,
+    borderWidth: 0,
+    paddingVertical: 28,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 18,
+    elevation: 2,
+  },
+  uploadCardSelected: {
+    backgroundColor: 'rgba(240, 253, 244, 0.90)',
   },
   cameraIconBox: {
     width: 56,
     height: 56,
+    borderRadius: 16,
     backgroundColor: colors.primary,
-    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 2,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  cameraIconBoxSelected: {
+    backgroundColor: colors.success,
+    shadowColor: colors.success,
   },
   uploadTitle: {
     fontFamily: fonts.bodyBold,
     fontSize: 15,
     color: colors.ink,
+    textAlign: 'center',
   },
   uploadSubtitle: {
     fontFamily: fonts.body,
-    fontSize: 11,
+    fontSize: 12,
     color: colors.inkMuted,
     textAlign: 'center',
-    lineHeight: 16,
+    lineHeight: 17,
   },
   privacyCard: {
     backgroundColor: 'rgba(240, 253, 244, 0.90)',
