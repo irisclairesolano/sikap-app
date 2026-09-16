@@ -95,18 +95,24 @@ const ResetOTPVerifyScreen: React.FC = () => {
           Please enter it below to reset your password.
         </Text>
 
-        <Input
-          label="Verification Code (OTP)"
-          placeholder="000000"
-          keyboardType="number-pad"
-          maxLength={6}
-          value={otp}
-          onChangeText={(val) => {
-            setOtp(val.replace(/[^0-9]/g, ''));
-            setError('');
-          }}
-          error={error}
-        />
+        <View style={styles.formCardWrapper}>
+          <View style={styles.ambientGlowSky} />
+          <View style={styles.ambientGlowGold} />
+          <View style={styles.formCard}>
+            <Input
+              label="Verification Code (OTP)"
+              placeholder="000000"
+              keyboardType="number-pad"
+              maxLength={6}
+              value={otp}
+              onChangeText={(val) => {
+                setOtp(val.replace(/[^0-9]/g, ''));
+                setError('');
+              }}
+              error={error}
+            />
+          </View>
+        </View>
 
         <View style={styles.footer}>
           <Button
@@ -173,11 +179,48 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.inkSoft,
     lineHeight: 22,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   emailText: {
     fontFamily: fonts.bodyMedium,
     color: colors.ink,
+  },
+  formCardWrapper: {
+    position: 'relative',
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  ambientGlowSky: {
+    position: 'absolute',
+    top: -15,
+    right: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(176, 226, 255, 0.40)',
+  },
+  ambientGlowGold: {
+    position: 'absolute',
+    bottom: -15,
+    left: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(253, 242, 137, 0.35)',
+  },
+  formCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.90)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    padding: 20,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 3,
   },
   footer: {
     marginTop: 12,

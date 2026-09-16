@@ -243,6 +243,16 @@ const WorkerNavigator: React.FC = () => {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.inkSoft,
         headerShown: false,
+        tabBarStyle: {
+          backgroundColor: 'rgba(255, 255, 255, 0.90)',
+          borderTopWidth: 1,
+          borderTopColor: 'rgba(255, 255, 255, 0.95)',
+          shadowColor: '#0F172A',
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.04,
+          shadowRadius: 10,
+          elevation: 8,
+        },
       })}
     >
       <Tab.Screen name="Find" component={FindStack} />

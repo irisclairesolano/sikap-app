@@ -172,83 +172,81 @@ const RegisterStep2Screen: React.FC = () => {
             </View>
           ) : null}
 
-          <View style={styles.form}>
-            <LocationPicker
-              municipalityValue={watchedMunicipality}
-              barangayValue={watchedBarangay}
-              onMunicipalityChange={(value: string) => setValue('municipality', value)}
-              onBarangayChange={(value: string) => setValue('barangay', value)}
-              municipalityError={errors.municipality?.message}
-              barangayError={errors.barangay?.message}
-            />
-
-            <View style={{ marginTop: 8 }}>
-              <Text
-                style={{
-                  fontFamily: fonts.bodyBold,
-                  fontSize: 13,
-                  color: colors.inkSoft,
-                  marginBottom: 6,
-                }}
-              >
-                Date of Birth
-              </Text>
-              {Platform.OS === 'web' ? (
-                <input
-                  type="date"
-                  value={dateOfBirth.toISOString().split('T')[0]}
-                  max={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      setDateOfBirth(new Date(e.target.value));
-                    }
-                  }}
-                  style={{
-                    borderWidth: 1,
-                    borderColor: colors.inkFaint,
-                    borderRadius: 12,
-                    padding: 14,
-                    fontFamily: 'inherit',
-                    fontSize: 15,
-                    width: '100%',
-                    color: colors.ink,
-                    backgroundColor: 'transparent',
-                  }}
+          <View style={styles.formCardWrapper}>
+            <View style={styles.ambientGlowSky} />
+            <View style={styles.ambientGlowPeach} />
+            <View style={styles.formCard}>
+              <View style={styles.form}>
+                <LocationPicker
+                  municipalityValue={watchedMunicipality}
+                  barangayValue={watchedBarangay}
+                  onMunicipalityChange={(value: string) => setValue('municipality', value)}
+                  onBarangayChange={(value: string) => setValue('barangay', value)}
+                  municipalityError={errors.municipality?.message}
+                  barangayError={errors.barangay?.message}
                 />
-              ) : (
-                <>
-                  <TouchableOpacity
+
+                <View style={{ marginTop: 8 }}>
+                  <Text
                     style={{
-                      borderWidth: 1,
-                      borderColor: colors.inkFaint,
-                      borderRadius: 12,
-                      padding: 14,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 12,
+                      fontFamily: fonts.bodyBold,
+                      fontSize: 13,
+                      color: colors.inkSoft,
+                      marginBottom: 6,
                     }}
-                    onPress={() => setShowDatePicker(true)}
                   >
-                    <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
-                    <Text style={{ fontFamily: fonts.body, fontSize: 15, color: colors.ink }}>
-                      {dateOfBirth.toLocaleDateString()}
-                    </Text>
-                  </TouchableOpacity>
-                  {showDatePicker && (
-                    <DateTimePicker
-                      value={dateOfBirth}
-                      mode="date"
-                      display="default"
-                      maximumDate={new Date()}
-                      onValueChange={(_event, selectedDate) => {
-                        setShowDatePicker(false);
-                        if (selectedDate) setDateOfBirth(selectedDate);
+                    Date of Birth
+                  </Text>
+                  {Platform.OS === 'web' ? (
+                    <input
+                      type="date"
+                      value={dateOfBirth.toISOString().split('T')[0]}
+                      max={new Date().toISOString().split('T')[0]}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setDateOfBirth(new Date(e.target.value));
+                        }
                       }}
-                      onDismiss={() => setShowDatePicker(false)}
+                      style={{
+                        borderWidth: 1.5,
+                        borderColor: 'rgba(226, 232, 240, 0.85)',
+                        borderRadius: 14,
+                        padding: 14,
+                        fontFamily: 'inherit',
+                        fontSize: 15,
+                        width: '100%',
+                        color: colors.ink,
+                        backgroundColor: 'rgba(255, 255, 255, 0.82)',
+                      }}
                     />
+                  ) : (
+                    <>
+                      <TouchableOpacity
+                        style={styles.datePickerBtn}
+                        onPress={() => setShowDatePicker(true)}
+                      >
+                        <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
+                        <Text style={{ fontFamily: fonts.body, fontSize: 15, color: colors.ink }}>
+                          {dateOfBirth.toLocaleDateString()}
+                        </Text>
+                      </TouchableOpacity>
+                      {showDatePicker && (
+                        <DateTimePicker
+                          value={dateOfBirth}
+                          mode="date"
+                          display="default"
+                          maximumDate={new Date()}
+                          onValueChange={(_event, selectedDate) => {
+                            setShowDatePicker(false);
+                            if (selectedDate) setDateOfBirth(selectedDate);
+                          }}
+                          onDismiss={() => setShowDatePicker(false)}
+                        />
+                      )}
+                    </>
                   )}
-                </>
-              )}
+                </View>
+              </View>
             </View>
           </View>
 
@@ -297,14 +295,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepBadge: {
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     paddingVertical: 5,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     borderRadius: 20,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 0, height: 1 },
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
+    borderTopColor: '#FFFFFF',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
-    shadowRadius: 2,
+    shadowRadius: 6,
     elevation: 1,
   },
   stepBadgeText: {
@@ -349,16 +350,79 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14,
     color: colors.inkMuted,
-    marginBottom: 22,
+    marginBottom: 18,
+  },
+  formCardWrapper: {
+    position: 'relative',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  ambientGlowSky: {
+    position: 'absolute',
+    top: -15,
+    right: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(176, 226, 255, 0.40)',
+  },
+  ambientGlowPeach: {
+    position: 'absolute',
+    bottom: -15,
+    left: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255, 197, 208, 0.35)',
+  },
+  formCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.90)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    padding: 20,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 3,
   },
   form: {
     gap: 14,
   },
-  roleCard: {
-    marginTop: 16,
-    backgroundColor: colors.peach,
-    padding: 16,
+  datePickerBtn: {
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.85)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
     borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+  },
+  roleCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.90)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    padding: 16,
+    marginTop: 14,
+    marginBottom: 8,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 3,
   },
   roleLabel: {
     fontFamily: fonts.bodySemiBold,
@@ -374,7 +438,7 @@ const styles = StyleSheet.create({
   roleText: {
     fontFamily: fonts.bodyBold,
     fontSize: 16,
-    color: colors.primaryDark,
+    color: colors.ink,
   },
   footer: {
     marginTop: 16,

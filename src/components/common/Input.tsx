@@ -189,13 +189,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 0,
     borderWidth: 1.5,
-    borderColor: colors.inkFaint,
-    borderRadius: 12,
-    backgroundColor: colors.white,
+    borderColor: 'rgba(226, 232, 240, 0.85)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
     borderBottomWidth: 1.5, // Override RNE default
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
   },
   inputContainerFocused: {
     borderColor: colors.primary,
+    borderTopColor: colors.primary,
+    borderLeftColor: colors.primary,
   },
   containerValid: {
     borderColor: colors.success,
@@ -204,7 +212,7 @@ const styles = StyleSheet.create({
     borderColor: colors.error,
   },
   inputContainerDisabled: {
-    backgroundColor: colors.paperBright,
+    backgroundColor: 'rgba(255, 255, 255, 0.50)',
     borderColor: 'transparent',
     opacity: 0.7,
   },

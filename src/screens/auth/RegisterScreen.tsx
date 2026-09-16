@@ -141,104 +141,141 @@ const RegisterScreen: React.FC = () => {
           Tell us about{'\n'}your <Text style={styles.titleItalic}>identity.</Text>
         </Text>
 
-        <View style={styles.form}>
-          <Controller
-            control={control}
-            name="name"
-            rules={{ required: 'Name is required' }}
-            render={({ field: { value, onChange }, fieldState }) => (
-              <Input
-                label="Full Name"
-                value={value}
-                onChangeText={(text) => {
-                  const capitalized = capitalizeName(text);
-                  onChange(capitalized);
-                  const validation = validateName(capitalized);
-                  setFieldStatus((prev) => ({ ...prev, name: validation.status }));
-                  setFieldStatusText((prev) => ({ ...prev, name: validation.message }));
-                }}
-                error={fieldState.error?.message}
-                status={fieldStatus.name as any}
-                statusText={fieldStatusText.name}
-                placeholder="Juan Dela Cruz"
+        <View style={styles.formCardWrapper}>
+          <View style={styles.ambientGlowMint} />
+          <View style={styles.ambientGlowSky} />
+          <View style={styles.formCard}>
+            <View style={styles.form}>
+              <Controller
+                control={control}
+                name="name"
+                rules={{ required: 'Name is required' }}
+                render={({ field: { value, onChange }, fieldState }) => (
+                  <Input
+                    label="Full Name"
+                    value={value}
+                    onChangeText={(text) => {
+                      const capitalized = capitalizeName(text);
+                      onChange(capitalized);
+                      const validation = validateName(capitalized);
+                      setFieldStatus((prev) => ({ ...prev, name: validation.status }));
+                      setFieldStatusText((prev) => ({ ...prev, name: validation.message }));
+                    }}
+                    error={fieldState.error?.message}
+                    status={fieldStatus.name as any}
+                    statusText={fieldStatusText.name}
+                    placeholder="Juan Dela Cruz"
+                  />
+                )}
               />
-            )}
-          />
 
-          <Controller
-            control={control}
-            name="email"
-            rules={{ required: 'Email is required' }}
-            render={({ field: { value, onChange }, fieldState }) => (
-              <Input
-                label="Email"
-                value={value}
-                onChangeText={(text) => {
-                  onChange(text);
-                  const validation = validateEmail(text);
-                  setFieldStatus((prev) => ({ ...prev, email: validation.status }));
-                  setFieldStatusText((prev) => ({ ...prev, email: validation.message }));
-                }}
-                keyboardType="email-address"
-                error={fieldState.error?.message}
-                placeholder="you@example.com"
-                status={fieldStatus.email as any}
-                statusText={fieldStatusText.email}
+              <Controller
+                control={control}
+                name="email"
+                rules={{ required: 'Email is required' }}
+                render={({ field: { value, onChange }, fieldState }) => (
+                  <Input
+                    label="Email"
+                    value={value}
+                    onChangeText={(text) => {
+                      onChange(text);
+                      const validation = validateEmail(text);
+                      setFieldStatus((prev) => ({ ...prev, email: validation.status }));
+                      setFieldStatusText((prev) => ({ ...prev, email: validation.message }));
+                    }}
+                    keyboardType="email-address"
+                    error={fieldState.error?.message}
+                    placeholder="you@example.com"
+                    status={fieldStatus.email as any}
+                    statusText={fieldStatusText.email}
+                  />
+                )}
               />
-            )}
-          />
 
-          <Controller
-            control={control}
-            name="phone"
-            rules={{ required: 'Phone is required' }}
-            render={({ field: { value, onChange }, fieldState }) => (
-              <Input
-                label="Mobile Number"
-                value={value}
-                maxLength={11}
-                onChangeText={(text) => {
-                  const cleaned = text.replace(/[^0-9]/g, '').slice(0, 11);
-                  onChange(cleaned);
-                  const validation = validatePhone(cleaned);
-                  setFieldStatus((prev) => ({ ...prev, phone: validation.status }));
-                  setFieldStatusText((prev) => ({ ...prev, phone: validation.message }));
-                }}
-                keyboardType="phone-pad"
-                error={fieldState.error?.message}
-                placeholder="09XXXXXXXXX"
-                status={fieldStatus.phone as any}
-                statusText={fieldStatusText.phone}
+              <Controller
+                control={control}
+                name="phone"
+                rules={{ required: 'Phone is required' }}
+                render={({ field: { value, onChange }, fieldState }) => (
+                  <Input
+                    label="Phone (09...)"
+                    value={value}
+                    onChangeText={(text) => {
+                      onChange(text);
+                      const validation = validatePhone(text);
+                      setFieldStatus((prev) => ({ ...prev, phone: validation.status }));
+                      setFieldStatusText((prev) => ({ ...prev, phone: validation.message }));
+                    }}
+                    keyboardType="phone-pad"
+                    error={fieldState.error?.message}
+                    placeholder="09123456789"
+                    status={fieldStatus.phone as any}
+                    statusText={fieldStatusText.phone}
+                  />
+                )}
               />
-            )}
-          />
 
-          <Controller
-            control={control}
-            name="password"
-            rules={{ required: 'Password is required' }}
-            render={({ field: { value, onChange }, fieldState }) => (
-              <Input
-                label="Password"
-                value={value}
-                onChangeText={(text) => {
-                  onChange(text);
-                  const validation = validatePassword(text);
-                  setFieldStatus((prev) => ({ ...prev, password: validation.status }));
-                  setFieldStatusText((prev) => ({ ...prev, password: validation.message }));
-                }}
-                secureTextEntry={!showPassword}
-                rightIcon={{
-                  name: showPassword ? 'eye-off' : 'eye',
-                  type: 'ionicon',
-                  onPress: () => setShowPassword(!showPassword),
-                }}
-                error={fieldState.error?.message}
-                status={fieldStatus.password as any}
-                statusText={fieldStatusText.password}
+              <Controller
+                control={control}
+                name="password"
+                rules={{ required: 'Password is required' }}
+                render={({ field: { value, onChange }, fieldState }) => (
+                  <Input
+                    label="Password"
+                    value={value}
+                    onChangeText={(text) => {
+                      onChange(text);
+                      const validation = validatePassword(text);
+                      setFieldStatus((prev) => ({ ...prev, password: validation.status }));
+                      setFieldStatusText((prev) => ({ ...prev, password: validation.message }));
+                    }}
+                    secureTextEntry={!showPassword}
+                    rightIcon={{
+                      name: showPassword ? 'eye-off' : 'eye',
+                      type: 'ionicon',
+                      onPress: () => setShowPassword(!showPassword),
+                    }}
+                    error={fieldState.error?.message}
+                    placeholder="At least 8 characters"
+                    status={fieldStatus.password as any}
+                    statusText={fieldStatusText.password}
+                  />
+                )}
               />
-            )}
-          />
+
+              <Controller
+                control={control}
+                name="password_confirmation"
+                rules={{ required: 'Please confirm password' }}
+                render={({ field: { value, onChange }, fieldState }) => (
+                  <Input
+                    label="Confirm Password"
+                    value={value}
+                    onChangeText={(text) => {
+                      onChange(text);
+                      const pwd = watch('password');
+                      const validation = validateConfirmPassword(pwd, text);
+                      setFieldStatus((prev) => ({ ...prev, confirmPassword: validation.status }));
+                      setFieldStatusText((prev) => ({
+                        ...prev,
+                        confirmPassword: validation.message,
+                      }));
+                    }}
+                    secureTextEntry={!showConfirmPassword}
+                    rightIcon={{
+                      name: showConfirmPassword ? 'eye-off' : 'eye',
+                      type: 'ionicon',
+                      onPress: () => setShowConfirmPassword(!showConfirmPassword),
+                    }}
+                    error={fieldState.error?.message}
+                    placeholder="Re-enter password"
+                    status={fieldStatus.confirmPassword as any}
+                    statusText={fieldStatusText.confirmPassword}
+                  />
+                )}
+              />
+            </View>
+          </View>
         </View>
 
         <View style={styles.footer}>
@@ -271,14 +308,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepBadge: {
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     paddingVertical: 5,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     borderRadius: 20,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 0, height: 1 },
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
+    borderTopColor: '#FFFFFF',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
-    shadowRadius: 2,
+    shadowRadius: 6,
     elevation: 1,
   },
   stepBadgeText: {
@@ -313,11 +353,48 @@ const styles = StyleSheet.create({
     lineHeight: 32,
     color: colors.ink,
     letterSpacing: -0.8,
-    marginBottom: 22,
+    marginBottom: 18,
   },
   titleItalic: {
     fontFamily: fonts.displayItalic,
     color: colors.primary,
+  },
+  formCardWrapper: {
+    position: 'relative',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  ambientGlowMint: {
+    position: 'absolute',
+    top: -15,
+    right: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(152, 251, 152, 0.35)',
+  },
+  ambientGlowSky: {
+    position: 'absolute',
+    bottom: -15,
+    left: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(176, 226, 255, 0.35)',
+  },
+  formCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.90)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    padding: 20,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 3,
   },
   form: {
     gap: 8,

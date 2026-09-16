@@ -170,8 +170,16 @@ const styles = StyleSheet.create({
     borderColor: colors.primaryDark,
   },
   secondaryBg: {
-    backgroundColor: colors.white,
-    borderColor: 'rgba(13, 27, 61, 0.08)', // Soft UI border outline
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
   outlineBg: {
     backgroundColor: 'transparent',

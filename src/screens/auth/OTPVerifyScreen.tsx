@@ -250,50 +250,51 @@ const OTPVerifyScreen: React.FC = () => {
           </View>
         ) : null}
 
-        <View style={styles.form}>
-          <Text
-            style={{
-              fontFamily: fonts.bodyBold,
-              fontSize: 13,
-              color: colors.ink,
-              marginBottom: 8,
-              marginLeft: 4,
-            }}
-          >
-            6-digit code
-          </Text>
-          <OtpInput
-            numberOfDigits={6}
-            focusColor={colors.primary}
-            focusStickBlinkingDuration={500}
-            onTextChange={(text) => setOtp(text)}
-            onFilled={(text) => {
-              setOtp(text);
-              // Optionally auto-submit here if you want
-            }}
-            theme={{
-              containerStyle: {
-                gap: 8,
-              },
-              pinCodeContainerStyle: {
-                backgroundColor: colors.white,
-                borderColor: colors.inkLight,
-                borderWidth: 1,
-                borderRadius: 12,
-                flex: 1,
-                height: 56,
-              },
-              pinCodeTextStyle: {
-                fontFamily: fonts.bodyBold,
-                color: colors.ink,
-                fontSize: 22,
-              },
-              focusedPinCodeContainerStyle: {
-                borderColor: colors.primary,
-                borderWidth: 2,
-              },
-            }}
-          />
+        <View style={styles.otpCardWrapper}>
+          <View style={styles.ambientGlowSky} />
+          <View style={styles.ambientGlowGold} />
+          <View style={styles.otpCard}>
+            <Text style={styles.otpLabel}>6-digit code</Text>
+            <OtpInput
+              numberOfDigits={6}
+              focusColor={colors.primary}
+              focusStickBlinkingDuration={500}
+              onTextChange={(text) => setOtp(text)}
+              onFilled={(text) => {
+                setOtp(text);
+              }}
+              theme={{
+                containerStyle: {
+                  gap: 8,
+                },
+                pinCodeContainerStyle: {
+                  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                  borderColor: 'rgba(226, 232, 240, 0.85)',
+                  borderTopColor: '#FFFFFF',
+                  borderLeftColor: '#FFFFFF',
+                  borderWidth: 1.5,
+                  borderRadius: 14,
+                  flex: 1,
+                  height: 56,
+                  shadowColor: '#0F172A',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.03,
+                  shadowRadius: 6,
+                },
+                pinCodeTextStyle: {
+                  fontFamily: fonts.bodyBold,
+                  color: colors.ink,
+                  fontSize: 22,
+                },
+                focusedPinCodeContainerStyle: {
+                  borderColor: colors.primary,
+                  borderTopColor: colors.primary,
+                  borderLeftColor: colors.primary,
+                  borderWidth: 2,
+                },
+              }}
+            />
+          </View>
         </View>
 
         <View style={styles.footer}>
@@ -348,14 +349,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepBadge: {
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     paddingVertical: 5,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     borderRadius: 20,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 0, height: 1 },
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
+    borderTopColor: '#FFFFFF',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
-    shadowRadius: 2,
+    shadowRadius: 6,
     elevation: 1,
   },
   stepBadgeText: {
@@ -370,16 +374,25 @@ const styles = StyleSheet.create({
   headerCentered: {
     alignItems: 'center',
     marginTop: 12,
-    marginBottom: 32,
+    marginBottom: 24,
   },
   iconBox: {
-    width: 56,
-    height: 56,
-    backgroundColor: colors.peach,
-    borderRadius: 14,
+    width: 60,
+    height: 60,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 3,
   },
   title: {
     fontFamily: fonts.display,
@@ -398,7 +411,50 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 15,
     color: colors.inkMuted,
-    marginBottom: 2,
+    marginBottom: 4,
+  },
+  otpCardWrapper: {
+    position: 'relative',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  ambientGlowSky: {
+    position: 'absolute',
+    top: -15,
+    right: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(176, 226, 255, 0.40)',
+  },
+  ambientGlowGold: {
+    position: 'absolute',
+    bottom: -15,
+    left: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(253, 242, 137, 0.35)',
+  },
+  otpCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.90)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    padding: 20,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 3,
+  },
+  otpLabel: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.inkMuted,
+    marginBottom: 12,
   },
   emailRow: {
     flexDirection: 'row',

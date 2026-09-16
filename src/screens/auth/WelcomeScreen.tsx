@@ -40,16 +40,20 @@ const WelcomeScreen: React.FC = () => {
             <Wordmark size={28} />
           </View>
 
-          <View style={styles.heroCard}>
-            <Text style={styles.eyebrow}>BUILT FOR INFORMAL WORK</Text>
-            <Text style={styles.title}>
-              Find Work.{'\n'}
-              Build Your{'\n'}
-              <Text style={styles.titleItalic}>Kabuhayan.</Text>
-            </Text>
-            <Text style={styles.lede}>
-              Trusted local employers. Privacy every step. Free for workers, always.
-            </Text>
+          <View style={styles.heroCardWrapper}>
+            <View style={styles.ambientGlowPeach} />
+            <View style={styles.ambientGlowSky} />
+            <View style={styles.heroCard}>
+              <Text style={styles.eyebrow}>BUILT FOR INFORMAL WORK</Text>
+              <Text style={styles.title}>
+                Find Work.{'\n'}
+                Build Your{'\n'}
+                <Text style={styles.titleItalic}>Kabuhayan.</Text>
+              </Text>
+              <Text style={styles.lede}>
+                Trusted local employers. Privacy every step. Free for workers, always.
+              </Text>
+            </View>
           </View>
 
           <View style={styles.valueProps}>
@@ -115,13 +119,43 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'flex-start',
   },
+  heroCardWrapper: {
+    position: 'relative',
+    marginTop: 20,
+  },
+  ambientGlowPeach: {
+    position: 'absolute',
+    top: -12,
+    right: -10,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(255, 197, 208, 0.40)',
+  },
+  ambientGlowSky: {
+    position: 'absolute',
+    bottom: -12,
+    left: -10,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(176, 226, 255, 0.35)',
+  },
   heroCard: {
-    backgroundColor: colors.peach,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.90)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
     paddingTop: 24,
     paddingHorizontal: 22,
     paddingBottom: 22,
-    marginTop: 20,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 3,
   },
   eyebrow: {
     fontFamily: fonts.bodyBold,
@@ -152,13 +186,24 @@ const styles = StyleSheet.create({
   valueProps: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 14,
-    marginTop: 16,
+    gap: 10,
+    marginTop: 18,
   },
   valueItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
   },
   valueText: {
     fontFamily: fonts.bodySemiBold,

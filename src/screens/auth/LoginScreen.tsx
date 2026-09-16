@@ -147,34 +147,40 @@ const LoginScreen: React.FC = () => {
             </View>
           ) : null}
 
-          <View style={styles.form}>
-            <Input
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              placeholder="you@example.com"
-            />
+          <View style={styles.formCardWrapper}>
+            <View style={styles.ambientGlowSky} />
+            <View style={styles.ambientGlowPeach} />
+            <View style={styles.formCard}>
+              <View style={styles.form}>
+                <Input
+                  label="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  placeholder="you@example.com"
+                />
 
-            <View>
-              <Input
-                label="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                rightIcon={{
-                  name: showPassword ? 'eye-off' : 'eye',
-                  type: 'ionicon',
-                  onPress: () => setShowPassword(!showPassword),
-                }}
-                placeholder="Your password"
-              />
-              <TouchableOpacity
-                style={styles.forgotBtn}
-                onPress={() => navigation.navigate('ForgotPassword')}
-              >
-                <Text style={styles.forgotText}>Forgot password?</Text>
-              </TouchableOpacity>
+                <View>
+                  <Input
+                    label="Password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    rightIcon={{
+                      name: showPassword ? 'eye-off' : 'eye',
+                      type: 'ionicon',
+                      onPress: () => setShowPassword(!showPassword),
+                    }}
+                    placeholder="Your password"
+                  />
+                  <TouchableOpacity
+                    style={styles.forgotBtn}
+                    onPress={() => navigation.navigate('ForgotPassword')}
+                  >
+                    <Text style={styles.forgotText}>Forgot password?</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           </View>
 
@@ -265,6 +271,43 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.inkMuted,
   },
+  formCardWrapper: {
+    position: 'relative',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  ambientGlowSky: {
+    position: 'absolute',
+    top: -15,
+    right: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(176, 226, 255, 0.40)',
+  },
+  ambientGlowPeach: {
+    position: 'absolute',
+    bottom: -15,
+    left: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255, 197, 208, 0.35)',
+  },
+  formCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.90)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    padding: 20,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 3,
+  },
   form: {
     gap: 14,
   },
@@ -278,7 +321,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   footer: {
-    marginTop: 24,
+    marginTop: 18,
   },
   createAccountContainer: {
     marginTop: 'auto',

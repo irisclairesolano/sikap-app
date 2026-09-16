@@ -81,41 +81,45 @@ const NewPasswordScreen: React.FC = () => {
           Please enter your new password below. Make sure it's secure.
         </Text>
 
-        <View style={styles.formSpace}>
-          <Input
-            label="New Password"
-            placeholder="••••••••"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={(val) => {
-              setPassword(val);
-              setError('');
-            }}
-            rightIcon={{
-              name: showPassword ? 'eye-off' : 'eye',
-              type: 'ionicon',
-              onPress: () => setShowPassword(!showPassword),
-            }}
-          />
+        <View style={styles.formCardWrapper}>
+          <View style={styles.ambientGlowSky} />
+          <View style={styles.ambientGlowPeach} />
+          <View style={styles.formCard}>
+            <Input
+              label="New Password"
+              placeholder="••••••••"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={(val) => {
+                setPassword(val);
+                setError('');
+              }}
+              rightIcon={{
+                name: showPassword ? 'eye-off' : 'eye',
+                type: 'ionicon',
+                onPress: () => setShowPassword(!showPassword),
+              }}
+            />
 
-          <View style={{ height: 16 }} />
+            <View style={{ height: 16 }} />
 
-          <Input
-            label="Confirm Password"
-            placeholder="••••••••"
-            secureTextEntry={!showConfirmPassword}
-            value={confirmPassword}
-            onChangeText={(val) => {
-              setConfirmPassword(val);
-              setError('');
-            }}
-            rightIcon={{
-              name: showConfirmPassword ? 'eye-off' : 'eye',
-              type: 'ionicon',
-              onPress: () => setShowConfirmPassword(!showConfirmPassword),
-            }}
-            error={error}
-          />
+            <Input
+              label="Confirm Password"
+              placeholder="••••••••"
+              secureTextEntry={!showConfirmPassword}
+              value={confirmPassword}
+              onChangeText={(val) => {
+                setConfirmPassword(val);
+                setError('');
+              }}
+              rightIcon={{
+                name: showConfirmPassword ? 'eye-off' : 'eye',
+                type: 'ionicon',
+                onPress: () => setShowConfirmPassword(!showConfirmPassword),
+              }}
+              error={error}
+            />
+          </View>
         </View>
 
         <View style={styles.footer}>
@@ -173,10 +177,44 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.inkSoft,
     lineHeight: 22,
-    marginBottom: 24,
+    marginBottom: 20,
   },
-  formSpace: {
-    marginBottom: 24,
+  formCardWrapper: {
+    position: 'relative',
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  ambientGlowSky: {
+    position: 'absolute',
+    top: -15,
+    right: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(176, 226, 255, 0.40)',
+  },
+  ambientGlowPeach: {
+    position: 'absolute',
+    bottom: -15,
+    left: 10,
+    width: 140,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255, 197, 208, 0.35)',
+  },
+  formCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.90)',
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    padding: 20,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 3,
   },
   footer: {
     marginTop: 12,
