@@ -467,28 +467,17 @@ const ApplicantDetailScreen: React.FC = () => {
           <View style={styles.ambientGlowMint} pointerEvents="none" />
           <View style={styles.ambientGlowBlue} pointerEvents="none" />
           <View style={styles.statsGrid}>
-            <View style={styles.statBoxWrapper}>
-              <BlurView intensity={25} tint="light" style={styles.statBox}>
-                <View
-                  style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}
-                >
-                  <Ionicons name="checkmark-done-outline" size={15} color="#16A34A" />
-                </View>
-                <Text style={styles.statValue}>{appData?.worker?.completed_jobs_count ?? 0}</Text>
-                <Text style={styles.statLabel}>Completed Jobs</Text>
-              </BlurView>
-            </View>
-            <View style={styles.statBoxWrapper}>
-              <BlurView intensity={25} tint="light" style={styles.statBox}>
-                <View
-                  style={[styles.statIconBadge, { backgroundColor: 'rgba(2, 132, 199, 0.12)' }]}
-                >
-                  <Ionicons name="shield-outline" size={15} color="#0284C7" />
-                </View>
-                <Text style={styles.statValue}>Active</Text>
-                <Text style={styles.statLabel}>Worker Status</Text>
-              </BlurView>
-            </View>
+            <BlurView intensity={40} tint="light" style={styles.statBox}>
+              <Ionicons name="checkmark-done-outline" size={18} color="#16A34A" />
+              <Text style={styles.statValue}>{appData?.worker?.completed_jobs_count ?? 0}</Text>
+              <Text style={styles.statLabel}>Completed Jobs</Text>
+            </BlurView>
+
+            <BlurView intensity={40} tint="light" style={styles.statBox}>
+              <Ionicons name="shield-outline" size={18} color="#0284C7" />
+              <Text style={styles.statValue}>Active</Text>
+              <Text style={styles.statLabel}>Worker Status</Text>
+            </BlurView>
           </View>
         </View>
 
@@ -1286,37 +1275,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
   },
-  statBoxWrapper: {
+  statBox: {
     flex: 1,
-    borderRadius: 18,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.70)',
+    padding: 16,
+    alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 16,
     elevation: 2,
-  },
-  statBox: {
-    borderRadius: 18,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.50)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.65)',
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-  },
-  statIconBadge: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
   },
   statValue: {
     fontFamily: fonts.numericBold,
     fontSize: 18,
     color: '#0F172A',
+    marginTop: 6,
   },
   statLabel: {
     fontFamily: fonts.bodyBold,

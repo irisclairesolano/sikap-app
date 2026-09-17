@@ -16,7 +16,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   style,
   ambientGlow = 'none',
   glowPosition = 'top-right',
-  intensity = 25,
+  intensity = 40,
   ...props
 }) => {
   const getGlowColor = () => {
@@ -51,11 +51,9 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   };
 
   const cardContent = (
-    <View style={[styles.cardShadowWrapper, style]}>
-      <BlurView intensity={intensity} tint="light" style={styles.blurContainer} {...props}>
-        {children}
-      </BlurView>
-    </View>
+    <BlurView intensity={intensity} tint="light" style={[styles.blurContainer, style]} {...props}>
+      {children}
+    </BlurView>
   );
 
   if (ambientGlow !== 'none') {
@@ -84,21 +82,18 @@ const styles = StyleSheet.create({
     height: 140,
     borderRadius: 70,
   },
-  cardShadowWrapper: {
-    borderRadius: 22,
+  blurContainer: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.70)',
+    padding: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 16,
     elevation: 2,
-  },
-  blurContainer: {
-    borderRadius: 22,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.50)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.65)',
-    padding: 20,
   },
 });
 

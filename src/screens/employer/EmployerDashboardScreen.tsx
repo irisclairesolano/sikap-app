@@ -249,64 +249,40 @@ export const EmployerDashboardScreen: React.FC = () => {
           <View style={styles.ambientGlowAmber} pointerEvents="none" />
 
           <View style={styles.statsGrid}>
-            <View style={styles.statCardWrapper}>
-              <BlurView intensity={25} tint="light" style={styles.statCard}>
-                <View style={styles.statTopRow}>
-                  <View
-                    style={[styles.statIconBadge, { backgroundColor: 'rgba(244, 63, 94, 0.12)' }]}
-                  >
-                    <Ionicons name="briefcase-outline" size={14} color="#E11D48" />
-                  </View>
-                  <Text style={styles.statLabel}>Active jobs</Text>
-                </View>
-                <Text style={styles.statNum}>{activeJobs.length}</Text>
-              </BlurView>
-            </View>
+            <BlurView intensity={40} tint="light" style={styles.statCard}>
+              <View style={styles.statTopRow}>
+                <Ionicons name="briefcase-outline" size={16} color="#E11D48" />
+                <Text style={styles.statLabel}>Active jobs</Text>
+              </View>
+              <Text style={styles.statNum}>{activeJobs.length}</Text>
+            </BlurView>
 
-            <View style={styles.statCardWrapper}>
-              <BlurView intensity={25} tint="light" style={styles.statCard}>
-                <View style={styles.statTopRow}>
-                  <View
-                    style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}
-                  >
-                    <Ionicons name="people-outline" size={14} color="#16A34A" />
-                  </View>
-                  <Text style={styles.statLabel}>Total hires</Text>
-                </View>
-                <Text style={styles.statNum}>{totalHires}</Text>
-              </BlurView>
-            </View>
+            <BlurView intensity={40} tint="light" style={styles.statCard}>
+              <View style={styles.statTopRow}>
+                <Ionicons name="people-outline" size={16} color="#16A34A" />
+                <Text style={styles.statLabel}>Total hires</Text>
+              </View>
+              <Text style={styles.statNum}>{totalHires}</Text>
+            </BlurView>
 
-            <View style={styles.statCardWrapper}>
-              <BlurView intensity={25} tint="light" style={styles.statCard}>
-                <View style={styles.statTopRow}>
-                  <View
-                    style={[styles.statIconBadge, { backgroundColor: 'rgba(245, 158, 11, 0.12)' }]}
-                  >
-                    <Ionicons name="cash-outline" size={14} color="#D97706" />
-                  </View>
-                  <Text style={styles.statLabel}>Total paid</Text>
-                </View>
-                <Text style={styles.statNum}>₱{totalPaid.toLocaleString()}</Text>
-              </BlurView>
-            </View>
+            <BlurView intensity={40} tint="light" style={styles.statCard}>
+              <View style={styles.statTopRow}>
+                <Ionicons name="cash-outline" size={16} color="#D97706" />
+                <Text style={styles.statLabel}>Total paid</Text>
+              </View>
+              <Text style={styles.statNum}>₱{totalPaid.toLocaleString()}</Text>
+            </BlurView>
 
-            <View style={styles.statCardWrapper}>
-              <BlurView intensity={25} tint="light" style={styles.statCard}>
-                <View style={styles.statTopRow}>
-                  <View
-                    style={[styles.statIconBadge, { backgroundColor: 'rgba(234, 179, 8, 0.12)' }]}
-                  >
-                    <Ionicons name="star" size={14} color="#EAB308" />
-                  </View>
-                  <Text style={styles.statLabel}>Reputation</Text>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
-                  <Text style={styles.statNum}>{reputationFormatted}</Text>
-                  <Text style={styles.statMaxScore}>/5.0</Text>
-                </View>
-              </BlurView>
-            </View>
+            <BlurView intensity={40} tint="light" style={styles.statCard}>
+              <View style={styles.statTopRow}>
+                <Ionicons name="star" size={16} color="#EAB308" />
+                <Text style={styles.statLabel}>Reputation</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
+                <Text style={styles.statNum}>{reputationFormatted}</Text>
+                <Text style={styles.statMaxScore}>/5.0</Text>
+              </View>
+            </BlurView>
           </View>
         </View>
 
@@ -607,36 +583,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     rowGap: 12,
   },
-  statCardWrapper: {
+  statCard: {
     width: '48.5%',
-    borderRadius: 18,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.70)',
+    padding: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 16,
     elevation: 2,
-  },
-  statCard: {
-    borderRadius: 18,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.50)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.65)',
-    paddingVertical: 14,
-    paddingHorizontal: 14,
   },
   statTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
     marginBottom: 8,
-  },
-  statIconBadge: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   statNum: {
     fontFamily: fonts.numericBold,

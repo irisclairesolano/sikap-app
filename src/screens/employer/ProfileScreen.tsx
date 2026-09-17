@@ -205,39 +205,23 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.ambientGlowRose} pointerEvents="none" />
           <View style={styles.ambientGlowMint} pointerEvents="none" />
           <View style={styles.statsGrid}>
-            <View style={styles.statBoxWrapper}>
-              <BlurView intensity={25} tint="light" style={styles.statBox}>
-                <View
-                  style={[styles.statIconBadge, { backgroundColor: 'rgba(244, 63, 94, 0.12)' }]}
-                >
-                  <Ionicons name="briefcase-outline" size={14} color="#E11D48" />
-                </View>
-                <Text style={styles.statValue}>{employer.activeJobs}</Text>
-                <Text style={styles.statLabel}>Active jobs</Text>
-              </BlurView>
-            </View>
-            <View style={styles.statBoxWrapper}>
-              <BlurView intensity={25} tint="light" style={styles.statBox}>
-                <View
-                  style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}
-                >
-                  <Ionicons name="people-outline" size={14} color="#16A34A" />
-                </View>
-                <Text style={styles.statValue}>{employer.hired}</Text>
-                <Text style={styles.statLabel}>Hires</Text>
-              </BlurView>
-            </View>
-            <View style={styles.statBoxWrapper}>
-              <BlurView intensity={25} tint="light" style={styles.statBox}>
-                <View
-                  style={[styles.statIconBadge, { backgroundColor: 'rgba(245, 158, 11, 0.12)' }]}
-                >
-                  <Ionicons name="cash-outline" size={14} color="#D97706" />
-                </View>
-                <Text style={styles.statValue}>{employer.totalPaid}</Text>
-                <Text style={styles.statLabel}>Total paid</Text>
-              </BlurView>
-            </View>
+            <BlurView intensity={40} tint="light" style={styles.statBox}>
+              <Ionicons name="briefcase-outline" size={16} color="#E11D48" />
+              <Text style={styles.statValue}>{employer.activeJobs}</Text>
+              <Text style={styles.statLabel}>Active jobs</Text>
+            </BlurView>
+
+            <BlurView intensity={40} tint="light" style={styles.statBox}>
+              <Ionicons name="people-outline" size={16} color="#16A34A" />
+              <Text style={styles.statValue}>{employer.hired}</Text>
+              <Text style={styles.statLabel}>Hires</Text>
+            </BlurView>
+
+            <BlurView intensity={40} tint="light" style={styles.statBox}>
+              <Ionicons name="cash-outline" size={16} color="#D97706" />
+              <Text style={styles.statValue}>{employer.totalPaid}</Text>
+              <Text style={styles.statLabel}>Total paid</Text>
+            </BlurView>
           </View>
         </View>
 
@@ -421,34 +405,27 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(34, 197, 94, 0.30)',
   },
   statsGrid: { flexDirection: 'row', gap: 10 },
-  statBoxWrapper: {
+  statBox: {
     flex: 1,
-    borderRadius: 18,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.70)',
+    padding: 16,
+    alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 16,
     elevation: 2,
   },
-  statBox: {
-    borderRadius: 18,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.50)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.65)',
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    alignItems: 'center',
+  statValue: {
+    fontFamily: fonts.numericBold,
+    fontSize: 18,
+    color: '#0F172A',
+    marginTop: 6,
   },
-  statIconBadge: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-  },
-  statValue: { fontFamily: fonts.numericBold, fontSize: 18, color: '#0F172A' },
   statLabel: {
     fontFamily: fonts.bodyBold,
     fontSize: 10,
