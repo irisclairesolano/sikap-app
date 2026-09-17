@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import IDUploadScreen from '../../../src/screens/auth/IDUploadScreen';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import { useMutation } from '@tanstack/react-query';
 import { useAlert } from '../../../src/contexts/AlertContext';
 
@@ -39,6 +40,11 @@ jest.mock('../../../src/contexts/AlertContext', () => ({
 
 jest.mock('expo-document-picker', () => ({
   getDocumentAsync: jest.fn(),
+}));
+
+jest.mock('expo-image-picker', () => ({
+  requestMediaLibraryPermissionsAsync: jest.fn().mockResolvedValue({ granted: true }),
+  launchImageLibraryAsync: jest.fn(),
 }));
 
 jest.mock('expo-image-manipulator', () => ({
@@ -81,9 +87,9 @@ describe('IDUploadScreen', () => {
     expect(getByText(/Verify your/i)).toBeTruthy();
     expect(getByText('identity.')).toBeTruthy();
     expect(getByText('Upload a government-issued ID.')).toBeTruthy();
-    expect(getByText('Upload a photo of your ID (Front)')).toBeTruthy();
-    expect(getByText('Upload a photo of your ID (Back)')).toBeTruthy();
-    expect(getByText('Upload a selfie holding your ID')).toBeTruthy();
+    expect(getByText('Upload ID Front (from gallery)')).toBeTruthy();
+    expect(getByText('Upload ID Back (from gallery)')).toBeTruthy();
+    expect(getByText('Upload selfie with ID (from gallery)')).toBeTruthy();
   });
 
   it('initially disables the submit button', async () => {
@@ -92,48 +98,42 @@ describe('IDUploadScreen', () => {
     expect(submitBtn.props.accessibilityState?.disabled).toBe(true);
   });
 
-  it('triggers document picker when clicking upload areas and enables submit when all are selected', async () => {
-    (DocumentPicker.getDocumentAsync as jest.Mock)
+  it('triggers gallery picker directly when clicking upload cards and enables submit when all are selected', async () => {
+    (ImagePicker.launchImageLibraryAsync as jest.Mock)
       .mockResolvedValueOnce({
         canceled: false,
-        assets: [{ uri: 'file-uri-front', name: 'id-front.jpg', size: 1024 * 1024 }],
+        assets: [{ uri: 'file-uri-front', fileName: 'id-front.jpg', fileSize: 1024 * 1024 }],
       })
       .mockResolvedValueOnce({
         canceled: false,
-        assets: [{ uri: 'file-uri-back', name: 'id-back.jpg', size: 1024 * 1024 }],
+        assets: [{ uri: 'file-uri-back', fileName: 'id-back.jpg', fileSize: 1024 * 1024 }],
       })
       .mockResolvedValueOnce({
         canceled: false,
-        assets: [{ uri: 'file-uri-selfie', name: 'selfie.jpg', size: 1024 * 1024 }],
+        assets: [{ uri: 'file-uri-selfie', fileName: 'selfie.jpg', fileSize: 1024 * 1024 }],
       });
 
     const { getByText, getByRole, queryByText } = await render(<IDUploadScreen />);
 
-    // Click ID front upload area, then Browse Files in BottomSheet
-    const frontText = getByText('Upload a photo of your ID (Front)');
+    // Click ID front upload area
+    const frontText = getByText('Upload ID Front (from gallery)');
     await fireEvent.press(frontText);
-    const browseFilesFront = await waitFor(() => getByText('Browse Files'));
-    await fireEvent.press(browseFilesFront);
 
     await waitFor(() => {
       expect(queryByText('id-front.jpg')).toBeTruthy();
     });
 
-    // Click ID back upload area, then Browse Files in BottomSheet
-    const backText = getByText('Upload a photo of your ID (Back)');
+    // Click ID back upload area
+    const backText = getByText('Upload ID Back (from gallery)');
     await fireEvent.press(backText);
-    const browseFilesBack = await waitFor(() => getByText('Browse Files'));
-    await fireEvent.press(browseFilesBack);
 
     await waitFor(() => {
       expect(queryByText('id-back.jpg')).toBeTruthy();
     });
 
-    // Click Selfie upload area, then Browse Files in BottomSheet
-    const selfieText = getByText('Upload a selfie holding your ID');
+    // Click Selfie upload area
+    const selfieText = getByText('Upload selfie with ID (from gallery)');
     await fireEvent.press(selfieText);
-    const browseFilesSelfie = await waitFor(() => getByText('Browse Files'));
-    await fireEvent.press(browseFilesSelfie);
 
     await waitFor(() => {
       expect(queryByText('selfie.jpg')).toBeTruthy();

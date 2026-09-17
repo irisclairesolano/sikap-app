@@ -155,8 +155,9 @@ export async function appendFileToFormData(
           ? rawBlob.slice(0, rawBlob.size, typeToUse)
           : rawBlob;
 
-    // Provide own writable 'name' and 'type' on the blob instance so Expo's
-    // normalizeArgs (in installFormDataPatch) can safely assign `value.name` without throwing.
+    // Ensure 'name' and 'type' are enumerable own properties on the blob instance
+    // so Expo's getFormDataPartHeaders will read `filename="${encodeFilename(part.name)}"`
+    // and `content-type: ${part.type}`, preventing Laravel mime validation failure (422).
     try {
       Object.defineProperty(blob, 'name', {
         value: cleanFileName,
