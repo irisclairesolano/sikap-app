@@ -10,6 +10,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../theme';
@@ -248,55 +249,63 @@ export const EmployerDashboardScreen: React.FC = () => {
           <View style={styles.ambientGlowAmber} pointerEvents="none" />
 
           <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <View style={styles.statTopRow}>
-                <View
-                  style={[styles.statIconBadge, { backgroundColor: 'rgba(244, 63, 94, 0.12)' }]}
-                >
-                  <Ionicons name="briefcase-outline" size={14} color="#E11D48" />
+            <View style={styles.statCardWrapper}>
+              <BlurView intensity={25} tint="light" style={styles.statCard}>
+                <View style={styles.statTopRow}>
+                  <View
+                    style={[styles.statIconBadge, { backgroundColor: 'rgba(244, 63, 94, 0.12)' }]}
+                  >
+                    <Ionicons name="briefcase-outline" size={14} color="#E11D48" />
+                  </View>
+                  <Text style={styles.statLabel}>Active jobs</Text>
                 </View>
-                <Text style={styles.statLabel}>Active jobs</Text>
-              </View>
-              <Text style={styles.statNum}>{activeJobs.length}</Text>
+                <Text style={styles.statNum}>{activeJobs.length}</Text>
+              </BlurView>
             </View>
 
-            <View style={styles.statCard}>
-              <View style={styles.statTopRow}>
-                <View
-                  style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}
-                >
-                  <Ionicons name="people-outline" size={14} color="#16A34A" />
+            <View style={styles.statCardWrapper}>
+              <BlurView intensity={25} tint="light" style={styles.statCard}>
+                <View style={styles.statTopRow}>
+                  <View
+                    style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}
+                  >
+                    <Ionicons name="people-outline" size={14} color="#16A34A" />
+                  </View>
+                  <Text style={styles.statLabel}>Total hires</Text>
                 </View>
-                <Text style={styles.statLabel}>Total hires</Text>
-              </View>
-              <Text style={styles.statNum}>{totalHires}</Text>
+                <Text style={styles.statNum}>{totalHires}</Text>
+              </BlurView>
             </View>
 
-            <View style={styles.statCard}>
-              <View style={styles.statTopRow}>
-                <View
-                  style={[styles.statIconBadge, { backgroundColor: 'rgba(245, 158, 11, 0.12)' }]}
-                >
-                  <Ionicons name="cash-outline" size={14} color="#D97706" />
+            <View style={styles.statCardWrapper}>
+              <BlurView intensity={25} tint="light" style={styles.statCard}>
+                <View style={styles.statTopRow}>
+                  <View
+                    style={[styles.statIconBadge, { backgroundColor: 'rgba(245, 158, 11, 0.12)' }]}
+                  >
+                    <Ionicons name="cash-outline" size={14} color="#D97706" />
+                  </View>
+                  <Text style={styles.statLabel}>Total paid</Text>
                 </View>
-                <Text style={styles.statLabel}>Total paid</Text>
-              </View>
-              <Text style={styles.statNum}>₱{totalPaid.toLocaleString()}</Text>
+                <Text style={styles.statNum}>₱{totalPaid.toLocaleString()}</Text>
+              </BlurView>
             </View>
 
-            <View style={styles.statCard}>
-              <View style={styles.statTopRow}>
-                <View
-                  style={[styles.statIconBadge, { backgroundColor: 'rgba(234, 179, 8, 0.12)' }]}
-                >
-                  <Ionicons name="star" size={14} color="#EAB308" />
+            <View style={styles.statCardWrapper}>
+              <BlurView intensity={25} tint="light" style={styles.statCard}>
+                <View style={styles.statTopRow}>
+                  <View
+                    style={[styles.statIconBadge, { backgroundColor: 'rgba(234, 179, 8, 0.12)' }]}
+                  >
+                    <Ionicons name="star" size={14} color="#EAB308" />
+                  </View>
+                  <Text style={styles.statLabel}>Reputation</Text>
                 </View>
-                <Text style={styles.statLabel}>Reputation</Text>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
-                <Text style={styles.statNum}>{reputationFormatted}</Text>
-                <Text style={styles.statMaxScore}>/5.0</Text>
-              </View>
+                <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
+                  <Text style={styles.statNum}>{reputationFormatted}</Text>
+                  <Text style={styles.statMaxScore}>/5.0</Text>
+                </View>
+              </BlurView>
             </View>
           </View>
         </View>
@@ -567,30 +576,30 @@ const styles = StyleSheet.create({
   },
   ambientGlowCyan: {
     position: 'absolute',
-    top: -15,
-    left: 10,
-    width: 140,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(56, 189, 248, 0.18)',
+    top: -20,
+    left: 0,
+    width: 170,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(56, 189, 248, 0.35)',
   },
   ambientGlowRose: {
     position: 'absolute',
-    bottom: -15,
-    right: 15,
-    width: 150,
-    height: 130,
-    borderRadius: 65,
-    backgroundColor: 'rgba(251, 113, 133, 0.16)',
+    bottom: -20,
+    right: 0,
+    width: 170,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(251, 113, 133, 0.32)',
   },
   ambientGlowAmber: {
     position: 'absolute',
-    top: 50,
-    left: '35%',
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    backgroundColor: 'rgba(251, 191, 36, 0.12)',
+    top: 40,
+    left: '30%',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(251, 191, 36, 0.28)',
   },
   statsGrid: {
     flexDirection: 'row',
@@ -598,19 +607,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     rowGap: 12,
   },
-  statCard: {
+  statCardWrapper: {
     width: '48.5%',
-    backgroundColor: 'rgba(255, 255, 255, 0.90)',
     borderRadius: 18,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.40)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  statCard: {
+    borderRadius: 18,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.50)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.65)',
     paddingVertical: 14,
     paddingHorizontal: 14,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.07,
-    shadowRadius: 16,
-    elevation: 3,
   },
   statTopRow: {
     flexDirection: 'row',

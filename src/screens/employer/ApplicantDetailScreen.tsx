@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
@@ -466,19 +467,27 @@ const ApplicantDetailScreen: React.FC = () => {
           <View style={styles.ambientGlowMint} pointerEvents="none" />
           <View style={styles.ambientGlowBlue} pointerEvents="none" />
           <View style={styles.statsGrid}>
-            <View style={styles.statBox}>
-              <View style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}>
-                <Ionicons name="checkmark-done-outline" size={15} color="#16A34A" />
-              </View>
-              <Text style={styles.statValue}>{appData?.worker?.completed_jobs_count ?? 0}</Text>
-              <Text style={styles.statLabel}>Completed Jobs</Text>
+            <View style={styles.statBoxWrapper}>
+              <BlurView intensity={25} tint="light" style={styles.statBox}>
+                <View
+                  style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}
+                >
+                  <Ionicons name="checkmark-done-outline" size={15} color="#16A34A" />
+                </View>
+                <Text style={styles.statValue}>{appData?.worker?.completed_jobs_count ?? 0}</Text>
+                <Text style={styles.statLabel}>Completed Jobs</Text>
+              </BlurView>
             </View>
-            <View style={styles.statBox}>
-              <View style={[styles.statIconBadge, { backgroundColor: 'rgba(2, 132, 199, 0.12)' }]}>
-                <Ionicons name="shield-outline" size={15} color="#0284C7" />
-              </View>
-              <Text style={styles.statValue}>Active</Text>
-              <Text style={styles.statLabel}>Worker Status</Text>
+            <View style={styles.statBoxWrapper}>
+              <BlurView intensity={25} tint="light" style={styles.statBox}>
+                <View
+                  style={[styles.statIconBadge, { backgroundColor: 'rgba(2, 132, 199, 0.12)' }]}
+                >
+                  <Ionicons name="shield-outline" size={15} color="#0284C7" />
+                </View>
+                <Text style={styles.statValue}>Active</Text>
+                <Text style={styles.statLabel}>Worker Status</Text>
+              </BlurView>
             </View>
           </View>
         </View>
@@ -1257,40 +1266,44 @@ const styles = StyleSheet.create({
   },
   ambientGlowMint: {
     position: 'absolute',
-    top: -10,
-    left: 10,
-    width: 120,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(34, 197, 94, 0.14)',
+    top: -15,
+    left: 0,
+    width: 150,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(34, 197, 94, 0.30)',
   },
   ambientGlowBlue: {
     position: 'absolute',
-    bottom: -10,
-    right: 15,
-    width: 130,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(56, 189, 248, 0.16)',
+    bottom: -15,
+    right: 0,
+    width: 150,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(56, 189, 248, 0.30)',
   },
   statsGrid: {
     flexDirection: 'row',
     gap: 12,
   },
-  statBox: {
+  statBoxWrapper: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
     borderRadius: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  statBox: {
+    borderRadius: 18,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.50)',
     borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.70)',
+    borderColor: 'rgba(255, 255, 255, 0.65)',
     paddingVertical: 14,
     paddingHorizontal: 12,
     alignItems: 'center',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
   },
   statIconBadge: {
     width: 26,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle, ViewProps } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { glass } from '../../theme';
 
 export interface GlassCardProps extends ViewProps {
@@ -7,6 +8,7 @@ export interface GlassCardProps extends ViewProps {
   style?: ViewStyle | ViewStyle[];
   ambientGlow?: 'peach' | 'sky' | 'mint' | 'gold' | 'rose' | 'none';
   glowPosition?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+  intensity?: number;
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({
@@ -14,6 +16,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   style,
   ambientGlow = 'none',
   glowPosition = 'top-right',
+  intensity = 25,
   ...props
 }) => {
   const getGlowColor = () => {
@@ -36,35 +39,38 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   const getGlowPosStyle = (): ViewStyle => {
     switch (glowPosition) {
       case 'top-left':
-        return { top: -12, left: -10 };
+        return { top: -14, left: -10 };
       case 'bottom-right':
-        return { bottom: -12, right: -10 };
+        return { bottom: -14, right: -10 };
       case 'bottom-left':
-        return { bottom: -12, left: -10 };
+        return { bottom: -14, left: -10 };
       case 'top-right':
       default:
-        return { top: -12, right: -10 };
+        return { top: -14, right: -10 };
     }
   };
+
+  const cardContent = (
+    <View style={[styles.cardShadowWrapper, style]}>
+      <BlurView intensity={intensity} tint="light" style={styles.blurContainer} {...props}>
+        {children}
+      </BlurView>
+    </View>
+  );
 
   if (ambientGlow !== 'none') {
     return (
       <View style={styles.wrapper}>
         <View
           style={[styles.ambientGlow, getGlowPosStyle(), { backgroundColor: getGlowColor() }]}
+          pointerEvents="none"
         />
-        <View style={[styles.glassCard, style]} {...props}>
-          {children}
-        </View>
+        {cardContent}
       </View>
     );
   }
 
-  return (
-    <View style={[styles.glassCard, style]} {...props}>
-      {children}
-    </View>
-  );
+  return cardContent;
 };
 
 const styles = StyleSheet.create({
@@ -74,12 +80,25 @@ const styles = StyleSheet.create({
   },
   ambientGlow: {
     position: 'absolute',
-    width: 140,
-    height: 120,
-    borderRadius: 60,
+    width: 160,
+    height: 140,
+    borderRadius: 70,
   },
-  glassCard: {
-    ...glass.card,
+  cardShadowWrapper: {
+    borderRadius: 22,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  blurContainer: {
+    borderRadius: 22,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.50)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.65)',
+    padding: 20,
   },
 });
 

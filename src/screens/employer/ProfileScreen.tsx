@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import { profileApi } from '../../api/profile';
@@ -204,26 +205,38 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.ambientGlowRose} pointerEvents="none" />
           <View style={styles.ambientGlowMint} pointerEvents="none" />
           <View style={styles.statsGrid}>
-            <View style={styles.statBox}>
-              <View style={[styles.statIconBadge, { backgroundColor: 'rgba(244, 63, 94, 0.12)' }]}>
-                <Ionicons name="briefcase-outline" size={14} color="#E11D48" />
-              </View>
-              <Text style={styles.statValue}>{employer.activeJobs}</Text>
-              <Text style={styles.statLabel}>Active jobs</Text>
+            <View style={styles.statBoxWrapper}>
+              <BlurView intensity={25} tint="light" style={styles.statBox}>
+                <View
+                  style={[styles.statIconBadge, { backgroundColor: 'rgba(244, 63, 94, 0.12)' }]}
+                >
+                  <Ionicons name="briefcase-outline" size={14} color="#E11D48" />
+                </View>
+                <Text style={styles.statValue}>{employer.activeJobs}</Text>
+                <Text style={styles.statLabel}>Active jobs</Text>
+              </BlurView>
             </View>
-            <View style={styles.statBox}>
-              <View style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}>
-                <Ionicons name="people-outline" size={14} color="#16A34A" />
-              </View>
-              <Text style={styles.statValue}>{employer.hired}</Text>
-              <Text style={styles.statLabel}>Hires</Text>
+            <View style={styles.statBoxWrapper}>
+              <BlurView intensity={25} tint="light" style={styles.statBox}>
+                <View
+                  style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}
+                >
+                  <Ionicons name="people-outline" size={14} color="#16A34A" />
+                </View>
+                <Text style={styles.statValue}>{employer.hired}</Text>
+                <Text style={styles.statLabel}>Hires</Text>
+              </BlurView>
             </View>
-            <View style={styles.statBox}>
-              <View style={[styles.statIconBadge, { backgroundColor: 'rgba(245, 158, 11, 0.12)' }]}>
-                <Ionicons name="cash-outline" size={14} color="#D97706" />
-              </View>
-              <Text style={styles.statValue}>{employer.totalPaid}</Text>
-              <Text style={styles.statLabel}>Total paid</Text>
+            <View style={styles.statBoxWrapper}>
+              <BlurView intensity={25} tint="light" style={styles.statBox}>
+                <View
+                  style={[styles.statIconBadge, { backgroundColor: 'rgba(245, 158, 11, 0.12)' }]}
+                >
+                  <Ionicons name="cash-outline" size={14} color="#D97706" />
+                </View>
+                <Text style={styles.statValue}>{employer.totalPaid}</Text>
+                <Text style={styles.statLabel}>Total paid</Text>
+              </BlurView>
             </View>
           </View>
         </View>
@@ -391,37 +404,41 @@ const styles = StyleSheet.create({
   },
   ambientGlowRose: {
     position: 'absolute',
-    top: -10,
-    left: 10,
-    width: 120,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(244, 63, 94, 0.14)',
+    top: -15,
+    left: 0,
+    width: 150,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(244, 63, 94, 0.30)',
   },
   ambientGlowMint: {
     position: 'absolute',
-    bottom: -10,
-    right: 15,
-    width: 130,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(34, 197, 94, 0.14)',
+    bottom: -15,
+    right: 0,
+    width: 150,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(34, 197, 94, 0.30)',
   },
   statsGrid: { flexDirection: 'row', gap: 10 },
-  statBox: {
+  statBoxWrapper: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
     borderRadius: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  statBox: {
+    borderRadius: 18,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.50)',
     borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.70)',
+    borderColor: 'rgba(255, 255, 255, 0.65)',
     paddingVertical: 14,
     paddingHorizontal: 8,
     alignItems: 'center',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    elevation: 2,
   },
   statIconBadge: {
     width: 26,

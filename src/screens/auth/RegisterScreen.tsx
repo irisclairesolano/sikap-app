@@ -22,6 +22,7 @@ const RegisterScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Validation states
   const [fieldStatus, setFieldStatus] = useState<Record<string, 'valid' | 'invalid' | null>>({});
@@ -72,7 +73,16 @@ const RegisterScreen: React.FC = () => {
     return { status: 'valid', message: '' };
   };
 
-  const { control, handleSubmit, getValues, setError } = useForm({
+  const validateConfirmPassword = (
+    password?: string,
+    confirm?: string,
+  ): { status: 'valid' | 'invalid' | null; message: string } => {
+    if (!confirm) return { status: null, message: '' };
+    if (password !== confirm) return { status: 'invalid', message: 'Passwords do not match' };
+    return { status: 'valid', message: '' };
+  };
+
+  const { control, handleSubmit, getValues, setError, watch } = useForm({
     defaultValues: {
       name: '',
       email: '',
@@ -88,24 +98,25 @@ const RegisterScreen: React.FC = () => {
     const ev = validateEmail(values.email);
     const pv = validatePhone(values.phone);
     const pwv = validatePassword(values.password);
+    const cpwv = validateConfirmPassword(values.password, values.password_confirmation);
 
     if (
       nv.status === 'invalid' ||
       ev.status === 'invalid' ||
       pv.status === 'invalid' ||
-      pwv.status === 'invalid'
+      pwv.status === 'invalid' ||
+      cpwv.status === 'invalid'
     ) {
       return; // form has errors
     }
 
-    // Since we omit confirm password for now, just copy it or validate it
     navigation.navigate('RegisterStep2', {
       role,
       name: values.name,
       email: values.email,
       phone: values.phone,
       password: values.password,
-      password_confirmation: values.password, // For backend if needed, or add field back
+      password_confirmation: values.password_confirmation,
     });
   };
 

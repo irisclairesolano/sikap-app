@@ -1,21 +1,5 @@
-/**
- * Safely appends a local file asset to FormData.
- *
- * In Expo SDK 52/56/57 and React Native with WinterCG-compliant fetch:
- * 1. Appending a legacy React Native pseudo-object `{ uri, name, type }`
- *    causes: [Error: Unsupported FormDataPart implementation] in Expo's fetch.
- * 2. Calling `new File([blob], fileName)` or appending a Blob directly without
- *    defining a writable 'name' property causes:
- *    [TypeError: Cannot assign to property 'name' which has only a getter]
- *    because Expo's FormData patch (normalizeArgs) executes `value.name = blobFilename ?? 'blob'`,
- *    and on Hermes/React Native, `name` is a getter without a setter on the prototype.
- *
- * This utility:
- * - Patches Blob/File prototypes so `name` property assignment never throws
- * - Converts the local file URI to a real Blob via fetch
- * - Defines an own writable 'name' and 'type' property on the Blob instance
- * - Safely appends to FormData without triggering getter-only or FormDataPart errors.
- */
+import { Blob as ExpoBlob } from 'expo-blob';
+import * as FileSystem from 'expo-file-system/legacy';
 
 function ensurePrototypeWritableName(proto: any): void {
   if (!proto) return;
@@ -52,6 +36,9 @@ if (typeof Blob !== 'undefined' && Blob.prototype) {
 if (typeof File !== 'undefined' && File.prototype) {
   ensurePrototypeWritableName(File.prototype);
 }
+if (typeof ExpoBlob !== 'undefined' && (ExpoBlob as any).prototype) {
+  ensurePrototypeWritableName((ExpoBlob as any).prototype);
+}
 
 function ensureExtension(fileName: string, mimeType: string): string {
   if (/\.[a-zA-Z0-9]+$/.test(fileName)) {
@@ -69,6 +56,47 @@ function ensureExtension(fileName: string, mimeType: string): string {
   return `${fileName}.jpg`;
 }
 
+// High performance base64 to Uint8Array converter
+const b64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+const b64Lookup = new Uint8Array(256);
+for (let i = 0; i < b64Chars.length; i++) {
+  b64Lookup[b64Chars.charCodeAt(i)] = i;
+}
+
+function base64ToUint8Array(b64: string): Uint8Array {
+  if (!b64 || typeof b64 !== 'string') return new Uint8Array(0);
+  const cleanB64 = b64.replace(/[\r\n\s]/g, '');
+  const len = cleanB64.length;
+  if (len === 0) return new Uint8Array(0);
+
+  let bufferLength = len * 0.75;
+  if (cleanB64[len - 1] === '=') {
+    bufferLength--;
+    if (cleanB64[len - 2] === '=') {
+      bufferLength--;
+    }
+  }
+
+  const bytes = new Uint8Array(bufferLength);
+  let p = 0;
+  for (let i = 0; i < len; i += 4) {
+    const encoded1 = b64Lookup[cleanB64.charCodeAt(i)];
+    const encoded2 = b64Lookup[cleanB64.charCodeAt(i + 1)];
+    const encoded3 = b64Lookup[cleanB64.charCodeAt(i + 2)];
+    const encoded4 = b64Lookup[cleanB64.charCodeAt(i + 3)];
+
+    bytes[p++] = (encoded1 << 2) | (encoded2 >> 4);
+    if (p < bufferLength) {
+      bytes[p++] = ((encoded2 & 15) << 4) | (encoded3 >> 2);
+    }
+    if (p < bufferLength) {
+      bytes[p++] = ((encoded3 & 3) << 6) | (encoded4 & 63);
+    }
+  }
+
+  return bytes;
+}
+
 export async function appendFileToFormData(
   formData: FormData,
   fieldName: string,
@@ -79,14 +107,55 @@ export async function appendFileToFormData(
   const effectiveMimeType = String(mimeType || 'image/jpeg');
   const cleanFileName = ensureExtension(String(fileName || 'file.jpg'), effectiveMimeType);
 
+  let rawBlob: any = null;
+
+  // 1. Try reading blob via standard fetch(uri)
   try {
     const response = await fetch(uri);
-    const rawBlob = await response.blob();
+    if (response && typeof response.blob === 'function') {
+      rawBlob = await response.blob();
+    }
+  } catch (fetchErr) {
+    console.log(`fetch("${uri}") failed, falling back to FileSystem reader:`, fetchErr);
+  }
+
+  // 2. If fetch(uri) failed (common on local Android file/cache/content URIs), read via FileSystem
+  if (!rawBlob) {
+    try {
+      const base64Data = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem?.EncodingType?.Base64 || ('base64' as any),
+      });
+      if (typeof base64Data === 'string' && base64Data.length > 0) {
+        const bytes = base64ToUint8Array(base64Data);
+
+        // Create blob using ExpoBlob or global Blob
+        try {
+          rawBlob = new ExpoBlob([bytes as any], { type: effectiveMimeType });
+        } catch {
+          rawBlob = new Blob([bytes as any], { type: effectiveMimeType });
+        }
+
+        // Ensure 'bytes' method exists so convertFormDataAsync succeeds
+        if (!('bytes' in rawBlob) || typeof rawBlob.bytes !== 'function') {
+          rawBlob.bytes = async () => bytes;
+        }
+      }
+    } catch (fsErr) {
+      console.warn(`FileSystem read failed for ${uri}:`, fsErr);
+    }
+  }
+
+  // 3. If we have a blob (or created one), prepare it for Expo FormData
+  if (rawBlob) {
     const typeToUse = effectiveMimeType || rawBlob.type || 'image/jpeg';
     const blob: any =
-      rawBlob.type === typeToUse ? rawBlob : rawBlob.slice(0, rawBlob.size, typeToUse);
+      rawBlob.type === typeToUse
+        ? rawBlob
+        : typeof rawBlob.slice === 'function'
+          ? rawBlob.slice(0, rawBlob.size, typeToUse)
+          : rawBlob;
 
-    // Define own writable 'name' and 'type' on the blob instance so Expo's
+    // Provide own writable 'name' and 'type' on the blob instance so Expo's
     // normalizeArgs (in installFormDataPatch) can safely assign `value.name` without throwing.
     try {
       Object.defineProperty(blob, 'name', {
@@ -119,13 +188,14 @@ export async function appendFileToFormData(
     }
 
     formData.append(fieldName, blob, cleanFileName);
-  } catch (error) {
-    console.warn(`appendFileToFormData fallback for ${fieldName}:`, error);
-    // Legacy RN pseudo-object fallback
-    formData.append(fieldName, {
-      uri,
-      name: cleanFileName,
-      type: effectiveMimeType,
-    } as any);
+    return;
   }
+
+  // 4. Ultimate fallback: if neither fetch nor FileSystem worked, append RN object
+  console.warn(`appendFileToFormData fallback to RN object for ${fieldName}`);
+  formData.append(fieldName, {
+    uri,
+    name: cleanFileName,
+    type: effectiveMimeType,
+  } as any);
 }

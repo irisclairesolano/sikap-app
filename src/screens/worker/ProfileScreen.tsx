@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
@@ -225,19 +226,27 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.ambientGlowMint} pointerEvents="none" />
           <View style={styles.ambientGlowBlue} pointerEvents="none" />
           <View style={styles.statsGrid}>
-            <View style={styles.statBox}>
-              <View style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}>
-                <Ionicons name="checkmark-done-outline" size={15} color="#16A34A" />
-              </View>
-              <Text style={styles.statValue}>{worker.jobsDone}</Text>
-              <Text style={styles.statLabel}>Jobs done</Text>
+            <View style={styles.statBoxWrapper}>
+              <BlurView intensity={25} tint="light" style={styles.statBox}>
+                <View
+                  style={[styles.statIconBadge, { backgroundColor: 'rgba(34, 197, 94, 0.12)' }]}
+                >
+                  <Ionicons name="checkmark-done-outline" size={15} color="#16A34A" />
+                </View>
+                <Text style={styles.statValue}>{worker.jobsDone}</Text>
+                <Text style={styles.statLabel}>Jobs done</Text>
+              </BlurView>
             </View>
-            <View style={styles.statBox}>
-              <View style={[styles.statIconBadge, { backgroundColor: 'rgba(2, 132, 199, 0.12)' }]}>
-                <Ionicons name="calendar-outline" size={15} color="#0284C7" />
-              </View>
-              <Text style={styles.statValue}>{worker.memberSince}</Text>
-              <Text style={styles.statLabel}>Member</Text>
+            <View style={styles.statBoxWrapper}>
+              <BlurView intensity={25} tint="light" style={styles.statBox}>
+                <View
+                  style={[styles.statIconBadge, { backgroundColor: 'rgba(2, 132, 199, 0.12)' }]}
+                >
+                  <Ionicons name="calendar-outline" size={15} color="#0284C7" />
+                </View>
+                <Text style={styles.statValue}>{worker.memberSince}</Text>
+                <Text style={styles.statLabel}>Member</Text>
+              </BlurView>
             </View>
           </View>
         </View>
@@ -551,37 +560,41 @@ const styles = StyleSheet.create({
   },
   ambientGlowMint: {
     position: 'absolute',
-    top: -10,
-    left: 10,
-    width: 120,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(34, 197, 94, 0.14)',
+    top: -15,
+    left: 0,
+    width: 150,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(34, 197, 94, 0.30)',
   },
   ambientGlowBlue: {
     position: 'absolute',
-    bottom: -10,
-    right: 15,
-    width: 130,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(56, 189, 248, 0.16)',
+    bottom: -15,
+    right: 0,
+    width: 150,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(56, 189, 248, 0.30)',
   },
   statsGrid: { flexDirection: 'row', gap: 10 },
-  statBox: {
+  statBoxWrapper: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
     borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.70)',
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    alignItems: 'center',
-    shadowColor: '#0F172A',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
     elevation: 2,
+  },
+  statBox: {
+    borderRadius: 18,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.50)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.65)',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    alignItems: 'center',
   },
   statIconBadge: {
     width: 26,

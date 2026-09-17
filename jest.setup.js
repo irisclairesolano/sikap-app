@@ -50,3 +50,28 @@ jest.mock('react-native-safe-area-context', () => {
     useSafeAreaFrame: () => ({ x: 0, y: 0, width: 390, height: 844 }),
   };
 });
+
+jest.mock('expo-blur', () => {
+  const React = require('react');
+  return {
+    BlurView: ({ children, ...props }) => React.createElement('View', props, children),
+  };
+});
+
+jest.mock('expo-blob', () => {
+  return {
+    Blob: class MockBlob {
+      constructor(parts = [], options = {}) {
+        this.parts = parts;
+        this.type = options.type || '';
+        this.size = 0;
+      }
+      bytes() {
+        return Promise.resolve(new Uint8Array(0));
+      }
+      arrayBuffer() {
+        return Promise.resolve(new ArrayBuffer(0));
+      }
+    },
+  };
+});

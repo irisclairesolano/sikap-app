@@ -109,25 +109,31 @@ describe('IDUploadScreen', () => {
 
     const { getByText, getByRole, queryByText } = await render(<IDUploadScreen />);
 
-    // Click ID front upload area
+    // Click ID front upload area, then Browse Files in BottomSheet
     const frontText = getByText('Upload a photo of your ID (Front)');
     await fireEvent.press(frontText);
+    const browseFilesFront = await waitFor(() => getByText('Browse Files'));
+    await fireEvent.press(browseFilesFront);
 
     await waitFor(() => {
       expect(queryByText('id-front.jpg')).toBeTruthy();
     });
 
-    // Click ID back upload area
+    // Click ID back upload area, then Browse Files in BottomSheet
     const backText = getByText('Upload a photo of your ID (Back)');
     await fireEvent.press(backText);
+    const browseFilesBack = await waitFor(() => getByText('Browse Files'));
+    await fireEvent.press(browseFilesBack);
 
     await waitFor(() => {
       expect(queryByText('id-back.jpg')).toBeTruthy();
     });
 
-    // Click Selfie upload area
+    // Click Selfie upload area, then Browse Files in BottomSheet
     const selfieText = getByText('Upload a selfie holding your ID');
     await fireEvent.press(selfieText);
+    const browseFilesSelfie = await waitFor(() => getByText('Browse Files'));
+    await fireEvent.press(browseFilesSelfie);
 
     await waitFor(() => {
       expect(queryByText('selfie.jpg')).toBeTruthy();

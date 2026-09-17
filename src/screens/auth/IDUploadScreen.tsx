@@ -3,6 +3,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import * as ImagePicker from 'expo-image-picker';
 import * as SecureStore from '../../utils/storage';
 import { appendFileToFormData } from '../../utils/formData';
 import React, { useEffect, useState } from 'react';
@@ -19,6 +20,7 @@ import { useAlert } from '../../contexts/AlertContext';
 import { authApi } from '../../api/auth';
 import { ApiClientError } from '../../api/client';
 import Button from '../../components/common/Button';
+import { BottomSheet } from '../../components/common/BottomSheet';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { notifyAuthChanged } from '../../store/authEvents';
 import { colors, fonts } from '../../theme';
@@ -26,6 +28,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'IDUpload'>;
 type IDUploadRouteProp = RouteProp<AuthStackParamList, 'IDUpload'>;
+type UploadTarget = 'id' | 'back' | 'selfie' | 'business';
 
 const IDUploadScreen: React.FC = () => {
   const queryClient = useQueryClient();
@@ -40,6 +43,7 @@ const IDUploadScreen: React.FC = () => {
   const [selectedFileBack, setSelectedFileBack] = useState<any>(null);
   const [selectedSelfie, setSelectedSelfie] = useState<any>(null);
   const [selectedBusinessDocs, setSelectedBusinessDocs] = useState<any[]>([]);
+  const [pickerTarget, setPickerTarget] = useState<UploadTarget | null>(null);
   const MAX_SIZE_MB = 5;
 
   useEffect(() => {
@@ -155,10 +159,111 @@ const IDUploadScreen: React.FC = () => {
     },
   });
 
-  const handleFileSelect = async (type: 'id' | 'back' | 'selfie' | 'business') => {
+  const assignFile = (
+    type: UploadTarget,
+    asset: { uri: string; name?: string; size?: number; mimeType?: string },
+  ) => {
+    if (asset.size && asset.size > MAX_SIZE_MB * 1024 * 1024) {
+      showAlert('File Too Large', `Please choose an image under ${MAX_SIZE_MB}MB.`);
+      return;
+    }
+    if (type === 'id') setSelectedFile(asset);
+    else if (type === 'back') setSelectedFileBack(asset);
+    else if (type === 'selfie') setSelectedSelfie(asset);
+  };
+
+  const handlePickCamera = async (target: UploadTarget) => {
+    setPickerTarget(null);
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        showAlert(
+          'Camera Permission Required',
+          'Please enable camera access to take a photo of your ID.',
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        quality: 0.85,
+        allowsEditing: false,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0]) {
+        const asset = result.assets[0];
+        const defaultName =
+          target === 'id' ? 'id_front.jpg' : target === 'back' ? 'id_back.jpg' : 'selfie.jpg';
+        assignFile(target, {
+          uri: asset.uri,
+          name: asset.fileName || defaultName,
+          size: asset.fileSize,
+          mimeType: asset.mimeType || 'image/jpeg',
+        });
+      }
+    } catch (error) {
+      console.log('Camera error:', error);
+      showAlert(
+        'Camera Error',
+        'Could not open camera. Please try selecting from gallery or files.',
+      );
+    }
+  };
+
+  const handlePickGallery = async (target: UploadTarget) => {
+    setPickerTarget(null);
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        showAlert(
+          'Photos Permission Required',
+          'Please allow photo access to select your ID image.',
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.85,
+        allowsMultipleSelection: target === 'business',
+        selectionLimit: target === 'business' ? 3 : 1,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        if (target === 'business') {
+          const validFiles = result.assets.slice(0, 3).map((a, i) => ({
+            uri: a.uri,
+            name: a.fileName || `business_doc_${i + 1}.jpg`,
+            size: a.fileSize,
+            mimeType: a.mimeType || 'image/jpeg',
+          }));
+          setSelectedBusinessDocs(validFiles);
+        } else {
+          const asset = result.assets[0];
+          const defaultName =
+            target === 'id' ? 'id_front.jpg' : target === 'back' ? 'id_back.jpg' : 'selfie.jpg';
+          assignFile(target, {
+            uri: asset.uri,
+            name: asset.fileName || defaultName,
+            size: asset.fileSize,
+            mimeType: asset.mimeType || 'image/jpeg',
+          });
+        }
+      }
+    } catch (error) {
+      console.log('Gallery picker error:', error);
+      showAlert(
+        'Gallery Error',
+        'Could not open photo gallery. Please try selecting via documents.',
+      );
+    }
+  };
+
+  const handlePickDocument = async (target: UploadTarget) => {
+    setPickerTarget(null);
     setBanner('');
     try {
-      const isBusiness = type === 'business';
+      const isBusiness = target === 'business';
       const pick = await DocumentPicker.getDocumentAsync({
         type: isBusiness ? ['image/*', 'application/pdf'] : ['image/*'],
         copyToCacheDirectory: true,
@@ -192,14 +297,21 @@ const IDUploadScreen: React.FC = () => {
             showAlert('File Too Large', `Please choose an image under ${MAX_SIZE_MB}MB.`);
             return;
           }
-          if (type === 'id') setSelectedFile(asset);
-          else if (type === 'back') setSelectedFileBack(asset);
-          else if (type === 'selfie') setSelectedSelfie(asset);
+          assignFile(target, {
+            uri: asset.uri,
+            name: asset.name,
+            size: asset.size,
+            mimeType: asset.mimeType,
+          });
         }
       }
     } catch (error) {
       console.log('File selection error:', error);
     }
+  };
+
+  const openPickerOptions = (type: UploadTarget) => {
+    setPickerTarget(type);
   };
 
   const handleSubmit = () => {
@@ -235,6 +347,21 @@ const IDUploadScreen: React.FC = () => {
           },
         },
       ]);
+    }
+  };
+
+  const getTargetTitle = () => {
+    switch (pickerTarget) {
+      case 'id':
+        return 'ID Front Photo';
+      case 'back':
+        return 'ID Back Photo';
+      case 'selfie':
+        return 'Selfie Holding ID';
+      case 'business':
+        return 'Business Document';
+      default:
+        return 'Select Document';
     }
   };
 
@@ -299,7 +426,7 @@ const IDUploadScreen: React.FC = () => {
             {/* Card 1: ID Front */}
             <TouchableOpacity
               style={[styles.uploadCard, selectedFile && styles.uploadCardSelected]}
-              onPress={() => handleFileSelect('id')}
+              onPress={() => openPickerOptions('id')}
               disabled={uploadMutation.isPending}
               activeOpacity={0.8}
             >
@@ -323,7 +450,7 @@ const IDUploadScreen: React.FC = () => {
             {/* Card 2: ID Back */}
             <TouchableOpacity
               style={[styles.uploadCard, selectedFileBack && styles.uploadCardSelected]}
-              onPress={() => handleFileSelect('back')}
+              onPress={() => openPickerOptions('back')}
               disabled={uploadMutation.isPending}
               activeOpacity={0.8}
             >
@@ -344,38 +471,67 @@ const IDUploadScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
 
-            {/* Card 3: Selfie */}
-            <TouchableOpacity
-              style={[styles.uploadCard, selectedSelfie && styles.uploadCardSelected]}
-              onPress={() => handleFileSelect('selfie')}
-              disabled={uploadMutation.isPending}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.cameraIconBox, selectedSelfie && styles.cameraIconBoxSelected]}>
-                <Ionicons
-                  name={selectedSelfie ? 'checkmark-circle' : 'person'}
-                  size={26}
-                  color={colors.white}
-                />
-              </View>
-              <Text style={styles.uploadTitle}>
-                {selectedSelfie ? 'Selfie Uploaded ✓' : 'Upload a selfie holding your ID'}
-              </Text>
-              <Text style={styles.uploadSubtitle}>
-                {selectedSelfie
-                  ? `${selectedSelfie.name}`
-                  : 'Please ensure your face and ID are clear.'}
-              </Text>
-            </TouchableOpacity>
+            {/* Card 3: Worker Selfie OR Employer Business Documents */}
+            {userRole === 'worker' ? (
+              <TouchableOpacity
+                style={[styles.uploadCard, selectedSelfie && styles.uploadCardSelected]}
+                onPress={() => openPickerOptions('selfie')}
+                disabled={uploadMutation.isPending}
+                activeOpacity={0.8}
+              >
+                <View
+                  style={[styles.cameraIconBox, selectedSelfie && styles.cameraIconBoxSelected]}
+                >
+                  <Ionicons
+                    name={selectedSelfie ? 'checkmark-circle' : 'person'}
+                    size={26}
+                    color={colors.white}
+                  />
+                </View>
+                <Text style={styles.uploadTitle}>
+                  {selectedSelfie ? 'Selfie Uploaded ✓' : 'Upload a selfie holding your ID'}
+                </Text>
+                <Text style={styles.uploadSubtitle}>
+                  {selectedSelfie
+                    ? `${selectedSelfie.name}`
+                    : 'Please ensure your face and ID are clear.'}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[
+                  styles.uploadCard,
+                  selectedBusinessDocs.length > 0 && styles.uploadCardSelected,
+                ]}
+                onPress={() => openPickerOptions('business')}
+                disabled={uploadMutation.isPending}
+                activeOpacity={0.8}
+              >
+                <View
+                  style={[
+                    styles.cameraIconBox,
+                    selectedBusinessDocs.length > 0 && styles.cameraIconBoxSelected,
+                  ]}
+                >
+                  <Ionicons
+                    name={selectedBusinessDocs.length > 0 ? 'checkmark-circle' : 'document-text'}
+                    size={26}
+                    color={colors.white}
+                  />
+                </View>
+                <Text style={styles.uploadTitle}>
+                  {selectedBusinessDocs.length > 0
+                    ? `${selectedBusinessDocs.length} Document(s) Uploaded ✓`
+                    : 'Business Documents (Optional)'}
+                </Text>
+                <Text style={styles.uploadSubtitle}>
+                  {selectedBusinessDocs.length > 0
+                    ? selectedBusinessDocs.map((d) => d.name).join(', ')
+                    : 'DTI, SEC registration, or Mayor’s permit (PDF or Image, max 3)'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
-        </View>
-
-        <View style={{ marginTop: 2, marginBottom: 8 }}>
-          <Button
-            label="Choose from gallery"
-            variant="ghost"
-            onPress={() => handleFileSelect('id')}
-          />
         </View>
 
         <View style={styles.privacyCard}>
@@ -404,6 +560,67 @@ const IDUploadScreen: React.FC = () => {
           />
         </View>
       </ScrollView>
+
+      {/* Media / File Selection Bottom Sheet */}
+      <BottomSheet
+        visible={pickerTarget !== null}
+        onClose={() => setPickerTarget(null)}
+        snapHeight={320}
+      >
+        <View style={styles.sheetHeader}>
+          <Text style={styles.sheetTitle}>{getTargetTitle()}</Text>
+          <Text style={styles.sheetSubtitle}>
+            Choose how you want to provide this photo/document
+          </Text>
+        </View>
+
+        <View style={styles.optionsList}>
+          <TouchableOpacity
+            style={styles.optionItem}
+            activeOpacity={0.7}
+            onPress={() => pickerTarget && handlePickCamera(pickerTarget)}
+          >
+            <View style={[styles.optionIconBox, { backgroundColor: '#EEF2FF' }]}>
+              <Ionicons name="camera" size={22} color="#4F46E5" />
+            </View>
+            <View style={styles.optionContent}>
+              <Text style={styles.optionLabel}>Take Photo</Text>
+              <Text style={styles.optionDesc}>Use your device camera now</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.optionItem}
+            activeOpacity={0.7}
+            onPress={() => pickerTarget && handlePickGallery(pickerTarget)}
+          >
+            <View style={[styles.optionIconBox, { backgroundColor: '#ECFDF5' }]}>
+              <Ionicons name="images" size={22} color="#059669" />
+            </View>
+            <View style={styles.optionContent}>
+              <Text style={styles.optionLabel}>Choose from Gallery</Text>
+              <Text style={styles.optionDesc}>Select an image from photos</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.optionItem}
+            activeOpacity={0.7}
+            onPress={() => pickerTarget && handlePickDocument(pickerTarget)}
+          >
+            <View style={[styles.optionIconBox, { backgroundColor: '#F8FAFC' }]}>
+              <Ionicons name="folder-open" size={22} color="#64748B" />
+            </View>
+            <View style={styles.optionContent}>
+              <Text style={styles.optionLabel}>Browse Files</Text>
+              <Text style={styles.optionDesc}>Pick from device files or PDFs</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+        </View>
+      </BottomSheet>
       {uploadMutation.isPending && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -626,6 +843,55 @@ const styles = StyleSheet.create({
     color: colors.ink,
     textAlign: 'center',
     paddingHorizontal: 32,
+  },
+  sheetHeader: {
+    marginBottom: 16,
+  },
+  sheetTitle: {
+    fontFamily: fonts.display,
+    fontSize: 18,
+    color: colors.ink,
+    marginBottom: 4,
+  },
+  sheetSubtitle: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkMuted,
+  },
+  optionsList: {
+    gap: 10,
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  optionIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  optionContent: {
+    flex: 1,
+  },
+  optionLabel: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.ink,
+  },
+  optionDesc: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkMuted,
+    marginTop: 2,
   },
 });
 
