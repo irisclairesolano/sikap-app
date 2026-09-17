@@ -188,7 +188,7 @@ export const ProfileScreen: React.FC = () => {
         {/* Reputation Card - Frosted Crystal Glass */}
         <View style={styles.reputationCardWrapper}>
           <View style={styles.ambientGlowRose} pointerEvents="none" />
-          <View style={styles.reputationCard}>
+          <BlurView intensity={45} tint="light" style={styles.reputationCard}>
             <View style={styles.reputationHeaderRow}>
               <View style={styles.reputationBadge}>
                 <Ionicons name="shield-checkmark" size={13} color="#E11D48" />
@@ -218,7 +218,7 @@ export const ProfileScreen: React.FC = () => {
               </View>
             </View>
             <Text style={styles.reputationTagline}>Your score travels with you.</Text>
-          </View>
+          </BlurView>
         </View>
 
         {/* Stats Grid - Frosted Crystal Glass */}
@@ -227,13 +227,17 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.ambientGlowBlue} pointerEvents="none" />
           <View style={styles.statsGrid}>
             <BlurView intensity={40} tint="light" style={styles.statBox}>
-              <Ionicons name="checkmark-done-outline" size={18} color="#16A34A" />
+              <View style={styles.statIconCircle}>
+                <Ionicons name="checkmark-done-outline" size={17} color="#16A34A" />
+              </View>
               <Text style={styles.statValue}>{worker.jobsDone}</Text>
               <Text style={styles.statLabel}>Jobs done</Text>
             </BlurView>
 
             <BlurView intensity={40} tint="light" style={styles.statBox}>
-              <Ionicons name="calendar-outline" size={18} color="#0284C7" />
+              <View style={styles.statIconCircle}>
+                <Ionicons name="calendar-outline" size={17} color="#0284C7" />
+              </View>
               <Text style={styles.statValue}>{worker.memberSince}</Text>
               <Text style={styles.statLabel}>Member</Text>
             </BlurView>
@@ -486,15 +490,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(244, 63, 94, 0.14)',
   },
   reputationCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.90)',
-    borderRadius: 20,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.40)',
+    backgroundColor: 'rgba(255, 255, 255, 0.48)',
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.65)',
     padding: 20,
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.07,
-    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
     elevation: 3,
   },
   reputationHeaderRow: {
@@ -505,7 +510,7 @@ const styles = StyleSheet.create({
   reputationBadge: {
     width: 22,
     height: 22,
-    borderRadius: 6,
+    borderRadius: 7,
     backgroundColor: 'rgba(244, 63, 94, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -565,21 +570,31 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     backgroundColor: 'rgba(56, 189, 248, 0.30)',
   },
-  statsGrid: { flexDirection: 'row', gap: 10 },
+  statsGrid: { flexDirection: 'row', gap: 12 },
   statBox: {
     flex: 1,
-    borderRadius: 20,
+    borderRadius: 22,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+    backgroundColor: 'rgba(255, 255, 255, 0.42)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.70)',
-    padding: 16,
+    borderColor: 'rgba(255, 255, 255, 0.60)',
+    paddingVertical: 18,
+    paddingHorizontal: 16,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
+    shadowOpacity: 0.03,
+    shadowRadius: 14,
     elevation: 2,
+  },
+  statIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   statValue: {
     fontFamily: fonts.numericBold,

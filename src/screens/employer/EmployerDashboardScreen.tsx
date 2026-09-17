@@ -251,7 +251,9 @@ export const EmployerDashboardScreen: React.FC = () => {
           <View style={styles.statsGrid}>
             <BlurView intensity={40} tint="light" style={styles.statCard}>
               <View style={styles.statTopRow}>
-                <Ionicons name="briefcase-outline" size={16} color="#E11D48" />
+                <View style={styles.statIconCircle}>
+                  <Ionicons name="briefcase-outline" size={15} color="#E11D48" />
+                </View>
                 <Text style={styles.statLabel}>Active jobs</Text>
               </View>
               <Text style={styles.statNum}>{activeJobs.length}</Text>
@@ -259,7 +261,9 @@ export const EmployerDashboardScreen: React.FC = () => {
 
             <BlurView intensity={40} tint="light" style={styles.statCard}>
               <View style={styles.statTopRow}>
-                <Ionicons name="people-outline" size={16} color="#16A34A" />
+                <View style={styles.statIconCircle}>
+                  <Ionicons name="people-outline" size={15} color="#16A34A" />
+                </View>
                 <Text style={styles.statLabel}>Total hires</Text>
               </View>
               <Text style={styles.statNum}>{totalHires}</Text>
@@ -267,7 +271,9 @@ export const EmployerDashboardScreen: React.FC = () => {
 
             <BlurView intensity={40} tint="light" style={styles.statCard}>
               <View style={styles.statTopRow}>
-                <Ionicons name="cash-outline" size={16} color="#D97706" />
+                <View style={styles.statIconCircle}>
+                  <Ionicons name="cash-outline" size={15} color="#D97706" />
+                </View>
                 <Text style={styles.statLabel}>Total paid</Text>
               </View>
               <Text style={styles.statNum}>₱{totalPaid.toLocaleString()}</Text>
@@ -275,7 +281,9 @@ export const EmployerDashboardScreen: React.FC = () => {
 
             <BlurView intensity={40} tint="light" style={styles.statCard}>
               <View style={styles.statTopRow}>
-                <Ionicons name="star" size={16} color="#EAB308" />
+                <View style={styles.statIconCircle}>
+                  <Ionicons name="star" size={15} color="#EAB308" />
+                </View>
                 <Text style={styles.statLabel}>Reputation</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
@@ -585,23 +593,31 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '48.5%',
-    borderRadius: 20,
+    borderRadius: 22,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+    backgroundColor: 'rgba(255, 255, 255, 0.42)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.70)',
+    borderColor: 'rgba(255, 255, 255, 0.60)',
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
+    shadowOpacity: 0.03,
+    shadowRadius: 12,
     elevation: 2,
   },
   statTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
-    marginBottom: 8,
+    gap: 8,
+    marginBottom: 10,
+  },
+  statIconCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statNum: {
     fontFamily: fonts.numericBold,

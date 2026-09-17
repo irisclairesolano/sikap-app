@@ -164,10 +164,12 @@ export const ProfileScreen: React.FC = () => {
             <Text style={styles.bioText}>{employer.bio}</Text>
           </View>
         )}
-        {/* Reputation - Frosted Crystal Glass */}
+
+        {/* Reputation Card - Frosted Crystal Glass */}
         <View style={styles.reputationCardWrapper}>
-          <View style={styles.ambientGlowBlue} pointerEvents="none" />
-          <View style={styles.reputationCard}>
+          <View style={styles.ambientGlowRose} pointerEvents="none" />
+          <View style={styles.ambientGlowSky} pointerEvents="none" />
+          <BlurView intensity={45} tint="light" style={styles.reputationCard}>
             <View style={styles.reputationHeaderRow}>
               <View style={styles.reputationBadge}>
                 <Ionicons name="shield-checkmark" size={13} color="#0284C7" />
@@ -197,7 +199,7 @@ export const ProfileScreen: React.FC = () => {
               </View>
             </View>
             <Text style={styles.reputationTagline}>Your score travels with you.</Text>
-          </View>
+          </BlurView>
         </View>
 
         {/* Stats Grid - Frosted Crystal Glass */}
@@ -206,19 +208,25 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.ambientGlowMint} pointerEvents="none" />
           <View style={styles.statsGrid}>
             <BlurView intensity={40} tint="light" style={styles.statBox}>
-              <Ionicons name="briefcase-outline" size={16} color="#E11D48" />
+              <View style={styles.statIconCircle}>
+                <Ionicons name="briefcase-outline" size={16} color="#E11D48" />
+              </View>
               <Text style={styles.statValue}>{employer.activeJobs}</Text>
               <Text style={styles.statLabel}>Active jobs</Text>
             </BlurView>
 
             <BlurView intensity={40} tint="light" style={styles.statBox}>
-              <Ionicons name="people-outline" size={16} color="#16A34A" />
+              <View style={styles.statIconCircle}>
+                <Ionicons name="people-outline" size={16} color="#16A34A" />
+              </View>
               <Text style={styles.statValue}>{employer.hired}</Text>
               <Text style={styles.statLabel}>Hires</Text>
             </BlurView>
 
             <BlurView intensity={40} tint="light" style={styles.statBox}>
-              <Ionicons name="cash-outline" size={16} color="#D97706" />
+              <View style={styles.statIconCircle}>
+                <Ionicons name="cash-outline" size={16} color="#D97706" />
+              </View>
               <Text style={styles.statValue}>{employer.totalPaid}</Text>
               <Text style={styles.statLabel}>Total paid</Text>
             </BlurView>
@@ -315,25 +323,26 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginBottom: 16,
   },
-  ambientGlowBlue: {
+  ambientGlowSky: {
     position: 'absolute',
     top: -10,
     right: 20,
     width: 140,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(56, 189, 248, 0.18)',
+    backgroundColor: 'rgba(56, 189, 248, 0.22)',
   },
   reputationCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.90)',
-    borderRadius: 20,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.40)',
+    backgroundColor: 'rgba(255, 255, 255, 0.48)',
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.65)',
     padding: 20,
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.07,
-    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
     elevation: 3,
   },
   reputationHeaderRow: {
@@ -344,7 +353,7 @@ const styles = StyleSheet.create({
   reputationBadge: {
     width: 22,
     height: 22,
-    borderRadius: 6,
+    borderRadius: 7,
     backgroundColor: 'rgba(2, 132, 199, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -407,18 +416,28 @@ const styles = StyleSheet.create({
   statsGrid: { flexDirection: 'row', gap: 10 },
   statBox: {
     flex: 1,
-    borderRadius: 20,
+    borderRadius: 22,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+    backgroundColor: 'rgba(255, 255, 255, 0.42)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.70)',
-    padding: 16,
+    borderColor: 'rgba(255, 255, 255, 0.60)',
+    paddingVertical: 18,
+    paddingHorizontal: 12,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
+    shadowOpacity: 0.03,
+    shadowRadius: 14,
     elevation: 2,
+  },
+  statIconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   statValue: {
     fontFamily: fonts.numericBold,
