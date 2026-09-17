@@ -23,6 +23,7 @@ import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { Avatar } from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
 import { useReactToJob } from '../../hooks/useReactToJob';
+import { useAuth } from '../../hooks/useAuth';
 import { getShareLink } from '../../api/jobs';
 import { ReportJobSheet } from '../../components/jobs/ReportJobSheet';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
@@ -34,6 +35,7 @@ export const JobDetailsScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const id = Number(route.params.id);
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
 
   const { data: job, isLoading, isError, error, refetch, isFetching } = useJob(id);
 
@@ -482,7 +484,31 @@ export const JobDetailsScreen: React.FC = () => {
 
       {/* Bottom CTA */}
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
-        {job.is_applied || job.has_applied || job.application_id ? (
+        {job.employer_id === user?.id ? (
+          <View
+            style={[
+              styles.alreadyAppliedCard,
+              { backgroundColor: colors.paperBright, borderColor: colors.inkFaint },
+            ]}
+          >
+            <View style={styles.alreadyAppliedRow}>
+              <Ionicons name="information-circle" size={20} color={colors.primary} />
+              <Text style={[styles.alreadyAppliedTitle, { color: colors.ink }]}>
+                This is your job posting.
+              </Text>
+            </View>
+            <Text
+              style={{
+                fontFamily: fonts.body,
+                fontSize: 12,
+                color: colors.inkMuted,
+                marginTop: 4,
+              }}
+            >
+              You cannot apply for jobs that you have posted.
+            </Text>
+          </View>
+        ) : job.is_applied || job.has_applied || job.application_id ? (
           <View style={styles.alreadyAppliedCard}>
             <View style={styles.alreadyAppliedRow}>
               <Ionicons name="checkmark-circle" size={20} color={colors.mintDeep} />

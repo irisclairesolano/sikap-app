@@ -299,9 +299,11 @@ export const EmployerDashboardScreen: React.FC = () => {
         {/* Action Required Section */}
         <View style={styles.actionHeader}>
           <Text style={styles.sectionHeaderTitle}>Action required</Text>
-          <View style={styles.badgeCount}>
-            <Text style={styles.badgeCountText}>{pendingCount}</Text>
-          </View>
+          {pendingCount > 0 && (
+            <View style={styles.badgeCount}>
+              <Text style={styles.badgeCountText}>{pendingCount}</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.listContainer}>

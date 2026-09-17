@@ -119,25 +119,6 @@ export const JobCard = React.memo(function JobCard({
         />
       )}
 
-      {(isApplied || job.is_withdrawn) && (
-        <View
-          pointerEvents="none"
-          style={[
-            styles.statusChip,
-            isApplied ? styles.statusChipApplied : styles.statusChipWithdrawn,
-          ]}
-        >
-          <Ionicons
-            name={isApplied ? 'checkmark-circle' : 'remove-circle'}
-            size={11}
-            color={isApplied ? '#15803D' : '#92400E'}
-          />
-          <Text style={[styles.statusChipText, { color: isApplied ? '#15803D' : '#92400E' }]}>
-            {isApplied ? 'Applied' : 'Withdrawn'}
-          </Text>
-        </View>
-      )}
-
       <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
         <View style={styles.topRow}>
           <View style={[styles.jobIcon, { backgroundColor: catStyles.bg }]}>
@@ -154,11 +135,15 @@ export const JobCard = React.memo(function JobCard({
               </View>
             )}
 
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={[styles.jobTitle, { flex: 1 }]} numberOfLines={2}>
                 {job.title.length > 45 ? `${job.title.slice(0, 45)}...` : job.title}
+                {isVerified && (
+                  <Text>
+                    <Ionicons name="checkmark-circle" size={14} color="#22C55E" />
+                  </Text>
+                )}
               </Text>
-              {isVerified && <Ionicons name="checkmark-circle" size={15} color="#22C55E" />}
             </View>
 
             <View style={styles.jobMeta}>
@@ -182,19 +167,40 @@ export const JobCard = React.memo(function JobCard({
           </View>
 
           <View style={styles.rightContent}>
-            {onSave && (
-              <TouchableOpacity
-                onPress={handleSave}
-                style={styles.saveBtn}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Ionicons
-                  name={isSaved ? 'bookmark' : 'bookmark-outline'}
-                  size={20}
-                  color={isSaved ? colors.primary : colors.inkSoft}
-                />
-              </TouchableOpacity>
-            )}
+            <View style={styles.rightTopActions}>
+              {(isApplied || job.is_withdrawn) && (
+                <View
+                  style={[
+                    styles.statusChip,
+                    isApplied ? styles.statusChipApplied : styles.statusChipWithdrawn,
+                  ]}
+                >
+                  <Ionicons
+                    name={isApplied ? 'checkmark-circle' : 'remove-circle'}
+                    size={11}
+                    color={isApplied ? '#15803D' : '#92400E'}
+                  />
+                  <Text
+                    style={[styles.statusChipText, { color: isApplied ? '#15803D' : '#92400E' }]}
+                  >
+                    {isApplied ? 'Applied' : 'Withdrawn'}
+                  </Text>
+                </View>
+              )}
+              {onSave && (
+                <TouchableOpacity
+                  onPress={handleSave}
+                  style={styles.saveBtn}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Ionicons
+                    name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                    size={20}
+                    color={isSaved ? colors.primary : colors.inkSoft}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
             <View style={styles.payContainer}>
               <Text style={styles.payValue}>₱{job.compensation}</Text>
               <Text style={styles.payUnit}>{formatRateUnit(job.rate_unit, job.duration_type)}</Text>

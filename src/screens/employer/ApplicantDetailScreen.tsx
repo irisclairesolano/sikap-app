@@ -434,13 +434,12 @@ const ApplicantDetailScreen: React.FC = () => {
           )}
         </View>
 
-        {/* Reputation Card - Frosted Crystal Glass */}
+        {/* Reputation Card - Macaron Peach */}
         <View style={styles.reputationCardWrapper}>
-          <View style={styles.ambientGlowRose} pointerEvents="none" />
           <View style={styles.reputationCard}>
             <View style={styles.reputationHeaderRow}>
               <View style={styles.reputationBadge}>
-                <Ionicons name="shield-checkmark" size={13} color="#E11D48" />
+                <Ionicons name="shield-checkmark" size={13} color={colors.primaryDark} />
               </View>
               <Text style={styles.reputationEyebrow}>Worker Reputation</Text>
             </View>
@@ -462,22 +461,30 @@ const ApplicantDetailScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Stats Grid - Frosted Crystal Glass */}
+        {/* Stats Grid - Macaron Colors */}
         <View style={styles.statsWrapper}>
-          <View style={styles.ambientGlowMint} pointerEvents="none" />
-          <View style={styles.ambientGlowBlue} pointerEvents="none" />
           <View style={styles.statsGrid}>
-            <BlurView intensity={40} tint="light" style={styles.statBox}>
-              <Ionicons name="checkmark-done-outline" size={18} color="#16A34A" />
-              <Text style={styles.statValue}>{appData?.worker?.completed_jobs_count ?? 0}</Text>
-              <Text style={styles.statLabel}>Completed Jobs</Text>
-            </BlurView>
+            <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
+              <View
+                style={[styles.statIconCircle, { backgroundColor: 'rgba(255, 255, 255, 0.65)' }]}
+              >
+                <Ionicons name="checkmark-done-outline" size={18} color={colors.mintDeep} />
+              </View>
+              <Text style={[styles.statValue, { color: colors.mintDeep }]}>
+                {appData?.worker?.completed_jobs_count ?? 0}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Completed Jobs</Text>
+            </View>
 
-            <BlurView intensity={40} tint="light" style={styles.statBox}>
-              <Ionicons name="shield-outline" size={18} color="#0284C7" />
-              <Text style={styles.statValue}>Active</Text>
-              <Text style={styles.statLabel}>Worker Status</Text>
-            </BlurView>
+            <View style={[styles.statBox, { backgroundColor: colors.sky }]}>
+              <View
+                style={[styles.statIconCircle, { backgroundColor: 'rgba(255, 255, 255, 0.65)' }]}
+              >
+                <Ionicons name="shield-outline" size={18} color={colors.skyDeep} />
+              </View>
+              <Text style={[styles.statValue, { color: colors.skyDeep }]}>Active</Text>
+              <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Worker Status</Text>
+            </View>
           </View>
         </View>
 
@@ -578,22 +585,26 @@ const ApplicantDetailScreen: React.FC = () => {
               </Text>
             ) : (
               skills.map((skillName: string, index: number) => {
-                const bgColors = [colors.peach, colors.mint, colors.butter, colors.sky];
-                const textColors = [
-                  colors.primaryDark,
-                  colors.mintDeep,
-                  colors.ink,
-                  colors.skyDeep,
-                ];
-                const icons = ['hammer', 'construct', 'brush', 'water'] as const;
-                const colorIdx = index % 4;
+                const isEven = index % 2 === 0;
+                const chipBg = isEven ? '#F8FAFC' : '#F1F5F9';
+                const chipBorder = isEven ? '#E2E8F0' : '#CBD5E1';
+                const chipTextColor = '#334155';
+                const iconColor = '#64748B';
 
                 return (
-                  <View key={index} style={[styles.chip, { backgroundColor: bgColors[colorIdx] }]}>
-                    <Ionicons name={icons[colorIdx]} size={14} color={textColors[colorIdx]} />
-                    <Text style={[styles.chipText, { color: textColors[colorIdx] }]}>
-                      {skillName}
-                    </Text>
+                  <View
+                    key={index}
+                    style={[
+                      styles.chip,
+                      {
+                        backgroundColor: chipBg,
+                        borderWidth: 1,
+                        borderColor: chipBorder,
+                      },
+                    ]}
+                  >
+                    <Ionicons name="construct-outline" size={13} color={iconColor} />
+                    <Text style={[styles.chipText, { color: chipTextColor }]}>{skillName}</Text>
                   </View>
                 );
               })
@@ -1176,26 +1187,15 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginBottom: 16,
   },
-  ambientGlowRose: {
-    position: 'absolute',
-    top: -10,
-    right: 20,
-    width: 140,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(244, 63, 94, 0.14)',
-  },
   reputationCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.90)',
+    backgroundColor: colors.peach,
     borderRadius: 20,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.40)',
     padding: 22,
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.07,
-    shadowRadius: 18,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   reputationHeaderRow: {
     flexDirection: 'row',
@@ -1206,14 +1206,14 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 6,
-    backgroundColor: 'rgba(244, 63, 94, 0.12)',
+    backgroundColor: 'rgba(255, 255, 255, 0.40)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   reputationEyebrow: {
     fontFamily: fonts.bodyBold,
     fontSize: 11,
-    color: '#E11D48',
+    color: colors.primaryDark,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
@@ -1227,7 +1227,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.numericBold,
     fontSize: 48,
     lineHeight: 56,
-    color: '#0F172A',
+    color: colors.ink,
   },
   reputationStars: {
     alignItems: 'flex-end',
@@ -1246,30 +1246,11 @@ const styles = StyleSheet.create({
   reputationTagline: {
     fontFamily: fonts.displayItalic,
     fontSize: 13,
-    color: '#475569',
+    color: colors.primaryDark,
     marginTop: 10,
   },
   statsWrapper: {
-    position: 'relative',
     marginBottom: 20,
-  },
-  ambientGlowMint: {
-    position: 'absolute',
-    top: -15,
-    left: 0,
-    width: 150,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(34, 197, 94, 0.30)',
-  },
-  ambientGlowBlue: {
-    position: 'absolute',
-    bottom: -15,
-    right: 0,
-    width: 150,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(56, 189, 248, 0.30)',
   },
   statsGrid: {
     flexDirection: 'row',
@@ -1277,29 +1258,32 @@ const styles = StyleSheet.create({
   },
   statBox: {
     flex: 1,
-    borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.45)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.70)',
-    padding: 16,
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 16,
+    shadowRadius: 8,
     elevation: 2,
+  },
+  statIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   statValue: {
     fontFamily: fonts.numericBold,
-    fontSize: 18,
-    color: '#0F172A',
+    fontSize: 20,
     marginTop: 6,
   },
   statLabel: {
     fontFamily: fonts.bodyBold,
     fontSize: 10,
-    color: colors.inkMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.3,
     marginTop: 3,

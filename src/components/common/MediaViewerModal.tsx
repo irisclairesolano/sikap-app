@@ -1,13 +1,6 @@
 import React from 'react';
-import {
-  Modal,
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+import { Modal, View, StyleSheet, TouchableOpacity, Text, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';

@@ -842,53 +842,58 @@ export const PostJobScreen: React.FC = () => {
               icon="map-outline"
             />
 
-            <View style={styles.row}>
-              <View style={styles.col}>
-                <CustomInput
-                  label="Pay Amount (PHP) *"
-                  value={pay}
-                  onChangeText={handlePayChange}
-                  placeholder="600"
-                  keyboardType="numeric"
-                  status={payInvalid ? 'invalid' : undefined}
-                />
-              </View>
-              <View style={styles.col}>
-                <CustomInput
-                  label="Slots *"
-                  value={slots}
-                  onChangeText={handleSlotsChange}
-                  placeholder="2"
-                  keyboardType="numeric"
-                  status={slotsInvalid ? 'invalid' : undefined}
-                />
+            {/* Pay Amount & Rate Basis Group */}
+            <View style={styles.fieldBlock}>
+              <CustomInput
+                label="Pay Amount (PHP) *"
+                value={pay}
+                onChangeText={handlePayChange}
+                placeholder="600"
+                keyboardType="numeric"
+                status={payInvalid ? 'invalid' : undefined}
+              />
+              <View style={{ marginTop: 12 }}>
+                <Text style={styles.label}>
+                  Rate Basis<Text style={{ color: colors.error }}> *</Text>
+                </Text>
+                <View style={styles.rateUnitSelector}>
+                  {RATE_UNITS.map((item) => {
+                    const isSelected = rateUnit === item.value;
+                    return (
+                      <TouchableOpacity
+                        key={item.value}
+                        style={[styles.rateUnitBtn, isSelected && styles.rateUnitBtnActive]}
+                        onPress={() => {
+                          triggerHaptic();
+                          setRateUnit(item.value);
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Text
+                          style={[
+                            styles.rateUnitBtnText,
+                            isSelected && styles.rateUnitBtnTextActive,
+                          ]}
+                        >
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               </View>
             </View>
 
+            {/* Slots Underneath Pay & Rate Basis */}
             <View style={styles.fieldBlock}>
-              <Text style={styles.label}>Rate Basis *</Text>
-              <View style={styles.rateUnitSelector}>
-                {RATE_UNITS.map((item) => {
-                  const isSelected = rateUnit === item.value;
-                  return (
-                    <TouchableOpacity
-                      key={item.value}
-                      style={[styles.rateUnitBtn, isSelected && styles.rateUnitBtnActive]}
-                      onPress={() => {
-                        triggerHaptic();
-                        setRateUnit(item.value);
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        style={[styles.rateUnitBtnText, isSelected && styles.rateUnitBtnTextActive]}
-                      >
-                        {item.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+              <CustomInput
+                label="Slots *"
+                value={slots}
+                onChangeText={handleSlotsChange}
+                placeholder="2"
+                keyboardType="numeric"
+                status={slotsInvalid ? 'invalid' : undefined}
+              />
             </View>
 
             <View style={styles.row}>
@@ -929,7 +934,9 @@ export const PostJobScreen: React.FC = () => {
             </View>
 
             <View>
-              <Text style={styles.label}>Schedule Date *</Text>
+              <Text style={styles.label}>
+                Schedule Date<Text style={{ color: colors.error }}> *</Text>
+              </Text>
               <TouchableOpacity
                 style={styles.datePickerBtn}
                 onPress={() => setShowDatePicker(true)}
@@ -1319,8 +1326,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   rateUnitBtnActive: {
-    backgroundColor: colors.primarySoft,
-    borderColor: colors.primary,
+    backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
   },
   rateUnitBtnText: {
     fontFamily: fonts.bodyMedium,
@@ -1329,7 +1336,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   rateUnitBtnTextActive: {
-    color: colors.primaryDark,
+    color: '#FFFFFF',
     fontFamily: fonts.bodyBold,
   },
   unitSelector: {

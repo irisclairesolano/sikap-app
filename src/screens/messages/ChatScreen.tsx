@@ -108,18 +108,20 @@ const ChatScreen: React.FC = () => {
   ];
   const relevantCardTypes = user?.role === 'employer' ? EMPLOYER_CARD_TYPES : WORKER_CARD_TYPES;
 
-  // Find latest unresolved action card relevant to current user role
-  const activeActionCard = [...messages]
-    .reverse()
-    .find(
-      (m) =>
-        m.message_type === 'action_card' &&
-        !m.card_resolved &&
-        m.card_type != null &&
-        relevantCardTypes.includes(m.card_type),
-    );
+  // Collect all action cards in conversation
+  const actionCards = messages.filter(
+    (m) => m.message_type === 'action_card' && m.card_type != null,
+  );
 
-  const [isPinnedCardExpanded, setIsPinnedCardExpanded] = useState(false);
+  // Keep track of cycle index for jumping
+  const [jumpCycleIndex, setJumpCycleIndex] = useState(0);
+
+  // Latest unresolved or latest action card for header display
+  const activeActionCard =
+    [...actionCards]
+      .reverse()
+      .find((m) => !m.card_resolved && relevantCardTypes.includes(m.card_type)) ||
+    actionCards[actionCards.length - 1];
 
   const getPinnedCardDetails = (card: typeof activeActionCard) => {
     if (!card || !card.card_type) return null;
@@ -165,7 +167,7 @@ const ChatScreen: React.FC = () => {
       default:
         return {
           icon: 'flash-outline' as const,
-          label: 'Pending Action',
+          label: 'Action Card',
           color: colors.primary,
           bg: colors.primaryTint,
         };
@@ -175,8 +177,13 @@ const ChatScreen: React.FC = () => {
   const pinnedDetails = getPinnedCardDetails(activeActionCard);
 
   const handleJumpToCard = () => {
-    if (!activeActionCard) return;
-    const cardIndex = messages.findIndex((m) => m.id === activeActionCard.id);
+    if (actionCards.length === 0) return;
+    // Sequential cycle: latest (len - 1), 2nd latest (len - 2), ..., down to 0, then wraps back to latest
+    const offset = jumpCycleIndex % actionCards.length;
+    const targetCard = actionCards[actionCards.length - 1 - offset];
+    setJumpCycleIndex((prev) => prev + 1);
+
+    const cardIndex = messages.findIndex((m) => m.id === targetCard.id);
     if (cardIndex >= 0) {
       flatListRef.current?.scrollToIndex({ index: cardIndex, animated: true, viewPosition: 0.5 });
     }
@@ -228,17 +235,13 @@ const ChatScreen: React.FC = () => {
           )}
         </View>
 
-        {/* Minimalist Pinned Action Card */}
-        {pinnedDetails && activeActionCard && (
+        {/* Minimalist Pinned Action Banner with Single Jump Button */}
+        {pinnedDetails && actionCards.length > 0 && (
           <View style={styles.pinnedWrapper}>
             <TouchableOpacity
-              style={[
-                styles.pinnedBar,
-                { borderLeftColor: pinnedDetails.color },
-                activeActionCard.card_type === 'accept_or_reject' && styles.pinnedBarAlert,
-              ]}
+              style={[styles.pinnedBar, { borderLeftColor: pinnedDetails.color }]}
               activeOpacity={0.8}
-              onPress={() => setIsPinnedCardExpanded((prev) => !prev)}
+              onPress={handleJumpToCard}
             >
               <View style={[styles.pinnedIconBadge, { backgroundColor: pinnedDetails.bg }]}>
                 <Ionicons name={pinnedDetails.icon} size={15} color={pinnedDetails.color} />
@@ -251,7 +254,7 @@ const ChatScreen: React.FC = () => {
                     color={colors.primary}
                     style={{ marginRight: 3 }}
                   />
-                  <Text style={styles.pinnedEyebrow}>PINNED ACTION</Text>
+                  <Text style={styles.pinnedEyebrow}>ACTION CARDS ({actionCards.length})</Text>
                 </View>
                 <Text style={styles.pinnedTitle} numberOfLines={1}>
                   {pinnedDetails.label}
@@ -260,37 +263,14 @@ const ChatScreen: React.FC = () => {
               <View style={styles.pinnedButtonsRow}>
                 <TouchableOpacity
                   style={styles.jumpBtn}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    handleJumpToCard();
-                  }}
+                  onPress={handleJumpToCard}
+                  activeOpacity={0.7}
                 >
                   <Text style={styles.jumpBtnText}>Jump</Text>
-                  <Ionicons name="arrow-down" size={12} color={colors.primary} />
+                  <Ionicons name="swap-vertical" size={13} color={colors.primary} />
                 </TouchableOpacity>
-                <Ionicons
-                  name={isPinnedCardExpanded ? 'chevron-up' : 'chevron-down'}
-                  size={16}
-                  color={colors.inkMuted}
-                />
               </View>
             </TouchableOpacity>
-
-            {/* Expandable Inline Card Drawer */}
-            {isPinnedCardExpanded && (
-              <View style={styles.pinnedDrawer}>
-                <ActionCard
-                  message={activeActionCard}
-                  currentUserId={user?.id || 0}
-                  currentUserRole={user?.role as 'worker' | 'employer'}
-                  conversationId={conversationId}
-                  onActionComplete={() => {
-                    refetch();
-                    setIsPinnedCardExpanded(false);
-                  }}
-                />
-              </View>
-            )}
           </View>
         )}
 
