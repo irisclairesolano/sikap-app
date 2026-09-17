@@ -36,6 +36,7 @@ export interface JobPost {
   barangay: string;
   municipality: string;
   compensation: number;
+  rate_unit?: 'per_day' | 'per_hour' | 'per_project' | 'per_piece' | string;
   slots: number;
   accepted_count: number;
   duration: number;
@@ -59,6 +60,7 @@ export interface JobPost {
   is_applied?: boolean;
   has_applied?: boolean;
   application_id?: number;
+  application_status?: string;
   is_withdrawn?: boolean;
   reactions_count?: number;
   user_has_reacted?: boolean;

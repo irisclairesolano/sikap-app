@@ -80,7 +80,7 @@ const ApplicationDetailScreen: React.FC = () => {
     }
   };
 
-  if (queryLoading && !jobTitle) {
+  if (queryLoading && !status && !jobTitle) {
     return (
       <SafeAreaView
         style={{

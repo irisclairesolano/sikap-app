@@ -32,6 +32,16 @@ import { triggerHaptic } from '../../utils/haptics';
 
 const DRAFT_STORAGE_KEY = 'sikap_post_job_draft_v1';
 const DURATION_UNITS = ['Hours', 'Days', 'Weeks', 'Months'];
+const RATE_UNITS: {
+  label: string;
+  value: 'per_day' | 'per_hour' | 'per_project' | 'per_piece';
+  hint: string;
+}[] = [
+  { label: 'Per Day', value: 'per_day', hint: '/ day' },
+  { label: 'Per Hour', value: 'per_hour', hint: '/ hr' },
+  { label: 'Fixed / Project', value: 'per_project', hint: 'total' },
+  { label: 'Per Piece', value: 'per_piece', hint: '/ pc' },
+];
 const DEFAULT_CATEGORIES = [
   'Construction',
   'Domestic',
@@ -63,8 +73,13 @@ export const PostJobScreen: React.FC = () => {
 
   const [municipality, setMunicipality] = useState(jobToEdit?.municipality || '');
   const [barangay, setBarangay] = useState(jobToEdit?.barangay || '');
+  // Pay and Slots
   const [pay, setPay] = useState(jobToEdit?.compensation ? String(jobToEdit.compensation) : '');
-  const [slots, setSlots] = useState(jobToEdit?.slots ? String(jobToEdit.slots) : '');
+  const [rateUnit, setRateUnit] = useState<'per_day' | 'per_hour' | 'per_project' | 'per_piece'>(
+    (jobToEdit?.rate_unit as any) ||
+      (jobToEdit?.duration_type === 'project-based' ? 'per_project' : 'per_day'),
+  );
+  const [slots, setSlots] = useState(jobToEdit?.slots ? String(jobToEdit.slots) : '1');
 
   const handlePayChange = (text: string) => {
     let cleaned = text.replace(/[^0-9.]/g, '');
@@ -202,6 +217,7 @@ export const PostJobScreen: React.FC = () => {
             if (draft.municipality && !municipality) setMunicipality(draft.municipality);
             if (draft.barangay && !barangay) setBarangay(draft.barangay);
             if (draft.pay && !pay) setPay(draft.pay);
+            if (draft.rateUnit) setRateUnit(draft.rateUnit);
             if (draft.slots && !slots) setSlots(draft.slots);
             if (draft.duration && !duration) setDuration(draft.duration);
             if (draft.durationUnit) setDurationUnit(draft.durationUnit);
@@ -224,6 +240,7 @@ export const PostJobScreen: React.FC = () => {
           municipality,
           barangay,
           pay,
+          rateUnit,
           slots,
           duration,
           durationUnit,
@@ -241,6 +258,7 @@ export const PostJobScreen: React.FC = () => {
     municipality,
     barangay,
     pay,
+    rateUnit,
     slots,
     duration,
     durationUnit,
@@ -605,6 +623,7 @@ export const PostJobScreen: React.FC = () => {
       barangay,
       municipality,
       compensation: parseFloat(pay.replace(/[^0-9.]/g, '')),
+      rate_unit: rateUnit,
       slots: parseInt(slots, 10),
       description,
       is_urgent: isUrgent,
@@ -826,7 +845,7 @@ export const PostJobScreen: React.FC = () => {
             <View style={styles.row}>
               <View style={styles.col}>
                 <CustomInput
-                  label="Pay (PHP) *"
+                  label="Pay Amount (PHP) *"
                   value={pay}
                   onChangeText={handlePayChange}
                   placeholder="600"
@@ -846,6 +865,32 @@ export const PostJobScreen: React.FC = () => {
               </View>
             </View>
 
+            <View style={styles.fieldBlock}>
+              <Text style={styles.label}>Rate Basis *</Text>
+              <View style={styles.rateUnitSelector}>
+                {RATE_UNITS.map((item) => {
+                  const isSelected = rateUnit === item.value;
+                  return (
+                    <TouchableOpacity
+                      key={item.value}
+                      style={[styles.rateUnitBtn, isSelected && styles.rateUnitBtnActive]}
+                      onPress={() => {
+                        triggerHaptic();
+                        setRateUnit(item.value);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[styles.rateUnitBtnText, isSelected && styles.rateUnitBtnTextActive]}
+                      >
+                        {item.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
                 <CustomInput
@@ -858,13 +903,16 @@ export const PostJobScreen: React.FC = () => {
                 />
               </View>
               <View style={{ flex: 1.2 }}>
-                <Text style={styles.label}>Unit (Optional)</Text>
+                <Text style={styles.label}>Duration Unit</Text>
                 <View style={styles.unitSelector}>
                   {DURATION_UNITS.map((unit) => (
                     <TouchableOpacity
                       key={unit}
                       style={[styles.unitBtn, durationUnit === unit && styles.unitBtnActive]}
-                      onPress={() => setDurationUnit(unit)}
+                      onPress={() => {
+                        triggerHaptic();
+                        setDurationUnit(unit);
+                      }}
                     >
                       <Text
                         style={[
@@ -1247,6 +1295,42 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14,
     color: colors.ink,
+  },
+  fieldBlock: {
+    marginBottom: 16,
+  },
+  rateUnitSelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 6,
+    marginBottom: 4,
+  },
+  rateUnitBtn: {
+    flex: 1,
+    minWidth: '22%',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: colors.inkFaint,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rateUnitBtnActive: {
+    backgroundColor: colors.primarySoft,
+    borderColor: colors.primary,
+  },
+  rateUnitBtnText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 12,
+    color: colors.inkSoft,
+    textAlign: 'center',
+  },
+  rateUnitBtnTextActive: {
+    color: colors.primaryDark,
+    fontFamily: fonts.bodyBold,
   },
   unitSelector: {
     flexDirection: 'row',

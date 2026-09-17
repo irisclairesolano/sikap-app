@@ -238,10 +238,16 @@ export const JobDetailsScreen: React.FC = () => {
         <View style={styles.payCard}>
           <View style={styles.payRow}>
             <Text style={styles.paySymbol}>₱</Text>
-            <Text style={styles.payValue}>{job.compensation}</Text>
+            <Text style={styles.payValue}>{Number(job.compensation).toLocaleString()}</Text>
           </View>
           <Text style={styles.payPeriod}>
-            per {job.duration} {job.duration_unit}
+            {job.rate_unit === 'per_hour'
+              ? 'per hour'
+              : job.rate_unit === 'per_project'
+                ? 'fixed / per project'
+                : job.rate_unit === 'per_piece'
+                  ? 'per piece'
+                  : 'per day'}
           </Text>
         </View>
 
@@ -259,11 +265,21 @@ export const JobDetailsScreen: React.FC = () => {
 
           <View style={styles.infoCard}>
             <View style={styles.infoIconBox}>
+              <Ionicons name="time" size={20} color={colors.primaryDark} />
+            </View>
+            <Text style={styles.infoLabel}>Duration</Text>
+            <Text style={styles.infoValue} numberOfLines={2}>
+              {job.duration ? `${job.duration} ${job.duration_unit || 'Days'}` : 'Flexible'}
+            </Text>
+          </View>
+
+          <View style={styles.infoCard}>
+            <View style={styles.infoIconBox}>
               <Ionicons name="people" size={20} color={colors.primaryDark} />
             </View>
             <Text style={styles.infoLabel}>Slots</Text>
             <Text style={styles.infoValue}>
-              {job.accepted_count || 0} / {job.slots || 1} filled
+              {job.accepted_count || 0} / {job.slots || 1}
             </Text>
           </View>
         </View>
@@ -479,6 +495,10 @@ export const JobDetailsScreen: React.FC = () => {
                 if (job.application_id) {
                   (navigation as any).navigate('ApplicationDetail', {
                     applicationId: job.application_id,
+                    status: (job as any).application_status,
+                    jobTitle: job.title,
+                    employerName: job.employer?.name,
+                    compensation: job.compensation?.toString(),
                   });
                 } else {
                   (navigation as any).navigate('Mine');

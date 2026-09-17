@@ -47,6 +47,14 @@ const getRelativeTime = (dateString?: string) => {
   return `${diffInMonths}mo ago`;
 };
 
+export const formatRateUnit = (rateUnit?: string, durationType?: string): string => {
+  if (rateUnit === 'per_day') return 'per day';
+  if (rateUnit === 'per_hour') return 'per hour';
+  if (rateUnit === 'per_project') return 'fixed project';
+  if (rateUnit === 'per_piece') return 'per piece';
+  return durationType === 'daily' ? 'per day' : 'fixed project';
+};
+
 export const JobCard = React.memo(function JobCard({
   job,
   onPress,
@@ -160,6 +168,14 @@ export const JobCard = React.memo(function JobCard({
               </Text>
               <View style={styles.dot} />
               <Text style={styles.metaText}>{job.slots || 1} slots</Text>
+              {job.duration ? (
+                <>
+                  <View style={styles.dot} />
+                  <Text style={styles.metaText}>
+                    {job.duration} {job.duration_unit || 'days'}
+                  </Text>
+                </>
+              ) : null}
               <View style={styles.dot} />
               <Text style={styles.metaText}>{getRelativeTime(job.created_at)}</Text>
             </View>
@@ -181,9 +197,7 @@ export const JobCard = React.memo(function JobCard({
             )}
             <View style={styles.payContainer}>
               <Text style={styles.payValue}>₱{job.compensation}</Text>
-              <Text style={styles.payUnit}>
-                per {job.duration_type === 'daily' ? 'day' : 'project'}
-              </Text>
+              <Text style={styles.payUnit}>{formatRateUnit(job.rate_unit, job.duration_type)}</Text>
             </View>
           </View>
         </View>
