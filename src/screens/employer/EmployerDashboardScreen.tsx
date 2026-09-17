@@ -242,55 +242,49 @@ export const EmployerDashboardScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Stats Grid - Frosted Crystal Glass */}
-        <View style={styles.statsWrapper}>
-          <View style={styles.ambientGlowCyan} pointerEvents="none" />
-          <View style={styles.ambientGlowRose} pointerEvents="none" />
-          <View style={styles.ambientGlowAmber} pointerEvents="none" />
+        {/* Stats Grid - Clean Card */}
+        <View style={styles.statsGrid}>
+          <View style={styles.statCard}>
+            <View style={styles.statTopRow}>
+              <View style={styles.statIconCircle}>
+                <Ionicons name="briefcase-outline" size={15} color="#E11D48" />
+              </View>
+              <Text style={styles.statLabel}>Active jobs</Text>
+            </View>
+            <Text style={styles.statNum}>{activeJobs.length}</Text>
+          </View>
 
-          <View style={styles.statsGrid}>
-            <BlurView intensity={40} tint="light" style={styles.statCard}>
-              <View style={styles.statTopRow}>
-                <View style={styles.statIconCircle}>
-                  <Ionicons name="briefcase-outline" size={15} color="#E11D48" />
-                </View>
-                <Text style={styles.statLabel}>Active jobs</Text>
+          <View style={styles.statCard}>
+            <View style={styles.statTopRow}>
+              <View style={styles.statIconCircle}>
+                <Ionicons name="people-outline" size={15} color="#16A34A" />
               </View>
-              <Text style={styles.statNum}>{activeJobs.length}</Text>
-            </BlurView>
+              <Text style={styles.statLabel}>Total hires</Text>
+            </View>
+            <Text style={styles.statNum}>{totalHires}</Text>
+          </View>
 
-            <BlurView intensity={40} tint="light" style={styles.statCard}>
-              <View style={styles.statTopRow}>
-                <View style={styles.statIconCircle}>
-                  <Ionicons name="people-outline" size={15} color="#16A34A" />
-                </View>
-                <Text style={styles.statLabel}>Total hires</Text>
+          <View style={styles.statCard}>
+            <View style={styles.statTopRow}>
+              <View style={styles.statIconCircle}>
+                <Ionicons name="cash-outline" size={15} color="#D97706" />
               </View>
-              <Text style={styles.statNum}>{totalHires}</Text>
-            </BlurView>
+              <Text style={styles.statLabel}>Total paid</Text>
+            </View>
+            <Text style={styles.statNum}>₱{totalPaid.toLocaleString()}</Text>
+          </View>
 
-            <BlurView intensity={40} tint="light" style={styles.statCard}>
-              <View style={styles.statTopRow}>
-                <View style={styles.statIconCircle}>
-                  <Ionicons name="cash-outline" size={15} color="#D97706" />
-                </View>
-                <Text style={styles.statLabel}>Total paid</Text>
+          <View style={styles.statCard}>
+            <View style={styles.statTopRow}>
+              <View style={styles.statIconCircle}>
+                <Ionicons name="star" size={15} color="#EAB308" />
               </View>
-              <Text style={styles.statNum}>₱{totalPaid.toLocaleString()}</Text>
-            </BlurView>
-
-            <BlurView intensity={40} tint="light" style={styles.statCard}>
-              <View style={styles.statTopRow}>
-                <View style={styles.statIconCircle}>
-                  <Ionicons name="star" size={15} color="#EAB308" />
-                </View>
-                <Text style={styles.statLabel}>Reputation</Text>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
-                <Text style={styles.statNum}>{reputationFormatted}</Text>
-                <Text style={styles.statMaxScore}>/5.0</Text>
-              </View>
-            </BlurView>
+              <Text style={styles.statLabel}>Reputation</Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
+              <Text style={styles.statNum}>{reputationFormatted}</Text>
+              <Text style={styles.statMaxScore}>/5.0</Text>
+            </View>
           </View>
         </View>
 
@@ -593,16 +587,15 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '48.5%',
-    borderRadius: 22,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.42)',
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.60)',
+    borderColor: 'rgba(226, 232, 240, 0.70)',
     padding: 16,
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
     elevation: 2,
   },
   statTopRow: {
@@ -615,7 +608,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.65)',
+    backgroundColor: colors.paper,
     alignItems: 'center',
     justifyContent: 'center',
   },

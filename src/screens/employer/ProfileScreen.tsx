@@ -165,71 +165,63 @@ export const ProfileScreen: React.FC = () => {
           </View>
         )}
 
-        {/* Reputation Card - Frosted Crystal Glass */}
-        <View style={styles.reputationCardWrapper}>
-          <View style={styles.ambientGlowRose} pointerEvents="none" />
-          <View style={styles.ambientGlowSky} pointerEvents="none" />
-          <BlurView intensity={45} tint="light" style={styles.reputationCard}>
-            <View style={styles.reputationHeaderRow}>
-              <View style={styles.reputationBadge}>
-                <Ionicons name="shield-checkmark" size={13} color="#0284C7" />
-              </View>
-              <Text style={styles.reputationEyebrow}>Employer Reputation</Text>
+        {/* Reputation Card - Clean Card */}
+        <View style={styles.reputationCard}>
+          <View style={styles.reputationHeaderRow}>
+            <View style={styles.reputationBadge}>
+              <Ionicons name="shield-checkmark" size={13} color="#0284C7" />
             </View>
-            <View style={styles.reputationRow}>
-              <Text style={styles.reputationScore}>
-                {employer.ratings > 0 ? formatScore(employer.reputation) : 'N/A'}
+            <Text style={styles.reputationEyebrow}>Employer Reputation</Text>
+          </View>
+          <View style={styles.reputationRow}>
+            <Text style={styles.reputationScore}>
+              {employer.ratings > 0 ? formatScore(employer.reputation) : 'N/A'}
+            </Text>
+            <View style={styles.reputationStars}>
+              {employer.ratings > 0 ? (
+                <View style={styles.starsRow}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Ionicons
+                      key={star}
+                      name="star"
+                      size={14}
+                      color={star <= Math.round(employer.reputation) ? colors.gold : '#E2E8F0'}
+                    />
+                  ))}
+                </View>
+              ) : null}
+              <Text style={styles.reputationCount}>
+                {employer.ratings > 0 ? `${employer.ratings} verified ratings` : 'No ratings yet'}
               </Text>
-              <View style={styles.reputationStars}>
-                {employer.ratings > 0 ? (
-                  <View style={styles.starsRow}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Ionicons
-                        key={star}
-                        name="star"
-                        size={14}
-                        color={star <= Math.round(employer.reputation) ? colors.gold : '#E2E8F0'}
-                      />
-                    ))}
-                  </View>
-                ) : null}
-                <Text style={styles.reputationCount}>
-                  {employer.ratings > 0 ? `${employer.ratings} verified ratings` : 'No ratings yet'}
-                </Text>
-              </View>
             </View>
-            <Text style={styles.reputationTagline}>Your score travels with you.</Text>
-          </BlurView>
+          </View>
+          <Text style={styles.reputationTagline}>Your score travels with you.</Text>
         </View>
 
-        {/* Stats Grid - Frosted Crystal Glass */}
-        <View style={styles.statsWrapper}>
-          <View style={styles.ambientGlowRose} pointerEvents="none" />
-          <View style={styles.ambientGlowMint} pointerEvents="none" />
-          <View style={styles.statsGrid}>
-            <BlurView intensity={40} tint="light" style={styles.statBox}>
-              <View style={styles.statIconCircle}>
-                <Ionicons name="briefcase-outline" size={16} color="#E11D48" />
-              </View>
-              <Text style={styles.statValue}>{employer.activeJobs}</Text>
-              <Text style={styles.statLabel}>Active jobs</Text>
-            </BlurView>
+        {/* Stats Grid - Clean Card */}
+        <View style={styles.statsGrid}>
+          <View style={styles.statBox}>
+            <View style={styles.statIconCircle}>
+              <Ionicons name="briefcase-outline" size={16} color="#E11D48" />
+            </View>
+            <Text style={styles.statValue}>{employer.activeJobs}</Text>
+            <Text style={styles.statLabel}>Active jobs</Text>
+          </View>
 
-            <BlurView intensity={40} tint="light" style={styles.statBox}>
-              <View style={styles.statIconCircle}>
-                <Ionicons name="people-outline" size={16} color="#16A34A" />
-              </View>
-              <Text style={styles.statValue}>{employer.hired}</Text>
-              <Text style={styles.statLabel}>Hires</Text>
-            </BlurView>
+          <View style={styles.statBox}>
+            <View style={styles.statIconCircle}>
+              <Ionicons name="people-outline" size={16} color="#16A34A" />
+            </View>
+            <Text style={styles.statValue}>{employer.hired}</Text>
+            <Text style={styles.statLabel}>Hires</Text>
+          </View>
 
-            <BlurView intensity={40} tint="light" style={styles.statBox}>
-              <View style={styles.statIconCircle}>
-                <Ionicons name="cash-outline" size={16} color="#D97706" />
-              </View>
-              <Text style={styles.statValue}>{employer.totalPaid}</Text>
-              <Text style={styles.statLabel}>Total paid</Text>
-            </BlurView>
+          <View style={styles.statBox}>
+            <View style={styles.statIconCircle}>
+              <Ionicons name="cash-outline" size={16} color="#D97706" />
+            </View>
+            <Text style={styles.statValue}>{employer.totalPaid}</Text>
+            <Text style={styles.statLabel}>Total paid</Text>
           </View>
         </View>
 
@@ -333,17 +325,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(56, 189, 248, 0.22)',
   },
   reputationCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.48)',
-    borderRadius: 24,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.65)',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     padding: 20,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.70)',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.04,
-    shadowRadius: 16,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   reputationHeaderRow: {
     flexDirection: 'row',
@@ -353,7 +345,7 @@ const styles = StyleSheet.create({
   reputationBadge: {
     width: 22,
     height: 22,
-    borderRadius: 7,
+    borderRadius: 6,
     backgroundColor: 'rgba(2, 132, 199, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -391,50 +383,27 @@ const styles = StyleSheet.create({
     color: '#475569',
     marginTop: 8,
   },
-  statsWrapper: {
-    position: 'relative',
-    marginBottom: 16,
-  },
-  ambientGlowRose: {
-    position: 'absolute',
-    top: -15,
-    left: 0,
-    width: 150,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(244, 63, 94, 0.30)',
-  },
-  ambientGlowMint: {
-    position: 'absolute',
-    bottom: -15,
-    right: 0,
-    width: 150,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(34, 197, 94, 0.30)',
-  },
-  statsGrid: { flexDirection: 'row', gap: 10 },
+  statsGrid: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   statBox: {
     flex: 1,
-    borderRadius: 22,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.42)',
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.60)',
+    borderColor: 'rgba(226, 232, 240, 0.70)',
     paddingVertical: 18,
     paddingHorizontal: 12,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 14,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
     elevation: 2,
   },
   statIconCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(255, 255, 255, 0.65)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.paper,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,

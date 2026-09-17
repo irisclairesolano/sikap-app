@@ -185,62 +185,55 @@ export const ProfileScreen: React.FC = () => {
           </View>
         </TouchableOpacity>
 
-        {/* Reputation Card - Frosted Crystal Glass */}
-        <View style={styles.reputationCardWrapper}>
-          <View style={styles.ambientGlowRose} pointerEvents="none" />
-          <BlurView intensity={45} tint="light" style={styles.reputationCard}>
-            <View style={styles.reputationHeaderRow}>
-              <View style={styles.reputationBadge}>
-                <Ionicons name="shield-checkmark" size={13} color="#E11D48" />
-              </View>
-              <Text style={styles.reputationEyebrow}>Worker Reputation</Text>
+        {/* Reputation Card - Clean Card */}
+        <View style={styles.reputationCard}>
+          <View style={styles.reputationHeaderRow}>
+            <View style={styles.reputationBadge}>
+              <Ionicons name="shield-checkmark" size={13} color="#E11D48" />
             </View>
-            <View style={styles.reputationRow}>
-              <Text style={styles.reputationScore}>
-                {worker.ratings > 0 ? formatScore(worker.reputation) : 'N/A'}
+            <Text style={styles.reputationEyebrow}>Worker Reputation</Text>
+          </View>
+          <View style={styles.reputationRow}>
+            <Text style={styles.reputationScore}>
+              {worker.ratings > 0 ? formatScore(worker.reputation) : 'N/A'}
+            </Text>
+            <View style={styles.reputationStars}>
+              {worker.ratings > 0 ? (
+                <View style={styles.starsRow}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Ionicons
+                      key={star}
+                      name="star"
+                      size={14}
+                      color={star <= Math.round(worker.reputation) ? colors.gold : '#E2E8F0'}
+                    />
+                  ))}
+                </View>
+              ) : null}
+              <Text style={styles.reputationCount}>
+                {worker.ratings > 0 ? `${worker.ratings} verified ratings` : 'No ratings yet'}
               </Text>
-              <View style={styles.reputationStars}>
-                {worker.ratings > 0 ? (
-                  <View style={styles.starsRow}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Ionicons
-                        key={star}
-                        name="star"
-                        size={14}
-                        color={star <= Math.round(worker.reputation) ? colors.gold : '#E2E8F0'}
-                      />
-                    ))}
-                  </View>
-                ) : null}
-                <Text style={styles.reputationCount}>
-                  {worker.ratings > 0 ? `${worker.ratings} verified ratings` : 'No ratings yet'}
-                </Text>
-              </View>
             </View>
-            <Text style={styles.reputationTagline}>Your score travels with you.</Text>
-          </BlurView>
+          </View>
+          <Text style={styles.reputationTagline}>Your score travels with you.</Text>
         </View>
 
-        {/* Stats Grid - Frosted Crystal Glass */}
-        <View style={styles.statsWrapper}>
-          <View style={styles.ambientGlowMint} pointerEvents="none" />
-          <View style={styles.ambientGlowBlue} pointerEvents="none" />
-          <View style={styles.statsGrid}>
-            <BlurView intensity={40} tint="light" style={styles.statBox}>
-              <View style={styles.statIconCircle}>
-                <Ionicons name="checkmark-done-outline" size={17} color="#16A34A" />
-              </View>
-              <Text style={styles.statValue}>{worker.jobsDone}</Text>
-              <Text style={styles.statLabel}>Jobs done</Text>
-            </BlurView>
+        {/* Stats Grid - Clean Card */}
+        <View style={styles.statsGrid}>
+          <View style={styles.statBox}>
+            <View style={styles.statIconCircle}>
+              <Ionicons name="checkmark-done-outline" size={18} color="#16A34A" />
+            </View>
+            <Text style={styles.statValue}>{worker.jobsDone}</Text>
+            <Text style={styles.statLabel}>Jobs done</Text>
+          </View>
 
-            <BlurView intensity={40} tint="light" style={styles.statBox}>
-              <View style={styles.statIconCircle}>
-                <Ionicons name="calendar-outline" size={17} color="#0284C7" />
-              </View>
-              <Text style={styles.statValue}>{worker.memberSince}</Text>
-              <Text style={styles.statLabel}>Member</Text>
-            </BlurView>
+          <View style={styles.statBox}>
+            <View style={styles.statIconCircle}>
+              <Ionicons name="calendar-outline" size={18} color="#0284C7" />
+            </View>
+            <Text style={styles.statValue}>{worker.memberSince}</Text>
+            <Text style={styles.statLabel}>Member</Text>
           </View>
         </View>
 
@@ -476,31 +469,18 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  reputationCardWrapper: {
-    position: 'relative',
-    marginBottom: 16,
-  },
-  ambientGlowRose: {
-    position: 'absolute',
-    top: -10,
-    right: 20,
-    width: 140,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(244, 63, 94, 0.14)',
-  },
   reputationCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.48)',
-    borderRadius: 24,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.65)',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     padding: 20,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.70)',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.04,
-    shadowRadius: 16,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   reputationHeaderRow: {
     flexDirection: 'row',
@@ -510,7 +490,7 @@ const styles = StyleSheet.create({
   reputationBadge: {
     width: 22,
     height: 22,
-    borderRadius: 7,
+    borderRadius: 6,
     backgroundColor: 'rgba(244, 63, 94, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -548,50 +528,27 @@ const styles = StyleSheet.create({
     color: '#475569',
     marginTop: 8,
   },
-  statsWrapper: {
-    position: 'relative',
-    marginBottom: 16,
-  },
-  ambientGlowMint: {
-    position: 'absolute',
-    top: -15,
-    left: 0,
-    width: 150,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(34, 197, 94, 0.30)',
-  },
-  ambientGlowBlue: {
-    position: 'absolute',
-    bottom: -15,
-    right: 0,
-    width: 150,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(56, 189, 248, 0.30)',
-  },
-  statsGrid: { flexDirection: 'row', gap: 12 },
+  statsGrid: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   statBox: {
     flex: 1,
-    borderRadius: 22,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.42)',
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.60)',
+    borderColor: 'rgba(226, 232, 240, 0.70)',
     paddingVertical: 18,
     paddingHorizontal: 16,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 14,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
     elevation: 2,
   },
   statIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.65)',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.paper,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,

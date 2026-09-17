@@ -335,146 +335,110 @@ const IDUploadScreen: React.FC = () => {
           <View style={styles.cardsContainer}>
             {/* Card 1: ID Front */}
             <TouchableOpacity
-              style={[
-                styles.uploadCardContainer,
-                selectedFile && styles.uploadCardContainerSelected,
-              ]}
+              style={[styles.uploadCard, selectedFile && styles.uploadCardSelected]}
               onPress={() => handlePickGallery('id')}
               disabled={uploadMutation.isPending}
-              activeOpacity={0.85}
+              activeOpacity={0.8}
             >
-              <BlurView
-                intensity={45}
-                tint="light"
-                style={[styles.uploadCardBlur, selectedFile && styles.uploadCardBlurSelected]}
-              >
-                <View style={[styles.cameraIconBox, selectedFile && styles.cameraIconBoxSelected]}>
-                  <Ionicons
-                    name={selectedFile ? 'checkmark-circle' : 'images'}
-                    size={28}
-                    color={colors.white}
-                  />
-                </View>
-                <Text style={styles.uploadTitle}>
-                  {selectedFile ? 'ID Front Uploaded ✓' : 'Upload ID Front (from gallery)'}
-                </Text>
-                <Text style={styles.uploadSubtitle}>
-                  {selectedFile
-                    ? `${selectedFile.name}`
-                    : "PhilSys • Driver's License • Voter's ID\nPRC • Postal ID"}
-                </Text>
-              </BlurView>
+              <View style={[styles.cameraIconBox, selectedFile && styles.cameraIconBoxSelected]}>
+                <Ionicons
+                  name={selectedFile ? 'checkmark-circle' : 'images'}
+                  size={28}
+                  color={colors.white}
+                />
+              </View>
+              <Text style={styles.uploadTitle}>
+                {selectedFile ? 'ID Front Uploaded ✓' : 'Upload ID Front (from gallery)'}
+              </Text>
+              <Text style={styles.uploadSubtitle}>
+                {selectedFile
+                  ? `${selectedFile.name}`
+                  : "PhilSys • Driver's License • Voter's ID\nPRC • Postal ID"}
+              </Text>
             </TouchableOpacity>
 
             {/* Card 2: ID Back */}
             <TouchableOpacity
-              style={[
-                styles.uploadCardContainer,
-                selectedFileBack && styles.uploadCardContainerSelected,
-              ]}
+              style={[styles.uploadCard, selectedFileBack && styles.uploadCardSelected]}
               onPress={() => handlePickGallery('back')}
               disabled={uploadMutation.isPending}
-              activeOpacity={0.85}
+              activeOpacity={0.8}
             >
-              <BlurView
-                intensity={45}
-                tint="light"
-                style={[styles.uploadCardBlur, selectedFileBack && styles.uploadCardBlurSelected]}
+              <View
+                style={[styles.cameraIconBox, selectedFileBack && styles.cameraIconBoxSelected]}
               >
-                <View
-                  style={[styles.cameraIconBox, selectedFileBack && styles.cameraIconBoxSelected]}
-                >
-                  <Ionicons
-                    name={selectedFileBack ? 'checkmark-circle' : 'images'}
-                    size={28}
-                    color={colors.white}
-                  />
-                </View>
-                <Text style={styles.uploadTitle}>
-                  {selectedFileBack ? 'ID Back Uploaded ✓' : 'Upload ID Back (from gallery)'}
-                </Text>
-                <Text style={styles.uploadSubtitle}>
-                  {selectedFileBack ? `${selectedFileBack.name}` : 'Back side of your ID'}
-                </Text>
-              </BlurView>
+                <Ionicons
+                  name={selectedFileBack ? 'checkmark-circle' : 'images'}
+                  size={28}
+                  color={colors.white}
+                />
+              </View>
+              <Text style={styles.uploadTitle}>
+                {selectedFileBack ? 'ID Back Uploaded ✓' : 'Upload ID Back (from gallery)'}
+              </Text>
+              <Text style={styles.uploadSubtitle}>
+                {selectedFileBack ? `${selectedFileBack.name}` : 'Back side of your ID'}
+              </Text>
             </TouchableOpacity>
 
             {/* Card 3: Worker Selfie OR Employer Business Documents */}
             {userRole === 'worker' ? (
               <TouchableOpacity
-                style={[
-                  styles.uploadCardContainer,
-                  selectedSelfie && styles.uploadCardContainerSelected,
-                ]}
+                style={[styles.uploadCard, selectedSelfie && styles.uploadCardSelected]}
                 onPress={() => handlePickGallery('selfie')}
                 disabled={uploadMutation.isPending}
-                activeOpacity={0.85}
+                activeOpacity={0.8}
               >
-                <BlurView
-                  intensity={45}
-                  tint="light"
-                  style={[styles.uploadCardBlur, selectedSelfie && styles.uploadCardBlurSelected]}
+                <View
+                  style={[styles.cameraIconBox, selectedSelfie && styles.cameraIconBoxSelected]}
                 >
-                  <View
-                    style={[styles.cameraIconBox, selectedSelfie && styles.cameraIconBoxSelected]}
-                  >
-                    <Ionicons
-                      name={selectedSelfie ? 'checkmark-circle' : 'images'}
-                      size={26}
-                      color={colors.white}
-                    />
-                  </View>
-                  <Text style={styles.uploadTitle}>
-                    {selectedSelfie ? 'Selfie Uploaded ✓' : 'Upload selfie with ID (from gallery)'}
-                  </Text>
-                  <Text style={styles.uploadSubtitle}>
-                    {selectedSelfie
-                      ? `${selectedSelfie.name}`
-                      : 'Please ensure your face and ID are clear.'}
-                  </Text>
-                </BlurView>
+                  <Ionicons
+                    name={selectedSelfie ? 'checkmark-circle' : 'images'}
+                    size={26}
+                    color={colors.white}
+                  />
+                </View>
+                <Text style={styles.uploadTitle}>
+                  {selectedSelfie ? 'Selfie Uploaded ✓' : 'Upload selfie with ID (from gallery)'}
+                </Text>
+                <Text style={styles.uploadSubtitle}>
+                  {selectedSelfie
+                    ? `${selectedSelfie.name}`
+                    : 'Please ensure your face and ID are clear.'}
+                </Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
                 style={[
-                  styles.uploadCardContainer,
-                  selectedBusinessDocs.length > 0 && styles.uploadCardContainerSelected,
+                  styles.uploadCard,
+                  selectedBusinessDocs.length > 0 && styles.uploadCardSelected,
                 ]}
                 onPress={handlePickBusiness}
                 disabled={uploadMutation.isPending}
-                activeOpacity={0.85}
+                activeOpacity={0.8}
               >
-                <BlurView
-                  intensity={45}
-                  tint="light"
+                <View
                   style={[
-                    styles.uploadCardBlur,
-                    selectedBusinessDocs.length > 0 && styles.uploadCardBlurSelected,
+                    styles.cameraIconBox,
+                    selectedBusinessDocs.length > 0 && styles.cameraIconBoxSelected,
                   ]}
                 >
-                  <View
-                    style={[
-                      styles.cameraIconBox,
-                      selectedBusinessDocs.length > 0 && styles.cameraIconBoxSelected,
-                    ]}
-                  >
-                    <Ionicons
-                      name={selectedBusinessDocs.length > 0 ? 'checkmark-circle' : 'document-text'}
-                      size={26}
-                      color={colors.white}
-                    />
-                  </View>
-                  <Text style={styles.uploadTitle}>
-                    {selectedBusinessDocs.length > 0
-                      ? `${selectedBusinessDocs.length} Document(s) Uploaded ✓`
-                      : 'Business Documents (Optional)'}
-                  </Text>
-                  <Text style={styles.uploadSubtitle}>
-                    {selectedBusinessDocs.length > 0
-                      ? selectedBusinessDocs.map((d) => d.name).join(', ')
-                      : 'DTI, SEC registration, or Mayor’s permit (PDF or Image, max 3)'}
-                  </Text>
-                </BlurView>
+                  <Ionicons
+                    name={selectedBusinessDocs.length > 0 ? 'checkmark-circle' : 'document-text'}
+                    size={26}
+                    color={colors.white}
+                  />
+                </View>
+                <Text style={styles.uploadTitle}>
+                  {selectedBusinessDocs.length > 0
+                    ? `${selectedBusinessDocs.length} Document(s) Uploaded ✓`
+                    : 'Business Documents (Optional)'}
+                </Text>
+                <Text style={styles.uploadSubtitle}>
+                  {selectedBusinessDocs.length > 0
+                    ? selectedBusinessDocs.map((d) => d.name).join(', ')
+                    : 'DTI, SEC registration, or Mayor’s permit (PDF or Image, max 3)'}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -623,29 +587,24 @@ const styles = StyleSheet.create({
   cardsContainer: {
     gap: 16,
   },
-  uploadCardContainer: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.65)',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.04,
-    shadowRadius: 18,
-    elevation: 2,
-  },
-  uploadCardContainerSelected: {
-    borderColor: 'rgba(34, 197, 94, 0.50)',
-  },
-  uploadCardBlur: {
-    backgroundColor: 'rgba(255, 255, 255, 0.42)',
+  uploadCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     paddingVertical: 26,
     paddingHorizontal: 20,
     alignItems: 'center',
     gap: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.70)',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  uploadCardBlurSelected: {
-    backgroundColor: 'rgba(240, 253, 244, 0.65)',
+  uploadCardSelected: {
+    backgroundColor: '#F0FDF4',
+    borderColor: 'rgba(34, 197, 94, 0.40)',
   },
   cameraIconBox: {
     width: 56,
