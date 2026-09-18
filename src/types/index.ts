@@ -19,6 +19,8 @@ export interface User {
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   expo_push_token?: string | null;
+  ratings_count?: number;
+  completed_jobs_count?: number;
   worker_profile?: WorkerProfile;
   employer_profile?: EmployerProfile;
   has_worker_profile?: boolean;

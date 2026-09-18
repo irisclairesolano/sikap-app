@@ -69,8 +69,11 @@ export const EmployerDashboardScreen: React.FC = () => {
     return acc + paid;
   }, 0);
 
+  const hasRatings = (user?.ratings_count ?? 0) > 0;
+
   const reputationFormatted = (() => {
-    if (user?.reputation_score === undefined || user?.reputation_score === null) return '5.0';
+    if (!hasRatings) return 'N/A';
+    if (user?.reputation_score === undefined || user?.reputation_score === null) return 'N/A';
     const num = Number(user.reputation_score);
     if (isNaN(num) || num <= 0) return '0.0';
     if (num % 1 === 0) return num.toFixed(1);
@@ -283,7 +286,7 @@ export const EmployerDashboardScreen: React.FC = () => {
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
               <Text style={styles.statNum}>{reputationFormatted}</Text>
-              <Text style={styles.statMaxScore}>/5.0</Text>
+              {hasRatings && <Text style={styles.statMaxScore}>/5.0</Text>}
             </View>
           </View>
         </View>
