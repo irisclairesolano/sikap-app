@@ -98,57 +98,80 @@ const ChatScreen: React.FC = () => {
     }
   };
 
-  // Cards that each role should see pinned
-  const EMPLOYER_CARD_TYPES = ['confirm_hire', 'cancel_hire', 'mark_complete', 'unlock_request'];
-  const WORKER_CARD_TYPES = [
-    'accept_or_reject',
-    'flag_offline',
-    'unlock_request',
-    'employer_contact_reveal',
-  ];
-  const relevantCardTypes = user?.role === 'employer' ? EMPLOYER_CARD_TYPES : WORKER_CARD_TYPES;
+  // Check if an action card is currently actionable for the current user based on hiring pipeline rules
+  const isCardActionable = (m: (typeof messages)[0]): boolean => {
+    if (m.message_type !== 'action_card' || !m.card_type || m.card_resolved) return false;
 
-  // Collect all action cards in conversation
-  const actionCards = messages.filter(
-    (m) => m.message_type === 'action_card' && m.card_type != null,
-  );
+    const appStatus = conversation?.application_status;
+    const convStatus = status; // 'open' | 'locked' | 'unlock_requested'
+    const role = user?.role;
+
+    switch (m.card_type) {
+      case 'unlock_request':
+        // Only employer can unlock, and only if conversation is not already open
+        return role === 'employer' && convStatus !== 'open';
+
+      case 'confirm_hire':
+        // Only employer can confirm price, and only if application has not advanced past pending
+        return (
+          role === 'employer' &&
+          !['employer_confirmed', 'accepted', 'completed', 'cancelled', 'rejected'].includes(
+            appStatus || '',
+          )
+        );
+
+      case 'accept_or_reject':
+        // Only worker can accept/reject, and only while offer is pending worker response
+        return (
+          role === 'worker' &&
+          !['accepted', 'completed', 'rejected', 'cancelled'].includes(appStatus || '')
+        );
+
+      case 'cancel_hire':
+        // Only employer can cancel hire before worker accepts
+        return role === 'employer' && appStatus === 'employer_confirmed';
+
+      case 'mark_complete':
+        // Only employer can mark job complete while job is in progress and not locked
+        return role === 'employer' && appStatus === 'accepted' && convStatus !== 'locked';
+
+      case 'flag_offline':
+        // Only worker can flag as complete while job is in progress
+        return role === 'worker' && appStatus === 'accepted';
+
+      default:
+        return false;
+    }
+  };
+
+  // Action cards that STILL require an action from the current user
+  const actionableCards = messages.filter(isCardActionable);
 
   // Keep track of cycle index for jumping
   const [jumpIndex, setJumpIndex] = useState(0);
   const isInitialMountRef = useRef(true);
 
-  // Latest unresolved or latest action card for header display
-  const activeActionCard =
-    [...actionCards]
-      .reverse()
-      .find(
-        (m) => !m.card_resolved && !!m.card_type && relevantCardTypes.includes(m.card_type as any),
-      ) || actionCards[actionCards.length - 1];
-
-  const getPinnedCardDetails = (card: typeof activeActionCard) => {
+  const getPinnedCardDetails = (card: (typeof messages)[0]) => {
     if (!card || !card.card_type) return null;
     switch (card.card_type) {
       case 'confirm_hire':
         return {
           icon: 'cash-outline' as const,
-          label: user?.role === 'employer' ? 'Set Price & Confirm Hire' : 'Awaiting Employer Offer',
+          label: 'Set Price & Confirm Hire',
           color: colors.primary,
           bg: colors.peach,
         };
       case 'accept_or_reject':
         return {
           icon: 'document-text-outline' as const,
-          label:
-            user?.role === 'worker'
-              ? `Offer Received (₱${String(card.card_data?.price ?? '')})`
-              : 'Offer Sent to Worker',
+          label: `Respond to Offer (₱${String(card.card_data?.price ?? '')})`,
           color: colors.success,
           bg: '#DCFCE7',
         };
       case 'cancel_hire':
         return {
           icon: 'close-circle-outline' as const,
-          label: 'Hiring Cancellation',
+          label: 'Cancel Hire Offer',
           color: colors.error,
           bg: '#FEE2E2',
         };
@@ -162,49 +185,37 @@ const ChatScreen: React.FC = () => {
       case 'flag_offline':
         return {
           icon: 'flag-outline' as const,
-          label: 'Flag as Done',
+          label: 'Flag Job as Done',
           color: colors.warning,
           bg: '#FEF3C7',
         };
       case 'unlock_request':
         return {
           icon: 'lock-open-outline' as const,
-          label: status === 'open' ? 'Chat Reopened' : 'Chat Reopen Request',
+          label: 'Approve Chat Reopen',
           color: colors.primary,
           bg: colors.peach,
-        };
-      case 'employer_contact_reveal':
-        return {
-          icon: 'call-outline' as const,
-          label: 'Employer Contact Info',
-          color: colors.primary,
-          bg: colors.sky,
-        };
-      case 'worker_contact_reveal':
-        return {
-          icon: 'call-outline' as const,
-          label: 'Worker Contact Info',
-          color: colors.primary,
-          bg: colors.sky,
         };
       default:
         return {
           icon: 'flash-outline' as const,
-          label: 'Action Card',
+          label: 'Action Required',
           color: colors.primary,
           bg: colors.primaryTint,
         };
     }
   };
 
-  const currentCard = actionCards[jumpIndex % Math.max(1, actionCards.length)] || activeActionCard;
-  const pinnedDetails = getPinnedCardDetails(currentCard);
-  const currentCardNumber = actionCards.length > 0 ? (jumpIndex % actionCards.length) + 1 : 0;
+  const currentCard =
+    actionableCards.length > 0 ? actionableCards[jumpIndex % actionableCards.length] : null;
+  const pinnedDetails = currentCard ? getPinnedCardDetails(currentCard) : null;
+  const currentCardNumber =
+    actionableCards.length > 0 ? (jumpIndex % actionableCards.length) + 1 : 0;
 
   const handleJumpToCard = () => {
-    if (actionCards.length === 0) return;
-    const targetCard = actionCards[jumpIndex % actionCards.length];
-    const nextIndex = (jumpIndex + 1) % actionCards.length;
+    if (actionableCards.length === 0) return;
+    const targetCard = actionableCards[jumpIndex % actionableCards.length];
+    const nextIndex = (jumpIndex + 1) % actionableCards.length;
     setJumpIndex(nextIndex);
 
     const cardIndex = messages.findIndex((m) => m.id === targetCard.id);
@@ -270,8 +281,8 @@ const ChatScreen: React.FC = () => {
           )}
         </View>
 
-        {/* Minimalist Pinned Action Banner with Single Jump Button */}
-        {pinnedDetails && actionCards.length > 0 && (
+        {/* Minimalist Pinned Action Banner for Still Actionable Cards */}
+        {pinnedDetails && actionableCards.length > 0 && (
           <View style={styles.pinnedWrapper}>
             <TouchableOpacity
               style={[styles.pinnedBar, { borderLeftColor: pinnedDetails.color }]}
@@ -290,7 +301,7 @@ const ChatScreen: React.FC = () => {
                     style={{ marginRight: 3 }}
                   />
                   <Text style={styles.pinnedEyebrow}>
-                    ACTION CARDS ({currentCardNumber}/{actionCards.length})
+                    ACTION REQUIRED ({currentCardNumber}/{actionableCards.length})
                   </Text>
                 </View>
                 <Text style={styles.pinnedTitle} numberOfLines={1}>
@@ -304,7 +315,9 @@ const ChatScreen: React.FC = () => {
                   activeOpacity={0.7}
                 >
                   <Text style={styles.jumpBtnText}>
-                    Jump ({currentCardNumber}/{actionCards.length})
+                    {actionableCards.length > 1
+                      ? `Jump (${currentCardNumber}/${actionableCards.length})`
+                      : 'Jump'}
                   </Text>
                   <Ionicons name="swap-vertical" size={13} color={colors.primary} />
                 </TouchableOpacity>
