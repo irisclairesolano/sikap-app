@@ -114,7 +114,8 @@ const ChatScreen: React.FC = () => {
   );
 
   // Keep track of cycle index for jumping
-  const [jumpCycleIndex, setJumpCycleIndex] = useState(0);
+  const [jumpIndex, setJumpIndex] = useState(0);
+  const isInitialMountRef = useRef(true);
 
   // Latest unresolved or latest action card for header display
   const activeActionCard =
@@ -151,6 +152,27 @@ const ChatScreen: React.FC = () => {
           color: colors.error,
           bg: '#FEE2E2',
         };
+      case 'mark_complete':
+        return {
+          icon: 'checkmark-circle-outline' as const,
+          label: 'Mark Job Complete',
+          color: colors.success,
+          bg: '#DCFCE7',
+        };
+      case 'flag_offline':
+        return {
+          icon: 'flag-outline' as const,
+          label: 'Flag as Done',
+          color: colors.warning,
+          bg: '#FEF3C7',
+        };
+      case 'unlock_request':
+        return {
+          icon: 'lock-open-outline' as const,
+          label: status === 'open' ? 'Chat Reopened' : 'Chat Reopen Request',
+          color: colors.primary,
+          bg: colors.peach,
+        };
       case 'employer_contact_reveal':
         return {
           icon: 'call-outline' as const,
@@ -175,18 +197,30 @@ const ChatScreen: React.FC = () => {
     }
   };
 
-  const pinnedDetails = getPinnedCardDetails(activeActionCard);
+  const currentCard = actionCards[jumpIndex % Math.max(1, actionCards.length)] || activeActionCard;
+  const pinnedDetails = getPinnedCardDetails(currentCard);
+  const currentCardNumber = actionCards.length > 0 ? (jumpIndex % actionCards.length) + 1 : 0;
 
   const handleJumpToCard = () => {
     if (actionCards.length === 0) return;
-    // Sequential cycle: latest (len - 1), 2nd latest (len - 2), ..., down to 0, then wraps back to latest
-    const offset = jumpCycleIndex % actionCards.length;
-    const targetCard = actionCards[actionCards.length - 1 - offset];
-    setJumpCycleIndex((prev) => prev + 1);
+    const targetCard = actionCards[jumpIndex % actionCards.length];
+    const nextIndex = (jumpIndex + 1) % actionCards.length;
+    setJumpIndex(nextIndex);
 
     const cardIndex = messages.findIndex((m) => m.id === targetCard.id);
     if (cardIndex >= 0) {
-      flatListRef.current?.scrollToIndex({ index: cardIndex, animated: true, viewPosition: 0.5 });
+      try {
+        flatListRef.current?.scrollToIndex({
+          index: cardIndex,
+          animated: true,
+          viewPosition: 0.25,
+        });
+      } catch {
+        flatListRef.current?.scrollToOffset({
+          offset: Math.max(0, cardIndex * 120),
+          animated: true,
+        });
+      }
     }
   };
 
@@ -255,7 +289,9 @@ const ChatScreen: React.FC = () => {
                     color={colors.primary}
                     style={{ marginRight: 3 }}
                   />
-                  <Text style={styles.pinnedEyebrow}>ACTION CARDS ({actionCards.length})</Text>
+                  <Text style={styles.pinnedEyebrow}>
+                    ACTION CARDS ({currentCardNumber}/{actionCards.length})
+                  </Text>
                 </View>
                 <Text style={styles.pinnedTitle} numberOfLines={1}>
                   {pinnedDetails.label}
@@ -267,7 +303,9 @@ const ChatScreen: React.FC = () => {
                   onPress={handleJumpToCard}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.jumpBtnText}>Jump</Text>
+                  <Text style={styles.jumpBtnText}>
+                    Jump ({currentCardNumber}/{actionCards.length})
+                  </Text>
                   <Ionicons name="swap-vertical" size={13} color={colors.primary} />
                 </TouchableOpacity>
               </View>
@@ -313,6 +351,10 @@ const ChatScreen: React.FC = () => {
           data={messages}
           keyExtractor={(item) => item.id.toString()}
           inverted={false}
+          initialNumToRender={50}
+          maxToRenderPerBatch={30}
+          windowSize={21}
+          removeClippedSubviews={false}
           onEndReached={() => {
             if (hasNextPage) fetchNextPage();
           }}
@@ -321,8 +363,30 @@ const ChatScreen: React.FC = () => {
               <ActivityIndicator size="small" color={colors.primary} style={{ margin: 10 }} />
             ) : null
           }
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
-          onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          onScrollToIndexFailed={(info) => {
+            flatListRef.current?.scrollToOffset({
+              offset: Math.max(0, info.averageItemLength * info.index),
+              animated: false,
+            });
+            setTimeout(() => {
+              flatListRef.current?.scrollToIndex({
+                index: info.index,
+                animated: true,
+                viewPosition: 0.25,
+              });
+            }, 100);
+          }}
+          onContentSizeChange={() => {
+            if (isInitialMountRef.current) {
+              flatListRef.current?.scrollToEnd({ animated: false });
+              isInitialMountRef.current = false;
+            }
+          }}
+          onLayout={() => {
+            if (isInitialMountRef.current) {
+              flatListRef.current?.scrollToEnd({ animated: false });
+            }
+          }}
           renderItem={({ item }) => {
             if (item.message_type === 'action_card') {
               return (
@@ -331,6 +395,8 @@ const ChatScreen: React.FC = () => {
                   currentUserId={user?.id || 0}
                   currentUserRole={user?.role as 'worker' | 'employer'}
                   conversationId={conversationId}
+                  conversationStatus={status}
+                  applicationStatus={conversation?.application_status}
                   onActionComplete={refetch}
                 />
               );
@@ -403,14 +469,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
     borderBottomWidth: 1,
-    borderBottomColor: colors.inkFaint,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 2,
-    elevation: 1,
+    borderBottomColor: 'rgba(226, 232, 240, 0.70)',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   backBtn: {
     width: 36,
@@ -469,15 +535,20 @@ const styles = StyleSheet.create({
   },
   pinnedWrapper: {
     borderBottomWidth: 1,
-    borderBottomColor: colors.inkFaint,
-    backgroundColor: colors.paperBright,
+    borderBottomColor: 'rgba(226, 232, 240, 0.70)',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
   pinnedBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 9,
     paddingHorizontal: 14,
-    backgroundColor: colors.paperBright,
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     borderLeftWidth: 3.5,
   },
   pinnedBarAlert: {
@@ -521,11 +592,13 @@ const styles = StyleSheet.create({
   jumpBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
-    backgroundColor: colors.primaryTint,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    gap: 4,
+    backgroundColor: colors.peach,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(200, 90, 50, 0.15)',
   },
   jumpBtnText: {
     fontFamily: fonts.bodyBold,
@@ -572,21 +645,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderTopWidth: 1,
-    borderTopColor: colors.inkFaint,
+    borderTopColor: 'rgba(226, 232, 240, 0.70)',
   },
   iconBtn: { padding: 8 },
   input: {
     flex: 1,
-    backgroundColor: colors.paper,
+    backgroundColor: 'rgba(248, 250, 252, 0.85)',
     borderRadius: 20,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingTop: 10,
     paddingBottom: 10,
     maxHeight: 100,
     borderWidth: 1,
-    borderColor: colors.inkFaint,
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     fontFamily: fonts.body,
     fontSize: 14,
     color: colors.ink,

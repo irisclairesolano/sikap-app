@@ -32,7 +32,19 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage }) 
   }
 
   if (message.message_type === 'system') {
-    return <Text style={styles.systemText}>{message.body}</Text>;
+    return (
+      <View style={styles.systemBadgeContainer}>
+        <View style={styles.systemBadge}>
+          <Ionicons
+            name="information-circle"
+            size={13}
+            color={colors.inkMuted}
+            style={{ marginRight: 5 }}
+          />
+          <Text style={styles.systemBadgeText}>{message.body}</Text>
+        </View>
+      </View>
+    );
   }
 
   const isImage = message.message_type === 'image';
@@ -108,14 +120,28 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage }) 
 };
 
 const styles = StyleSheet.create({
-  systemText: {
+  systemBadgeContainer: {
+    alignItems: 'center',
+    marginVertical: 6,
+    paddingHorizontal: 20,
+  },
+  systemBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(241, 245, 249, 0.80)',
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.70)',
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 100,
+    maxWidth: '90%',
+  },
+  systemBadgeText: {
     fontFamily: fonts.body,
     color: colors.inkMuted,
     fontSize: 12,
-    fontStyle: 'italic',
     textAlign: 'center',
-    marginVertical: 8,
-    paddingHorizontal: 24,
+    flexShrink: 1,
   },
   container: {
     marginVertical: 4,

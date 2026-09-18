@@ -5,6 +5,7 @@ import { colors } from '../../theme';
 interface RefreshableContainerProps {
   children: React.ReactNode;
   onRefresh: () => Promise<void>;
+  refreshing?: boolean;
   showsVerticalScrollIndicator?: boolean;
   contentContainerStyle?: any;
 }
