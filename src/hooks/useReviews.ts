@@ -30,11 +30,15 @@ export interface ReviewsResponse {
   reviews: ReviewItem[];
 }
 
-export const useReviews = (userId?: number) => {
+export const useReviews = (userId?: number, role?: 'worker' | 'employer') => {
   return useQuery<ReviewsResponse, Error>({
-    queryKey: ['reviews', userId],
+    queryKey: ['reviews', userId, role],
     queryFn: async () => {
-      const endpoint = userId ? `/reviews?user_id=${userId}` : '/reviews';
+      const params = new URLSearchParams();
+      if (userId) params.append('user_id', String(userId));
+      if (role) params.append('role', role);
+      const queryStr = params.toString();
+      const endpoint = queryStr ? `/reviews?${queryStr}` : '/reviews';
       const response = await apiClient<ReviewsResponse>(endpoint);
       return response;
     },

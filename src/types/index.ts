@@ -39,6 +39,8 @@ export interface JobPost {
   rate_unit?: 'per_day' | 'per_hour' | 'per_project' | 'per_piece' | string;
   slots: number;
   accepted_count: number;
+  filled_slots?: number;
+  remaining_slots?: number;
   duration: number;
   duration_unit: string;
   duration_type?: string;

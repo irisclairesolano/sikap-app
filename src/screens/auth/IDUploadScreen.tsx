@@ -79,22 +79,24 @@ const IDUploadScreen: React.FC = () => {
       form.append('user_id', userId.toString());
       form.append('role', userRole);
 
-      const idUri = await compressImage(selectedFile.uri);
+      const isIdPdf = selectedFile.name?.toLowerCase().endsWith('.pdf');
+      const idUri = isIdPdf ? selectedFile.uri : await compressImage(selectedFile.uri);
       await appendFileToFormData(
         form,
         'id_file',
         idUri,
         selectedFile.name ?? 'government-id.jpg',
-        'image/jpeg',
+        isIdPdf ? 'application/pdf' : 'image/jpeg',
       );
 
-      const backUri = await compressImage(selectedFileBack.uri);
+      const isBackPdf = selectedFileBack.name?.toLowerCase().endsWith('.pdf');
+      const backUri = isBackPdf ? selectedFileBack.uri : await compressImage(selectedFileBack.uri);
       await appendFileToFormData(
         form,
         'id_back_file',
         backUri,
         selectedFileBack.name ?? 'government-id-back.jpg',
-        'image/jpeg',
+        isBackPdf ? 'application/pdf' : 'image/jpeg',
       );
 
       if (userRole === 'worker' && selectedSelfie) {

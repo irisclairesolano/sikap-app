@@ -36,7 +36,7 @@ export const ProfileScreen: React.FC = () => {
     }, [refetch]),
   );
 
-  const { data: reviewsData } = useReviews();
+  const { data: reviewsData } = useReviews(undefined, 'worker');
 
   if (isLoading || !user) {
     return (

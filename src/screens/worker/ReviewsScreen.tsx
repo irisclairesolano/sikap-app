@@ -20,7 +20,7 @@ type ReviewsScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamLis
 
 export const ReviewsScreen: React.FC = () => {
   const navigation = useNavigation<ReviewsScreenNavigationProp>();
-  const { data, isLoading, refetch, isFetching } = useReviews();
+  const { data, isLoading, refetch, isFetching } = useReviews(undefined, 'worker');
 
   useFocusEffect(
     useCallback(() => {

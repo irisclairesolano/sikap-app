@@ -51,10 +51,16 @@ export const ApplyScreen: React.FC = () => {
   const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawApplication();
   const { showAlert } = useAlert();
 
+  const isFilled =
+    job?.remaining_slots === 0 ||
+    (job?.accepted_count != null && job?.slots != null && job.accepted_count >= job.slots) ||
+    (job?.status != null && job.status !== 'open');
+
   const [coverNote, setCoverNote] = useState('');
   const maxLength = 1000;
 
   const handleSubmit = () => {
+    if (isFilled) return;
     apply({ cover_note: coverNote });
   };
 
@@ -321,6 +327,15 @@ export const ApplyScreen: React.FC = () => {
           />
         )}
 
+        {isFilled && (
+          <View style={styles.filledWarningBanner}>
+            <Ionicons name="lock-closed" size={16} color="#991B1B" />
+            <Text style={styles.filledWarningText}>
+              All slots for this job have been filled. Applications are no longer accepted.
+            </Text>
+          </View>
+        )}
+
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
@@ -378,10 +393,11 @@ export const ApplyScreen: React.FC = () => {
 
         <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
           <Button
-            label="Send application"
+            label={isFilled ? 'All Slots Filled' : 'Send application'}
             size="lg"
             onPress={handleSubmit}
             loading={isPending}
+            disabled={isFilled || isPending}
             fullWidth
           />
         </View>
@@ -696,6 +712,24 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 10,
     color: colors.mintDeep,
+  },
+  filledWarningBanner: {
+    marginHorizontal: 20,
+    marginBottom: 12,
+    padding: 12,
+    backgroundColor: '#FEF2F2',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  filledWarningText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: '#991B1B',
+    flex: 1,
   },
 });
 

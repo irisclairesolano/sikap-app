@@ -23,7 +23,7 @@ const RateWorkerListScreen: React.FC = () => {
   const { jobId, jobTitle } = route.params;
 
   const { data: jobData, isLoading: isLoadingJob } = useJob(jobId);
-  const { data: reviewsData, isLoading: isLoadingReviews } = useReviews();
+  const { data: reviewsData, isLoading: isLoadingReviews } = useReviews(undefined, 'employer');
 
   const completedApplications = useMemo(() => {
     if (!jobData?.applications) return [];

@@ -34,7 +34,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
     businessDocuments,
   } = route.params;
 
-  const { data: reviewsData, isLoading: isLoadingReviews } = useReviews(employerId);
+  const { data: reviewsData, isLoading: isLoadingReviews } = useReviews(employerId, 'employer');
   const reviews = reviewsData?.reviews || [];
   const reviewsCount = reviewsData?.reviews_count ?? reviews.length;
   const currentReputation =

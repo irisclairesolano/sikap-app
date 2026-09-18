@@ -40,20 +40,52 @@ if (typeof ExpoBlob !== 'undefined' && (ExpoBlob as any).prototype) {
   ensurePrototypeWritableName((ExpoBlob as any).prototype);
 }
 
-function ensureExtension(fileName: string, mimeType: string): string {
-  if (/\.[a-zA-Z0-9]+$/.test(fileName)) {
-    return fileName;
+const VALID_IMAGE_DOC_EXTS = new Set(['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'jfif', 'pdf']);
+
+export function ensureExtension(fileName: string, mimeType: string): string {
+  const cleanName = (fileName || 'file').trim();
+  const extMatch = cleanName.match(/\.([a-zA-Z0-9]+)$/);
+  const currentExt = extMatch ? extMatch[1].toLowerCase() : '';
+
+  // If MIME is known image/jpeg, always normalize extension to .jpg (unless already .jpg or .jpeg)
+  if (mimeType === 'image/jpeg' || mimeType === 'image/jpg' || mimeType === 'image/pjpeg') {
+    if (currentExt === 'jpg' || currentExt === 'jpeg') {
+      return cleanName;
+    }
+    const base = extMatch
+      ? cleanName.substring(0, cleanName.length - extMatch[0].length)
+      : cleanName;
+    return `${base || 'image'}.jpg`;
   }
-  if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
-    return `${fileName}.jpg`;
-  }
+
   if (mimeType === 'image/png') {
-    return `${fileName}.png`;
+    if (currentExt === 'png') {
+      return cleanName;
+    }
+    const base = extMatch
+      ? cleanName.substring(0, cleanName.length - extMatch[0].length)
+      : cleanName;
+    return `${base || 'image'}.png`;
   }
+
   if (mimeType === 'application/pdf') {
-    return `${fileName}.pdf`;
+    if (currentExt === 'pdf') {
+      return cleanName;
+    }
+    const base = extMatch
+      ? cleanName.substring(0, cleanName.length - extMatch[0].length)
+      : cleanName;
+    return `${base || 'document'}.pdf`;
   }
-  return `${fileName}.jpg`;
+
+  // If current extension is a known valid image/doc extension, keep it
+  if (currentExt && VALID_IMAGE_DOC_EXTS.has(currentExt)) {
+    return cleanName;
+  }
+
+  // Fallback to .jpg
+  const base = extMatch ? cleanName.substring(0, cleanName.length - extMatch[0].length) : cleanName;
+  return `${base || 'file'}.jpg`;
 }
 
 // High performance base64 to Uint8Array converter

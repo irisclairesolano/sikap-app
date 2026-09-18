@@ -104,4 +104,30 @@ describe('appendFileToFormData', () => {
       type: 'image/jpeg',
     });
   });
+
+  describe('ensureExtension', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { ensureExtension } = require('../../src/utils/formData');
+
+    it('normalizes JPEG extensions properly for various MIME types', () => {
+      expect(ensureExtension('my-id.jpg', 'image/jpeg')).toBe('my-id.jpg');
+      expect(ensureExtension('my-id.jpeg', 'image/jpeg')).toBe('my-id.jpeg');
+      expect(ensureExtension('photo.jfif', 'image/jpeg')).toBe('photo.jpg');
+      expect(ensureExtension('image_capture.heic', 'image/jpeg')).toBe('image_capture.jpg');
+      expect(ensureExtension('1000012345.1', 'image/jpeg')).toBe('1000012345.jpg');
+      expect(ensureExtension('no_extension', 'image/jpeg')).toBe('no_extension.jpg');
+    });
+
+    it('normalizes PNG and PDF extensions properly', () => {
+      expect(ensureExtension('document', 'application/pdf')).toBe('document.pdf');
+      expect(ensureExtension('document.pdf', 'application/pdf')).toBe('document.pdf');
+      expect(ensureExtension('logo', 'image/png')).toBe('logo.png');
+      expect(ensureExtension('logo.png', 'image/png')).toBe('logo.png');
+    });
+
+    it('preserves valid known image extensions when mime type is not explicit', () => {
+      expect(ensureExtension('photo.webp', '')).toBe('photo.webp');
+      expect(ensureExtension('photo.heic', '')).toBe('photo.heic');
+    });
+  });
 });

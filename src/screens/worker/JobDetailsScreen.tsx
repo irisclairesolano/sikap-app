@@ -149,6 +149,12 @@ export const JobDetailsScreen: React.FC = () => {
   const isUrgent = !!(job?.is_urgent || job?.urgent);
   const isVerified = job.employer?.verification_badge;
 
+  const totalSlots = job?.slots || 1;
+  const filledSlots = job?.filled_slots ?? (job?.accepted_count || 0);
+  const remainingSlots = job?.remaining_slots ?? Math.max(0, totalSlots - filledSlots);
+  const isFilled =
+    remainingSlots === 0 || job?.status === 'completed' || job?.status === 'closed_in_progress';
+
   const getRelativeTime = (dateString?: string) => {
     if (!dateString) return 'Just now';
     const date = new Date(dateString);
@@ -281,7 +287,15 @@ export const JobDetailsScreen: React.FC = () => {
             </View>
             <Text style={styles.infoLabel}>Slots</Text>
             <Text style={styles.infoValue}>
-              {job.accepted_count || 0} / {job.slots || 1}
+              {filledSlots} / {totalSlots}
+            </Text>
+            <Text
+              style={[
+                styles.infoSubText,
+                isFilled && { color: colors.error, fontFamily: fonts.bodyBold },
+              ]}
+            >
+              {isFilled ? 'All filled' : `${remainingSlots} left`}
             </Text>
           </View>
         </View>
@@ -536,6 +550,16 @@ export const JobDetailsScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
           </View>
+        ) : isFilled ? (
+          <View style={styles.filledCard}>
+            <View style={styles.alreadyAppliedRow}>
+              <Ionicons name="lock-closed" size={18} color={colors.error} />
+              <Text style={styles.filledTitle}>All slots have been filled</Text>
+            </View>
+            <Text style={styles.filledSubtitle}>
+              This job is no longer accepting new applications.
+            </Text>
+          </View>
         ) : (
           <Button
             label="Apply for this job"
@@ -705,6 +729,12 @@ const styles = StyleSheet.create({
     color: colors.ink,
     lineHeight: 18,
   },
+  infoSubText: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    color: colors.inkMuted,
+    marginTop: 2,
+  },
   section: {
     marginBottom: 32,
   },
@@ -803,6 +833,26 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.primary,
     textDecorationLine: 'underline',
+  },
+  filledCard: {
+    backgroundColor: '#FEF2F2',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    alignItems: 'center',
+  },
+  filledTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: '#991B1B',
+  },
+  filledSubtitle: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: '#B91C1C',
+    textAlign: 'center',
+    marginTop: 2,
   },
   detailActionBar: {
     flexDirection: 'row',

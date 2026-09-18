@@ -66,6 +66,12 @@ export const JobCard = React.memo(function JobCard({
   const catStyles = getCategoryStyles(job.categories?.[0] || 'Other');
   const isApplied = job.is_applied && !job.is_withdrawn;
 
+  const totalSlots = job.slots || 1;
+  const filledSlots = job.filled_slots ?? (job.accepted_count || 0);
+  const remainingSlots = job.remaining_slots ?? Math.max(0, totalSlots - filledSlots);
+  const isFilled =
+    remainingSlots === 0 || job.status === 'completed' || job.status === 'closed_in_progress';
+
   const [reportSheetVisible, setReportSheetVisible] = useState(false);
   const { mutate: toggleReact, isPending: isReacting } = useReactToJob();
 
@@ -171,7 +177,21 @@ export const JobCard = React.memo(function JobCard({
                 {job.municipality}
               </Text>
               <View style={styles.dot} />
-              <Text style={styles.metaText}>{job.slots || 1} slots</Text>
+              {isFilled ? (
+                <Text style={[styles.metaText, styles.slotFilledText]}>
+                  Filled ({totalSlots}/{totalSlots})
+                </Text>
+              ) : totalSlots > 1 ? (
+                filledSlots > 0 ? (
+                  <Text style={[styles.metaText, styles.slotLeftText]}>
+                    {remainingSlots} of {totalSlots} slots left
+                  </Text>
+                ) : (
+                  <Text style={styles.metaText}>{totalSlots} slots</Text>
+                )
+              ) : (
+                <Text style={styles.metaText}>1 slot</Text>
+              )}
               {job.duration ? (
                 <>
                   <View style={styles.dot} />
@@ -389,6 +409,14 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 11,
     color: colors.inkMuted,
+  },
+  slotFilledText: {
+    color: colors.error,
+    fontFamily: fonts.bodyBold,
+  },
+  slotLeftText: {
+    color: '#D97706',
+    fontFamily: fonts.bodyBold,
   },
   dot: {
     width: 3,
