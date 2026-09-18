@@ -120,8 +120,9 @@ const ChatScreen: React.FC = () => {
   const activeActionCard =
     [...actionCards]
       .reverse()
-      .find((m) => !m.card_resolved && relevantCardTypes.includes(m.card_type)) ||
-    actionCards[actionCards.length - 1];
+      .find(
+        (m) => !m.card_resolved && !!m.card_type && relevantCardTypes.includes(m.card_type as any),
+      ) || actionCards[actionCards.length - 1];
 
   const getPinnedCardDetails = (card: typeof activeActionCard) => {
     if (!card || !card.card_type) return null;

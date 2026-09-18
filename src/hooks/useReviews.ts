@@ -30,11 +30,12 @@ export interface ReviewsResponse {
   reviews: ReviewItem[];
 }
 
-export const useReviews = () => {
+export const useReviews = (userId?: number) => {
   return useQuery<ReviewsResponse, Error>({
-    queryKey: ['reviews'],
+    queryKey: ['reviews', userId],
     queryFn: async () => {
-      const response = await apiClient<ReviewsResponse>('/reviews');
+      const endpoint = userId ? `/reviews?user_id=${userId}` : '/reviews';
+      const response = await apiClient<ReviewsResponse>(endpoint);
       return response;
     },
   });

@@ -59,7 +59,8 @@ export const RateEmployerScreen: React.FC = () => {
   const { mutate: submitReview, isPending } = useSubmitReview();
   const { showAlert } = useAlert();
 
-  const isFormValid = clarity > 0 && fairness > 0 && respect > 0 && reliability > 0;
+  const isFormValid =
+    clarity > 0 && fairness > 0 && respect > 0 && reliability > 0 && note.trim().length >= 5;
 
   const handleSubmit = () => {
     if (isPending || isSubmitted || !isFormValid) return;
@@ -124,7 +125,7 @@ export const RateEmployerScreen: React.FC = () => {
         {/* Note Field */}
         <View style={styles.noteField}>
           <Text style={styles.noteLabel}>
-            A note <Text style={styles.noteOptional}>(optional)</Text>
+            Review Feedback <Text style={{ color: colors.error }}>*</Text>
           </Text>
           <View style={styles.inputContainer}>
             <Ionicons
@@ -135,7 +136,7 @@ export const RateEmployerScreen: React.FC = () => {
             />
             <TextInput
               style={styles.textInput}
-              placeholder="Clear instructions, paid on time."
+              placeholder="Write at least 5 characters (e.g. Clear instructions, paid on time)."
               placeholderTextColor={colors.inkLight}
               multiline
               value={note}

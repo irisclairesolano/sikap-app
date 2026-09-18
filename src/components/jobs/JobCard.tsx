@@ -119,6 +119,25 @@ export const JobCard = React.memo(function JobCard({
         />
       )}
 
+      {/* Top Banner Strip for Applied / Withdrawn */}
+      {(isApplied || job.is_withdrawn) && (
+        <View
+          style={[
+            styles.topBanner,
+            isApplied ? styles.topBannerApplied : styles.topBannerWithdrawn,
+          ]}
+        >
+          <Ionicons
+            name={isApplied ? 'checkmark-circle' : 'remove-circle'}
+            size={11}
+            color={isApplied ? '#15803D' : '#92400E'}
+          />
+          <Text style={[styles.topBannerText, { color: isApplied ? '#15803D' : '#92400E' }]}>
+            {isApplied ? 'Applied to this job' : 'Application Withdrawn'}
+          </Text>
+        </View>
+      )}
+
       <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
         <View style={styles.topRow}>
           <View style={[styles.jobIcon, { backgroundColor: catStyles.bg }]}>
@@ -167,40 +186,19 @@ export const JobCard = React.memo(function JobCard({
           </View>
 
           <View style={styles.rightContent}>
-            <View style={styles.rightTopActions}>
-              {(isApplied || job.is_withdrawn) && (
-                <View
-                  style={[
-                    styles.statusChip,
-                    isApplied ? styles.statusChipApplied : styles.statusChipWithdrawn,
-                  ]}
-                >
-                  <Ionicons
-                    name={isApplied ? 'checkmark-circle' : 'remove-circle'}
-                    size={11}
-                    color={isApplied ? '#15803D' : '#92400E'}
-                  />
-                  <Text
-                    style={[styles.statusChipText, { color: isApplied ? '#15803D' : '#92400E' }]}
-                  >
-                    {isApplied ? 'Applied' : 'Withdrawn'}
-                  </Text>
-                </View>
-              )}
-              {onSave && (
-                <TouchableOpacity
-                  onPress={handleSave}
-                  style={styles.saveBtn}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <Ionicons
-                    name={isSaved ? 'bookmark' : 'bookmark-outline'}
-                    size={20}
-                    color={isSaved ? colors.primary : colors.inkSoft}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
+            {onSave && (
+              <TouchableOpacity
+                onPress={handleSave}
+                style={styles.saveBtn}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons
+                  name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                  size={20}
+                  color={isSaved ? colors.primary : colors.inkSoft}
+                />
+              </TouchableOpacity>
+            )}
             <View style={styles.payContainer}>
               <Text style={styles.payValue}>₱{job.compensation}</Text>
               <Text style={styles.payUnit}>{formatRateUnit(job.rate_unit, job.duration_type)}</Text>
@@ -294,6 +292,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
+    overflow: 'hidden',
   },
   cardApplied: {},
   cardWithdrawn: {},
@@ -312,29 +311,28 @@ const styles = StyleSheet.create({
   tintWithdrawn: {
     backgroundColor: 'rgba(254, 243, 199, 0.55)',
   },
-  statusChip: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
+  topBanner: {
+    marginTop: -16,
+    marginHorizontal: -16,
+    marginBottom: 12,
+    paddingVertical: 3.5,
+    paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 100,
-    zIndex: 10,
+    justifyContent: 'center',
+    gap: 4,
   },
-  statusChipApplied: {
-    backgroundColor: 'rgba(220, 252, 231, 0.9)',
-    borderWidth: 1,
-    borderColor: '#86EFAC',
+  topBannerApplied: {
+    backgroundColor: '#DCFCE7',
+    borderBottomWidth: 1,
+    borderBottomColor: '#86EFAC',
   },
-  statusChipWithdrawn: {
-    backgroundColor: 'rgba(254, 243, 199, 0.9)',
-    borderWidth: 1,
-    borderColor: '#FCD34D',
+  topBannerWithdrawn: {
+    backgroundColor: '#FEF3C7',
+    borderBottomWidth: 1,
+    borderBottomColor: '#FCD34D',
   },
-  statusChipText: {
+  topBannerText: {
     fontFamily: fonts.bodyBold,
     fontSize: 10,
     letterSpacing: 0.3,

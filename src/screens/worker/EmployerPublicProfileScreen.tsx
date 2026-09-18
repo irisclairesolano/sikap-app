@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +16,7 @@ import { colors, fonts, shadows } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { Avatar } from '../../components/common/Avatar';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
+import { useReviews } from '../../hooks/useReviews';
 
 type EmployerPublicProfileRouteProp = RouteProp<WorkerStackParamList, 'EmployerPublicProfile'>;
 
@@ -16,6 +24,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
   const route = useRoute<EmployerPublicProfileRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const {
+    employerId,
     employerName,
     avatarUrl,
     verificationBadge,
@@ -24,6 +33,14 @@ export const EmployerPublicProfileScreen: React.FC = () => {
     municipality,
     businessDocuments,
   } = route.params;
+
+  const { data: reviewsData, isLoading: isLoadingReviews } = useReviews(employerId);
+  const reviews = reviewsData?.reviews || [];
+  const reviewsCount = reviewsData?.reviews_count ?? reviews.length;
+  const currentReputation =
+    reviewsData?.reputation_score && reviewsData.reputation_score > 0
+      ? reviewsData.reputation_score
+      : reputationScore;
 
   const [viewerMedia, setViewerMedia] = useState<{ type: 'photo' | 'video'; url: string } | null>(
     null,
@@ -104,10 +121,10 @@ export const EmployerPublicProfileScreen: React.FC = () => {
             <View style={styles.reputationCard}>
               <View style={styles.scoreHeroRow}>
                 <Text style={styles.bigScore}>
-                  {reputationScore
-                    ? Number(reputationScore) % 1 === 0
-                      ? Number(reputationScore).toFixed(1)
-                      : Number(reputationScore).toString()
+                  {currentReputation
+                    ? Number(currentReputation) % 1 === 0
+                      ? Number(currentReputation).toFixed(1)
+                      : Number(currentReputation).toString()
                     : '5.0'}
                 </Text>
                 <View style={{ gap: 4 }}>
@@ -118,13 +135,14 @@ export const EmployerPublicProfileScreen: React.FC = () => {
                         name="star"
                         size={18}
                         color={
-                          s <= Math.round(Number(reputationScore || 5)) ? colors.gold : '#E2E8F0'
+                          s <= Math.round(Number(currentReputation || 5)) ? colors.gold : '#E2E8F0'
                         }
                       />
                     ))}
                   </View>
                   <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
-                    Overall Employer Rating
+                    Overall Employer Rating ({reviewsCount}{' '}
+                    {reviewsCount === 1 ? 'review' : 'reviews'})
                   </Text>
                 </View>
               </View>
@@ -203,20 +221,64 @@ export const EmployerPublicProfileScreen: React.FC = () => {
 
         {/* Worker Reviews & Feedback Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Reviews & Feedback</Text>
-          <View style={styles.emptyReviewsCard}>
-            <Ionicons
-              name="chatbox-outline"
-              size={32}
-              color={colors.inkMuted}
-              style={{ marginBottom: 6 }}
-            />
-            <Text style={styles.emptyReviewsTitle}>No reviews yet</Text>
-            <Text style={styles.emptyReviewsSubtitle}>
-              Reviews from workers who have completed jobs with {employerName || 'this employer'}{' '}
-              will appear here once submitted.
-            </Text>
-          </View>
+          <Text style={styles.sectionTitle}>Reviews & Feedback ({reviewsCount})</Text>
+          {isLoadingReviews ? (
+            <View style={styles.loadingReviewsBox}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={styles.loadingReviewsText}>Loading reviews...</Text>
+            </View>
+          ) : reviews.length === 0 ? (
+            <View style={styles.emptyReviewsCard}>
+              <Ionicons
+                name="chatbox-outline"
+                size={32}
+                color={colors.inkMuted}
+                style={{ marginBottom: 6 }}
+              />
+              <Text style={styles.emptyReviewsTitle}>No reviews yet</Text>
+              <Text style={styles.emptyReviewsSubtitle}>
+                Reviews from workers who have completed jobs with {employerName || 'this employer'}{' '}
+                will appear here once submitted.
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.reviewsList}>
+              {reviews.map((rev) => (
+                <View key={rev.id} style={styles.reviewItemCard}>
+                  <View style={styles.reviewItemHeader}>
+                    <View style={styles.reviewerAvatar}>
+                      <Text style={styles.reviewerAvatarText}>
+                        {(rev.reviewer?.name || 'W').charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.reviewerName}>
+                        {rev.reviewer?.name || 'Verified Worker'}
+                      </Text>
+                      <Text style={styles.reviewDate}>
+                        {rev.created_at
+                          ? new Date(rev.created_at).toLocaleDateString(undefined, {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })
+                          : 'Completed Job'}
+                      </Text>
+                    </View>
+                    <View style={styles.reviewStarsBadge}>
+                      <Ionicons name="star" size={12} color={colors.gold} />
+                      <Text style={styles.reviewStarsText}>
+                        {Number(rev.overall_rating || 5).toFixed(1)}
+                      </Text>
+                    </View>
+                  </View>
+                  {rev.comment ? (
+                    <Text style={styles.reviewCommentText}>"{rev.comment}"</Text>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -450,6 +512,83 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     textAlign: 'center',
     lineHeight: 18,
+  },
+  loadingReviewsBox: {
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  loadingReviewsText: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkSoft,
+  },
+  reviewsList: {
+    gap: 12,
+  },
+  reviewItemCard: {
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  reviewItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  },
+  reviewerAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.primaryTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewerAvatarText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
+    color: colors.primary,
+  },
+  reviewerName: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.ink,
+  },
+  reviewDate: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkMuted,
+  },
+  reviewStarsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    gap: 3,
+  },
+  reviewStarsText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: '#92400E',
+  },
+  reviewCommentText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.ink,
+    fontStyle: 'italic',
+    paddingTop: 2,
   },
 });
 

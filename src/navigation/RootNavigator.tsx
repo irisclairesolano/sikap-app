@@ -214,7 +214,12 @@ const RootNavigator: React.FC = () => {
     return <AuthNavigator key={`rejected-${user.id}`} initialRouteName="PendingVerify" />;
   }
 
-  // 3. ID Upload & Review gating for Workers (Workers must upload government ID before working)
+  // 3. Pending Verification Review gating (Workers & Employers who submitted documents awaiting admin approval)
+  if (status === 'pending_review') {
+    return <AuthNavigator key={`pending-review-${user.id}`} initialRouteName="PendingVerify" />;
+  }
+
+  // 4. ID Upload gating for Workers (Workers must upload government ID before working)
   if (user.role === 'worker' && !isVerified) {
     let gateStart: keyof AuthStackParamList = 'PendingVerify';
     let params: any = undefined;
@@ -222,7 +227,7 @@ const RootNavigator: React.FC = () => {
     if (status === 'pending_id_upload' || (!status && !user.document_url)) {
       gateStart = 'IDUpload';
       params = { userId: user.id, role: user.role };
-    } else if (status === 'pending_review' || (!status && user.document_url)) {
+    } else if (!status && user.document_url) {
       gateStart = 'PendingVerify';
     }
 
