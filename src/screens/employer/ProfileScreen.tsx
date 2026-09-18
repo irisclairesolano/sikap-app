@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import { profileApi } from '../../api/profile';
@@ -14,6 +13,7 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { RefreshableContainer } from '../../components/common/RefreshableContainer';
 import { useAuth } from '../../hooks/useAuth';
 import { useEmployerJobs } from '../../hooks/useEmployerJobs';
+import { useReviews } from '../../hooks/useReviews';
 
 type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
   EmployerStackParamList,
@@ -25,6 +25,7 @@ export const ProfileScreen: React.FC = () => {
   const { user: authUser, refetchProfile } = useAuth();
   const queryClient = useQueryClient();
   const { data: jobsResponse } = useEmployerJobs();
+  const { data: reviewsData } = useReviews(undefined, 'employer');
   const [refreshing, setRefreshing] = useState(false);
 
   const {
@@ -59,6 +60,15 @@ export const ProfileScreen: React.FC = () => {
     (j) => j.status === 'open' || j.status === 'closed_in_progress',
   ).length;
 
+  const latestReview = reviewsData?.reviews?.[0];
+  const recentReview = latestReview
+    ? {
+        worker: latestReview.reviewer?.name || 'Worker',
+        stars: latestReview.overall_rating,
+        comment: latestReview.comment || '',
+      }
+    : null;
+
   // Employer data mixed with real
   const employer = {
     name: profileUser?.name || 'Unknown',
@@ -67,13 +77,16 @@ export const ProfileScreen: React.FC = () => {
       ? `${profileUser.barangay || ''}, ${profileUser.municipality || ''}`
       : 'Unknown',
     verified: profileUser?.verification_badge || false,
-    reputation: profileUser?.reputation_score || 0,
-    ratings: profileUser?.employer_profile?.ratings_count || 0,
+    reputation:
+      reviewsData?.reputation_score && reviewsData.reputation_score > 0
+        ? reviewsData.reputation_score
+        : profileUser?.reputation_score || 0,
+    ratings: reviewsData?.reviews_count ?? profileUser?.ratings_count ?? 0,
     activeJobs: activeJobsCount || profileUser?.employer_profile?.active_jobs || 0,
     hired: profileUser?.employer_profile?.total_hired || 0,
     totalPaid: `₱${profileUser?.employer_profile?.total_spent || 0}`,
     memberSince: 'New',
-    recentReview: null as null | { worker: string; stars: number; comment: string }, // TODO: Fetch real recent review if needed
+    recentReview,
   };
 
   const getAvatarUrl = () => {
@@ -122,6 +135,7 @@ export const ProfileScreen: React.FC = () => {
       </View>
 
       <RefreshableContainer
+        refreshing={refreshing}
         onRefresh={handleRefresh}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}

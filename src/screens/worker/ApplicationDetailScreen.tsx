@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
-import { useWithdrawApplication, useAcceptOffer, useRejectOffer } from '../../hooks/useApply';
+import { useWithdrawApplication } from '../../hooks/useApply';
 import { useApplication } from '../../hooks/useJobApplications';
 import { messagesApi } from '../../api/messages';
 
@@ -333,8 +333,8 @@ const ApplicationDetailScreen: React.FC = () => {
           <View>
             <Text style={styles.pageTitle}>Application sent.</Text>
             <Text style={styles.lede}>
-              You applied for <Text style={styles.ledeHighlight}>{jobTitle}</Text>. Reyes Household
-              is reviewing your profile.
+              You applied for <Text style={styles.ledeHighlight}>{jobTitle}</Text>.{' '}
+              {employerName || 'The employer'} is reviewing your profile.
             </Text>
 
             <View style={[styles.shieldCard, { marginTop: 24 }]}>
@@ -407,8 +407,20 @@ const ApplicationDetailScreen: React.FC = () => {
                   <Ionicons name="lock-closed" size={16} color={colors.primary} />
                 </View>
               </View>
-              <Text style={styles.priceNum}>₱{compensation || '1,800'}</Text>
-              <Text style={styles.priceDesc}>3 days • Carpentry • Bulan</Text>
+              <Text style={styles.priceNum}>
+                ₱{compensation ? Number(compensation).toLocaleString() : '0'}
+              </Text>
+              <Text style={styles.priceDesc}>
+                {[
+                  appData?.job?.duration
+                    ? `${appData.job.duration} ${appData.job.duration_unit || 'days'}`
+                    : null,
+                  appData?.job?.category,
+                  appData?.job?.municipality,
+                ]
+                  .filter(Boolean)
+                  .join(' • ') || 'Agreed terms'}
+              </Text>
             </View>
 
             <View style={[styles.mintNotice, styles.mintNoticeEmerald]}>
@@ -425,7 +437,7 @@ const ApplicationDetailScreen: React.FC = () => {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.employerNameCard}>{employerName || 'Employer'}</Text>
-                <Text style={styles.employerSubCard}>Awaiting response • 23h left</Text>
+                <Text style={styles.employerSubCard}>Awaiting response • Offer active</Text>
               </View>
               <Ionicons name="call-outline" size={22} color={colors.primary} />
             </View>
@@ -437,7 +449,9 @@ const ApplicationDetailScreen: React.FC = () => {
           <View>
             <View style={[styles.priceCard, styles.priceCardMint]}>
               <Text style={[styles.priceEyebrow, { color: '#166534' }]}>Active Contract</Text>
-              <Text style={styles.priceNum}>₱{compensation || '1,800'}</Text>
+              <Text style={styles.priceNum}>
+                ₱{compensation ? Number(compensation).toLocaleString() : '0'}
+              </Text>
               <Text style={styles.priceDesc}>Agreed price locked.</Text>
             </View>
 
@@ -456,7 +470,9 @@ const ApplicationDetailScreen: React.FC = () => {
           <View>
             <View style={[styles.priceCard, styles.priceCardSky]}>
               <Text style={[styles.priceEyebrow, { color: '#075985' }]}>Job Completed</Text>
-              <Text style={styles.priceNum}>₱{compensation || '1,800'}</Text>
+              <Text style={styles.priceNum}>
+                ₱{compensation ? Number(compensation).toLocaleString() : '0'}
+              </Text>
               <Text style={styles.priceDesc}>
                 {appData?.has_reviewed
                   ? 'Job finished and rated. Thank you!'

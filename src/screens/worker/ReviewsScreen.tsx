@@ -15,12 +15,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import { useReviews } from '../../hooks/useReviews';
+import { useAuth } from '../../hooks/useAuth';
 
 type ReviewsScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'Reviews'>;
 
 export const ReviewsScreen: React.FC = () => {
   const navigation = useNavigation<ReviewsScreenNavigationProp>();
-  const { data, isLoading, refetch, isFetching } = useReviews(undefined, 'worker');
+  const { user } = useAuth();
+  const currentRole = (user?.role === 'employer' ? 'employer' : 'worker') as 'worker' | 'employer';
+  const { data, isLoading, refetch, isFetching } = useReviews(undefined, currentRole);
 
   useFocusEffect(
     useCallback(() => {
