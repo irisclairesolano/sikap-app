@@ -121,7 +121,10 @@ const IDUploadScreen: React.FC = () => {
             else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
             else mimeType = 'application/pdf';
           }
-          await appendFileToFormData(form, 'business_documents[]', doc.uri, fileName, mimeType);
+          const isImage =
+            ext === 'jpg' || ext === 'jpeg' || ext === 'png' || mimeType?.startsWith('image/');
+          const docUri = isImage ? await compressImage(doc.uri) : doc.uri;
+          await appendFileToFormData(form, 'business_documents[]', docUri, fileName, mimeType);
         }
       }
 

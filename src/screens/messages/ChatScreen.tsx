@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 import { useMessages, useSendMessage, useSendImage, useMarkRead } from '../../hooks/useMessages';
 import {
@@ -86,11 +87,23 @@ const ChatScreen: React.FC = () => {
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
+      quality: 0.8,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      sendImage.mutate(result.assets[0].uri, {
+      let finalUri = result.assets[0].uri;
+      try {
+        const manipulated = await ImageManipulator.manipulateAsync(
+          finalUri,
+          [{ resize: { width: 1200 } }],
+          { compress: 0.75, format: ImageManipulator.SaveFormat.JPEG },
+        );
+        finalUri = manipulated.uri;
+      } catch (err) {
+        console.log('Chat image compression error, using original', err);
+      }
+
+      sendImage.mutate(finalUri, {
         onSuccess: () => {
           setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
         },
