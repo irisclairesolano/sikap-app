@@ -53,8 +53,10 @@ const SplashScreen: React.FC = () => {
     <View style={styles.container}>
       {/* Logo Container */}
       <View style={styles.logoContainer}>
-        <Wordmark size={64} />
-        <Text style={styles.subtitle}>Find local work.</Text>
+        <View style={styles.logoCard}>
+          <Wordmark size={64} />
+          <Text style={styles.subtitle}>Find local work.</Text>
+        </View>
       </View>
 
       {/* Loading Dots */}
@@ -86,6 +88,22 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  logoCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    paddingVertical: 32,
+    paddingHorizontal: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.70)',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 3,
   },
   subtitle: {
     fontFamily: fonts.bodySemiBold,

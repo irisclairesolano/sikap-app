@@ -261,7 +261,9 @@ describe('RootNavigator', () => {
       id: 555,
       email: 'employer@example.com',
       role: 'employer',
-      registration_status: 'pending_review',
+      registration_status: 'approved',
+      verification_status: 'unverified',
+      verification_badge: false,
       has_employer_profile: true,
       employer_profile: { description: 'Business owner' },
     };
@@ -273,8 +275,37 @@ describe('RootNavigator', () => {
     });
 
     const { queryByTestId } = await renderWithProviders(<RootNavigator />);
-    // Unverified employer should NOT be trapped in AuthNavigator (IDUpload / PendingVerify)
+    // Unverified employer who skipped document upload should NOT be trapped in AuthNavigator (IDUpload / PendingVerify)
     expect(queryByTestId('mock-auth-navigator')).toBeNull();
+  });
+
+  it('renders AuthNavigator with initialRouteName="PendingVerify" when employer submitted documents and status is pending_review', async () => {
+    const mockUser = {
+      id: 556,
+      email: 'pendingemployer@example.com',
+      role: 'employer',
+      registration_status: 'pending_review',
+      verification_status: 'pending',
+      verification_badge: false,
+      has_employer_profile: true,
+      employer_profile: { description: 'Business owner' },
+    };
+
+    (useAuthCheck as jest.Mock).mockReturnValue({
+      user: mockUser,
+      isLoading: false,
+      isVerified: false,
+    });
+
+    await renderWithProviders(<RootNavigator />);
+
+    expect(AuthNavigator).toHaveBeenCalledWith(
+      expect.objectContaining({
+        initialRouteName: 'PendingVerify',
+        initialParams: undefined,
+      }),
+      undefined,
+    );
   });
 
   it('routes unverified employer needing onboarding to RoleOnboarding', async () => {

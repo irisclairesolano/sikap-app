@@ -24,14 +24,14 @@ export const glass = {
   // Major surface preset — used for form card wrappers, modal sheets
   // Soft translucency + very faint border, ambient depth via shadow only
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    borderRadius: 22,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.40)',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.70)',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.07,
-    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
     elevation: 3,
   } as ViewStyle,
 

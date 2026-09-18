@@ -216,7 +216,13 @@ const RootNavigator: React.FC = () => {
 
   // 3. Pending Verification Review gating (Workers & Employers who submitted documents awaiting admin approval)
   if (status === 'pending_review') {
-    return <AuthNavigator key={`pending-review-${user.id}`} initialRouteName="PendingVerify" />;
+    return (
+      <AuthNavigator
+        key={`pending-review-${user.id}`}
+        initialRouteName="PendingVerify"
+        initialParams={undefined}
+      />
+    );
   }
 
   // 4. ID Upload gating for Workers (Workers must upload government ID before working)
