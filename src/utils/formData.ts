@@ -217,6 +217,12 @@ export async function appendFileToFormData(
       }
     }
 
+    // In React Native, the native networking module reads internal `_data.type`
+    if (blob && typeof (blob as any)._data === 'object' && (blob as any)._data) {
+      (blob as any)._data.type = typeToUse;
+      (blob as any)._data.name = cleanFileName;
+    }
+
     try {
       Object.defineProperty(blob, 'uri', {
         value: uri,
