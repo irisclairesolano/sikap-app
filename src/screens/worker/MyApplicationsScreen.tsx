@@ -172,166 +172,181 @@ export const MyApplicationsScreen: React.FC = () => {
     [handlePressCard, handleReviewOffer, handleRateEmployer],
   );
 
+  const canGoBack = navigation.canGoBack();
+
   const renderHeader = () => (
-    <View style={styles.header}>
-      {/* Top Bar: Title + Subtitle */}
-      <View style={styles.appBar}>
-        <View>
-          <Text style={styles.greetingSmall}>Your job journey</Text>
-          <Text style={styles.headline}>My Applications</Text>
-        </View>
+    <View style={styles.headerWrapper}>
+      {/* Top Header Bar with Pill */}
+      <View style={styles.header}>
         <TouchableOpacity
-          style={styles.sortButton}
-          onPress={() => {
-            setSortOrder((prev) => {
-              if (prev === 'desc') return 'pay';
-              if (prev === 'pay') return 'asc';
-              return 'desc';
-            });
-          }}
-          activeOpacity={0.7}
+          style={styles.iconBtn}
+          onPress={() => (canGoBack ? navigation.goBack() : null)}
+          disabled={!canGoBack}
         >
-          <Ionicons
-            name={
-              sortOrder === 'desc'
-                ? 'arrow-down-outline'
-                : sortOrder === 'pay'
-                  ? 'cash-outline'
-                  : 'arrow-up-outline'
-            }
-            size={16}
-            color={colors.ink}
-          />
-          <Text style={styles.sortButtonText}>
-            {sortOrder === 'desc' ? 'Newest' : sortOrder === 'pay' ? 'Highest Pay' : 'Oldest'}
-          </Text>
+          {canGoBack && <Ionicons name="arrow-back" size={24} color={colors.ink} />}
+        </TouchableOpacity>
+        <View style={styles.headerPill}>
+          <Text style={styles.headerPillText}>My Applications</Text>
+        </View>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => refetch()}>
+          <Ionicons name="reload-outline" size={20} color={colors.inkSoft} />
         </TouchableOpacity>
       </View>
 
-      {/* Urgent Action Banner (when offers are waiting or ratings pending) */}
-      {offersWaitingCount > 0 ? (
-        <TouchableOpacity
-          style={styles.urgentBanner}
-          activeOpacity={0.85}
-          onPress={() => setActiveFilter('Needs Action')}
-        >
-          <View style={styles.urgentIconBox}>
-            <Ionicons name="flash" size={20} color={colors.white} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.urgentTitle}>
-              {offersWaitingCount === 1
-                ? '1 Job Offer Waiting for You!'
-                : `${offersWaitingCount} Job Offers Waiting for You!`}
-            </Text>
-            <Text style={styles.urgentSubtitle}>
-              An employer sent you a price offer. Tap to review and accept.
-            </Text>
-          </View>
-          <View style={styles.urgentBadge}>
-            <Text style={styles.urgentBadgeText}>View</Text>
-          </View>
-        </TouchableOpacity>
-      ) : unratedCompletedCount > 0 && activeFilter !== 'Needs Action' ? (
-        <TouchableOpacity
-          style={styles.completedNoticeBanner}
-          activeOpacity={0.85}
-          onPress={() => setActiveFilter('Needs Action')}
-        >
-          <View style={styles.completedNoticeIconBox}>
-            <Ionicons name="ribbon-outline" size={18} color="#0369A1" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.completedNoticeTitle}>Job Completed!</Text>
-            <Text style={styles.completedNoticeSubtitle}>
-              Please rate your employer to finalize the record.
-            </Text>
-          </View>
-          <Text style={styles.completedNoticeLink}>Rate →</Text>
-        </TouchableOpacity>
-      ) : (
-        /* Quick Summary Glance Bar */
-        <View style={styles.summaryBar}>
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryValue}>{counts.Active}</Text>
-            <Text style={styles.summaryLabel}>Active Hired</Text>
-          </View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryValue}>{counts['In Review']}</Text>
-            <Text style={styles.summaryLabel}>In Review</Text>
-          </View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryValue}>{counts.History}</Text>
-            <Text style={styles.summaryLabel}>Completed</Text>
-          </View>
-        </View>
-      )}
-
-      {/* Search Input Bar */}
-      <View style={styles.searchBar}>
-        <Ionicons
-          name="search-outline"
-          size={18}
-          color={colors.inkMuted}
-          style={styles.searchIcon}
-        />
-        <TextInput
-          placeholder="Search job title, employer, location..."
-          placeholderTextColor={colors.inkLight}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          style={styles.searchInput}
-          autoCapitalize="none"
-          clearButtonMode="while-editing"
-        />
-        {searchQuery.length > 0 && (
+      <View style={styles.headerBody}>
+        {/* Urgent Action Banner (when offers are waiting or ratings pending) */}
+        {offersWaitingCount > 0 ? (
           <TouchableOpacity
-            onPress={() => setSearchQuery('')}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={styles.urgentBanner}
+            activeOpacity={0.85}
+            onPress={() => setActiveFilter('Needs Action')}
           >
-            <Ionicons name="close-circle" size={18} color={colors.inkMuted} />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Filter Tabs / Buckets */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterContainer}
-      >
-        {FILTERS.map((filter) => {
-          const count = counts[filter];
-          const isSelected = activeFilter === filter;
-          const isNeedsAction = filter === 'Needs Action' && count > 0;
-
-          return (
-            <TouchableOpacity
-              key={filter}
-              style={[
-                styles.chip,
-                isSelected && styles.chipActive,
-                isNeedsAction && !isSelected && styles.chipNeedsAction,
-              ]}
-              onPress={() => setActiveFilter(filter)}
-              activeOpacity={0.7}
-            >
-              {isNeedsAction && <View style={styles.redDot} />}
-              <Text
-                style={[
-                  styles.chipText,
-                  isSelected && styles.chipTextActive,
-                  isNeedsAction && !isSelected && styles.chipTextNeedsAction,
-                ]}
-              >
-                {filter} · <Text style={styles.chipCount}>{count}</Text>
+            <View style={styles.urgentIconBox}>
+              <Ionicons name="flash" size={20} color={colors.white} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.urgentTitle}>
+                {offersWaitingCount === 1
+                  ? '1 Job Offer Waiting for You!'
+                  : `${offersWaitingCount} Job Offers Waiting for You!`}
               </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+              <Text style={styles.urgentSubtitle}>
+                An employer sent you a price offer. Tap to review and accept.
+              </Text>
+            </View>
+            <View style={styles.urgentBadge}>
+              <Text style={styles.urgentBadgeText}>View</Text>
+            </View>
+          </TouchableOpacity>
+        ) : unratedCompletedCount > 0 && activeFilter !== 'Needs Action' ? (
+          <TouchableOpacity
+            style={styles.completedNoticeBanner}
+            activeOpacity={0.85}
+            onPress={() => setActiveFilter('Needs Action')}
+          >
+            <View style={styles.completedNoticeIconBox}>
+              <Ionicons name="ribbon-outline" size={18} color="#0369A1" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.completedNoticeTitle}>Job Completed!</Text>
+              <Text style={styles.completedNoticeSubtitle}>
+                Please rate your employer to finalize the record.
+              </Text>
+            </View>
+            <Text style={styles.completedNoticeLink}>Rate →</Text>
+          </TouchableOpacity>
+        ) : (
+          /* Quick Summary Glance Bar */
+          <View style={styles.summaryBar}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryValue}>{counts.Active}</Text>
+              <Text style={styles.summaryLabel}>Active Hired</Text>
+            </View>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryValue}>{counts['In Review']}</Text>
+              <Text style={styles.summaryLabel}>In Review</Text>
+            </View>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryValue}>{counts.History}</Text>
+              <Text style={styles.summaryLabel}>Completed</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Search & Sort Row */}
+        <View style={styles.searchRow}>
+          <View style={styles.searchBar}>
+            <Ionicons
+              name="search-outline"
+              size={18}
+              color={colors.inkMuted}
+              style={styles.searchIcon}
+            />
+            <TextInput
+              placeholder="Search job, employer, location..."
+              placeholderTextColor={colors.inkLight}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={styles.searchInput}
+              autoCapitalize="none"
+              clearButtonMode="while-editing"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setSearchQuery('')}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="close-circle" size={18} color={colors.inkMuted} />
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity
+            style={styles.sortButton}
+            onPress={() => {
+              setSortOrder((prev) => {
+                if (prev === 'desc') return 'pay';
+                if (prev === 'pay') return 'asc';
+                return 'desc';
+              });
+            }}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={
+                sortOrder === 'desc'
+                  ? 'arrow-down-outline'
+                  : sortOrder === 'pay'
+                    ? 'cash-outline'
+                    : 'arrow-up-outline'
+              }
+              size={16}
+              color={colors.ink}
+            />
+            <Text style={styles.sortButtonText}>
+              {sortOrder === 'desc' ? 'Newest' : sortOrder === 'pay' ? 'Pay' : 'Oldest'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Filter Tabs / Buckets */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContainer}
+        >
+          {FILTERS.map((filter) => {
+            const count = counts[filter];
+            const isSelected = activeFilter === filter;
+            const isNeedsAction = filter === 'Needs Action' && count > 0;
+
+            return (
+              <TouchableOpacity
+                key={filter}
+                style={[
+                  styles.chip,
+                  isSelected && styles.chipActive,
+                  isNeedsAction && !isSelected && styles.chipNeedsAction,
+                ]}
+                onPress={() => setActiveFilter(filter)}
+                activeOpacity={0.7}
+              >
+                {isNeedsAction && <View style={styles.redDot} />}
+                <Text
+                  style={[
+                    styles.chipText,
+                    isSelected && styles.chipTextActive,
+                    isNeedsAction && !isSelected && styles.chipTextNeedsAction,
+                  ]}
+                >
+                  {filter} · <Text style={styles.chipCount}>{count}</Text>
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
     </View>
   );
 
@@ -392,7 +407,7 @@ export const MyApplicationsScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       {renderHeader()}
 
       {isError && (
@@ -438,36 +453,58 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.paper,
   },
+  headerWrapper: {
+    backgroundColor: colors.paper,
+  },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 10,
-  },
-  appBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: colors.paper,
   },
-  greetingSmall: {
-    fontFamily: fonts.body,
-    fontSize: 13,
+  iconBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerPill: {
+    backgroundColor: colors.paperBright,
+    paddingVertical: 6,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  headerPillText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
     color: colors.inkMuted,
+    letterSpacing: 0.3,
   },
-  headline: {
-    fontFamily: fonts.display,
-    fontSize: 26,
-    lineHeight: 32,
-    color: colors.ink,
-    letterSpacing: -0.5,
+  headerBody: {
+    paddingHorizontal: 20,
+    paddingTop: 2,
+    paddingBottom: 8,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
   },
   sortButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.paperBright,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 100,
+    height: 42,
+    paddingHorizontal: 12,
+    borderRadius: 12,
     gap: 6,
     borderWidth: 1,
     borderColor: colors.inkFaint,
@@ -588,6 +625,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.inkFaint,
   },
   searchBar: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.paperBright,
@@ -596,7 +634,6 @@ const styles = StyleSheet.create({
     borderColor: colors.inkFaint,
     paddingHorizontal: 12,
     height: 42,
-    marginBottom: 12,
   },
   searchIcon: {
     marginRight: 8,
