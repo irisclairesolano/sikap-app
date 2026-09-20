@@ -187,7 +187,7 @@ const ProfileStack: React.FC = () => (
 const EmployerNavigator: React.FC = () => {
   const { data } = useNotifications();
   const unreadCount = data?.unread_count || 0;
-  const { data: unreadMessages } = useUnreadMessageCount();
+  const { data: unreadMessages } = useUnreadMessageCount('employer');
 
   return (
     <Tab.Navigator

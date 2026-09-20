@@ -92,6 +92,8 @@ export const useAuth = () => {
       }
       queryClient.setQueryData(['profile'], data.user);
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
       notifyAuthChanged();
     },
     onError: (error) => {

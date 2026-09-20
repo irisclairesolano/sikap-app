@@ -4,9 +4,10 @@ import { appendFileToFormData } from '../utils/formData';
 
 export const messagesApi = {
   /**
-   * Get all conversations for the current user.
+   * Get all conversations for the current user, optionally filtered by role.
    */
-  getConversations: () => apiClient<{ data: Conversation[] }>('/conversations'),
+  getConversations: (role?: 'worker' | 'employer' | 'all' | string) =>
+    apiClient<{ data: Conversation[] }>(`/conversations${role ? `?role=${role}` : ''}`),
 
   /**
    * Get a single conversation details.
@@ -56,9 +57,12 @@ export const messagesApi = {
     }),
 
   /**
-   * Get total unread message count across all conversations.
+   * Get total unread message count across all conversations, optionally filtered by role.
    */
-  getUnreadCount: () => apiClient<{ unread_count: number }>('/conversations/unread-count'),
+  getUnreadCount: (role?: 'worker' | 'employer' | 'all' | string) =>
+    apiClient<{ unread_count: number }>(
+      `/conversations/unread-count${role ? `?role=${role}` : ''}`,
+    ),
 
   /**
    * Employer unlocks a locked conversation.

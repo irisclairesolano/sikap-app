@@ -297,6 +297,9 @@ export interface Conversation {
   job_title: string;
   application_status?: string;
   status: 'open' | 'locked' | 'unlock_requested';
+  employer_id?: number;
+  worker_id?: number;
+  my_role?: 'worker' | 'employer';
   other_user: ConversationUser | null;
   last_message_preview?: string | null;
   last_message_at?: string | null;

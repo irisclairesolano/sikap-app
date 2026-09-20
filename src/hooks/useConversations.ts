@@ -2,19 +2,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { messagesApi } from '../api/messages';
 import { Conversation } from '../types';
 
-export function useConversations() {
+export function useConversations(role?: 'worker' | 'employer' | 'all' | string) {
   return useQuery({
-    queryKey: ['conversations'],
-    queryFn: () => messagesApi.getConversations().then((res) => res.data),
+    queryKey: ['conversations', role ?? 'default'],
+    queryFn: () => messagesApi.getConversations(role).then((res) => res.data),
     refetchInterval: 5_000,
     staleTime: 2_500,
   });
 }
 
-export function useUnreadMessageCount() {
+export function useUnreadMessageCount(role?: 'worker' | 'employer' | 'all' | string) {
   return useQuery({
-    queryKey: ['conversations', 'unread-count'],
-    queryFn: () => messagesApi.getUnreadCount().then((res) => res.unread_count),
+    queryKey: ['conversations', 'unread-count', role ?? 'default'],
+    queryFn: () => messagesApi.getUnreadCount(role).then((res) => res.unread_count),
     refetchInterval: 5_000,
     staleTime: 2_500,
     select: (count) => count ?? 0,
@@ -38,5 +38,13 @@ export function useRequestUnlock() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
+  });
+}
+
+export function useConversation(conversationId: number) {
+  return useQuery({
+    queryKey: ['conversation', conversationId],
+    queryFn: () => messagesApi.getConversation(conversationId),
+    staleTime: 5_000,
   });
 }

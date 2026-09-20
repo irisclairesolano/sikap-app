@@ -20,6 +20,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { useMessages, useSendMessage, useSendImage, useMarkRead } from '../../hooks/useMessages';
 import {
   useConversations,
+  useConversation,
   useUnlockConversation,
   useRequestUnlock,
 } from '../../hooks/useConversations';
@@ -32,12 +33,18 @@ type ChatScreenParams = {
   conversationId: number;
   jobTitle?: string;
   otherUserName?: string;
+  myRole?: 'worker' | 'employer';
 };
 
 const ChatScreen: React.FC = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { conversationId, jobTitle, otherUserName } = route.params as ChatScreenParams;
+  const {
+    conversationId,
+    jobTitle,
+    otherUserName,
+    myRole: paramMyRole,
+  } = route.params as ChatScreenParams;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
     useMessages(conversationId);
@@ -45,6 +52,7 @@ const ChatScreen: React.FC = () => {
   const sendImage = useSendImage(conversationId);
   const markRead = useMarkRead(conversationId);
 
+  const { data: directConv } = useConversation(conversationId);
   const { data: convData } = useConversations();
   const unlockConversation = useUnlockConversation();
   const requestUnlock = useRequestUnlock();
@@ -54,10 +62,20 @@ const ChatScreen: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef<FlatList>(null);
 
-  const conversation = convData?.find((c) => c.id === conversationId);
+  const conversation = directConv || convData?.find((c) => c.id === conversationId);
   const status = conversation?.status || 'open';
   const isLocked = status === 'locked';
   const isUnlockRequested = status === 'unlock_requested';
+
+  // Role resolution: In this specific conversation, determine whether the user is the employer or worker
+  const conversationUserRole: 'worker' | 'employer' =
+    paramMyRole ||
+    conversation?.my_role ||
+    (conversation?.employer_id && user?.id
+      ? conversation.employer_id === user.id
+        ? 'employer'
+        : 'worker'
+      : (user?.role as 'worker' | 'employer') || 'worker');
 
   const messages = data?.messages || [];
   const messageCount = messages.length;
@@ -117,7 +135,7 @@ const ChatScreen: React.FC = () => {
 
     const appStatus = conversation?.application_status;
     const convStatus = status; // 'open' | 'locked' | 'unlock_requested'
-    const role = user?.role;
+    const role = conversationUserRole;
 
     switch (m.card_type) {
       case 'unlock_request':
@@ -347,7 +365,7 @@ const ChatScreen: React.FC = () => {
                 ? 'Reopen request pending employer approval.'
                 : 'This chat was locked when the job concluded.'}
             </Text>
-            {user?.role === 'employer' ? (
+            {conversationUserRole === 'employer' ? (
               <TouchableOpacity
                 style={styles.bannerBtn}
                 onPress={() =>
@@ -419,7 +437,7 @@ const ChatScreen: React.FC = () => {
                 <ActionCard
                   message={item}
                   currentUserId={user?.id || 0}
-                  currentUserRole={user?.role as 'worker' | 'employer'}
+                  currentUserRole={conversationUserRole}
                   conversationId={conversationId}
                   conversationStatus={status}
                   applicationStatus={conversation?.application_status}
@@ -433,7 +451,7 @@ const ChatScreen: React.FC = () => {
 
         {/* First-message restriction notice for workers */}
         {status === 'open' &&
-          user?.role === 'worker' &&
+          conversationUserRole === 'worker' &&
           messages.filter(
             (m) =>
               m.message_type !== 'action_card' &&

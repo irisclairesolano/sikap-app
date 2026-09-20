@@ -38,10 +38,11 @@ const formatConversationTime = (dateString: string) => {
 };
 
 const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
-  const { data, isLoading, isError, refetch } = useConversations();
   const { user } = useAuth();
+  const currentRole = (user?.role as 'worker' | 'employer') || 'worker';
+  const { data, isLoading, isError, refetch } = useConversations(currentRole);
   const [searchQuery, setSearchQuery] = useState('');
-  const isWorker = user?.role === 'worker';
+  const isWorker = currentRole === 'worker';
   const canGoBack = navigation.canGoBack();
 
   const conversations = data || [];
@@ -179,6 +180,7 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                     conversationId: item.id,
                     jobTitle: item.job_title,
                     otherUserName: item.other_user?.name,
+                    myRole: item.my_role,
                   })
                 }
               >
