@@ -187,9 +187,6 @@ export async function appendFileToFormData(
           ? rawBlob.slice(0, rawBlob.size, typeToUse)
           : rawBlob;
 
-    // Ensure 'name' and 'type' are enumerable own properties on the blob instance
-    // so Expo's getFormDataPartHeaders will read `filename="${encodeFilename(part.name)}"`
-    // and `content-type: ${part.type}`, preventing Laravel mime validation failure (422).
     try {
       Object.defineProperty(blob, 'name', {
         value: cleanFileName,
@@ -215,6 +212,21 @@ export async function appendFileToFormData(
     } catch {
       try {
         blob.type = typeToUse;
+      } catch {
+        // Ignored
+      }
+    }
+
+    try {
+      Object.defineProperty(blob, 'uri', {
+        value: uri,
+        writable: true,
+        configurable: true,
+        enumerable: true,
+      });
+    } catch {
+      try {
+        blob.uri = uri;
       } catch {
         // Ignored
       }

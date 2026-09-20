@@ -30,6 +30,7 @@ describe('appendFileToFormData', () => {
     const appendedBlob: any = appendSpy.mock.calls[0][1];
     expect(appendedBlob.name).toBe('my-id.jpg');
     expect(appendedBlob.type).toBe('image/jpeg');
+    expect(appendedBlob.uri).toBe('file:///path/to/id.jpg');
   });
 
   it('does not throw when Blob/File prototype has a getter-only name property', async () => {
