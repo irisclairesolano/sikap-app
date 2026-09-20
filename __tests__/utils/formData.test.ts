@@ -106,6 +106,32 @@ describe('appendFileToFormData', () => {
     });
   });
 
+  it('rejects 14-byte error blob from local fetch and falls back to RN object', async () => {
+    const errorBlob = new Blob(['File not found'], { type: 'text/plain' });
+    global.fetch = jest.fn().mockResolvedValue({
+      status: 404,
+      ok: false,
+      blob: jest.fn().mockResolvedValue(errorBlob),
+    } as any);
+
+    const formData = new FormData();
+    const appendSpy = jest.spyOn(formData, 'append');
+
+    await appendFileToFormData(
+      formData,
+      'id_file',
+      'file:///path/to/missing.jpg',
+      'missing.jpg',
+      'image/jpeg',
+    );
+
+    expect(appendSpy).toHaveBeenCalledWith('id_file', {
+      uri: 'file:///path/to/missing.jpg',
+      name: 'missing.jpg',
+      type: 'image/jpeg',
+    });
+  });
+
   describe('ensureExtension', () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { ensureExtension } = require('../../src/utils/formData');

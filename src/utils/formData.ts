@@ -141,39 +141,48 @@ export async function appendFileToFormData(
 
   let rawBlob: any = null;
 
-  // 1. Try reading blob via standard fetch(uri)
-  try {
-    const response = await fetch(uri);
-    if (response && typeof response.blob === 'function') {
-      rawBlob = await response.blob();
-    }
-  } catch (fetchErr) {
-    console.log(`fetch("${uri}") failed, falling back to FileSystem reader:`, fetchErr);
-  }
-
-  // 2. If fetch(uri) failed (common on local Android file/cache/content URIs), read via FileSystem
-  if (!rawBlob) {
+  // 1. For local file/content URIs on Android/iOS, use native FileSystem reader first
+  if (typeof uri === 'string' && (uri.startsWith('file:') || uri.startsWith('content:'))) {
     try {
       const base64Data = await FileSystem.readAsStringAsync(uri, {
         encoding: FileSystem?.EncodingType?.Base64 || ('base64' as any),
       });
       if (typeof base64Data === 'string' && base64Data.length > 0) {
         const bytes = base64ToUint8Array(base64Data);
-
-        // Create blob using ExpoBlob or global Blob
-        try {
-          rawBlob = new ExpoBlob([bytes as any], { type: effectiveMimeType });
-        } catch {
-          rawBlob = new Blob([bytes as any], { type: effectiveMimeType });
-        }
-
-        // Ensure 'bytes' method exists so convertFormDataAsync succeeds
-        if (!('bytes' in rawBlob) || typeof rawBlob.bytes !== 'function') {
-          rawBlob.bytes = async () => bytes;
+        if (bytes.length > 0) {
+          try {
+            rawBlob = new ExpoBlob([bytes as any], { type: effectiveMimeType });
+          } catch {
+            rawBlob = new Blob([bytes as any], { type: effectiveMimeType });
+          }
+          if (!('bytes' in rawBlob) || typeof rawBlob.bytes !== 'function') {
+            rawBlob.bytes = async () => bytes;
+          }
         }
       }
-    } catch (fsErr) {
-      console.warn(`FileSystem read failed for ${uri}:`, fsErr);
+    } catch {
+      // In test environments or unlinked native FS, fall through to fetch
+    }
+  }
+
+  // 2. Fallback to standard fetch(uri) for web, blob, or test mocks
+  if (!rawBlob) {
+    try {
+      const response = await fetch(uri);
+      const isNotError = !response.status || (response.status >= 200 && response.status < 400);
+      if (response && isNotError && typeof response.blob === 'function') {
+        const candidateBlob = await response.blob();
+        if (candidateBlob && candidateBlob.size > 0) {
+          // Guard against Android RN local fetch returning 14-byte "File not found"
+          if (candidateBlob.size === 14 && typeof uri === 'string' && uri.startsWith('file:')) {
+            console.warn(`Local fetch returned 14-byte error for ${uri}, skipping`);
+          } else {
+            rawBlob = candidateBlob;
+          }
+        }
+      }
+    } catch (fetchErr) {
+      console.log(`fetch("${uri}") failed:`, fetchErr);
     }
   }
 
