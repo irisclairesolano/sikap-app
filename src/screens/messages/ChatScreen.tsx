@@ -142,6 +142,7 @@ const ChatScreen: React.FC = () => {
         // Only employer can unlock, and only if conversation is not already open
         return role === 'employer' && convStatus !== 'open';
 
+      case 'job_request':
       case 'confirm_hire':
         // Only employer can confirm price, and only if application has not advanced past pending
         return (
@@ -185,10 +186,11 @@ const ChatScreen: React.FC = () => {
   const getPinnedCardDetails = (card: (typeof messages)[0]) => {
     if (!card || !card.card_type) return null;
     switch (card.card_type) {
+      case 'job_request':
       case 'confirm_hire':
         return {
-          icon: 'cash-outline' as const,
-          label: 'Set Price & Confirm Hire',
+          icon: 'briefcase-outline' as const,
+          label: 'Job Request · Set Final Price',
           color: colors.primary,
           bg: colors.peach,
         };
@@ -441,6 +443,8 @@ const ChatScreen: React.FC = () => {
                   conversationId={conversationId}
                   conversationStatus={status}
                   applicationStatus={conversation?.application_status}
+                  otherUserName={conversation?.other_user?.name || ''}
+                  jobTitle={jobTitle || conversation?.job_title || ''}
                   onActionComplete={refetch}
                 />
               );

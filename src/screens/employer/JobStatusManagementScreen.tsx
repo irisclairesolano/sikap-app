@@ -603,7 +603,7 @@ export const JobStatusManagementScreen: React.FC = () => {
             <View style={styles.metaItem}>
               <Ionicons name="people-outline" size={16} color={colors.inkSoft} />
               <Text style={styles.metaValue}>
-                Slots: {job.accepted_count} / {job.slots} hired
+                Slots: {job.filled_slots ?? job.accepted_count ?? 0} / {job.slots} hired
               </Text>
             </View>
 

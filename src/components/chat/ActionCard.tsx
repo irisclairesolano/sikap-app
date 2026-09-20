@@ -21,6 +21,8 @@ interface ActionCardProps {
   conversationId: number;
   conversationStatus?: 'open' | 'locked' | 'unlock_requested';
   applicationStatus?: string;
+  otherUserName?: string;
+  jobTitle?: string;
   onActionComplete: () => void;
 }
 
@@ -36,12 +38,15 @@ const ActionCard: React.FC<ActionCardProps> = ({
   conversationId,
   conversationStatus = 'open',
   applicationStatus,
+  otherUserName,
+  jobTitle,
   onActionComplete,
 }) => {
   const queryClient = useQueryClient();
   const { showAlert } = useAlert();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [priceInput, setPriceInput] = useState('');
+  const [isPriceInputVisible, setIsPriceInputVisible] = useState(false);
 
   if (message.message_type !== 'action_card' || !message.card_type) return null;
 
@@ -161,8 +166,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
     );
   }
 
-  // 2. CONFIRM HIRE
-  if (card_type === 'confirm_hire') {
+  // 2. JOB REQUEST & CONFIRM HIRE
+  if (card_type === 'job_request' || card_type === 'confirm_hire') {
     const isConfirmResolved =
       card_resolved ||
       ['employer_confirmed', 'accepted', 'completed'].includes(applicationStatus || '');
@@ -179,66 +184,240 @@ const ActionCard: React.FC<ActionCardProps> = ({
       );
     }
 
-    if (currentUserRole === 'worker') {
-      return (
-        <View style={styles.frostedWaitingPill}>
-          <Ionicons name="time-outline" size={14} color={colors.inkMuted} />
-          <Text style={styles.frostedWaitingText}>
-            Waiting for employer to set final price & confirm hire...
-          </Text>
-        </View>
-      );
-    }
+    const employerName = String(
+      card_data?.employer_name ||
+        (currentUserRole === 'worker' ? otherUserName || 'The employer' : 'You'),
+    );
+    const workerName = String(
+      card_data?.worker_name ||
+        (currentUserRole === 'employer' ? otherUserName || 'The applicant' : 'You'),
+    );
+    const displayJobTitle = String(card_data?.job_title || jobTitle || 'the job');
 
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <View style={[styles.cardIconBadge, { backgroundColor: colors.peach }]}>
-            <Ionicons name="cash-outline" size={20} color={colors.primary} />
+            <Ionicons name="briefcase-outline" size={20} color={colors.primary} />
           </View>
           <View style={styles.cardHeaderText}>
-            <Text style={styles.title}>Set Final Price & Confirm Hire</Text>
-            <Text style={styles.subtitle}>{String(card_data?.job_title ?? '')}</Text>
+            <Text style={styles.title}>Job Request</Text>
+            <Text style={styles.subtitle} numberOfLines={1}>
+              {displayJobTitle}
+            </Text>
+          </View>
+          <View style={styles.headerTag}>
+            <Text style={styles.headerTagText}>Stage 2</Text>
           </View>
         </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter agreed price (₱)"
-          placeholderTextColor={colors.inkLight}
-          keyboardType="numeric"
-          value={priceInput}
-          onChangeText={setPriceInput}
-        />
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => {
-            const price = parseFloat(priceInput);
-            if (isNaN(price) || price <= 0) {
-              showAlert('Invalid Price', 'Please enter a valid price in Pesos.');
-              return;
-            }
-            handleAction(
-              'confirm',
-              () =>
-                apiClient(`/applications/${String(card_data?.application_id)}/confirm`, {
-                  method: 'PATCH',
-                  body: JSON.stringify({ price, final_agreed_price: price }),
-                }),
-              [
-                ['application', Number(card_data?.application_id)],
-                ['applications'],
-                ['conversations'],
-              ],
-            );
-          }}
-          disabled={!!loadingAction}
-        >
-          {loadingAction === 'confirm' ? (
-            <ActivityIndicator color={colors.white} />
+
+        {/* Primary Request Announcement */}
+        <View style={styles.requestBanner}>
+          <Text style={styles.requestBannerText}>
+            {currentUserRole === 'worker' ? (
+              <>
+                <Text style={styles.requestBannerBold}>{employerName}</Text>
+                {" sent you a job request for the '"}
+                <Text style={styles.requestBannerBold}>{displayJobTitle}</Text>
+                {"' you applied for."}
+              </>
+            ) : (
+              <>
+                {'You sent a job request to '}
+                <Text style={styles.requestBannerBold}>{workerName}</Text>
+                {" for the '"}
+                <Text style={styles.requestBannerBold}>{displayJobTitle}</Text>
+                {"' they applied for."}
+              </>
+            )}
+          </Text>
+        </View>
+
+        {/* Next Steps Guidance */}
+        <View style={styles.guideBox}>
+          <View style={styles.guideHeader}>
+            <Ionicons name="compass-outline" size={15} color={colors.primary} />
+            <Text style={styles.guideTitle}>Next Steps</Text>
+          </View>
+
+          {currentUserRole === 'worker' ? (
+            <>
+              <View style={styles.guideStepRow}>
+                <View style={styles.stepNumBadge}>
+                  <Text style={styles.stepNumText}>1</Text>
+                </View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepTitle}>Discuss Details in Chat</Text>
+                  <Text style={styles.stepDesc}>
+                    The employer will send the first message. Discuss schedule, tasks, and negotiate
+                    your agreed rate.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.guideStepRow}>
+                <View style={styles.stepNumBadge}>
+                  <Text style={styles.stepNumText}>2</Text>
+                </View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepTitle}>Wait for Final Offer</Text>
+                  <Text style={styles.stepDesc}>
+                    Once you both agree on terms, {employerName} will set the final price and submit
+                    the official hire offer.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.guideStepRow}>
+                <View style={styles.stepNumBadge}>
+                  <Text style={styles.stepNumText}>3</Text>
+                </View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepTitle}>Review & Accept</Text>
+                  <Text style={styles.stepDesc}>
+                    Review the offer card that appears in this chat and accept to officially start
+                    the job.
+                  </Text>
+                </View>
+              </View>
+            </>
           ) : (
-            <Text style={styles.primaryButtonText}>Confirm Hire</Text>
+            <>
+              <View style={styles.guideStepRow}>
+                <View style={styles.stepNumBadge}>
+                  <Text style={styles.stepNumText}>1</Text>
+                </View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepTitle}>Message the Worker</Text>
+                  <Text style={styles.stepDesc}>
+                    Send a message below to discuss availability, tasks, and negotiate the rate with{' '}
+                    {workerName}.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.guideStepRow}>
+                <View style={styles.stepNumBadge}>
+                  <Text style={styles.stepNumText}>2</Text>
+                </View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepTitle}>Agree on Final Price</Text>
+                  <Text style={styles.stepDesc}>
+                    Agree on the work scope and compensation terms before confirming the hire.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.guideStepRow}>
+                <View style={styles.stepNumBadge}>
+                  <Text style={styles.stepNumText}>3</Text>
+                </View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepTitle}>Set Price & Confirm</Text>
+                  <Text style={styles.stepDesc}>
+                    When you both agree, set the final price below. {workerName} will then accept to
+                    officially start.
+                  </Text>
+                </View>
+              </View>
+            </>
           )}
-        </TouchableOpacity>
+        </View>
+
+        {/* Worker Footer Notice */}
+        {currentUserRole === 'worker' && (
+          <View style={styles.chatReadyPill}>
+            <Ionicons name="chatbubbles-outline" size={14} color={colors.primary} />
+            <Text style={styles.chatReadyText}>
+              Chat is open · Feel free to discuss terms with the employer
+            </Text>
+          </View>
+        )}
+
+        {/* Employer Set Final Price Action */}
+        {currentUserRole === 'employer' && (
+          <>
+            {!isPriceInputVisible ? (
+              <TouchableOpacity
+                testID="set-final-price-toggle-btn"
+                style={styles.togglePriceBtn}
+                onPress={() => setIsPriceInputVisible(true)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.togglePriceLeft}>
+                  <Ionicons name="cash-outline" size={17} color={colors.primary} />
+                  <Text style={styles.togglePriceBtnText}>Set Final Price & Confirm Hire</Text>
+                </View>
+                <Ionicons name="chevron-down" size={17} color={colors.primary} />
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.priceSection}>
+                <View style={styles.priceSectionHeader}>
+                  <Text style={styles.priceSectionTitle}>Set Final Agreed Price</Text>
+                  <TouchableOpacity
+                    onPress={() => setIsPriceInputVisible(false)}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Ionicons name="close-circle" size={18} color={colors.inkMuted} />
+                  </TouchableOpacity>
+                </View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter agreed price (₱)"
+                  placeholderTextColor={colors.inkLight}
+                  keyboardType="numeric"
+                  value={priceInput}
+                  onChangeText={setPriceInput}
+                  autoFocus
+                />
+                <View style={styles.priceActionsRow}>
+                  <TouchableOpacity
+                    style={[styles.primaryButton, { flex: 1, marginTop: 0 }]}
+                    onPress={() => {
+                      const price = parseFloat(priceInput);
+                      if (isNaN(price) || price <= 0) {
+                        showAlert('Invalid Price', 'Please enter a valid price in Pesos.');
+                        return;
+                      }
+                      handleAction(
+                        'confirm',
+                        () =>
+                          apiClient(`/applications/${String(card_data?.application_id)}/confirm`, {
+                            method: 'PATCH',
+                            body: JSON.stringify({ price, final_agreed_price: price }),
+                          }),
+                        [
+                          ['application', Number(card_data?.application_id)],
+                          ['applications'],
+                          ['conversations'],
+                          ['job'],
+                          ['jobs'],
+                          ['myJobs'],
+                          ['jobApplications'],
+                          ['my-applications'],
+                        ],
+                      );
+                    }}
+                    disabled={!!loadingAction}
+                  >
+                    {loadingAction === 'confirm' ? (
+                      <ActivityIndicator color={colors.white} />
+                    ) : (
+                      <Text style={styles.primaryButtonText}>Confirm Hire</Text>
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.cancelPriceBtn}
+                    onPress={() => setIsPriceInputVisible(false)}
+                    disabled={!!loadingAction}
+                  >
+                    <Text style={styles.cancelPriceBtnText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </>
+        )}
       </View>
     );
   }
@@ -309,6 +488,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
                   ['application', Number(card_data?.application_id)],
                   ['applications'],
                   ['conversations'],
+                  ['job'],
+                  ['jobs'],
+                  ['myJobs'],
+                  ['jobApplications'],
+                  ['my-applications'],
                 ],
               )
             }
@@ -339,6 +523,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
                         ['application', Number(card_data?.application_id)],
                         ['applications'],
                         ['conversations'],
+                        ['job'],
+                        ['jobs'],
+                        ['myJobs'],
+                        ['jobApplications'],
+                        ['my-applications'],
                       ],
                     ),
                 },
@@ -406,6 +595,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       ['application', Number(card_data?.application_id)],
                       ['applications'],
                       ['conversations'],
+                      ['job'],
+                      ['jobs'],
+                      ['myJobs'],
+                      ['jobApplications'],
+                      ['my-applications'],
                     ],
                   ),
               },
@@ -508,14 +702,29 @@ const ActionCard: React.FC<ActionCardProps> = ({
               {
                 text: 'Yes, Mark Complete',
                 onPress: () =>
-                  handleAction('complete', () =>
-                    apiClient(`/applications/${String(card_data?.application_id)}/mark-complete`, {
-                      method: 'PATCH',
-                    }).catch(() =>
-                      apiClient(`/jobs/${String(card_data?.job_id)}/complete`, {
-                        method: 'PATCH',
-                      }),
-                    ),
+                  handleAction(
+                    'complete',
+                    () =>
+                      apiClient(
+                        `/applications/${String(card_data?.application_id)}/mark-complete`,
+                        {
+                          method: 'PATCH',
+                        },
+                      ).catch(() =>
+                        apiClient(`/jobs/${String(card_data?.job_id)}/complete`, {
+                          method: 'PATCH',
+                        }),
+                      ),
+                    [
+                      ['application', Number(card_data?.application_id)],
+                      ['applications'],
+                      ['conversations'],
+                      ['job'],
+                      ['jobs'],
+                      ['myJobs'],
+                      ['jobApplications'],
+                      ['my-applications'],
+                    ],
                   ),
               },
             ]);
@@ -561,10 +770,22 @@ const ActionCard: React.FC<ActionCardProps> = ({
               {
                 text: 'Yes, Flag as Done',
                 onPress: () =>
-                  handleAction('flag', () =>
-                    apiClient(`/jobs/${String(card_data?.job_id)}/flag-offline`, {
-                      method: 'POST',
-                    }),
+                  handleAction(
+                    'flag',
+                    () =>
+                      apiClient(`/jobs/${String(card_data?.job_id)}/flag-offline`, {
+                        method: 'POST',
+                      }),
+                    [
+                      ['application', Number(card_data?.application_id)],
+                      ['applications'],
+                      ['conversations'],
+                      ['job'],
+                      ['jobs'],
+                      ['myJobs'],
+                      ['jobApplications'],
+                      ['my-applications'],
+                    ],
                   ),
               },
             ]);
@@ -779,6 +1000,172 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 15,
     color: colors.ink,
+  },
+  headerTag: {
+    backgroundColor: 'rgba(15, 23, 42, 0.06)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  headerTagText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 10,
+    color: colors.inkMuted,
+    textTransform: 'uppercase',
+  },
+  requestBanner: {
+    backgroundColor: 'rgba(255, 127, 80, 0.08)',
+    borderColor: 'rgba(255, 127, 80, 0.22)',
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginTop: 12,
+  },
+  requestBannerText: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.ink,
+    lineHeight: 21,
+  },
+  requestBannerBold: {
+    fontFamily: fonts.bodyBold,
+    color: colors.primary,
+  },
+  guideBox: {
+    backgroundColor: 'rgba(248, 250, 252, 0.95)',
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.85)',
+    borderRadius: 14,
+    padding: 12,
+    marginTop: 12,
+  },
+  guideHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(226, 232, 240, 0.70)',
+  },
+  guideTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.ink,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  guideStepRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginVertical: 4,
+  },
+  stepNumBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.peach,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  stepNumText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.primary,
+  },
+  stepContent: {
+    flex: 1,
+  },
+  stepTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.ink,
+  },
+  stepDesc: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkSoft,
+    lineHeight: 16,
+    marginTop: 1,
+  },
+  chatReadyPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255, 127, 80, 0.06)',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    marginTop: 12,
+  },
+  chatReadyText: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.primary,
+  },
+  togglePriceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 127, 80, 0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 127, 80, 0.30)',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginTop: 14,
+  },
+  togglePriceLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  togglePriceBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.primary,
+  },
+  priceSection: {
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(226, 232, 240, 0.85)',
+  },
+  priceSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  priceSectionTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.ink,
+  },
+  priceActionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  cancelPriceBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelPriceBtnText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkMuted,
   },
 });
 

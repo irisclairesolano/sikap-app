@@ -51,9 +51,11 @@ export const ApplyScreen: React.FC = () => {
   const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawApplication();
   const { showAlert } = useAlert();
 
+  const totalSlots = job?.slots ?? 1;
+  const filledSlots = job?.filled_slots ?? job?.accepted_count ?? 0;
   const isFilled =
-    job?.remaining_slots === 0 ||
-    (job?.accepted_count != null && job?.slots != null && job.accepted_count >= job.slots) ||
+    (job?.remaining_slots != null && job.remaining_slots <= 0) ||
+    filledSlots >= totalSlots ||
     (job?.status != null && job.status !== 'open');
 
   const [coverNote, setCoverNote] = useState('');

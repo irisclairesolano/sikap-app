@@ -309,6 +309,7 @@ export interface Conversation {
 export type MessageType = 'text' | 'image' | 'system' | 'action_card';
 
 export type CardType =
+  | 'job_request'
   | 'confirm_hire'
   | 'accept_or_reject'
   | 'cancel_hire'
