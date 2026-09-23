@@ -57,7 +57,7 @@ export const useSubmitReview = () => {
   const queryClient = useQueryClient();
 
   return useMutation<
-    { message: string },
+    { message: string; content_warnings?: string[] },
     Error,
     { applicationId: number; payload: SubmitReviewPayload }
   >({

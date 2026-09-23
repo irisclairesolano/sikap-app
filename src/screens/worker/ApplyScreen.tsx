@@ -182,6 +182,22 @@ export const ApplyScreen: React.FC = () => {
             <Text style={styles.successSub}>
               {job.employer?.name || 'The employer'} is reviewing applicants now.
             </Text>
+            {data?.content_warnings && data.content_warnings.length > 0 && (
+              <View
+                style={{
+                  marginTop: 10,
+                  padding: 10,
+                  backgroundColor: 'rgba(255,255,255,0.7)',
+                  borderRadius: 10,
+                }}
+              >
+                <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
+                  <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink }}>Note:</Text> Your
+                  application was sent, but your cover note contains language that may be reviewed
+                  for community standards.
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Privacy Shield Active */}

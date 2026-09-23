@@ -77,10 +77,12 @@ export const RateEmployerScreen: React.FC = () => {
         },
       },
       {
-        onSuccess: () => {
-          showAlert('Success', 'Your review has been submitted.', [
-            { text: 'OK', onPress: () => navigation.goBack() },
-          ]);
+        onSuccess: (res: any) => {
+          const hasWarnings = res?.content_warnings && res.content_warnings.length > 0;
+          const msg = hasWarnings
+            ? 'Your review has been submitted. Note: it contains language that may be reviewed for community standards.'
+            : 'Your review has been submitted.';
+          showAlert('Review Submitted', msg, [{ text: 'OK', onPress: () => navigation.goBack() }]);
         },
         onError: (err: any) => {
           setIsSubmitted(false);

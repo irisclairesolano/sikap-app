@@ -8,6 +8,7 @@ interface ApplyPayload {
 interface ApplyResponse {
   message: string;
   application_id: number;
+  content_warnings?: string[];
 }
 
 export const useApply = (jobId: number) => {
