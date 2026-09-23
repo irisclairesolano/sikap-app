@@ -54,6 +54,7 @@
     "expo-linking": "~57.0.9",
     "expo-secure-store": "~57.0.3",
     "expo-status-bar": "~57.0.1",
+    "expo-system-ui": "~57.0.4",
     "expo-video": "~57.0.3",
     "fbjs": "3.0.5",
     "react": "19.2.3",

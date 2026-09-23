@@ -33,6 +33,7 @@ describe('ActionCard Job Request Component', () => {
       worker_name: 'Juan Dela Cruz',
     },
     card_resolved: false,
+    created_at: '2026-09-24T00:00:00.000Z',
   };
 
   it('renders for worker with employer name, job title applied for, and next steps guide', async () => {
