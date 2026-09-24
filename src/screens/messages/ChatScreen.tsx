@@ -25,6 +25,7 @@ import {
   useRequestUnlock,
 } from '../../hooks/useConversations';
 import { useAuth } from '../../hooks/useAuth';
+import { useAlert } from '../../contexts/AlertContext';
 import MessageBubble from '../../components/chat/MessageBubble';
 import ActionCard from '../../components/chat/ActionCard';
 import { colors, fonts } from '../../theme';
@@ -37,6 +38,7 @@ type ChatScreenParams = {
 };
 
 const ChatScreen: React.FC = () => {
+  const { showAlert } = useAlert();
   const route = useRoute();
   const navigation = useNavigation();
   const {
@@ -93,8 +95,9 @@ const ChatScreen: React.FC = () => {
     setInputText('');
     setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
     sendMessage.mutate(textToSend, {
-      onError: () => {
+      onError: (err: any) => {
         setInputText(textToSend);
+        showAlert('Failed to Send', err.message || 'Could not send message. Please try again.');
       },
       onSuccess: () => {
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
@@ -122,6 +125,12 @@ const ChatScreen: React.FC = () => {
       }
 
       sendImage.mutate(finalUri, {
+        onError: (err: any) => {
+          showAlert(
+            'Failed to Send Image',
+            err.message || 'Could not send image. Please try again.',
+          );
+        },
         onSuccess: () => {
           setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
         },
@@ -434,6 +443,18 @@ const ChatScreen: React.FC = () => {
             }
           }}
           renderItem={({ item }) => {
+            const employerId =
+              conversation?.employer_id ??
+              (conversationUserRole === 'employer' ? user?.id : conversation?.other_user?.id);
+
+            const hasRealMessageFromEmployer = messages.some(
+              (m) =>
+                m.sender_id === employerId &&
+                m.message_type !== 'action_card' &&
+                m.message_type !== 'system' &&
+                m.sender_id !== null,
+            );
+
             if (item.message_type === 'action_card') {
               return (
                 <ActionCard
@@ -445,6 +466,8 @@ const ChatScreen: React.FC = () => {
                   applicationStatus={conversation?.application_status}
                   otherUserName={conversation?.other_user?.name || ''}
                   jobTitle={jobTitle || conversation?.job_title || ''}
+                  jobId={conversation?.job_id}
+                  hasRealMessageFromEmployer={hasRealMessageFromEmployer}
                   onActionComplete={refetch}
                 />
               );
@@ -456,16 +479,21 @@ const ChatScreen: React.FC = () => {
         {/* First-message restriction notice for workers */}
         {status === 'open' &&
           conversationUserRole === 'worker' &&
-          messages.filter(
+          !messages.some(
             (m) =>
-              m.message_type !== 'action_card' &&
-              m.message_type !== 'system' &&
-              m.sender_id !== null,
-          ).length === 0 && (
+              m.sender_id === (conversation?.employer_id ?? conversation?.other_user?.id) ||
+              [
+                'job_request',
+                'confirm_hire',
+                'accept_or_reject',
+                'worker_contact_reveal',
+                'mark_complete',
+              ].includes(m.card_type || ''),
+          ) && (
             <View style={styles.firstMsgNotice}>
               <Ionicons name="information-circle-outline" size={14} color={colors.inkMuted} />
               <Text style={styles.firstMsgNoticeText}>
-                The employer will send the first message to start the conversation.
+                The employer will send the first message or job offer to start the conversation.
               </Text>
             </View>
           )}
@@ -473,17 +501,66 @@ const ChatScreen: React.FC = () => {
         {/* Input Bar */}
         {status === 'open' && (
           <View style={styles.inputContainer}>
-            <TouchableOpacity onPress={handlePickImage} style={styles.iconBtn} activeOpacity={0.6}>
+            <TouchableOpacity
+              onPress={handlePickImage}
+              style={styles.iconBtn}
+              activeOpacity={0.6}
+              disabled={
+                conversationUserRole === 'worker' &&
+                !messages.some(
+                  (m) =>
+                    m.sender_id === (conversation?.employer_id ?? conversation?.other_user?.id) ||
+                    [
+                      'job_request',
+                      'confirm_hire',
+                      'accept_or_reject',
+                      'worker_contact_reveal',
+                      'mark_complete',
+                    ].includes(m.card_type || ''),
+                )
+              }
+            >
               <Ionicons name="image-outline" size={24} color={colors.inkMuted} />
             </TouchableOpacity>
             <TextInput
               style={styles.input}
-              placeholder="Type a message..."
+              placeholder={
+                conversationUserRole === 'worker' &&
+                !messages.some(
+                  (m) =>
+                    m.sender_id === (conversation?.employer_id ?? conversation?.other_user?.id) ||
+                    [
+                      'job_request',
+                      'confirm_hire',
+                      'accept_or_reject',
+                      'worker_contact_reveal',
+                      'mark_complete',
+                    ].includes(m.card_type || ''),
+                )
+                  ? 'Waiting for employer to start conversation...'
+                  : 'Type a message...'
+              }
               placeholderTextColor={colors.inkLight}
               value={inputText}
               onChangeText={setInputText}
               multiline
               maxLength={1000}
+              editable={
+                !(
+                  conversationUserRole === 'worker' &&
+                  !messages.some(
+                    (m) =>
+                      m.sender_id === (conversation?.employer_id ?? conversation?.other_user?.id) ||
+                      [
+                        'job_request',
+                        'confirm_hire',
+                        'accept_or_reject',
+                        'worker_contact_reveal',
+                        'mark_complete',
+                      ].includes(m.card_type || ''),
+                  )
+                )
+              }
             />
             {inputText.length > 800 && (
               <Text style={[styles.charCounter, inputText.length > 950 && { color: colors.error }]}>
@@ -494,7 +571,21 @@ const ChatScreen: React.FC = () => {
               onPress={handleSendText}
               style={styles.iconBtn}
               activeOpacity={0.6}
-              disabled={!inputText.trim()}
+              disabled={
+                !inputText.trim() ||
+                (conversationUserRole === 'worker' &&
+                  !messages.some(
+                    (m) =>
+                      m.sender_id === (conversation?.employer_id ?? conversation?.other_user?.id) ||
+                      [
+                        'job_request',
+                        'confirm_hire',
+                        'accept_or_reject',
+                        'worker_contact_reveal',
+                        'mark_complete',
+                      ].includes(m.card_type || ''),
+                  ))
+              }
             >
               <Ionicons
                 name="send"

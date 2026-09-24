@@ -27,10 +27,13 @@ export const applicationsApi = {
   },
 
   confirmHire: async (applicationId: number, price: number) => {
-    return apiClient<{ message: string }>(`/applications/${applicationId}/confirm`, {
-      method: 'POST',
-      body: JSON.stringify({ price }),
-    });
+    return apiClient<{ message: string; conversation_id?: number }>(
+      `/applications/${applicationId}/confirm`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ price, final_agreed_price: price }),
+      },
+    );
   },
 
   cancelHire: async (applicationId: number) => {

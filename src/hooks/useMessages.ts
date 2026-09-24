@@ -22,7 +22,7 @@ export function useMessages(conversationId: number) {
   });
 }
 
-export function useSendMessage(conversationId: number) {
+export function useSendMessage(conversationId: number, onErrorCallback?: (error: Error) => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -85,10 +85,11 @@ export function useSendMessage(conversationId: number) {
 
       return { previousMessages };
     },
-    onError: (_err, _newBody, context) => {
+    onError: (err: any, _newBody, context) => {
       if (context?.previousMessages) {
         queryClient.setQueryData(['messages', conversationId], context.previousMessages);
       }
+      onErrorCallback?.(err);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
@@ -97,7 +98,7 @@ export function useSendMessage(conversationId: number) {
   });
 }
 
-export function useSendImage(conversationId: number) {
+export function useSendImage(conversationId: number, onErrorCallback?: (error: Error) => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -155,10 +156,11 @@ export function useSendImage(conversationId: number) {
 
       return { previousMessages };
     },
-    onError: (_err, _imageUri, context) => {
+    onError: (err: any, _imageUri, context) => {
       if (context?.previousMessages) {
         queryClient.setQueryData(['messages', conversationId], context.previousMessages);
       }
+      onErrorCallback?.(err);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });

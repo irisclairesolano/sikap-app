@@ -294,6 +294,7 @@ export interface ConversationUser {
 export interface Conversation {
   id: number;
   application_id: number;
+  job_id?: number;
   job_title: string;
   application_status?: string;
   status: 'open' | 'locked' | 'unlock_requested';

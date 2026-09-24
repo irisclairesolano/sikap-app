@@ -11,6 +11,8 @@ import { Message } from '../../types';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { apiClient } from '../../api/client';
+import { applicationsApi } from '../../api/applications';
+import { jobsApi } from '../../api/jobs';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAlert } from '../../contexts/AlertContext';
 
@@ -23,6 +25,8 @@ interface ActionCardProps {
   applicationStatus?: string;
   otherUserName?: string;
   jobTitle?: string;
+  jobId?: number;
+  hasRealMessageFromEmployer?: boolean;
   onActionComplete: () => void;
 }
 
@@ -40,6 +44,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
   applicationStatus,
   otherUserName,
   jobTitle,
+  jobId,
+  hasRealMessageFromEmployer = true,
   onActionComplete,
 }) => {
   const queryClient = useQueryClient();
@@ -337,7 +343,14 @@ const ActionCard: React.FC<ActionCardProps> = ({
         {/* Employer Set Final Price Action */}
         {currentUserRole === 'employer' && (
           <>
-            {!isPriceInputVisible ? (
+            {!hasRealMessageFromEmployer ? (
+              <View style={styles.chatReadyPill}>
+                <Ionicons name="chatbubbles-outline" size={14} color={colors.inkMuted} />
+                <Text style={[styles.chatReadyText, { color: colors.inkMuted }]}>
+                  Send a message to the worker before setting a final price.
+                </Text>
+              </View>
+            ) : !isPriceInputVisible ? (
               <TouchableOpacity
                 testID="set-final-price-toggle-btn"
                 style={styles.togglePriceBtn}
@@ -381,11 +394,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       }
                       handleAction(
                         'confirm',
-                        () =>
-                          apiClient(`/applications/${String(card_data?.application_id)}/confirm`, {
-                            method: 'PATCH',
-                            body: JSON.stringify({ price, final_agreed_price: price }),
-                          }),
+                        () => applicationsApi.confirmHire(Number(card_data?.application_id), price),
                         [
                           ['application', Number(card_data?.application_id)],
                           ['applications'],
@@ -701,31 +710,19 @@ const ActionCard: React.FC<ActionCardProps> = ({
               { text: 'Cancel', style: 'cancel' },
               {
                 text: 'Yes, Mark Complete',
-                onPress: () =>
-                  handleAction(
-                    'complete',
-                    () =>
-                      apiClient(
-                        `/applications/${String(card_data?.application_id)}/mark-complete`,
-                        {
-                          method: 'PATCH',
-                        },
-                      ).catch(() =>
-                        apiClient(`/jobs/${String(card_data?.job_id)}/complete`, {
-                          method: 'PATCH',
-                        }),
-                      ),
-                    [
-                      ['application', Number(card_data?.application_id)],
-                      ['applications'],
-                      ['conversations'],
-                      ['job'],
-                      ['jobs'],
-                      ['myJobs'],
-                      ['jobApplications'],
-                      ['my-applications'],
-                    ],
-                  ),
+                onPress: () => {
+                  const targetJobId = Number(card_data?.job_id || jobId);
+                  handleAction('complete', () => jobsApi.markJobComplete(targetJobId), [
+                    ['application', Number(card_data?.application_id)],
+                    ['applications'],
+                    ['conversations'],
+                    ['job', targetJobId],
+                    ['jobs'],
+                    ['myJobs'],
+                    ['jobApplications'],
+                    ['my-applications'],
+                  ]);
+                },
               },
             ]);
           }}
