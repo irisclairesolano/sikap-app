@@ -68,6 +68,7 @@ export const useAcceptOffer = () => {
       queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
       queryClient.invalidateQueries({ queryKey: ['application'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 };
@@ -89,6 +90,7 @@ export const useRejectOffer = () => {
       queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
       queryClient.invalidateQueries({ queryKey: ['application'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 };

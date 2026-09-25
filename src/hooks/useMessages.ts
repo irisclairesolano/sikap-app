@@ -9,6 +9,7 @@ export function useMessages(conversationId: number) {
       messagesApi.getMessages(conversationId, pageParam as string | undefined),
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     initialPageParam: undefined as string | undefined,
+    enabled: Boolean(conversationId && conversationId > 0),
     refetchInterval: 3_000,
     staleTime: 1_000,
     select: (data) => ({

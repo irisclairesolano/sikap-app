@@ -30,6 +30,16 @@ import MessageBubble from '../../components/chat/MessageBubble';
 import ActionCard from '../../components/chat/ActionCard';
 import { colors, fonts } from '../../theme';
 
+const EMPLOYER_OUTREACH_CARD_TYPES = [
+  'job_request',
+  'confirm_hire',
+  'accept_or_reject',
+  'worker_contact_reveal',
+  'employer_contact_reveal',
+  'mark_complete',
+  'flag_offline',
+];
+
 type ChatScreenParams = {
   conversationId: number;
   jobTitle?: string;
@@ -81,6 +91,14 @@ const ChatScreen: React.FC = () => {
 
   const messages = data?.messages || [];
   const messageCount = messages.length;
+
+  const isWorkerReplyAllowed =
+    conversationUserRole !== 'worker' ||
+    messages.some(
+      (m) =>
+        m.sender_id === (conversation?.employer_id ?? conversation?.other_user?.id) ||
+        EMPLOYER_OUTREACH_CARD_TYPES.includes(m.card_type || ''),
+    );
 
   useEffect(() => {
     if (messageCount > 0) {
@@ -477,26 +495,14 @@ const ChatScreen: React.FC = () => {
         />
 
         {/* First-message restriction notice for workers */}
-        {status === 'open' &&
-          conversationUserRole === 'worker' &&
-          !messages.some(
-            (m) =>
-              m.sender_id === (conversation?.employer_id ?? conversation?.other_user?.id) ||
-              [
-                'job_request',
-                'confirm_hire',
-                'accept_or_reject',
-                'worker_contact_reveal',
-                'mark_complete',
-              ].includes(m.card_type || ''),
-          ) && (
-            <View style={styles.firstMsgNotice}>
-              <Ionicons name="information-circle-outline" size={14} color={colors.inkMuted} />
-              <Text style={styles.firstMsgNoticeText}>
-                The employer will send the first message or job offer to start the conversation.
-              </Text>
-            </View>
-          )}
+        {status === 'open' && conversationUserRole === 'worker' && !isWorkerReplyAllowed && (
+          <View style={styles.firstMsgNotice}>
+            <Ionicons name="information-circle-outline" size={14} color={colors.inkMuted} />
+            <Text style={styles.firstMsgNoticeText}>
+              The employer will send the first message or job offer to start the conversation.
+            </Text>
+          </View>
+        )}
 
         {/* Input Bar */}
         {status === 'open' && (
@@ -505,38 +511,14 @@ const ChatScreen: React.FC = () => {
               onPress={handlePickImage}
               style={styles.iconBtn}
               activeOpacity={0.6}
-              disabled={
-                conversationUserRole === 'worker' &&
-                !messages.some(
-                  (m) =>
-                    m.sender_id === (conversation?.employer_id ?? conversation?.other_user?.id) ||
-                    [
-                      'job_request',
-                      'confirm_hire',
-                      'accept_or_reject',
-                      'worker_contact_reveal',
-                      'mark_complete',
-                    ].includes(m.card_type || ''),
-                )
-              }
+              disabled={!isWorkerReplyAllowed}
             >
               <Ionicons name="image-outline" size={24} color={colors.inkMuted} />
             </TouchableOpacity>
             <TextInput
               style={styles.input}
               placeholder={
-                conversationUserRole === 'worker' &&
-                !messages.some(
-                  (m) =>
-                    m.sender_id === (conversation?.employer_id ?? conversation?.other_user?.id) ||
-                    [
-                      'job_request',
-                      'confirm_hire',
-                      'accept_or_reject',
-                      'worker_contact_reveal',
-                      'mark_complete',
-                    ].includes(m.card_type || ''),
-                )
+                !isWorkerReplyAllowed
                   ? 'Waiting for employer to start conversation...'
                   : 'Type a message...'
               }
@@ -545,22 +527,7 @@ const ChatScreen: React.FC = () => {
               onChangeText={setInputText}
               multiline
               maxLength={1000}
-              editable={
-                !(
-                  conversationUserRole === 'worker' &&
-                  !messages.some(
-                    (m) =>
-                      m.sender_id === (conversation?.employer_id ?? conversation?.other_user?.id) ||
-                      [
-                        'job_request',
-                        'confirm_hire',
-                        'accept_or_reject',
-                        'worker_contact_reveal',
-                        'mark_complete',
-                      ].includes(m.card_type || ''),
-                  )
-                )
-              }
+              editable={isWorkerReplyAllowed}
             />
             {inputText.length > 800 && (
               <Text style={[styles.charCounter, inputText.length > 950 && { color: colors.error }]}>
@@ -571,21 +538,7 @@ const ChatScreen: React.FC = () => {
               onPress={handleSendText}
               style={styles.iconBtn}
               activeOpacity={0.6}
-              disabled={
-                !inputText.trim() ||
-                (conversationUserRole === 'worker' &&
-                  !messages.some(
-                    (m) =>
-                      m.sender_id === (conversation?.employer_id ?? conversation?.other_user?.id) ||
-                      [
-                        'job_request',
-                        'confirm_hire',
-                        'accept_or_reject',
-                        'worker_contact_reveal',
-                        'mark_complete',
-                      ].includes(m.card_type || ''),
-                  ))
-              }
+              disabled={!inputText.trim() || !isWorkerReplyAllowed}
             >
               <Ionicons
                 name="send"

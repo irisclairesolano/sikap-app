@@ -1,6 +1,7 @@
 import * as SecureStore from '../utils/storage';
 import { onlineManager } from '@tanstack/react-query';
 import { sanitizeErrorMessage } from '../utils/errorSanitizer';
+import { notifyAuthChanged } from '../store/authEvents';
 
 export const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || 'https://sikap-backend-singapore.onrender.com/api/v1';
@@ -96,6 +97,7 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
   if (res.status === 401) {
     await SecureStore.deleteItemAsync('auth_token');
     await SecureStore.deleteItemAsync('user_profile');
+    notifyAuthChanged();
     throw new ApiClientError('UNAUTHORIZED', 401);
   }
 

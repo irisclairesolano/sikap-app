@@ -15,6 +15,9 @@ import { applicationsApi } from '../../api/applications';
 import { jobsApi } from '../../api/jobs';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAlert } from '../../contexts/AlertContext';
+import { useConfirmHire } from '../../hooks/useJobApplications';
+import { useMarkJobComplete } from '../../hooks/useJobs';
+import { useAcceptOffer, useRejectOffer } from '../../hooks/useApply';
 
 interface ActionCardProps {
   message: Message;
@@ -50,6 +53,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
 }) => {
   const queryClient = useQueryClient();
   const { showAlert } = useAlert();
+  const confirmHireMutation = useConfirmHire();
+  const markJobCompleteMutation = useMarkJobComplete();
+  const acceptOfferMutation = useAcceptOffer();
+  const rejectOfferMutation = useRejectOffer();
+
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [priceInput, setPriceInput] = useState('');
   const [isPriceInputVisible, setIsPriceInputVisible] = useState(false);
@@ -347,7 +355,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               <View style={styles.chatReadyPill}>
                 <Ionicons name="chatbubbles-outline" size={14} color={colors.inkMuted} />
                 <Text style={[styles.chatReadyText, { color: colors.inkMuted }]}>
-                  Send a message to the worker before setting a final price.
+                  Send a message to the worker before setting the final price.
                 </Text>
               </View>
             ) : !isPriceInputVisible ? (
@@ -392,24 +400,21 @@ const ActionCard: React.FC<ActionCardProps> = ({
                         showAlert('Invalid Price', 'Please enter a valid price in Pesos.');
                         return;
                       }
-                      handleAction(
-                        'confirm',
-                        () => applicationsApi.confirmHire(Number(card_data?.application_id), price),
-                        [
-                          ['application', Number(card_data?.application_id)],
-                          ['applications'],
-                          ['conversations'],
-                          ['job'],
-                          ['jobs'],
-                          ['myJobs'],
-                          ['jobApplications'],
-                          ['my-applications'],
-                        ],
+                      confirmHireMutation.mutate(
+                        { id: Number(card_data?.application_id), price },
+                        {
+                          onSuccess: () => {
+                            onActionComplete();
+                          },
+                          onError: (err: any) => {
+                            showAlert('Action Failed', err.message || 'Unable to confirm hire.');
+                          },
+                        },
                       );
                     }}
-                    disabled={!!loadingAction}
+                    disabled={confirmHireMutation.isPending || !!loadingAction}
                   >
-                    {loadingAction === 'confirm' ? (
+                    {confirmHireMutation.isPending ? (
                       <ActivityIndicator color={colors.white} />
                     ) : (
                       <Text style={styles.primaryButtonText}>Confirm Hire</Text>
@@ -487,27 +492,18 @@ const ActionCard: React.FC<ActionCardProps> = ({
           <TouchableOpacity
             style={[styles.actionBtn, { backgroundColor: colors.success }]}
             onPress={() =>
-              handleAction(
-                'accept',
-                () =>
-                  apiClient(`/applications/${String(card_data?.application_id)}/accept`, {
-                    method: 'PATCH',
-                  }),
-                [
-                  ['application', Number(card_data?.application_id)],
-                  ['applications'],
-                  ['conversations'],
-                  ['job'],
-                  ['jobs'],
-                  ['myJobs'],
-                  ['jobApplications'],
-                  ['my-applications'],
-                ],
-              )
+              acceptOfferMutation.mutate(Number(card_data?.application_id), {
+                onSuccess: () => {
+                  onActionComplete();
+                },
+                onError: (err: any) => {
+                  showAlert('Action Failed', err.message || 'Unable to accept offer.');
+                },
+              })
             }
-            disabled={!!loadingAction}
+            disabled={acceptOfferMutation.isPending || !!loadingAction}
           >
-            {loadingAction === 'accept' ? (
+            {acceptOfferMutation.isPending ? (
               <ActivityIndicator color={colors.white} />
             ) : (
               <Text style={styles.actionBtnText}>Accept Offer</Text>
@@ -522,29 +518,20 @@ const ActionCard: React.FC<ActionCardProps> = ({
                   text: 'Yes, Decline',
                   style: 'destructive',
                   onPress: () =>
-                    handleAction(
-                      'reject',
-                      () =>
-                        apiClient(`/applications/${String(card_data?.application_id)}/reject`, {
-                          method: 'PATCH',
-                        }),
-                      [
-                        ['application', Number(card_data?.application_id)],
-                        ['applications'],
-                        ['conversations'],
-                        ['job'],
-                        ['jobs'],
-                        ['myJobs'],
-                        ['jobApplications'],
-                        ['my-applications'],
-                      ],
-                    ),
+                    rejectOfferMutation.mutate(Number(card_data?.application_id), {
+                      onSuccess: () => {
+                        onActionComplete();
+                      },
+                      onError: (err: any) => {
+                        showAlert('Action Failed', err.message || 'Unable to decline offer.');
+                      },
+                    }),
                 },
               ]);
             }}
-            disabled={!!loadingAction}
+            disabled={rejectOfferMutation.isPending || !!loadingAction}
           >
-            {loadingAction === 'reject' ? (
+            {rejectOfferMutation.isPending ? (
               <ActivityIndicator color={colors.white} />
             ) : (
               <Text style={styles.actionBtnText}>Decline</Text>
@@ -712,23 +699,21 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 text: 'Yes, Mark Complete',
                 onPress: () => {
                   const targetJobId = Number(card_data?.job_id || jobId);
-                  handleAction('complete', () => jobsApi.markJobComplete(targetJobId), [
-                    ['application', Number(card_data?.application_id)],
-                    ['applications'],
-                    ['conversations'],
-                    ['job', targetJobId],
-                    ['jobs'],
-                    ['myJobs'],
-                    ['jobApplications'],
-                    ['my-applications'],
-                  ]);
+                  markJobCompleteMutation.mutate(targetJobId, {
+                    onSuccess: () => {
+                      onActionComplete();
+                    },
+                    onError: (err: any) => {
+                      showAlert('Action Failed', err.message || 'Unable to mark job complete.');
+                    },
+                  });
                 },
               },
             ]);
           }}
-          disabled={!!loadingAction}
+          disabled={markJobCompleteMutation.isPending || !!loadingAction}
         >
-          {loadingAction === 'complete' ? (
+          {markJobCompleteMutation.isPending ? (
             <ActivityIndicator color={colors.white} />
           ) : (
             <Text style={styles.primaryButtonText}>Mark Complete</Text>
@@ -740,11 +725,32 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
   // 8. FLAG OFFLINE
   if (card_type === 'flag_offline') {
-    if (currentUserRole === 'employer') return null;
+    const isOfflineResolved =
+      card_resolved || applicationStatus === 'completed' || conversationStatus === 'locked';
 
-    if (card_resolved || applicationStatus === 'completed') {
-      return null;
+    if (isOfflineResolved) {
+      return renderEtchedCard(
+        'Job Marked Complete',
+        'Work has been completed and verified.',
+        'checkmark-done-circle',
+        'Completed',
+        colors.success,
+        '#DCFCE7',
+      );
     }
+
+    if (currentUserRole === 'worker') {
+      return renderEtchedCard(
+        'Work Flagged as Done',
+        'Waiting for employer confirmation.',
+        'time-outline',
+        'Pending Confirmation',
+        colors.warning,
+        '#FEF3C7',
+      );
+    }
+
+    const workerName = String(card_data?.worker_name || otherUserName || 'Worker');
 
     return (
       <View style={styles.card}>
@@ -753,46 +759,43 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <Ionicons name="flag-outline" size={20} color={colors.warning} />
           </View>
           <View style={styles.cardHeaderText}>
-            <Text style={styles.title}>Flag as Done / Offline</Text>
-            <Text style={styles.subtitle}>
-              Use this if the job is done but the employer hasn't confirmed yet.
-            </Text>
+            <Text style={styles.title}>Work Flagged as Done</Text>
+            <Text style={styles.subtitle}>{workerName} flagged this job as completed offline.</Text>
           </View>
         </View>
         <TouchableOpacity
-          style={[styles.primaryButton, { backgroundColor: colors.warning }]}
+          style={[styles.primaryButton, { backgroundColor: colors.success }]}
           onPress={() => {
-            showAlert('Flag Complete', 'Are you sure you want to flag this job as complete?', [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Yes, Flag as Done',
-                onPress: () =>
-                  handleAction(
-                    'flag',
-                    () =>
-                      apiClient(`/jobs/${String(card_data?.job_id)}/flag-offline`, {
-                        method: 'POST',
-                      }),
-                    [
-                      ['application', Number(card_data?.application_id)],
-                      ['applications'],
-                      ['conversations'],
-                      ['job'],
-                      ['jobs'],
-                      ['myJobs'],
-                      ['jobApplications'],
-                      ['my-applications'],
-                    ],
-                  ),
-              },
-            ]);
+            showAlert(
+              'Confirm & Mark Complete',
+              'Confirm that the work was completed satisfactorily?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Confirm & Mark Complete',
+                  onPress: () => {
+                    const targetJobId = Number(card_data?.job_id || jobId);
+                    markJobCompleteMutation.mutate(targetJobId, {
+                      onSuccess: () => {
+                        onActionComplete();
+                      },
+                      onError: (err: any) => {
+                        showAlert('Action Failed', err.message || 'Unable to mark job complete.');
+                      },
+                    });
+                  },
+                },
+              ],
+            );
           }}
-          disabled={!!loadingAction}
+          disabled={markJobCompleteMutation.isPending || !!loadingAction}
         >
-          {loadingAction === 'flag' ? (
+          {markJobCompleteMutation.isPending ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.primaryButtonText}>Flag as Done</Text>
+            <Text style={styles.primaryButtonText}>
+              Worker flagged this job as done — Confirm & Mark Complete
+            </Text>
           )}
         </TouchableOpacity>
       </View>

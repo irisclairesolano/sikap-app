@@ -22,6 +22,8 @@ import { Avatar } from '../../components/common/Avatar';
 import { useApplication } from '../../hooks/useJobApplications';
 import { messagesApi } from '../../api/messages';
 import { useAlert } from '../../contexts/AlertContext';
+import { useConversations } from '../../hooks/useConversations';
+import { useMessages } from '../../hooks/useMessages';
 
 type ApplicantDetailScreenRouteProp = RouteProp<EmployerStackParamList, 'ApplicantDetail'>;
 type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -85,12 +87,27 @@ const ApplicantDetailScreen: React.FC = () => {
   const emergencyContactPhone =
     appData?.worker?.emergency_contact_phone || route.params?.emergencyContactPhone;
 
+  const { data: conversations } = useConversations('employer');
+  const matchedConv = conversations?.find((c) => c.application_id === appId);
+  const activeConversationId = appData?.conversation_id || matchedConv?.id || 0;
+
+  const { data: messagesData } = useMessages(activeConversationId);
+  const messages = messagesData?.messages || [];
+
+  const hasRealMessageFromEmployer = messages.some(
+    (m) =>
+      m.sender_id !== null &&
+      m.message_type !== 'action_card' &&
+      m.message_type !== 'system' &&
+      ((m.message_type === 'text' && Boolean(m.body?.trim())) || m.message_type === 'image'),
+  );
+
   const handleOpenChat = async () => {
     try {
-      if (appData?.conversation_id) {
+      if (activeConversationId) {
         navigation.navigate('Chat', {
-          conversationId: appData.conversation_id,
-          jobTitle: appData.job?.title || jobTitle,
+          conversationId: activeConversationId,
+          jobTitle: appData?.job?.title || jobTitle,
           otherUserName: applicantName,
         });
         return;
@@ -266,6 +283,18 @@ const ApplicantDetailScreen: React.FC = () => {
   };
 
   const navigateToConfirmHire = () => {
+    if (!hasRealMessageFromEmployer) {
+      showAlert(
+        'Chat Required',
+        'Please message the worker in chat to discuss and agree on terms before sending an offer.',
+        [
+          { text: 'Go to Chat', onPress: handleOpenChat },
+          { text: 'Cancel', style: 'cancel' },
+        ],
+      );
+      return;
+    }
+
     navigation.navigate('ConfirmHire', {
       applicantId,
       applicantName: applicantName || 'Applicant',
@@ -273,7 +302,7 @@ const ApplicantDetailScreen: React.FC = () => {
       barangay,
       municipality,
       reputationScore,
-      conversationId: appData?.conversation_id ?? undefined,
+      conversationId: activeConversationId || undefined,
     });
   };
 
@@ -987,13 +1016,23 @@ const ApplicantDetailScreen: React.FC = () => {
         )}
         {status === 'pending_negotiation' && (
           <View style={{ gap: 6 }}>
-            <Button
-              label="Send Offer"
-              variant="primary"
-              size="lg"
-              fullWidth
-              onPress={navigateToConfirmHire}
-            />
+            {hasRealMessageFromEmployer ? (
+              <Button
+                label="Send Offer"
+                variant="primary"
+                size="lg"
+                fullWidth
+                onPress={navigateToConfirmHire}
+              />
+            ) : (
+              <Button
+                label="Chat to Agree on Price"
+                variant="primary"
+                size="lg"
+                fullWidth
+                onPress={handleOpenChat}
+              />
+            )}
             <Button
               label="Cancel"
               variant="ghost"
@@ -1010,7 +1049,9 @@ const ApplicantDetailScreen: React.FC = () => {
                 marginTop: 2,
               }}
             >
-              Send a formal price offer. The worker must accept before the hire is confirmed.
+              {hasRealMessageFromEmployer
+                ? 'Send a formal price offer. The worker must accept before the hire is confirmed.'
+                : 'Send a message in chat to discuss details and agree on price before making an offer.'}
             </Text>
           </View>
         )}

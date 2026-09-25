@@ -18,6 +18,8 @@ import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { useConfirmHire } from '../../hooks/useJobApplications';
 import { useAlert } from '../../contexts/AlertContext';
+import { useConversations } from '../../hooks/useConversations';
+import { useMessages } from '../../hooks/useMessages';
 
 type ConfirmHireScreenRouteProp = RouteProp<EmployerStackParamList, 'ConfirmHire'>;
 type ConfirmHireScreenNavigationProp = NativeStackNavigationProp<
@@ -38,6 +40,21 @@ const ConfirmHireScreen: React.FC = () => {
     conversationId,
   } = route.params;
 
+  const { data: conversations } = useConversations('employer');
+  const matchedConv = conversations?.find((c) => c.application_id === applicantId);
+  const activeConversationId = conversationId || matchedConv?.id || 0;
+
+  const { data: messagesData } = useMessages(activeConversationId);
+  const messages = messagesData?.messages || [];
+
+  const hasRealMessageFromEmployer = messages.some(
+    (m) =>
+      m.sender_id !== null &&
+      m.message_type !== 'action_card' &&
+      m.message_type !== 'system' &&
+      ((m.message_type === 'text' && Boolean(m.body?.trim())) || m.message_type === 'image'),
+  );
+
   const [price, setPrice] = useState<string>('');
   const confirmHireMutation = useConfirmHire();
   const { showAlert } = useAlert();
@@ -45,6 +62,32 @@ const ConfirmHireScreen: React.FC = () => {
   const handleConfirm = () => {
     const numPrice = parseFloat(price);
     if (confirmHireMutation.isPending || isNaN(numPrice) || numPrice <= 0) return;
+
+    if (!hasRealMessageFromEmployer) {
+      showAlert(
+        'Chat Required',
+        'Please message the worker in chat to discuss and agree on terms before confirming the hire.',
+        [
+          {
+            text: 'Go to Chat',
+            onPress: () => {
+              if (activeConversationId) {
+                navigation.navigate('Chat' as any, {
+                  conversationId: activeConversationId,
+                  jobTitle,
+                  otherUserName: applicantName,
+                });
+              } else {
+                navigation.goBack();
+              }
+            },
+          },
+          { text: 'Cancel', style: 'cancel' },
+        ],
+      );
+      return;
+    }
+
     confirmHireMutation.mutate(
       { id: applicantId, price: numPrice },
       {
@@ -211,15 +254,47 @@ const ConfirmHireScreen: React.FC = () => {
         </ScrollView>
 
         <View style={styles.footer}>
-          <Button
-            label={`Send Offer at ₱${price || '0'}`}
-            variant="primary"
-            size="lg"
-            fullWidth
-            onPress={handleConfirm}
-            disabled={!price}
-            loading={confirmHireMutation.isPending}
-          />
+          {!hasRealMessageFromEmployer ? (
+            <View style={{ gap: 8 }}>
+              <Button
+                label="Chat with Worker First"
+                variant="primary"
+                size="lg"
+                fullWidth
+                onPress={() => {
+                  if (activeConversationId) {
+                    navigation.navigate('Chat' as any, {
+                      conversationId: activeConversationId,
+                      jobTitle,
+                      otherUserName: applicantName,
+                    });
+                  } else {
+                    navigation.goBack();
+                  }
+                }}
+              />
+              <Text
+                style={{
+                  fontFamily: fonts.body,
+                  fontSize: 12,
+                  color: colors.inkSoft,
+                  textAlign: 'center',
+                }}
+              >
+                You must discuss details in chat with {applicantName} before sending an offer.
+              </Text>
+            </View>
+          ) : (
+            <Button
+              label={`Send Offer at ₱${price || '0'}`}
+              variant="primary"
+              size="lg"
+              fullWidth
+              onPress={handleConfirm}
+              disabled={!price}
+              loading={confirmHireMutation.isPending}
+            />
+          )}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

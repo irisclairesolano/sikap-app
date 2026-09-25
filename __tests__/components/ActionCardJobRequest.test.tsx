@@ -7,6 +7,10 @@ jest.mock('@tanstack/react-query', () => ({
   useQueryClient: () => ({
     invalidateQueries: jest.fn(),
   }),
+  useMutation: jest.fn(() => ({
+    mutate: jest.fn(),
+    isPending: false,
+  })),
 }));
 
 jest.mock('../../src/contexts/AlertContext', () => ({
