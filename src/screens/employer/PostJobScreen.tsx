@@ -111,6 +111,76 @@ export const PostJobScreen: React.FC = () => {
   const [duration, setDuration] = useState(jobToEdit?.duration ? String(jobToEdit.duration) : '');
   const [durationUnit, setDurationUnit] = useState(jobToEdit?.duration_unit || 'Days');
 
+  // Wage conversion & sanity check helper
+  const getWageEquivalentInfo = () => {
+    if (!pay || isNaN(parsedPay) || parsedPay <= 0) return null;
+
+    if (rateUnit === 'per_hour') {
+      const dailyEq = parsedPay * 8;
+      const isSuspectLow = parsedPay < 50;
+      return {
+        equivalent: `≈ ₱${dailyEq.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} for an 8-hour workday`,
+        isWarning: isSuspectLow,
+        warningText: isSuspectLow ? '⚠️ Unusually low hourly wage for Bicol/Sorsogon.' : undefined,
+        note: `Rate: ₱${parsedPay.toLocaleString()} / hr (Hourly basis)`,
+      };
+    }
+
+    if (rateUnit === 'per_day') {
+      const hourlyEq = parsedPay / 8;
+      const isSuspectLow = parsedPay < 395;
+      return {
+        equivalent: `≈ ₱${hourlyEq.toFixed(2)} / hour (based on an 8-hour workday)`,
+        isWarning: isSuspectLow,
+        warningText: isSuspectLow
+          ? `⚠️ ₱${parsedPay.toLocaleString()} is below DOLE Region V daily minimum wage (~₱395/day). If you meant ₱${parsedPay.toLocaleString()} per hour, please tap "Per Hour" above.`
+          : undefined,
+        note: `Standard daily rate (Arawan)`,
+      };
+    }
+
+    if (rateUnit === 'per_project') {
+      const parsedDur = parseFloat(duration);
+      if (parsedDur && !isNaN(parsedDur) && parsedDur > 0) {
+        let totalHours = 8;
+        if (durationUnit === 'Hours') totalHours = parsedDur;
+        else if (durationUnit === 'Days') totalHours = parsedDur * 8;
+        else if (durationUnit === 'Weeks') totalHours = parsedDur * 40;
+        else if (durationUnit === 'Months') totalHours = parsedDur * 160;
+
+        const hourlyEq = parsedPay / totalHours;
+        return {
+          equivalent: `≈ ₱${hourlyEq.toFixed(2)} / hour across ${parsedDur} ${durationUnit.toLowerCase()}`,
+          isWarning: hourlyEq < 50,
+          warningText:
+            hourlyEq < 50
+              ? '⚠️ Estimated hourly equivalent is unusually low for this project duration.'
+              : undefined,
+          note: `Total fixed contract payout (Pakyaw)`,
+        };
+      }
+      return {
+        equivalent: `Total fixed compensation for the completed project (Pakyaw).`,
+        isWarning: false,
+        warningText: undefined,
+        note: `Fixed / Project basis`,
+      };
+    }
+
+    if (rateUnit === 'per_piece') {
+      return {
+        equivalent: `₱${parsedPay.toLocaleString()} per piece or unit produced.`,
+        isWarning: false,
+        warningText: undefined,
+        note: `Piece-rate basis`,
+      };
+    }
+
+    return null;
+  };
+
+  const wageInfo = getWageEquivalentInfo();
+
   const [description, setDescription] = useState(jobToEdit?.description || '');
   const [isUrgent, setIsUrgent] = useState(false);
   const [scheduleDate, setScheduleDate] = useState(
@@ -569,6 +639,7 @@ export const PostJobScreen: React.FC = () => {
     if (!barangay) missingFields.push('Barangay');
     if (!municipality) missingFields.push('Municipality');
     if (!pay) missingFields.push('Pay');
+    if (!rateUnit) missingFields.push('Rate Basis');
     if (!slots) missingFields.push('Slots');
     if (!description) missingFields.push('Description');
 
@@ -881,6 +952,38 @@ export const PostJobScreen: React.FC = () => {
                     );
                   })}
                 </View>
+
+                {/* Live Wage Conversion & Preview */}
+                {wageInfo && (
+                  <View
+                    style={[
+                      styles.wagePreviewCard,
+                      wageInfo.isWarning && styles.wagePreviewCardWarning,
+                    ]}
+                  >
+                    <View style={styles.wagePreviewHeader}>
+                      <Ionicons
+                        name={wageInfo.isWarning ? 'warning-outline' : 'calculator-outline'}
+                        size={16}
+                        color={wageInfo.isWarning ? '#B45309' : '#15803D'}
+                      />
+                      <Text
+                        style={[
+                          styles.wagePreviewEquivalent,
+                          wageInfo.isWarning && styles.wagePreviewEquivalentWarning,
+                        ]}
+                      >
+                        {wageInfo.equivalent}
+                      </Text>
+                    </View>
+                    {wageInfo.warningText && (
+                      <Text style={styles.wagePreviewWarningText}>{wageInfo.warningText}</Text>
+                    )}
+                    {wageInfo.note && !wageInfo.warningText && (
+                      <Text style={styles.wagePreviewNote}>{wageInfo.note}</Text>
+                    )}
+                  </View>
+                )}
               </View>
             </View>
 
@@ -1338,6 +1441,45 @@ const styles = StyleSheet.create({
   rateUnitBtnTextActive: {
     color: '#FFFFFF',
     fontFamily: fonts.bodyBold,
+  },
+  wagePreviewCard: {
+    marginTop: 10,
+    padding: 12,
+    backgroundColor: '#F0FDF4',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  wagePreviewCardWarning: {
+    backgroundColor: '#FEF3C7',
+    borderColor: '#FDE68A',
+  },
+  wagePreviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  wagePreviewEquivalent: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: '#15803D',
+    flex: 1,
+  },
+  wagePreviewEquivalentWarning: {
+    color: '#92400E',
+  },
+  wagePreviewWarningText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 12,
+    color: '#B45309',
+    marginTop: 4,
+    lineHeight: 16,
+  },
+  wagePreviewNote: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkSoft,
+    marginTop: 2,
   },
   unitSelector: {
     flexDirection: 'row',

@@ -9,6 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,6 +26,7 @@ import {
   useUnlockConversation,
   useRequestUnlock,
 } from '../../hooks/useConversations';
+import { useBlockUser, useUnblockUser } from '../../hooks/useBlockedUsers';
 import { useAuth } from '../../hooks/useAuth';
 import { useAlert } from '../../contexts/AlertContext';
 import MessageBubble from '../../components/chat/MessageBubble';
@@ -72,7 +75,11 @@ const ChatScreen: React.FC = () => {
   const { user } = useAuth();
 
   const [inputText, setInputText] = useState('');
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+
+  const blockUserMutation = useBlockUser();
+  const unblockUserMutation = useUnblockUser();
 
   const conversation = directConv || convData?.find((c) => c.id === conversationId);
   const status = conversation?.status || 'open';
@@ -89,6 +96,15 @@ const ChatScreen: React.FC = () => {
         : 'worker'
       : (user?.role as 'worker' | 'employer') || 'worker');
 
+  const otherUserId =
+    conversation?.other_user?.id ??
+    (conversationUserRole === 'employer' ? conversation?.worker_id : conversation?.employer_id) ??
+    0;
+
+  const isBlockedByMe = !!conversation?.is_blocked_by_me;
+  const isBlockedByOther = !!conversation?.is_blocked_by_other;
+  const isBlocked = isBlockedByMe || isBlockedByOther;
+
   const messages = data?.messages || [];
   const messageCount = messages.length;
 
@@ -99,6 +115,66 @@ const ChatScreen: React.FC = () => {
         m.sender_id === (conversation?.employer_id ?? conversation?.other_user?.id) ||
         EMPLOYER_OUTREACH_CARD_TYPES.includes(m.card_type || ''),
     );
+
+  const handleBlockUser = () => {
+    setShowOptionsMenu(false);
+    if (!otherUserId) return;
+    const targetName = otherUserName || conversation?.other_user?.name || 'this user';
+    showAlert(
+      'Block User',
+      `Are you sure you want to block ${targetName}? They will no longer be able to message you, send job offers, or view your listings.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Block',
+          style: 'destructive',
+          onPress: () => {
+            blockUserMutation.mutate(otherUserId, {
+              onSuccess: () => {
+                showAlert('User Blocked', `${targetName} has been blocked.`);
+                refetch();
+              },
+              onError: (err: any) => {
+                showAlert('Block Failed', err.message || 'Could not block this user.');
+              },
+            });
+          },
+        },
+      ],
+    );
+  };
+
+  const handleUnblockUser = () => {
+    setShowOptionsMenu(false);
+    if (!otherUserId) return;
+    const targetName = otherUserName || conversation?.other_user?.name || 'this user';
+    showAlert('Unblock User', `Are you sure you want to unblock ${targetName}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Unblock',
+        onPress: () => {
+          unblockUserMutation.mutate(otherUserId, {
+            onSuccess: () => {
+              showAlert('User Unblocked', `${targetName} has been unblocked.`);
+              refetch();
+            },
+            onError: (err: any) => {
+              showAlert('Unblock Failed', err.message || 'Could not unblock this user.');
+            },
+          });
+        },
+      },
+    ]);
+  };
+
+  const handleReportUser = () => {
+    setShowOptionsMenu(false);
+    if (!otherUserId) return;
+    (navigation as any).navigate('Report', {
+      reportable_type: 'user',
+      reportable_id: otherUserId,
+    });
+  };
 
   useEffect(() => {
     if (messageCount > 0) {
@@ -339,7 +415,65 @@ const ChatScreen: React.FC = () => {
           ) : (
             <View style={styles.activeDot} />
           )}
+          <TouchableOpacity
+            onPress={() => setShowOptionsMenu(true)}
+            style={styles.headerMoreBtn}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="ellipsis-vertical" size={20} color={colors.ink} />
+          </TouchableOpacity>
         </View>
+
+        {/* Options Modal */}
+        <Modal
+          visible={showOptionsMenu}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowOptionsMenu(false)}
+        >
+          <Pressable style={styles.modalBackdrop} onPress={() => setShowOptionsMenu(false)}>
+            <View style={styles.optionsMenuContainer}>
+              <TouchableOpacity
+                style={styles.optionsMenuItem}
+                onPress={() => {
+                  setShowOptionsMenu(false);
+                  if (isBlockedByMe) {
+                    handleUnblockUser();
+                  } else {
+                    handleBlockUser();
+                  }
+                }}
+              >
+                <Ionicons
+                  name={isBlockedByMe ? 'shield-checkmark-outline' : 'ban-outline'}
+                  size={20}
+                  color={isBlockedByMe ? colors.primary : colors.error}
+                />
+                <Text
+                  style={[
+                    styles.optionsMenuText,
+                    isBlockedByMe ? { color: colors.primary } : { color: colors.error },
+                  ]}
+                >
+                  {isBlockedByMe ? 'Unblock User' : 'Block User'}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={styles.optionsMenuDivider} />
+
+              <TouchableOpacity
+                style={styles.optionsMenuItem}
+                onPress={() => {
+                  setShowOptionsMenu(false);
+                  handleReportUser();
+                }}
+              >
+                <Ionicons name="flag-outline" size={20} color={colors.ink} />
+                <Text style={styles.optionsMenuText}>Report User</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Modal>
 
         {/* Minimalist Pinned Action Banner for Still Actionable Cards */}
         {pinnedDetails && actionableCards.length > 0 && (
@@ -486,6 +620,7 @@ const ChatScreen: React.FC = () => {
                   jobTitle={jobTitle || conversation?.job_title || ''}
                   jobId={conversation?.job_id}
                   hasRealMessageFromEmployer={hasRealMessageFromEmployer}
+                  isBlocked={isBlocked}
                   onActionComplete={refetch}
                 />
               );
@@ -494,18 +629,52 @@ const ChatScreen: React.FC = () => {
           }}
         />
 
-        {/* First-message restriction notice for workers */}
-        {status === 'open' && conversationUserRole === 'worker' && !isWorkerReplyAllowed && (
-          <View style={styles.firstMsgNotice}>
-            <Ionicons name="information-circle-outline" size={14} color={colors.inkMuted} />
-            <Text style={styles.firstMsgNoticeText}>
-              The employer will send the first message or job offer to start the conversation.
-            </Text>
+        {/* Blocked by me notice */}
+        {isBlockedByMe && (
+          <View style={styles.blockedBanner}>
+            <View style={styles.blockedBannerLeft}>
+              <Ionicons name="ban" size={16} color={colors.error} />
+              <Text style={styles.blockedBannerText}>You have blocked this user.</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.unblockBannerBtn}
+              onPress={handleUnblockUser}
+              disabled={unblockUserMutation.isPending}
+            >
+              <Text style={styles.unblockBannerBtnText}>
+                {unblockUserMutation.isPending ? 'Unblocking...' : 'Unblock'}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
 
+        {/* Blocked by other notice */}
+        {!isBlockedByMe && isBlockedByOther && (
+          <View style={styles.blockedBanner}>
+            <View style={styles.blockedBannerLeft}>
+              <Ionicons name="information-circle-outline" size={16} color={colors.inkMuted} />
+              <Text style={[styles.blockedBannerText, { color: colors.inkMuted }]}>
+                You cannot message this user.
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* First-message restriction notice for workers */}
+        {status === 'open' &&
+          !isBlocked &&
+          conversationUserRole === 'worker' &&
+          !isWorkerReplyAllowed && (
+            <View style={styles.firstMsgNotice}>
+              <Ionicons name="information-circle-outline" size={14} color={colors.inkMuted} />
+              <Text style={styles.firstMsgNoticeText}>
+                The employer will send the first message or job offer to start the conversation.
+              </Text>
+            </View>
+          )}
+
         {/* Input Bar */}
-        {status === 'open' && (
+        {status === 'open' && !isBlocked && (
           <View style={styles.inputContainer}>
             <TouchableOpacity
               onPress={handlePickImage}
@@ -779,6 +948,80 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
     alignSelf: 'center',
     paddingHorizontal: 4,
+  },
+  headerMoreBtn: {
+    padding: 6,
+    marginLeft: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingRight: 16,
+  },
+  optionsMenuContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    minWidth: 180,
+    paddingVertical: 6,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  optionsMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  optionsMenuText: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.ink,
+  },
+  optionsMenuDivider: {
+    height: 1,
+    backgroundColor: 'rgba(226, 232, 240, 0.70)',
+    marginVertical: 2,
+  },
+  blockedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FEF2F2',
+    borderTopWidth: 1,
+    borderTopColor: '#FEE2E2',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  blockedBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  blockedBannerText: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 13,
+    color: colors.error,
+  },
+  unblockBannerBtn: {
+    backgroundColor: colors.error,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  unblockBannerBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.white,
   },
 });
 

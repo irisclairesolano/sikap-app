@@ -305,6 +305,24 @@ export interface Conversation {
   last_message_preview?: string | null;
   last_message_at?: string | null;
   unread_count: number;
+  is_blocked_by_me?: boolean;
+  is_blocked_by_other?: boolean;
+  is_blocked?: boolean;
+}
+
+export interface BlockedUserRecord {
+  id: number;
+  blocker_id: number;
+  blocked_id: number;
+  created_at: string;
+  blocked?: {
+    id: number;
+    name: string;
+    avatar_url?: string | null;
+    role?: 'worker' | 'employer';
+    barangay?: string;
+    municipality?: string;
+  };
 }
 
 export type MessageType = 'text' | 'image' | 'system' | 'action_card';

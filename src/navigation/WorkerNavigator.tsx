@@ -100,6 +100,7 @@ const MessagesStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="ConversationsList" component={ConversationsListScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
+    <Stack.Screen name="Report" component={ReportScreen} />
   </Stack.Navigator>
 );
 

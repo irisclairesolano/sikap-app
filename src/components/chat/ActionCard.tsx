@@ -30,6 +30,7 @@ interface ActionCardProps {
   jobTitle?: string;
   jobId?: number;
   hasRealMessageFromEmployer?: boolean;
+  isBlocked?: boolean;
   onActionComplete: () => void;
 }
 
@@ -49,6 +50,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
   jobTitle,
   jobId,
   hasRealMessageFromEmployer = true,
+  isBlocked = false,
   onActionComplete,
 }) => {
   const queryClient = useQueryClient();
@@ -71,6 +73,10 @@ const ActionCard: React.FC<ActionCardProps> = ({
     apiCall: () => Promise<any>,
     invalidateKeys?: unknown[][],
   ) => {
+    if (isBlocked) {
+      showAlert('Action Unavailable', 'Cannot perform actions while this conversation is blocked.');
+      return;
+    }
     setLoadingAction(actionId);
     try {
       await apiCall();
