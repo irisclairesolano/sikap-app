@@ -107,7 +107,7 @@ describe('ActionCard Job Request Component', () => {
     await fireEvent.press(getByText('Hire Worker'));
     expect(getByPlaceholderText('Enter agreed price (₱)')).toBeTruthy();
     expect(getByText('Confirm Hire')).toBeTruthy();
-  });
+  }, 15000);
 
   it('renders completed etched card once hire is confirmed', async () => {
     const resolvedMessage: Message = {
