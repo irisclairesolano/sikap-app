@@ -97,13 +97,14 @@ describe('ActionCard Job Request Component', () => {
     expect(getByText('Agree on Final Price')).toBeTruthy();
     expect(getByText('Set Price & Confirm')).toBeTruthy();
 
-    // Toggle button is present instead of raw input being the first card
-    const toggleButton = getByTestId('set-final-price-toggle-btn');
-    expect(toggleButton).toBeTruthy();
+    // D6 Hire Decision Gate is present
+    expect(getByText('Hire Decision')).toBeTruthy();
+    expect(getByText('Hire Worker')).toBeTruthy();
+    expect(getByText('Decline')).toBeTruthy();
     expect(queryByPlaceholderText('Enter agreed price (₱)')).toBeNull();
 
-    // Tapping toggle button reveals the price input and confirm button
-    await fireEvent.press(toggleButton);
+    // Tapping Hire Worker reveals the price input and confirm button
+    await fireEvent.press(getByText('Hire Worker'));
     expect(getByPlaceholderText('Enter agreed price (₱)')).toBeTruthy();
     expect(getByText('Confirm Hire')).toBeTruthy();
   });

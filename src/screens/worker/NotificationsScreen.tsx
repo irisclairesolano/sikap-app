@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -27,17 +27,25 @@ type NotificationsScreenNavigationProp = NativeStackNavigationProp<
 
 export const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation<NotificationsScreenNavigationProp>();
-  const { data, isLoading, refetch, isFetching } = useNotifications();
+  const { data, isLoading, refetch } = useNotifications();
   const markAsReadMutation = useMarkNotificationAsRead();
   const markAllAsReadMutation = useMarkAllNotificationsAsRead();
+  const [manualRefreshing, setManualRefreshing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
+      // Silent background refresh on screen focus
       refetch();
     }, [refetch]),
   );
 
-  if (isLoading) {
+  const handleManualRefresh = async () => {
+    setManualRefreshing(true);
+    await refetch();
+    setManualRefreshing(false);
+  };
+
+  if (isLoading && !data) {
     return (
       <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -166,8 +174,8 @@ export const NotificationsScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
-            refreshing={isFetching && !isLoading}
-            onRefresh={refetch}
+            refreshing={manualRefreshing}
+            onRefresh={handleManualRefresh}
             colors={[colors.primary, colors.primaryDark]}
             tintColor={colors.primary}
             progressBackgroundColor={colors.paperBright}

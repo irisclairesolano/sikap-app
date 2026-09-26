@@ -38,17 +38,17 @@ describe('Application Rating, Privacy, and Filter Logic', () => {
   };
 
   describe('Rating Status and Stage Info', () => {
-    it('returns "Completed" with urgent badge when completed and has_reviewed is false', () => {
+    it('returns "Done" with urgent badge when completed and has_reviewed is false', () => {
       const stageInfo = getApplicationStageInfo('completed', false);
-      expect(stageInfo.badgeLabel).toBe('Completed');
+      expect(stageInfo.badgeLabel).toBe('Done');
       expect(stageInfo.isUrgent).toBe(true);
       expect(stageInfo.stage).toBe(5);
       expect(stageInfo.nextStep).toContain('Please rate your employer');
     });
 
-    it('returns "Completed · Rated" when completed and has_reviewed is true', () => {
+    it('returns "Done · Rated" when completed and has_reviewed is true', () => {
       const stageInfo = getApplicationStageInfo('completed', true);
-      expect(stageInfo.badgeLabel).toBe('Completed · Rated');
+      expect(stageInfo.badgeLabel).toBe('Done · Rated');
       expect(stageInfo.isUrgent).toBe(false);
       expect(stageInfo.stage).toBe(5);
       expect(stageInfo.nextStep).toContain('Thank you for your feedback');

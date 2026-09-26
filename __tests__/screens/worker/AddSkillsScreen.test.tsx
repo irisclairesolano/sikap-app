@@ -119,7 +119,7 @@ describe('AddSkillsScreen', () => {
     fireEvent.press(nextButton);
 
     await waitFor(() => {
-      expect(getByText('Please select at least one skill to continue.')).toBeTruthy();
+      expect(getByText('Please select or add at least one skill to continue.')).toBeTruthy();
     });
     expect(mockSaveMutate).not.toHaveBeenCalled();
   });
