@@ -6,12 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../../api/client';
 import { colors, fonts, shadows } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { Avatar } from '../../components/common/Avatar';
@@ -37,10 +40,24 @@ export const EmployerPublicProfileScreen: React.FC = () => {
   const { data: reviewsData, isLoading: isLoadingReviews } = useReviews(employerId, 'employer');
   const reviews = reviewsData?.reviews || [];
   const reviewsCount = reviewsData?.reviews_count ?? reviews.length;
+
+  const { data: publicProfile } = useQuery({
+    queryKey: ['employerPublicProfile', employerId],
+    queryFn: () => apiClient<any>(`/employers/${employerId}/public-profile`),
+    enabled: !!employerId,
+  });
+
+  const effectiveDocs: string[] =
+    publicProfile?.business_documents && publicProfile.business_documents.length > 0
+      ? publicProfile.business_documents
+      : businessDocuments || [];
+
   const currentReputation =
-    reviewsData?.reputation_score && reviewsData.reputation_score > 0
-      ? reviewsData.reputation_score
-      : reputationScore;
+    publicProfile?.reputation_score !== undefined && publicProfile?.reputation_score !== null
+      ? publicProfile.reputation_score
+      : reviewsData?.reputation_score && reviewsData.reputation_score > 0
+        ? reviewsData.reputation_score
+        : reputationScore;
 
   const [viewerMedia, setViewerMedia] = useState<{ type: 'photo' | 'video'; url: string } | null>(
     null,
@@ -121,28 +138,33 @@ export const EmployerPublicProfileScreen: React.FC = () => {
             <View style={styles.reputationCard}>
               <View style={styles.scoreHeroRow}>
                 <Text style={styles.bigScore}>
-                  {currentReputation
+                  {reviewsCount > 0 && currentReputation
                     ? Number(currentReputation) % 1 === 0
                       ? Number(currentReputation).toFixed(1)
                       : Number(currentReputation).toString()
-                    : '5.0'}
+                    : 'N/A'}
                 </Text>
                 <View style={{ gap: 4 }}>
-                  <View style={{ flexDirection: 'row', gap: 3 }}>
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Ionicons
-                        key={s}
-                        name="star"
-                        size={18}
-                        color={
-                          s <= Math.round(Number(currentReputation || 5)) ? colors.gold : '#E2E8F0'
-                        }
-                      />
-                    ))}
-                  </View>
+                  {reviewsCount > 0 ? (
+                    <View style={{ flexDirection: 'row', gap: 3 }}>
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Ionicons
+                          key={s}
+                          name="star"
+                          size={18}
+                          color={
+                            s <= Math.round(Number(currentReputation || 0))
+                              ? colors.gold
+                              : '#E2E8F0'
+                          }
+                        />
+                      ))}
+                    </View>
+                  ) : null}
                   <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
-                    Overall Employer Rating ({reviewsCount}{' '}
-                    {reviewsCount === 1 ? 'review' : 'reviews'})
+                    {reviewsCount > 0
+                      ? `Overall Employer Rating (${reviewsCount} ${reviewsCount === 1 ? 'review' : 'reviews'})`
+                      : 'No ratings yet (0 reviews)'}
                   </Text>
                 </View>
               </View>
@@ -159,7 +181,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
                 name={
                   verificationBadge
                     ? 'ribbon'
-                    : businessDocuments && businessDocuments.length > 0
+                    : effectiveDocs && effectiveDocs.length > 0
                       ? 'document-text-outline'
                       : 'alert-circle-outline'
                 }
@@ -167,7 +189,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
                 color={
                   verificationBadge
                     ? colors.primary
-                    : businessDocuments && businessDocuments.length > 0
+                    : effectiveDocs && effectiveDocs.length > 0
                       ? '#D97706'
                       : colors.inkMuted
                 }
@@ -175,7 +197,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
               <Text style={styles.docTitle}>
                 {verificationBadge
                   ? 'Business Document Verified'
-                  : businessDocuments && businessDocuments.length > 0
+                  : effectiveDocs && effectiveDocs.length > 0
                     ? 'Documents Under Review'
                     : 'Business Document Not Verified'}
               </Text>
@@ -183,12 +205,12 @@ export const EmployerPublicProfileScreen: React.FC = () => {
             <Text style={styles.docDesc}>
               {verificationBadge
                 ? 'This employer has completed business document verification with SIKAP Admins.'
-                : businessDocuments && businessDocuments.length > 0
+                : effectiveDocs && effectiveDocs.length > 0
                   ? 'Business documents have been submitted and are currently undergoing verification by SIKAP administrators.'
                   : 'This employer has not yet completed business document verification with SIKAP Admins.'}
             </Text>
 
-            {businessDocuments && businessDocuments.length > 0 && (
+            {effectiveDocs && effectiveDocs.length > 0 && (
               <View style={styles.docList}>
                 <Text style={styles.docSubheader}>Attached Business Documents:</Text>
                 <ScrollView
@@ -196,23 +218,59 @@ export const EmployerPublicProfileScreen: React.FC = () => {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={{ gap: 10, paddingTop: 8 }}
                 >
-                  {businessDocuments.map((docUrl, idx) => (
-                    <TouchableOpacity
-                      key={idx}
-                      activeOpacity={0.8}
-                      onPress={() => setViewerMedia({ type: 'photo', url: docUrl })}
-                      style={styles.docThumb}
-                    >
-                      <Image
-                        cachePolicy="memory-disk"
-                        source={{ uri: docUrl }}
-                        style={styles.docImage}
-                      />
-                      <View style={styles.expandOverlay}>
-                        <Ionicons name="expand-outline" size={12} color={colors.white} />
-                      </View>
-                    </TouchableOpacity>
-                  ))}
+                  {effectiveDocs.map((docUrl, idx) => {
+                    const isPdf = docUrl.toLowerCase().includes('.pdf');
+                    return (
+                      <TouchableOpacity
+                        key={idx}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          if (isPdf) {
+                            Linking.openURL(docUrl);
+                          } else {
+                            setViewerMedia({ type: 'photo', url: docUrl });
+                          }
+                        }}
+                        style={[
+                          styles.docThumb,
+                          isPdf && {
+                            backgroundColor: colors.paperCream,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            padding: 6,
+                          },
+                        ]}
+                      >
+                        {isPdf ? (
+                          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                            <Ionicons name="document-text" size={28} color={colors.primary} />
+                            <Text
+                              style={{
+                                fontFamily: fonts.bodyBold,
+                                fontSize: 9,
+                                color: colors.primaryDark,
+                                marginTop: 2,
+                                textAlign: 'center',
+                              }}
+                            >
+                              PDF View
+                            </Text>
+                          </View>
+                        ) : (
+                          <>
+                            <Image
+                              cachePolicy="memory-disk"
+                              source={{ uri: docUrl }}
+                              style={styles.docImage}
+                            />
+                            <View style={styles.expandOverlay}>
+                              <Ionicons name="expand-outline" size={12} color={colors.white} />
+                            </View>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
                 </ScrollView>
               </View>
             )}

@@ -424,7 +424,7 @@ export const JobStatusManagementScreen: React.FC = () => {
         )}
 
         {(() => {
-          const activeApp = applications.find((a) =>
+          const activeApps = applications.filter((a) =>
             [
               'employer_requested',
               'pending_negotiation',
@@ -433,14 +433,14 @@ export const JobStatusManagementScreen: React.FC = () => {
               'completed',
             ].includes(a.status),
           );
-          if (!activeApp) return null;
+          if (activeApps.length === 0) return null;
 
           const getStageTitle = (st: string) => {
             if (st === 'employer_requested' || st === 'pending_negotiation')
               return 'Stage 2: Shortlisted & Negotiation';
             if (st === 'employer_confirmed') return 'Stage 3: Offer Sent';
             if (st === 'accepted') return 'Stage 4: Worker Hired';
-            if (st === 'completed') return 'Stage 5: Completed Job';
+            if (st === 'completed') return 'Stage 5: Done';
             return 'Active Stage';
           };
 
@@ -454,99 +454,121 @@ export const JobStatusManagementScreen: React.FC = () => {
           };
 
           return (
-            <View
-              style={{
-                backgroundColor: colors.paperBright,
-                borderRadius: 16,
-                padding: 16,
-                marginBottom: 16,
-                borderWidth: 1.5,
-                borderColor: colors.primary,
-                ...shadows.sm,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 8,
-                  marginBottom: 8,
-                }}
-              >
+            <View style={{ marginBottom: 8 }}>
+              {activeApps.length > 1 && (
                 <Text
                   style={{
-                    flex: 1,
                     fontFamily: fonts.bodyBold,
-                    fontSize: 13,
-                    color: colors.primaryDark,
+                    fontSize: 12,
+                    color: colors.inkSoft,
+                    marginBottom: 8,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
                   }}
-                  numberOfLines={1}
                 >
-                  {getStageTitle(activeApp.status)}
+                  Active Candidates ({activeApps.length})
                 </Text>
+              )}
+              {activeApps.map((activeApp) => (
                 <View
+                  key={activeApp.id}
                   style={{
-                    flexShrink: 0,
-                    backgroundColor: colors.primaryTint,
-                    paddingHorizontal: 8,
-                    paddingVertical: 3,
-                    borderRadius: 12,
+                    backgroundColor: colors.paperBright,
+                    borderRadius: 16,
+                    padding: 16,
+                    marginBottom: 12,
+                    borderWidth: 1.5,
+                    borderColor: colors.primary,
+                    ...shadows.sm,
                   }}
                 >
-                  <Text style={{ fontFamily: fonts.bodyBold, fontSize: 10, color: colors.primary }}>
-                    CURRENT STAGE
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 8,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        flex: 1,
+                        fontFamily: fonts.bodyBold,
+                        fontSize: 13,
+                        color: colors.primaryDark,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {getStageTitle(activeApp.status)}
+                    </Text>
+                    <View
+                      style={{
+                        flexShrink: 0,
+                        backgroundColor: colors.primaryTint,
+                        paddingHorizontal: 8,
+                        paddingVertical: 3,
+                        borderRadius: 12,
+                      }}
+                    >
+                      <Text
+                        style={{ fontFamily: fonts.bodyBold, fontSize: 10, color: colors.primary }}
+                      >
+                        CURRENT STAGE
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Text
+                    style={{
+                      fontFamily: fonts.display,
+                      fontSize: 16,
+                      color: colors.ink,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {activeApp.worker?.name || 'Worker'}
                   </Text>
+                  <Text
+                    style={{
+                      fontFamily: fonts.body,
+                      fontSize: 12,
+                      color: colors.inkSoft,
+                      marginBottom: 12,
+                    }}
+                  >
+                    {activeApp.worker?.barangay
+                      ? `${activeApp.worker.barangay}, ${activeApp.worker.municipality}`
+                      : 'Worker Applicant'}
+                  </Text>
+
+                  <Button
+                    label={getActionLabel(activeApp.status)}
+                    variant="primary"
+                    size="base"
+                    fullWidth
+                    onPress={() =>
+                      navigation.navigate('ApplicantDetail', {
+                        applicantId: activeApp.id,
+                        applicantName: activeApp.worker?.name || 'Worker Applicant',
+                        jobTitle: job?.title || '',
+                        status: activeApp.status,
+                        barangay: activeApp.worker?.barangay,
+                        municipality: activeApp.worker?.municipality,
+                        reputationScore: activeApp.worker?.reputation_score,
+                        bio: activeApp.worker?.workerProfile?.bio || (activeApp.worker as any)?.bio,
+                        skills: activeApp.worker?.skills,
+                        experiences: activeApp.worker?.experiences,
+                        characterReferences: activeApp.worker?.character_references || undefined,
+                        phone: activeApp.worker?.phone || undefined,
+                        emergencyContactName: (activeApp.worker as any)?.emergency_contact_name,
+                        emergencyContactPhone: (activeApp.worker as any)?.emergency_contact_phone,
+                        coverNote: activeApp.cover_note || undefined,
+                      })
+                    }
+                  />
                 </View>
-              </View>
-
-              <Text
-                style={{
-                  fontFamily: fonts.display,
-                  fontSize: 16,
-                  color: colors.ink,
-                  marginBottom: 4,
-                }}
-              >
-                {activeApp.worker?.name || 'Worker'}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: fonts.body,
-                  fontSize: 12,
-                  color: colors.inkSoft,
-                  marginBottom: 12,
-                }}
-              >
-                {activeApp.worker?.barangay
-                  ? `${activeApp.worker.barangay}, ${activeApp.worker.municipality}`
-                  : 'Worker Applicant'}
-              </Text>
-
-              <Button
-                label={getActionLabel(activeApp.status)}
-                variant="primary"
-                size="base"
-                fullWidth
-                onPress={() =>
-                  navigation.navigate('ApplicantDetail', {
-                    applicantId: activeApp.id,
-                    applicantName: activeApp.worker?.name || 'Worker Applicant',
-                    jobTitle: job?.title || '',
-                    status: activeApp.status,
-                    barangay: activeApp.worker?.barangay,
-                    municipality: activeApp.worker?.municipality,
-                    reputationScore: activeApp.worker?.reputation_score,
-                    bio: activeApp.worker?.workerProfile?.bio || (activeApp.worker as any)?.bio,
-                    skills: activeApp.worker?.skills,
-                    experiences: activeApp.worker?.experiences,
-                    characterReferences: activeApp.worker?.character_references || undefined,
-                    phone: activeApp.worker?.phone || undefined,
-                    emergencyContactName: (activeApp.worker as any)?.emergency_contact_name,
-                    emergencyContactPhone: (activeApp.worker as any)?.emergency_contact_phone,
-                  })
-                }
-              />
+              ))}
             </View>
           );
         })()}

@@ -105,6 +105,31 @@ const ChatScreen: React.FC = () => {
   const isBlockedByOther = !!conversation?.is_blocked_by_other;
   const isBlocked = isBlockedByMe || isBlockedByOther;
 
+  const [inputError, setInputError] = useState<string | null>(null);
+
+  const handleOpenUserProfile = () => {
+    if (conversationUserRole === 'employer') {
+      const appId = conversation?.application_id;
+      if (appId) {
+        (navigation as any).navigate('ApplicantDetail', {
+          applicantId: appId,
+          applicantName: otherUserName || conversation?.other_user?.name,
+          jobTitle: jobTitle || conversation?.job_title,
+        });
+      }
+    } else {
+      const empId = conversation?.employer_id ?? conversation?.other_user?.id;
+      if (empId) {
+        (navigation as any).navigate('EmployerPublicProfile', {
+          employerId: empId,
+          employerName: otherUserName || conversation?.other_user?.name,
+          avatarUrl: conversation?.other_user?.avatar_url,
+          jobTitle: jobTitle || conversation?.job_title,
+        });
+      }
+    }
+  };
+
   const messages = data?.messages || [];
   const messageCount = messages.length;
 
@@ -186,12 +211,20 @@ const ChatScreen: React.FC = () => {
   const handleSendText = () => {
     const textToSend = inputText.trim();
     if (!textToSend) return;
+    setInputError(null);
     setInputText('');
     setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
     sendMessage.mutate(textToSend, {
       onError: (err: any) => {
         setInputText(textToSend);
-        showAlert('Failed to Send', err.message || 'Could not send message. Please try again.');
+        if (
+          err.status === 422 ||
+          (err.message && /prohibited|inappropriate|profanity|flagged/i.test(err.message))
+        ) {
+          setInputError(err.message || 'Message contains prohibited language.');
+        } else {
+          showAlert('Failed to Send', err.message || 'Could not send message. Please try again.');
+        }
       },
       onSuccess: () => {
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
@@ -382,31 +415,37 @@ const ChatScreen: React.FC = () => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
-          <View style={styles.headerAvatar}>
-            {conversation?.other_user?.avatar_url ? (
-              <Image
-                source={{ uri: conversation.other_user.avatar_url }}
-                cachePolicy="memory-disk"
-                priority="high"
-                transition={150}
-                style={styles.headerAvatarImage}
-              />
-            ) : (
-              <View style={styles.headerAvatarFallback}>
-                <Text style={styles.headerAvatarText}>
-                  {(otherUserName || conversation?.other_user?.name || '?').charAt(0)}
-                </Text>
-              </View>
-            )}
-          </View>
-          <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerName} numberOfLines={1}>
-              {otherUserName || conversation?.other_user?.name}
-            </Text>
-            <Text style={styles.headerJob} numberOfLines={1}>
-              {jobTitle || conversation?.job_title}
-            </Text>
-          </View>
+          <TouchableOpacity
+            style={styles.headerProfileBtn}
+            activeOpacity={0.7}
+            onPress={handleOpenUserProfile}
+          >
+            <View style={styles.headerAvatar}>
+              {conversation?.other_user?.avatar_url ? (
+                <Image
+                  source={{ uri: conversation.other_user.avatar_url }}
+                  cachePolicy="memory-disk"
+                  priority="high"
+                  transition={150}
+                  style={styles.headerAvatarImage}
+                />
+              ) : (
+                <View style={styles.headerAvatarFallback}>
+                  <Text style={styles.headerAvatarText}>
+                    {(otherUserName || conversation?.other_user?.name || '?').charAt(0)}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <View style={styles.headerTitleContainer}>
+              <Text style={styles.headerName} numberOfLines={1}>
+                {otherUserName || conversation?.other_user?.name}
+              </Text>
+              <Text style={styles.headerJob} numberOfLines={1}>
+                {jobTitle || conversation?.job_title}
+              </Text>
+            </View>
+          </TouchableOpacity>
           {isLocked ? (
             <View style={styles.lockedPill}>
               <Ionicons name="lock-closed" size={12} color={colors.inkMuted} />
@@ -675,47 +714,60 @@ const ChatScreen: React.FC = () => {
 
         {/* Input Bar */}
         {status === 'open' && !isBlocked && (
-          <View style={styles.inputContainer}>
-            <TouchableOpacity
-              onPress={handlePickImage}
-              style={styles.iconBtn}
-              activeOpacity={0.6}
-              disabled={!isWorkerReplyAllowed}
-            >
-              <Ionicons name="image-outline" size={24} color={colors.inkMuted} />
-            </TouchableOpacity>
-            <TextInput
-              style={styles.input}
-              placeholder={
-                !isWorkerReplyAllowed
-                  ? 'Waiting for employer to start conversation...'
-                  : 'Type a message...'
-              }
-              placeholderTextColor={colors.inkLight}
-              value={inputText}
-              onChangeText={setInputText}
-              multiline
-              maxLength={1000}
-              editable={isWorkerReplyAllowed}
-            />
-            {inputText.length > 800 && (
-              <Text style={[styles.charCounter, inputText.length > 950 && { color: colors.error }]}>
-                {inputText.length}/1000
-              </Text>
-            )}
-            <TouchableOpacity
-              onPress={handleSendText}
-              style={styles.iconBtn}
-              activeOpacity={0.6}
-              disabled={!inputText.trim() || !isWorkerReplyAllowed}
-            >
-              <Ionicons
-                name="send"
-                size={24}
-                color={inputText.trim() ? colors.primary : colors.inkLight}
+          <>
+            <View style={styles.inputContainer}>
+              <TouchableOpacity
+                onPress={handlePickImage}
+                style={styles.iconBtn}
+                activeOpacity={0.6}
+                disabled={!isWorkerReplyAllowed}
+              >
+                <Ionicons name="image-outline" size={24} color={colors.inkMuted} />
+              </TouchableOpacity>
+              <TextInput
+                style={styles.input}
+                placeholder={
+                  !isWorkerReplyAllowed
+                    ? 'Waiting for employer to start conversation...'
+                    : 'Type a message...'
+                }
+                placeholderTextColor={colors.inkLight}
+                value={inputText}
+                onChangeText={(text) => {
+                  setInputText(text);
+                  if (inputError) setInputError(null);
+                }}
+                multiline
+                maxLength={1000}
+                editable={isWorkerReplyAllowed}
               />
-            </TouchableOpacity>
-          </View>
+              {inputText.length > 800 && (
+                <Text
+                  style={[styles.charCounter, inputText.length > 950 && { color: colors.error }]}
+                >
+                  {inputText.length}/1000
+                </Text>
+              )}
+              <TouchableOpacity
+                onPress={handleSendText}
+                style={styles.iconBtn}
+                activeOpacity={0.6}
+                disabled={!inputText.trim() || !isWorkerReplyAllowed}
+              >
+                <Ionicons
+                  name="send"
+                  size={24}
+                  color={inputText.trim() ? colors.primary : colors.inkLight}
+                />
+              </TouchableOpacity>
+            </View>
+            {inputError ? (
+              <View style={styles.inlineErrorBox}>
+                <Ionicons name="alert-circle" size={15} color={colors.error} />
+                <Text style={styles.inlineErrorText}>{inputError}</Text>
+              </View>
+            ) : null}
+          </>
         )}
       </SafeAreaView>
     </KeyboardAvoidingView>
@@ -1022,6 +1074,28 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 12,
     color: colors.white,
+  },
+  headerProfileBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  inlineErrorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#FEE2E2',
+    borderTopWidth: 1,
+    borderTopColor: '#FCA5A5',
+  },
+  inlineErrorText: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 12,
+    color: colors.error,
+    flex: 1,
   },
 });
 

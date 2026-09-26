@@ -78,14 +78,14 @@ export const getApplicationStageInfo = (status: string, hasReviewed?: boolean) =
     case 'completed':
       return {
         stage: 5,
-        badgeLabel: hasReviewed ? 'Completed · Rated' : 'Completed',
+        badgeLabel: hasReviewed ? 'Done · Rated' : 'Done',
         badgeIcon: hasReviewed ? ('checkmark-circle' as const) : ('ribbon-outline' as const),
         badgeBg: hasReviewed ? '#DCFCE7' : '#E0F2FE',
         badgeColor: hasReviewed ? '#15803D' : '#0369A1',
-        stepLabel: hasReviewed ? 'Step 5 of 5: Job Finished & Rated' : 'Step 5 of 5: Job Finished',
+        stepLabel: hasReviewed ? 'Step 5 of 5: Done & Rated' : 'Step 5 of 5: Done',
         nextStep: hasReviewed
           ? 'Job finished and rated. Thank you for your feedback!'
-          : 'Job complete! Please rate your employer to help the community.',
+          : 'Job done! Please rate your employer to help the community.',
         isUrgent: !hasReviewed,
       };
     case 'withdrawn':

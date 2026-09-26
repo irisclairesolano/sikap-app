@@ -19,6 +19,7 @@ export const AddSkillsScreen: React.FC = () => {
   const { user } = useAuthCheck();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
+  const [customSkills, setCustomSkills] = useState<string[]>([]);
   const [customSkill, setCustomSkill] = useState('');
   const [customSkillError, setCustomSkillError] = useState('');
   const [saveError, setSaveError] = useState('');
@@ -26,6 +27,12 @@ export const AddSkillsScreen: React.FC = () => {
   useEffect(() => {
     if (user?.worker_profile?.skills) {
       setSelectedSkills(user.worker_profile.skills);
+    }
+    if (
+      (user?.worker_profile as any)?.custom_skills &&
+      Array.isArray((user?.worker_profile as any).custom_skills)
+    ) {
+      setCustomSkills((user?.worker_profile as any).custom_skills);
     }
   }, [user]);
 
@@ -36,23 +43,18 @@ export const AddSkillsScreen: React.FC = () => {
   });
 
   const saveMutation = useMutation({
-    mutationFn: (skillIds: number[]) => profileApi.addSkills(skillIds),
+    mutationFn: () =>
+      profileApi.addSkills(
+        selectedSkills.map((s) => s.id),
+        customSkills,
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       navigation.goBack();
     },
-    onError: (err) => {
-      console.error('Failed to save skills', err);
-    },
-  });
-
-  const createSkillMutation = useMutation({
-    mutationFn: (name: string) => skillsApi.createSkill(name),
-    onSuccess: (newSkill) => {
-      // Handled optimistically, success will swap the temp ID in handleAddCustomSkill callbacks
-    },
     onError: (err: any) => {
-      console.error('Failed to create skill', err);
+      console.error('Failed to save skills', err);
+      setSaveError(err.message || 'Failed to save skills');
     },
   });
 
@@ -60,14 +62,11 @@ export const AddSkillsScreen: React.FC = () => {
     const trimmed = customSkill.trim();
     if (!trimmed) return;
 
-    // Check if already selected or suggested
-    const existing =
-      skills.find((s) => s.name.toLowerCase() === trimmed.toLowerCase()) ||
-      selectedSkills.find((s) => s.name.toLowerCase() === trimmed.toLowerCase());
-
-    if (existing) {
-      if (!selectedSkills.find((s) => s.id === existing.id)) {
-        setSelectedSkills([...selectedSkills, existing]);
+    // Check if matches suggested catalog
+    const existingCatalog = skills.find((s) => s.name.toLowerCase() === trimmed.toLowerCase());
+    if (existingCatalog) {
+      if (!selectedSkills.find((s) => s.id === existingCatalog.id)) {
+        setSelectedSkills([...selectedSkills, existingCatalog]);
         setCustomSkill('');
         setCustomSkillError('');
         setSaveError('');
@@ -77,26 +76,21 @@ export const AddSkillsScreen: React.FC = () => {
       return;
     }
 
-    const tempId = -Date.now();
-    const tempSkill: Skill = { id: tempId, name: trimmed };
+    // Check if already in custom skills
+    if (customSkills.some((cs) => cs.toLowerCase() === trimmed.toLowerCase())) {
+      setCustomSkillError('This custom skill is already in your list.');
+      return;
+    }
 
-    // Optimistically add to list
-    setSelectedSkills([...selectedSkills, tempSkill]);
+    // Add to private custom skills list
+    setCustomSkills([...customSkills, trimmed]);
     setCustomSkill('');
     setCustomSkillError('');
     setSaveError('');
+  };
 
-    createSkillMutation.mutate(trimmed, {
-      onSuccess: (newSkill) => {
-        if (newSkill && newSkill.id) {
-          setSelectedSkills((prev) => prev.map((s) => (s.id === tempId ? newSkill : s)));
-        }
-      },
-      onError: (err: any) => {
-        setSelectedSkills((prev) => prev.filter((s) => s.id !== tempId));
-        setCustomSkillError(err.message || 'Failed to add custom skill');
-      },
-    });
+  const handleRemoveCustomSkill = (nameToRemove: string) => {
+    setCustomSkills(customSkills.filter((s) => s !== nameToRemove));
   };
 
   const toggleSkill = (skill: Skill) => {
@@ -163,7 +157,9 @@ export const AddSkillsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionHeaderPrimary}>Selected · {selectedSkills.length}</Text>
+        <Text style={styles.sectionHeaderPrimary}>
+          Selected · {selectedSkills.length + customSkills.length}
+        </Text>
         <View style={styles.chipContainer}>
           {selectedSkills.map((skill) => (
             <TouchableOpacity
@@ -186,7 +182,40 @@ export const AddSkillsScreen: React.FC = () => {
               />
             </TouchableOpacity>
           ))}
-          {selectedSkills.length === 0 && (
+          {customSkills.map((cSkill, idx) => (
+            <TouchableOpacity
+              key={`custom-${idx}-${cSkill}`}
+              style={[
+                styles.chip,
+                styles.chipSelected,
+                { borderColor: colors.primary, backgroundColor: colors.paperBright },
+              ]}
+              onPress={() => handleRemoveCustomSkill(cSkill)}
+            >
+              <Ionicons
+                name="sparkles-outline"
+                size={13}
+                color={colors.primary}
+                style={{ marginRight: 4 }}
+              />
+              <Text style={[styles.chipTextSelected, { color: colors.primaryDark }]}>{cSkill}</Text>
+              <View
+                style={{
+                  backgroundColor: colors.primaryTint,
+                  paddingHorizontal: 5,
+                  paddingVertical: 1,
+                  borderRadius: 6,
+                  marginHorizontal: 4,
+                }}
+              >
+                <Text style={{ fontSize: 9, fontFamily: fonts.bodyBold, color: colors.primary }}>
+                  Custom
+                </Text>
+              </View>
+              <Ionicons name="close" size={14} color={colors.primaryDark} />
+            </TouchableOpacity>
+          ))}
+          {selectedSkills.length === 0 && customSkills.length === 0 && (
             <Text style={styles.emptyText}>No skills selected yet.</Text>
           )}
         </View>
@@ -227,11 +256,11 @@ export const AddSkillsScreen: React.FC = () => {
           fullWidth
           loading={saveMutation.isPending}
           onPress={() => {
-            if (selectedSkills.length === 0) {
-              setSaveError('Please select at least one skill to continue.');
+            if (selectedSkills.length === 0 && customSkills.length === 0) {
+              setSaveError('Please select or add at least one skill to continue.');
               return;
             }
-            saveMutation.mutate(selectedSkills.map((s) => s.id));
+            saveMutation.mutate();
           }}
         />
       </View>

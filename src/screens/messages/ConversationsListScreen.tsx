@@ -201,6 +201,7 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                   <View style={styles.nameRow}>
                     <Text style={styles.name} numberOfLines={1}>
                       {item.other_user?.name || 'Unknown'}
+                      {item.job_title ? ` — ${item.job_title}` : ''}
                     </Text>
                     {item.last_message_at && (
                       <Text style={styles.time}>

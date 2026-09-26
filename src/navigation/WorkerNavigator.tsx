@@ -43,7 +43,7 @@ export type WorkerStackParamList = {
   Applications: undefined;
   ProfileMain: undefined;
   JobDetails: { id: number };
-  Apply: { id: number };
+  Apply: { id: number; applicationId?: number };
   EmployerPublicProfile: {
     employerId?: number;
     employerName?: string;
@@ -218,6 +218,15 @@ const WorkerNavigator: React.FC = () => {
   const { data } = useNotifications();
   const unreadCount = data?.unread_count || 0;
   const { data: unreadMessages } = useUnreadMessageCount('worker');
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: profileApi.getProfile,
+  });
+
+  const hasSkills = (profile?.worker_profile?.skills?.length || 0) > 0;
+  const hasHistory = (profile?.worker_profile?.experiences?.length || 0) > 0;
+  const hasRefs = (profile?.worker_profile?.references?.length || 0) > 0;
+  const isProfileComplete = hasSkills && hasHistory && hasRefs;
 
   return (
     <Tab.Navigator
@@ -256,7 +265,17 @@ const WorkerNavigator: React.FC = () => {
         },
       })}
     >
-      <Tab.Screen name="Find" component={FindStack} />
+      <Tab.Screen
+        name="Find"
+        component={FindStack}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            (navigation as any).navigate('Find', {
+              screen: isProfileComplete ? 'Home' : 'HomeEmpty',
+            });
+          },
+        })}
+      />
       <Tab.Screen
         name="Mine"
         component={ApplicationsStack}
@@ -273,6 +292,11 @@ const WorkerNavigator: React.FC = () => {
           tabBarBadge: (unreadMessages ?? 0) > 0 ? unreadMessages : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            (navigation as any).navigate('Messages', { screen: 'ConversationsList' });
+          },
+        })}
       />
       <Tab.Screen
         name="Notifications"
@@ -281,8 +305,21 @@ const WorkerNavigator: React.FC = () => {
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            (navigation as any).navigate('Notifications', { screen: 'NotificationsList' });
+          },
+        })}
       />
-      <Tab.Screen name="Me" component={ProfileStack} />
+      <Tab.Screen
+        name="Me"
+        component={ProfileStack}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            (navigation as any).navigate('Me', { screen: 'ProfileMain' });
+          },
+        })}
+      />
     </Tab.Navigator>
   );
 };

@@ -40,10 +40,10 @@ export const profileApi = {
   },
 
   // Add skills to profile
-  addSkills: async (skillIds: number[]): Promise<void> => {
+  addSkills: async (skillIds: number[], customSkills?: string[]): Promise<void> => {
     await apiClient('/profile/skills', {
       method: 'POST',
-      body: JSON.stringify({ skill_ids: skillIds }),
+      body: JSON.stringify({ skill_ids: skillIds, custom_skills: customSkills || [] }),
     });
   },
 

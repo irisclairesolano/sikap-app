@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
@@ -53,7 +52,7 @@ export const ProfileScreen: React.FC = () => {
     name: user.name,
     location: `${user.barangay}, ${user.municipality}`,
     verified: user.verification_status === 'approved',
-    reputation: reviewsData?.reputation_score ?? user.reputation_score ?? 5.0,
+    reputation: reviewsData?.reputation_score ?? user.reputation_score ?? null,
     ratings: reviewsData?.reviews_count ?? (user as any).ratings_count ?? 0,
     jobsDone: (user as any).completed_jobs_count ?? 0,
     memberSince: (user as any).member_since || 'New',

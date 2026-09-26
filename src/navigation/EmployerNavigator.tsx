@@ -51,6 +51,7 @@ export type EmployerStackParamList = {
     phone?: string;
     emergencyContactName?: string;
     emergencyContactPhone?: string;
+    coverNote?: string | null;
   };
   SendRequest: { id: number; applicantName: string; jobTitle: string };
   ConfirmHire: {
@@ -227,7 +228,15 @@ const EmployerNavigator: React.FC = () => {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeStack} />
+      <Tab.Screen
+        name="Home"
+        component={HomeStack}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            (navigation as any).navigate('Home', { screen: 'EmployerDashboard' });
+          },
+        })}
+      />
       <Tab.Screen
         name="MyJobs"
         component={MyJobsStack}
@@ -244,6 +253,11 @@ const EmployerNavigator: React.FC = () => {
           tabBarBadge: (unreadMessages ?? 0) > 0 ? unreadMessages : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            (navigation as any).navigate('Messages', { screen: 'ConversationsList' });
+          },
+        })}
       />
       <Tab.Screen
         name="Notifications"
@@ -252,8 +266,21 @@ const EmployerNavigator: React.FC = () => {
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            (navigation as any).navigate('Notifications', { screen: 'NotificationsList' });
+          },
+        })}
       />
-      <Tab.Screen name="Profile" component={ProfileStack} />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileStack}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            (navigation as any).navigate('Profile', { screen: 'ProfileMain' });
+          },
+        })}
+      />
     </Tab.Navigator>
   );
 };

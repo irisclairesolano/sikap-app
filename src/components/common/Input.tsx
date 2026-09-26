@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { KeyboardTypeOptions, StyleSheet, Text, View } from 'react-native';
 import { Input as RNEInput } from 'react-native-elements';
+import emojiRegex from 'emoji-regex';
 import { colors, fonts } from '../../theme';
 
 export type InputProps = {
@@ -18,6 +19,7 @@ export type InputProps = {
   editable?: boolean;
   status?: 'valid' | 'invalid' | null;
   statusText?: string;
+  allowEmoji?: boolean;
   icon?: any;
   rightIcon?: {
     name: string;
@@ -45,6 +47,7 @@ const CustomInput: React.FC<InputProps> = ({
   editable,
   status,
   statusText,
+  allowEmoji = false,
   icon,
   rightIcon,
   onFocus,
@@ -53,6 +56,26 @@ const CustomInput: React.FC<InputProps> = ({
   onKeyPress,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
+
+  // Phone number hardstop: if phone-pad or label includes phone, limit to 11 digits
+  const isPhone = keyboardType === 'phone-pad' || (label && /phone/i.test(label));
+  const effectiveMaxLength = isPhone ? (maxLength ? Math.min(maxLength, 11) : 11) : maxLength;
+
+  const handleChangeText = (text: string) => {
+    let sanitized = text;
+
+    // Filter emojis unless explicitly allowed
+    if (!allowEmoji) {
+      sanitized = sanitized.replace(emojiRegex(), '');
+    }
+
+    // Filter phone inputs to digits only and clamp to 11 digits
+    if (isPhone) {
+      sanitized = sanitized.replace(/[^0-9]/g, '').slice(0, 11);
+    }
+
+    onChangeText(sanitized);
+  };
 
   const renderLabel = () => {
     if (!label) return null;
@@ -74,13 +97,13 @@ const CustomInput: React.FC<InputProps> = ({
       <View style={[styles.focusRing, isFocused && styles.focusRingActive]}>
         <RNEInput
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={handleChangeText}
           placeholder={placeholder}
           secureTextEntry={secureTextEntry}
           multiline={multiline}
           numberOfLines={numberOfLines}
           autoCapitalize={autoCapitalize}
-          maxLength={maxLength}
+          maxLength={effectiveMaxLength}
           keyboardType={keyboardType}
           editable={editable}
           leftIcon={

@@ -22,6 +22,8 @@ import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { ApiClientError } from '../../api/client';
 import CustomInput from '../../components/common/Input';
 import Button from '../../components/common/Button';
+import { useApplication } from '../../hooks/useJobApplications';
+import { getApplicationStageInfo } from '../../components/applications/ApplicationCard';
 
 type ApplyRouteProp = RouteProp<WorkerStackParamList, 'Apply'>;
 
@@ -50,6 +52,15 @@ export const ApplyScreen: React.FC = () => {
   const { mutate: apply, isPending, isError, error, isSuccess, data } = useApply(id);
   const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawApplication();
   const { showAlert } = useAlert();
+
+  const activeApplicationId = (data?.application_id ||
+    route.params?.applicationId ||
+    job?.application_id) as number | undefined;
+
+  const { data: liveApp } = useApplication(activeApplicationId as number, {
+    refetchInterval: 3000,
+    enabled: !!activeApplicationId,
+  });
 
   const totalSlots = job?.slots ?? 1;
   const filledSlots = job?.filled_slots ?? job?.accepted_count ?? 0;
@@ -119,6 +130,10 @@ export const ApplyScreen: React.FC = () => {
 
   const catStyles = getCategoryStyles(job.categories?.[0] || 'Other');
 
+  const currentAppStatus = liveApp?.status || (isSuccess ? 'pending' : job?.status);
+  const stageInfo = getApplicationStageInfo(currentAppStatus || 'pending', liveApp?.has_reviewed);
+  const currentStage = stageInfo.stage || 1;
+
   // INLINE SUCCESS STATE (Matches Screen 15 structure for Stage 1)
   if (isSuccess) {
     return (
@@ -139,34 +154,96 @@ export const ApplyScreen: React.FC = () => {
           contentContainerStyle={styles.scrollContentSuccess}
           showsVerticalScrollIndicator={false}
         >
-          {/* Stepper */}
+          {/* 5-Stage Stepper */}
           <View style={styles.stepper}>
-            <View style={[styles.step, styles.stepActive]}>
-              <View style={[styles.stepCircle, styles.stepCircleActive]}>
-                <Text style={styles.stepCircleTextActive}>1</Text>
+            {/* Step 1: Applied */}
+            <View style={[styles.step, currentStage >= 1 && styles.stepActive]}>
+              <View style={[styles.stepCircle, currentStage >= 1 && styles.stepCircleActive]}>
+                {currentStage > 1 ? (
+                  <Ionicons name="checkmark" size={12} color={colors.white} />
+                ) : (
+                  <Text style={styles.stepCircleTextActive}>1</Text>
+                )}
               </View>
-              <Text style={[styles.stepLabel, styles.stepLabelActive]}>Applied</Text>
+              <Text style={[styles.stepLabel, currentStage >= 1 && styles.stepLabelActive]}>
+                Applied
+              </Text>
             </View>
-            <View style={styles.stepDivider} />
-            <View style={styles.step}>
-              <View style={styles.stepCircle}>
-                <Text style={styles.stepCircleText}>2</Text>
+            <View style={[styles.stepDivider, currentStage >= 2 && styles.stepDividerActive]} />
+
+            {/* Step 2: Shortlisted */}
+            <View style={[styles.step, currentStage >= 2 && styles.stepActive]}>
+              <View style={[styles.stepCircle, currentStage >= 2 && styles.stepCircleActive]}>
+                {currentStage > 2 ? (
+                  <Ionicons name="checkmark" size={12} color={colors.white} />
+                ) : (
+                  <Text
+                    style={currentStage === 2 ? styles.stepCircleTextActive : styles.stepCircleText}
+                  >
+                    2
+                  </Text>
+                )}
               </View>
-              <Text style={styles.stepLabel}>Shortlisted</Text>
+              <Text style={[styles.stepLabel, currentStage >= 2 && styles.stepLabelActive]}>
+                Shortlisted
+              </Text>
             </View>
-            <View style={styles.stepDivider} />
-            <View style={styles.step}>
-              <View style={styles.stepCircle}>
-                <Text style={styles.stepCircleText}>3</Text>
+            <View style={[styles.stepDivider, currentStage >= 3 && styles.stepDividerActive]} />
+
+            {/* Step 3: Offer */}
+            <View style={[styles.step, currentStage >= 3 && styles.stepActive]}>
+              <View style={[styles.stepCircle, currentStage >= 3 && styles.stepCircleActive]}>
+                {currentStage > 3 ? (
+                  <Ionicons name="checkmark" size={12} color={colors.white} />
+                ) : (
+                  <Text
+                    style={currentStage === 3 ? styles.stepCircleTextActive : styles.stepCircleText}
+                  >
+                    3
+                  </Text>
+                )}
               </View>
-              <Text style={styles.stepLabel}>Offer</Text>
+              <Text style={[styles.stepLabel, currentStage >= 3 && styles.stepLabelActive]}>
+                Offer
+              </Text>
             </View>
-            <View style={styles.stepDivider} />
-            <View style={styles.step}>
-              <View style={styles.stepCircle}>
-                <Text style={styles.stepCircleText}>4</Text>
+            <View style={[styles.stepDivider, currentStage >= 4 && styles.stepDividerActive]} />
+
+            {/* Step 4: Hired */}
+            <View style={[styles.step, currentStage >= 4 && styles.stepActive]}>
+              <View style={[styles.stepCircle, currentStage >= 4 && styles.stepCircleActive]}>
+                {currentStage > 4 ? (
+                  <Ionicons name="checkmark" size={12} color={colors.white} />
+                ) : (
+                  <Text
+                    style={currentStage === 4 ? styles.stepCircleTextActive : styles.stepCircleText}
+                  >
+                    4
+                  </Text>
+                )}
               </View>
-              <Text style={styles.stepLabel}>Hired</Text>
+              <Text style={[styles.stepLabel, currentStage >= 4 && styles.stepLabelActive]}>
+                Hired
+              </Text>
+            </View>
+            <View style={[styles.stepDivider, currentStage >= 5 && styles.stepDividerActive]} />
+
+            {/* Step 5: Done */}
+            <View style={[styles.step, currentStage >= 5 && styles.stepActive]}>
+              <View style={[styles.stepCircle, currentStage >= 5 && styles.stepCircleActive]}>
+                {currentStage >= 5 && liveApp?.has_reviewed ? (
+                  <Ionicons name="checkmark" size={12} color={colors.white} />
+                ) : (
+                  <Text
+                    style={currentStage === 5 ? styles.stepCircleTextActive : styles.stepCircleText}
+                  >
+                    5
+                  </Text>
+                )}
+              </View>
+              <Text style={[styles.stepLabel, currentStage >= 5 && styles.stepLabelActive]}>
+                Done
+              </Text>
             </View>
           </View>
 
@@ -620,6 +697,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.inkFaint,
     marginHorizontal: -8,
     marginBottom: 16, // to align with circle center
+  },
+  stepDividerActive: {
+    backgroundColor: colors.ink,
   },
   successCard: {
     backgroundColor: colors.butter,

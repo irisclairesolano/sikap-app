@@ -79,8 +79,11 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     if (sanitized.length !== 11) {
       return 'Phone number must be exactly 11 digits';
     }
-    const sanitizedUserPhone = profile?.phone ? profile.phone.replace(/[^0-9]/g, '') : '';
-    if (sanitizedUserPhone && sanitized === sanitizedUserPhone) {
+    const rawUserPhone = profile?.phone ? String(profile.phone).replace(/[^0-9]/g, '') : '';
+    const userPhoneNorm = rawUserPhone.startsWith('63')
+      ? '0' + rawUserPhone.slice(2)
+      : rawUserPhone;
+    if (userPhoneNorm && sanitized === userPhoneNorm) {
       return 'Cannot be your own phone number';
     }
     return undefined;
@@ -107,50 +110,56 @@ export const AddCharacterReferencesScreen: React.FC = () => {
         throw new Error(errorMsg);
       }
 
-      const isDuplicatePhone = references.some(
-        (ref) =>
-          ref.phone.replace(/[^0-9]/g, '') === payload.phone.replace(/[^0-9]/g, '') &&
-          (editingReferenceId === null || ref.id !== editingReferenceId),
-      );
+      const cleanInput = payload.phone.replace(/[^0-9]/g, '');
+      const isDuplicatePhone = references.some((ref) => {
+        if (!ref || !ref.phone) return false;
+        const refClean = String(ref.phone).replace(/[^0-9]/g, '');
+        const isSelf = editingReferenceId !== null && Number(ref.id) === Number(editingReferenceId);
+        return refClean === cleanInput && !isSelf;
+      });
+
       if (isDuplicatePhone) {
         const dupError = 'This phone number is already used for another reference.';
         setPhoneError(dupError);
         throw new Error(dupError);
       }
 
-      if (editingReferenceId !== null && editingReferenceId > 0) {
-        return profileApi.updateReference(editingReferenceId, payload);
+      if (editingReferenceId !== null && Number(editingReferenceId) > 0) {
+        return profileApi.updateReference(Number(editingReferenceId), payload);
       }
       return profileApi.addReference(payload);
     },
     onMutate: async (payload) => {
-      // Close modal instantly
+      // Preserve active ID before handleCancel clears state
+      const activeEditingId = editingReferenceId;
       setIsAdding(false);
 
       const tempId = -Date.now();
       const optimisticItem = {
-        id: editingReferenceId !== null ? editingReferenceId : tempId,
+        id: activeEditingId !== null ? activeEditingId : tempId,
         ...payload,
       };
 
-      if (editingReferenceId !== null) {
+      if (activeEditingId !== null) {
         setReferences((prev) =>
-          prev.map((r) => (r.id === editingReferenceId ? optimisticItem : r)),
+          prev.map((r) => (Number(r.id) === Number(activeEditingId) ? optimisticItem : r)),
         );
       } else {
         setReferences((prev) => [...prev, optimisticItem]);
       }
 
       handleCancel();
-      return { tempId };
+      return { tempId, activeEditingId };
     },
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       const realRef = (data as any)?.reference || data;
       if (realRef && typeof realRef === 'object' && 'id' in realRef) {
-        if (editingReferenceId !== null) {
+        if (context?.activeEditingId !== null && context?.activeEditingId !== undefined) {
           setReferences((prev) =>
-            prev.map((r) => (r.id === editingReferenceId ? (realRef as any) : r)),
+            prev.map((r) =>
+              Number(r.id) === Number(context.activeEditingId) ? (realRef as any) : r,
+            ),
           );
         } else {
           setReferences((prev) =>
@@ -158,14 +167,12 @@ export const AddCharacterReferencesScreen: React.FC = () => {
           );
         }
       }
-      setEditingReferenceId(null);
     },
     onError: (err) => {
       console.error('Failed to save reference', err);
       if (profile?.worker_profile?.references) {
         setReferences(profile.worker_profile.references);
       }
-      setEditingReferenceId(null);
       showAlert('Error', err.message || 'Failed to save reference');
     },
   });

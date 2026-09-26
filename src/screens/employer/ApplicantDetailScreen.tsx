@@ -58,6 +58,7 @@ const ApplicantDetailScreen: React.FC = () => {
   const status = appData?.status || route.params.status || 'pending';
   const applicantName = appData?.worker?.name || route.params.applicantName || 'Worker';
   const jobTitle = appData?.job?.title || route.params.jobTitle || 'Job';
+  const coverNote = appData?.cover_note || (route.params as any)?.coverNote;
   const applicantId = appId;
 
   const barangay = appData?.worker?.barangay || route.params.barangay;
@@ -462,6 +463,46 @@ const ApplicantDetailScreen: React.FC = () => {
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Applicant Cover Note */}
+        {!!coverNote && (
+          <View
+            style={{
+              backgroundColor: colors.paperBright,
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 16,
+              borderWidth: 1,
+              borderColor: colors.inkFaint,
+              ...shadows.sm,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <Ionicons name="document-text-outline" size={16} color={colors.primary} />
+              <Text
+                style={{
+                  fontFamily: fonts.bodyBold,
+                  fontSize: 12,
+                  color: colors.inkSoft,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                }}
+              >
+                Applicant's Cover Note
+              </Text>
+            </View>
+            <Text
+              style={{
+                fontFamily: fonts.body,
+                fontSize: 14,
+                color: colors.ink,
+                lineHeight: 20,
+              }}
+            >
+              {coverNote}
+            </Text>
+          </View>
+        )}
 
         {/* Reputation Card - Macaron Peach */}
         <View style={styles.reputationCardWrapper}>

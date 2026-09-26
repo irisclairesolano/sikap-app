@@ -63,6 +63,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [priceInput, setPriceInput] = useState('');
   const [isPriceInputVisible, setIsPriceInputVisible] = useState(false);
+  const [hireDecision, setHireDecision] = useState<'hire' | 'decline' | null>(null);
 
   if (message.message_type !== 'action_card' || !message.card_type) return null;
 
@@ -188,6 +189,17 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
   // 2. JOB REQUEST & CONFIRM HIRE
   if (card_type === 'job_request' || card_type === 'confirm_hire') {
+    if (applicationStatus === 'rejected' || applicationStatus === 'declined') {
+      return renderEtchedCard(
+        'Application Declined',
+        'This application was declined and conversation is closed.',
+        'close-circle-outline',
+        'Declined',
+        colors.error,
+        '#FEE2E2',
+      );
+    }
+
     const isConfirmResolved =
       card_resolved ||
       ['employer_confirmed', 'accepted', 'completed'].includes(applicationStatus || '');
@@ -361,8 +373,92 @@ const ActionCard: React.FC<ActionCardProps> = ({
               <View style={styles.chatReadyPill}>
                 <Ionicons name="chatbubbles-outline" size={14} color={colors.inkMuted} />
                 <Text style={[styles.chatReadyText, { color: colors.inkMuted }]}>
-                  Send a message to the worker before setting the final price.
+                  Send a message to the worker before making a hiring decision.
                 </Text>
+              </View>
+            ) : hireDecision !== 'hire' ? (
+              <View
+                style={{
+                  marginTop: 12,
+                  backgroundColor: colors.paperBright,
+                  borderRadius: 14,
+                  padding: 14,
+                  borderWidth: 1,
+                  borderColor: colors.inkFaint,
+                }}
+              >
+                <View
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}
+                >
+                  <Ionicons name="help-circle-outline" size={17} color={colors.primary} />
+                  <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink }}>
+                    Hire Decision
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    fontFamily: fonts.body,
+                    fontSize: 12,
+                    color: colors.inkSoft,
+                    marginBottom: 12,
+                    lineHeight: 18,
+                  }}
+                >
+                  Do you want to proceed with hiring this applicant or decline their application?
+                </Text>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, { flex: 1, backgroundColor: colors.primary }]}
+                    onPress={() => {
+                      setHireDecision('hire');
+                      setIsPriceInputVisible(true);
+                    }}
+                  >
+                    <Text style={styles.actionBtnText}>Hire Worker</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.actionBtn,
+                      {
+                        flex: 1,
+                        backgroundColor: '#FEE2E2',
+                        borderWidth: 1,
+                        borderColor: '#FCA5A5',
+                      },
+                    ]}
+                    disabled={!!loadingAction}
+                    onPress={() => {
+                      showAlert(
+                        'Decline Applicant',
+                        'Are you sure you want to decline this applicant? This will close the conversation and send them an encouraging update.',
+                        [
+                          { text: 'Cancel', style: 'cancel' },
+                          {
+                            text: 'Yes, Decline',
+                            style: 'destructive',
+                            onPress: () => {
+                              const appId = Number(card_data?.application_id);
+                              handleAction('decline', () => applicationsApi.decline(appId), [
+                                ['conversations'],
+                                ['messages', conversationId],
+                                ['jobApplications'],
+                                ['application', appId],
+                                ['myJobs'],
+                                ['job'],
+                              ]);
+                            },
+                          },
+                        ],
+                      );
+                    }}
+                  >
+                    {loadingAction === 'decline' ? (
+                      <ActivityIndicator color={colors.error} />
+                    ) : (
+                      <Text style={[styles.actionBtnText, { color: colors.error }]}>Decline</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
               </View>
             ) : !isPriceInputVisible ? (
               <TouchableOpacity

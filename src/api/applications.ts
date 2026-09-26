@@ -42,6 +42,12 @@ export const applicationsApi = {
     });
   },
 
+  decline: async (applicationId: number) => {
+    return apiClient<{ message: string }>(`/applications/${applicationId}/decline`, {
+      method: 'POST',
+    });
+  },
+
   getContact: async (applicationId: number) => {
     return apiClient<{ phone: string }>(`/applications/${applicationId}/contact`);
   },

@@ -76,10 +76,11 @@ export const useCancelHire = () => {
   });
 };
 
-export const useApplication = (applicationId: number) => {
+export const useApplication = (applicationId: number, options?: any) => {
   return useQuery<Application, Error>({
     queryKey: ['application', applicationId],
     queryFn: () => applicationsApi.getById(applicationId),
     enabled: !!applicationId,
+    ...options,
   });
 };

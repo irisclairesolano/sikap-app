@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -336,6 +336,8 @@ export const PostJobScreen: React.FC = () => {
     exactLocation,
     toolsRequired,
   ]);
+
+  const idempotencyKeyRef = useRef<string | null>(null);
 
   const compressImage = async (uri: string) => {
     const manipResult = await ImageManipulator.manipulateAsync(uri, [{ resize: { width: 1080 } }], {
@@ -708,6 +710,10 @@ export const PostJobScreen: React.FC = () => {
     }
     if (exactLocation) payload.exact_location = exactLocation;
     if (toolsRequired) payload.tools_required = toolsRequired;
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    }
+    payload.idempotency_key = idempotencyKeyRef.current;
 
     setIsPublishing(true);
     setUploadProgress(90);
@@ -717,6 +723,7 @@ export const PostJobScreen: React.FC = () => {
         { id: jobToEdit.id, payload },
         {
           onSuccess: () => {
+            idempotencyKeyRef.current = null;
             setIsPublishing(false);
             setUploadProgress(100);
             showAlert('Job updated!', 'Your changes have been saved.', [
@@ -732,6 +739,7 @@ export const PostJobScreen: React.FC = () => {
     } else {
       createJobMutation.mutate(payload, {
         onSuccess: async () => {
+          idempotencyKeyRef.current = null;
           setIsPublishing(false);
           setUploadProgress(100);
           await AsyncStorage.removeItem(DRAFT_STORAGE_KEY).catch(() => {});
@@ -1068,6 +1076,7 @@ export const PostJobScreen: React.FC = () => {
               onChangeText={setDescription}
               placeholder="Need help installing..."
               multiline
+              allowEmoji={true}
               icon="create-outline"
             />
 

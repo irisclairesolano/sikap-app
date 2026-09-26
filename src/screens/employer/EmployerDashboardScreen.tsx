@@ -482,14 +482,17 @@ export const EmployerDashboardScreen: React.FC = () => {
                   <Text style={styles.jobTitle}>{app.worker?.name || 'Worker Applicant'}</Text>
                   <Text style={styles.jobSubtitle}>Applied for {(app as any).jobTitle}</Text>
                   <View style={styles.ratingRow}>
-                    <Ionicons name="star" size={12} color={colors.gold} />
-                    <Text style={styles.ratingText}>
-                      {app.worker?.reputation_score !== undefined &&
-                      app.worker?.reputation_score !== null
-                        ? app.worker.reputation_score
-                        : 5.0}{' '}
-                      • {app.status}
-                    </Text>
+                    {app.worker?.reputation_score !== undefined &&
+                    app.worker?.reputation_score !== null ? (
+                      <>
+                        <Ionicons name="star" size={12} color={colors.gold} />
+                        <Text style={styles.ratingText}>
+                          {app.worker.reputation_score} • {app.status}
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={styles.ratingText}>No ratings yet • {app.status}</Text>
+                    )}
                   </View>
                 </View>
                 <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />

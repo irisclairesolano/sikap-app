@@ -266,8 +266,15 @@ export const MyJobsScreen: React.FC = () => {
           <Ionicons name="briefcase-outline" size={48} color={colors.inkFaint} />
           <Text style={styles.emptyTitle}>No {activeTab.toLowerCase()} jobs</Text>
           <Text style={styles.emptyBody}>
-            You don't have any {activeTab.toLowerCase()} job postings right now.
+            {activeTab === 'Active'
+              ? "You haven't posted any active jobs yet. Post a job to start finding skilled workers nearby!"
+              : `You don't have any ${activeTab.toLowerCase()} job postings right now.`}
           </Text>
+          <Button
+            title="Post a Job"
+            onPress={() => navigation.navigate('PostJob')}
+            style={{ marginTop: 16, minWidth: 160 }}
+          />
         </ScrollView>
       ) : (
         <FlatList
