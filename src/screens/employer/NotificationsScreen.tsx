@@ -310,11 +310,11 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   readCard: {
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: '#E2E8F0',
     borderLeftWidth: 4,
-    borderLeftColor: '#94A3B8',
+    borderLeftColor: '#CBD5E1',
   },
   iconBubble: {
     width: 36,
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.peach,
   },
   readIconBubble: {
-    backgroundColor: '#CBD5E1',
+    backgroundColor: '#F1F5F9',
   },
   notificationContent: { flex: 1 },
   notificationTitle: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink },
