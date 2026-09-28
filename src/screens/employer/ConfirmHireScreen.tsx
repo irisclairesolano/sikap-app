@@ -93,26 +93,33 @@ const ConfirmHireScreen: React.FC = () => {
       {
         onSuccess: (data: any) => {
           const convId = data?.conversation_id || conversationId;
-          showAlert(
-            'Offer Sent!',
-            `Your hire offer of ₱${numPrice.toLocaleString()} has been sent to ${applicantName}. Once they accept, the job will officially begin.`,
-            [
-              {
-                text: 'Go to Chat',
-                onPress: () => {
-                  if (convId) {
-                    navigation.navigate('Chat' as any, {
+          navigation.replace('Success', {
+            variant: 'confirm',
+            title: 'Offer sent',
+            message: `We told ${applicantName}. You will get a notification when they answer.`,
+            detail: [
+              { label: 'Worker', value: applicantName },
+              { label: 'Job', value: jobTitle },
+              { label: 'Agreed Price', value: `₱${numPrice.toLocaleString()}` },
+            ],
+            primaryAction: {
+              label: 'Back to applicants',
+              goBack: true,
+            },
+            secondaryAction: convId
+              ? {
+                  label: 'Open chat',
+                  navigateTo: {
+                    name: 'Chat',
+                    params: {
                       conversationId: convId,
                       jobTitle,
                       otherUserName: applicantName,
-                    });
-                  } else {
-                    navigation.goBack();
-                  }
-                },
-              },
-            ],
-          );
+                    },
+                  },
+                }
+              : undefined,
+          });
         },
         onError: (err: any) => {
           showAlert('Error', err.message || 'Could not confirm hire.');

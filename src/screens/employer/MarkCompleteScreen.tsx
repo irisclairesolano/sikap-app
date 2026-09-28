@@ -9,6 +9,8 @@ import Button from '../../components/common/Button';
 import { useMarkJobComplete } from '../../hooks/useJobs';
 import { useAlert } from '../../contexts/AlertContext';
 
+import { useEmployerJobs } from '../../hooks/useEmployerJobs';
+
 type MarkCompleteScreenRouteProp = RouteProp<EmployerStackParamList, 'MarkComplete'>;
 type MarkCompleteScreenNavigationProp = NativeStackNavigationProp<
   EmployerStackParamList,
@@ -18,24 +20,43 @@ type MarkCompleteScreenNavigationProp = NativeStackNavigationProp<
 const MarkCompleteScreen: React.FC = () => {
   const route = useRoute<MarkCompleteScreenRouteProp>();
   const navigation = useNavigation<MarkCompleteScreenNavigationProp>();
-  const { id, jobTitle } = route.params;
+  const { id, jobTitle, workerName } = route.params;
 
   const markCompleteMutation = useMarkJobComplete();
+  const { data: myJobsData } = useEmployerJobs();
   const { showAlert } = useAlert();
 
   const handleMarkComplete = () => {
     markCompleteMutation.mutate(id, {
       onSuccess: () => {
-        showAlert(
-          'Job Completed!',
-          `The job "${jobTitle}" has been successfully marked as completed. You can now leave a rating for the worker(s).`,
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.navigate('RateWorkerList', { jobId: id, jobTitle }),
-            },
+        const completedJobs = myJobsData?.data?.filter((j) => j.status === 'completed') || [];
+        const isFirstCompleted = completedJobs.length === 0;
+
+        navigation.replace('Success', {
+          variant: isFirstCompleted ? 'milestone' : 'confirm',
+          title: isFirstCompleted ? 'Your first job is done!' : 'Job completed!',
+          message: isFirstCompleted
+            ? `Congratulations po! You just completed your first job on SIKAP. Please rate ${workerName || 'your worker'} to keep our community trusted.`
+            : `Nice work! Please rate ${workerName || 'your worker'}. It only takes a minute.`,
+          detail: [
+            { label: 'Job', value: jobTitle },
+            ...(workerName ? [{ label: 'Worker', value: workerName }] : []),
           ],
-        );
+          primaryAction: {
+            label: 'Rate worker',
+            navigateTo: {
+              name: 'RateWorkerList',
+              params: { jobId: id, jobTitle },
+            },
+          },
+          secondaryAction: {
+            label: 'Later',
+            navigateTo: {
+              name: 'JobStatusManagement',
+              params: { id },
+            },
+          },
+        });
       },
       onError: (err: any) => {
         showAlert('Error', err.message || 'Failed to mark job as complete.');

@@ -1114,6 +1114,7 @@ const ApplicantDetailScreen: React.FC = () => {
                   navigation.navigate('MarkComplete', {
                     id: jobId,
                     jobTitle: jobTitle || appData?.job?.title || 'Job',
+                    workerName: applicantName || 'Worker',
                   });
                 } else {
                   navigation.navigate('RateWorker', {

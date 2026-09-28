@@ -32,8 +32,10 @@ import EmployerPublicProfileScreen from '../screens/worker/EmployerPublicProfile
 import { useUnreadMessageCount } from '../hooks/useConversations';
 import ConversationsListScreen from '../screens/messages/ConversationsListScreen';
 import ChatScreen from '../screens/messages/ChatScreen';
+import SuccessScreen, { SuccessParams } from '../screens/common/SuccessScreen';
 
 export type WorkerStackParamList = {
+  Success: SuccessParams;
   Home: undefined;
   HomeEmpty: undefined;
   AddSkills: undefined;
@@ -101,6 +103,7 @@ const MessagesStack: React.FC = () => (
     <Stack.Screen name="ConversationsList" component={ConversationsListScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
+    <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>
 );
 
@@ -163,6 +166,7 @@ const FindStack: React.FC = () => {
       <Stack.Screen name="SavedJobs" component={SavedJobsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Chat" component={ChatScreen} />
+      <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
     </Stack.Navigator>
   );
 };
@@ -180,6 +184,7 @@ const ApplicationsStack: React.FC = () => (
     <Stack.Screen name="Apply" component={ApplyScreen} />
     <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
+    <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>
 );
 
@@ -197,6 +202,7 @@ const NotificationsStack: React.FC = () => (
     <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
+    <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>
 );
 
@@ -211,6 +217,7 @@ const ProfileStack: React.FC = () => (
     <Stack.Screen name="AddWorkHistory" component={AddWorkHistoryScreen} />
     <Stack.Screen name="CharacterReferences" component={AddCharacterReferencesScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
+    <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>
 );
 

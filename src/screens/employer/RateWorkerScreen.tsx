@@ -79,9 +79,37 @@ export const RateWorkerScreen: React.FC = () => {
         onSuccess: (res: any) => {
           const hasWarnings = res?.content_warnings && res.content_warnings.length > 0;
           const msg = hasWarnings
-            ? 'Your review has been submitted. Note: it contains language that may be reviewed for community standards.'
-            : 'Your review has been submitted.';
-          showAlert('Review Submitted', msg, [{ text: 'OK', onPress: () => navigation.goBack() }]);
+            ? 'Salamat! Your rating helps keep the community trustworthy and helps good workers get hired. Note: your review contains language that may be reviewed for community standards.'
+            : 'Salamat! Your rating helps keep the community trustworthy and helps good workers get hired.';
+          const avgRating = (quality + punctuality + communication + behavior) / 4;
+          const passedJobId = (route.params as any)?.jobId;
+
+          navigation.replace('Success', {
+            variant: 'confirm',
+            title: 'Review sent',
+            message: msg,
+            detail: [
+              { label: 'Worker', value: workerName },
+              { label: 'Job', value: jobTitle },
+              { label: 'Your rating', value: `${avgRating.toFixed(1)} / 5` },
+            ],
+            primaryAction: passedJobId
+              ? {
+                  label: 'View job summary',
+                  navigateTo: {
+                    name: 'JobStatusManagement',
+                    params: { id: passedJobId },
+                  },
+                }
+              : {
+                  label: 'Back to workers',
+                  goBack: true,
+                },
+            secondaryAction: {
+              label: 'Done',
+              goBack: true,
+            },
+          });
         },
         onError: (err: any) => {
           setIsSubmitted(false);

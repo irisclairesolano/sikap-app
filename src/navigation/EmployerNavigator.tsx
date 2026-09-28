@@ -29,8 +29,10 @@ import MarkCompleteScreen from '../screens/employer/MarkCompleteScreen';
 import { useUnreadMessageCount } from '../hooks/useConversations';
 import ConversationsListScreen from '../screens/messages/ConversationsListScreen';
 import ChatScreen from '../screens/messages/ChatScreen';
+import SuccessScreen, { SuccessParams } from '../screens/common/SuccessScreen';
 
 export type EmployerStackParamList = {
+  Success: SuccessParams;
   Home: undefined;
   EmployerDashboard: undefined;
   PostJob?: { job?: any } | undefined;
@@ -64,9 +66,9 @@ export type EmployerStackParamList = {
     conversationId?: number;
   };
   CancelHire: { id: number; applicantName: string; jobTitle: string };
-  MarkComplete: { id: number; jobTitle: string };
+  MarkComplete: { id: number; jobTitle: string; workerName?: string };
   RateWorkerList: { jobId: number; jobTitle: string };
-  RateWorker: { id: number; workerName: string; jobTitle: string };
+  RateWorker: { id: number; workerName: string; jobTitle: string; jobId?: number };
   Report: { id: number };
   EditProfile: undefined;
   Settings: undefined;
@@ -101,6 +103,7 @@ const MessagesStack: React.FC = () => (
     <Stack.Screen name="ConversationsList" component={ConversationsListScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
+    <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>
 );
 
@@ -108,6 +111,7 @@ const MessagesStack: React.FC = () => (
 const HomeStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="EmployerDashboard">
     <Stack.Screen name="EmployerDashboard" component={EmployerDashboardScreen} />
+    <Stack.Screen name="MyJobsList" component={MyJobsScreen} />
     <Stack.Screen name="PostJob" component={PostJobScreen} />
     <Stack.Screen name="JobDetails" component={JobStatusManagementScreen} />
     <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
@@ -124,6 +128,7 @@ const HomeStack: React.FC = () => (
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
+    <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>
 );
 
@@ -147,6 +152,7 @@ const MyJobsStack: React.FC = () => (
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
+    <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>
 );
 
@@ -169,6 +175,7 @@ const NotificationsStack: React.FC = () => (
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
+    <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>
 );
 
@@ -183,6 +190,7 @@ const ProfileStack: React.FC = () => (
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
+    <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>
 );
 

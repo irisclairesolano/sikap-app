@@ -80,9 +80,31 @@ export const RateEmployerScreen: React.FC = () => {
         onSuccess: (res: any) => {
           const hasWarnings = res?.content_warnings && res.content_warnings.length > 0;
           const msg = hasWarnings
-            ? 'Your review has been submitted. Note: it contains language that may be reviewed for community standards.'
-            : 'Your review has been submitted.';
-          showAlert('Review Submitted', msg, [{ text: 'OK', onPress: () => navigation.goBack() }]);
+            ? 'Salamat! Your rating helps other workers know what to expect. Note: your review contains language that may be reviewed for community standards.'
+            : 'Salamat! Your rating helps other workers know what to expect.';
+          const avgRating = (clarity + fairness + respect + reliability) / 4;
+
+          navigation.replace('Success', {
+            variant: 'confirm',
+            title: 'Review sent',
+            message: msg,
+            detail: [
+              { label: 'Employer', value: employerName },
+              { label: 'Job', value: jobTitle },
+              { label: 'Your rating', value: `${avgRating.toFixed(1)} / 5` },
+            ],
+            primaryAction: {
+              label: 'View job summary',
+              navigateTo: {
+                name: 'ApplicationDetail',
+                params: { applicationId: id, jobTitle, employerName },
+              },
+            },
+            secondaryAction: {
+              label: 'Done',
+              goBack: true,
+            },
+          });
         },
         onError: (err: any) => {
           setIsSubmitted(false);

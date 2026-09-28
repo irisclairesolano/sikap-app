@@ -104,6 +104,28 @@ export const NotificationsScreen: React.FC = () => {
             parsedData?.job_id || parsedData?.jobId || notif.data?.job_id || notif.data?.jobId;
 
           const notifType = parsedData?.type || notif.data?.type;
+          if (
+            notifType === 'verification_approved' ||
+            notifType === 'id_verified' ||
+            (notifType === 'id_verification' && parsedData?.status === 'approved')
+          ) {
+            (navigation as any).navigate('Success', {
+              variant: 'milestone',
+              title: "You're verified, welcome!",
+              message:
+                'Congratulations po! Your account is verified and ready to post jobs and hire workers.',
+              primaryAction: {
+                label: 'Post a job',
+                navigateTo: { name: 'PostJob' },
+              },
+              secondaryAction: {
+                label: 'Start exploring',
+                navigateTo: { name: 'EmployerDashboard' },
+              },
+            });
+            return;
+          }
+
           if (notifType === 'review_received') {
             (navigation as any).navigate('Profile');
             return;

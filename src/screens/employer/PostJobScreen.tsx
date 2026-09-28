@@ -23,7 +23,7 @@ import Button from '../../components/common/Button';
 import CustomInput from '../../components/common/Input';
 import LocationPicker from '../../components/common/LocationPicker';
 import { useAlert } from '../../contexts/AlertContext';
-import { useCreateJob, useUpdateJob } from '../../hooks/useEmployerJobs';
+import { useCreateJob, useUpdateJob, useEmployerJobs } from '../../hooks/useEmployerJobs';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import * as SecureStore from '../../utils/storage';
@@ -59,6 +59,7 @@ export const PostJobScreen: React.FC = () => {
 
   const createJobMutation = useCreateJob();
   const updateJobMutation = useUpdateJob();
+  const { data: myJobsData } = useEmployerJobs();
   const { showAlert } = useAlert();
 
   const [isPublishing, setIsPublishing] = useState(false);
@@ -743,10 +744,33 @@ export const PostJobScreen: React.FC = () => {
           setIsPublishing(false);
           setUploadProgress(100);
           await AsyncStorage.removeItem(DRAFT_STORAGE_KEY).catch(() => {});
-          triggerHaptic('success');
-          showAlert('Job published!', 'Your job is now visible to workers.', [
-            { text: 'OK', onPress: () => navigation.goBack() },
-          ]);
+
+          const isFirstJob = !myJobsData || (myJobsData.data && myJobsData.data.length === 0);
+
+          navigation.replace('Success', {
+            variant: isFirstJob ? 'milestone' : 'confirm',
+            title: isFirstJob ? 'Your first job is live!' : 'Your job is live!',
+            message: isFirstJob
+              ? 'Congratulations po! This is your first job post on SIKAP. Workers will be notified and can start applying right away.'
+              : 'Workers can now see it and apply. We will notify you as soon as someone applies.',
+            detail: [
+              { label: 'Job', value: title.trim() },
+              { label: 'Location', value: `${barangay}, ${municipality}` },
+              {
+                label: 'Pay',
+                value: `₱${parsedPay.toLocaleString()} / ${rateUnit.replace('per_', '')}`,
+              },
+              { label: 'Slots', value: `${slots} worker${parseInt(slots, 10) > 1 ? 's' : ''}` },
+            ],
+            primaryAction: {
+              label: 'View my jobs',
+              navigateTo: { name: 'MyJobsList' },
+            },
+            secondaryAction: {
+              label: 'Post another job',
+              navigateTo: { name: 'PostJob' },
+            },
+          });
         },
         onError: (err: any) => {
           setIsPublishing(false);

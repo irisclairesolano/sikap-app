@@ -10,6 +10,8 @@ import Button from '../../components/common/Button';
 import { useAcceptOffer, useRejectOffer } from '../../hooks/useApply';
 import { useAlert } from '../../contexts/AlertContext';
 
+import { useMyApplications } from '../../hooks/useMyApplications';
+
 type AcceptHireScreenRouteProp = RouteProp<WorkerStackParamList, 'AcceptHire'>;
 type AcceptHireScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'AcceptHire'>;
 
@@ -20,31 +22,47 @@ const AcceptHireScreen: React.FC = () => {
 
   const acceptOfferMutation = useAcceptOffer();
   const rejectOfferMutation = useRejectOffer();
+  const { data: myAppsData } = useMyApplications('Active');
   const { showAlert } = useAlert();
 
   const handleAccept = () => {
     acceptOfferMutation.mutate(id, {
       onSuccess: () => {
-        showAlert(
-          'Offer Accepted!',
-          `You have accepted the offer for ${jobTitle}. Open the chat to coordinate job details.`,
-          [
-            {
-              text: 'Go to Chat',
-              onPress: () => {
-                if (conversationId) {
-                  navigation.navigate('Chat' as any, {
+        const activeCount = myAppsData?.pages?.[0]?.data?.length || 0;
+        const isFirstHire = activeCount === 0;
+
+        navigation.replace('Success', {
+          variant: isFirstHire ? 'milestone' : 'confirm',
+          title: isFirstHire ? "You're hired for your first job!" : "You're hired!",
+          message: isFirstHire
+            ? `Congratulations po! You accepted your first job offer on SIKAP for ${jobTitle}. Coordinate details in chat.`
+            : `Congrats po! ${jobTitle} is yours. Coordinate the schedule and location with ${employerName}.`,
+          detail: [
+            { label: 'Job', value: jobTitle },
+            { label: 'Employer', value: employerName },
+            ...(offeredPrice ? [{ label: 'Agreed Price', value: `₱${offeredPrice}` }] : []),
+          ],
+          primaryAction: {
+            label: 'Open chat',
+            navigateTo: conversationId
+              ? {
+                  name: 'Chat',
+                  params: {
                     conversationId,
                     jobTitle,
                     otherUserName: employerName,
-                  });
-                } else {
-                  navigation.goBack();
+                  },
                 }
-              },
+              : { name: 'ConversationsList' },
+          },
+          secondaryAction: {
+            label: 'See job details',
+            navigateTo: {
+              name: 'ApplicationDetail',
+              params: { applicationId: id, jobTitle, employerName },
             },
-          ],
-        );
+          },
+        });
       },
       onError: (err: any) => {
         showAlert('Error', err.message || 'Failed to accept offer.');

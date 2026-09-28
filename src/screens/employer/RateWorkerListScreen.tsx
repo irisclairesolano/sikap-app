@@ -77,6 +77,7 @@ const RateWorkerListScreen: React.FC = () => {
                 id: item.id,
                 workerName,
                 jobTitle,
+                jobId,
               })
             }
           />
