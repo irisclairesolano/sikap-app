@@ -1,19 +1,31 @@
+export type UserRole = 'worker' | 'employer' | 'admin';
+export type VerificationStatus =
+  'unverified' | 'pending' | 'approved' | 'rejected' | 'correction_needed';
+export type JobStatus =
+  'open' | 'closed_in_progress' | 'in_progress' | 'completed' | 'cancelled' | 'suspended';
+export type ReportStatus = 'pending' | 'open' | 'resolved' | 'dismissed';
+
 export interface User {
   id: number;
   name: string;
   email: string; // NEVER shown to other users
-  role: 'worker' | 'employer' | 'admin';
+  role: UserRole;
   phone: string; // Only revealed at Stage 4 (contact_revealed=true)
   barangay: string;
   municipality: string;
   document_url: string | null;
+  document_back_url?: string | null;
+  selfie_url?: string | null;
   avatar_url?: string | null;
-  verification_status: 'pending' | 'approved' | 'rejected' | 'correction_needed';
+  verification_status: VerificationStatus;
   registration_status?:
     'pending_email_verification' | 'pending_id_upload' | 'pending_review' | 'approved' | 'rejected';
   rejection_reason?: string;
   verification_badge: boolean;
   is_suspended: boolean;
+  suspended_until?: string;
+  is_permanently_banned?: boolean;
+  suspension_reason?: string;
   reputation_score: number;
   date_of_birth?: string;
   emergency_contact_name?: string;
@@ -26,6 +38,7 @@ export interface User {
   has_worker_profile?: boolean;
   has_employer_profile?: boolean;
   business_documents?: string[];
+  is_deleted?: boolean;
 }
 
 export interface JobPost {
@@ -51,7 +64,7 @@ export interface JobPost {
   schedule_date?: string;
   exact_location?: string;
   tools_required?: string;
-  status: 'open' | 'closed_in_progress' | 'completed' | 'cancelled';
+  status: JobStatus;
   rating_window_expires_at: string | null;
   completed_at?: string | null;
   created_at?: string;
@@ -116,11 +129,12 @@ export interface Application {
     email: null; // ALWAYS null — never shown
     avatar_url?: string | null;
     completed_jobs_count?: number;
-    reviews?: any[];
+    reviews?: Review[];
     bio?: string;
     emergency_contact_name?: string;
     emergency_contact_phone?: string;
     workerProfile?: WorkerProfile;
+    is_deleted?: boolean;
   };
 }
 
@@ -140,7 +154,7 @@ export interface WorkerProfile {
   skills: Skill[];
   experiences: WorkerExperience[];
   references: CharacterReference[];
-  verification_status: 'pending' | 'approved' | 'rejected' | 'correction_needed';
+  verification_status: VerificationStatus;
   verification_badge: boolean;
   reputation_score: number;
 }
@@ -154,14 +168,14 @@ export interface EmployerProfile {
   bio?: string;
   description?: string;
   business_documents?: string[];
-  verification_status: 'pending' | 'approved' | 'rejected' | 'correction_needed';
+  verification_status: VerificationStatus;
   verification_badge: boolean;
   reputation_score: number;
   ratings_count?: number;
   active_jobs?: number;
   total_hired?: number;
   total_spent?: number;
-  recentReview?: any;
+  recentReview?: Review;
 }
 
 export interface Review {
@@ -292,6 +306,7 @@ export interface ConversationUser {
   name: string;
   avatar_url?: string | null;
   role: 'worker' | 'employer';
+  is_deleted?: boolean;
 }
 
 export interface Conversation {

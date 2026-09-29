@@ -37,7 +37,13 @@ const ApplicationDetailScreen: React.FC = () => {
     (route.params as any)?.id ||
     (route.params as any)?.applicantId;
   const applicationId = Number(rawAppId);
-  const { data: rawAppData, isLoading: queryLoading, refetch } = useApplication(applicationId);
+  const {
+    data: rawAppData,
+    isLoading: queryLoading,
+    isError,
+    error,
+    refetch,
+  } = useApplication(applicationId);
   const appData = ((rawAppData as any)?.data ?? rawAppData) as any;
 
   useFocusEffect(
@@ -48,7 +54,10 @@ const ApplicationDetailScreen: React.FC = () => {
 
   const status = appData?.status || route.params?.status;
   const jobTitle = appData?.job?.title || route.params?.jobTitle;
-  const employerName = appData?.job?.employer?.name || route.params?.employerName;
+  const employerName =
+    appData?.job?.employer?.name ||
+    (appData?.job?.employer?.is_deleted ? 'Deleted Account' : route.params?.employerName) ||
+    'Employer';
   const compensation =
     appData?.final_agreed_price || appData?.job?.compensation || route.params?.compensation;
 
@@ -81,7 +90,7 @@ const ApplicationDetailScreen: React.FC = () => {
     }
   };
 
-  if (queryLoading && !status && !jobTitle) {
+  if (queryLoading && !appData) {
     return (
       <SafeAreaView
         style={{
@@ -96,7 +105,107 @@ const ApplicationDetailScreen: React.FC = () => {
     );
   }
 
-  if (!queryLoading && !appData && !jobTitle) {
+  if (isError && !appData) {
+    const isDeletedAccount =
+      (error as any)?.status === 404 ||
+      (error as any)?.metadata?.error === 'user_deleted' ||
+      error?.message?.toLowerCase().includes('account') ||
+      error?.message?.toLowerCase().includes('not found');
+
+    if (isDeletedAccount) {
+      return (
+        <SafeAreaView
+          style={{
+            flex: 1,
+            backgroundColor: colors.paper,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 24,
+          }}
+        >
+          <Ionicons name="person-remove-outline" size={48} color={colors.inkMuted} />
+          <Text
+            style={{
+              fontFamily: fonts.bodyBold,
+              fontSize: 18,
+              color: colors.ink,
+              marginTop: 12,
+              textAlign: 'center',
+            }}
+          >
+            This Account No Longer Exists
+          </Text>
+          <Text
+            style={{
+              fontFamily: fonts.body,
+              fontSize: 14,
+              color: colors.inkMuted,
+              marginTop: 6,
+              textAlign: 'center',
+              lineHeight: 20,
+              maxWidth: 300,
+            }}
+          >
+            The employer's account has been deactivated or deleted. This job is no longer available.
+          </Text>
+          <Button
+            label="Go Back"
+            variant="outline"
+            size="base"
+            onPress={() => navigation.goBack()}
+            style={{ marginTop: 24 }}
+          />
+        </SafeAreaView>
+      );
+    }
+
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: colors.paper,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 24,
+        }}
+      >
+        <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+        <Text
+          style={{
+            fontFamily: fonts.bodyBold,
+            fontSize: 18,
+            color: colors.ink,
+            marginTop: 12,
+            textAlign: 'center',
+          }}
+        >
+          Failed to Load Application
+        </Text>
+        <Text
+          style={{
+            fontFamily: fonts.body,
+            fontSize: 14,
+            color: colors.inkMuted,
+            marginTop: 4,
+            textAlign: 'center',
+          }}
+        >
+          Unable to retrieve application details. Please try again.
+        </Text>
+        <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
+          <Button
+            label="Go Back"
+            variant="outline"
+            size="base"
+            onPress={() => navigation.goBack()}
+          />
+          <Button label="Retry" variant="primary" size="base" onPress={() => refetch()} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!queryLoading && !appData) {
     return (
       <SafeAreaView
         style={{

@@ -179,7 +179,7 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                   navigation.navigate('Chat', {
                     conversationId: item.id,
                     jobTitle: item.job_title,
-                    otherUserName: item.other_user?.name,
+                    otherUserName: item.other_user?.name || 'Deleted Account',
                     myRole: item.my_role,
                   })
                 }
@@ -194,13 +194,15 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                       style={styles.avatarImage}
                     />
                   ) : (
-                    <Text style={styles.avatarText}>{item.other_user?.name?.charAt(0) || '?'}</Text>
+                    <Text style={styles.avatarText}>
+                      {(item.other_user?.name || 'Deleted Account').charAt(0)}
+                    </Text>
                   )}
                 </View>
                 <View style={styles.middle}>
                   <View style={styles.nameRow}>
                     <Text style={styles.name} numberOfLines={1}>
-                      {item.other_user?.name || 'Unknown'}
+                      {item.other_user?.name || 'Deleted Account'}
                       {item.job_title ? ` — ${item.job_title}` : ''}
                     </Text>
                     {item.last_message_at && (

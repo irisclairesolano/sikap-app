@@ -154,9 +154,61 @@ const ApplicantDetailScreen: React.FC = () => {
     );
   }
 
-  const hasFallbackInfo = Boolean(route.params.applicantName || route.params.jobTitle);
+  if (isError && !appData) {
+    const isDeletedAccount =
+      (error as any)?.status === 404 ||
+      (error as any)?.metadata?.error === 'user_deleted' ||
+      error?.message?.toLowerCase().includes('account') ||
+      error?.message?.toLowerCase().includes('not found');
 
-  if (isError && !appData && !hasFallbackInfo) {
+    if (isDeletedAccount) {
+      return (
+        <SafeAreaView
+          style={{
+            flex: 1,
+            backgroundColor: colors.paper,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 24,
+          }}
+        >
+          <Ionicons name="person-remove-outline" size={48} color={colors.inkMuted} />
+          <Text
+            style={{
+              fontFamily: fonts.bodyBold,
+              fontSize: 18,
+              color: colors.ink,
+              marginTop: 12,
+              textAlign: 'center',
+            }}
+          >
+            This Account No Longer Exists
+          </Text>
+          <Text
+            style={{
+              fontFamily: fonts.body,
+              fontSize: 14,
+              color: colors.inkMuted,
+              marginTop: 6,
+              textAlign: 'center',
+              lineHeight: 20,
+              maxWidth: 300,
+            }}
+          >
+            The applicant's account has been deactivated or deleted. This application is no longer
+            active.
+          </Text>
+          <Button
+            label="Go Back"
+            variant="outline"
+            size="base"
+            onPress={() => navigation.goBack()}
+            style={{ marginTop: 24 }}
+          />
+        </SafeAreaView>
+      );
+    }
+
     return (
       <SafeAreaView
         style={{
@@ -188,7 +240,7 @@ const ApplicantDetailScreen: React.FC = () => {
             textAlign: 'center',
           }}
         >
-          {error?.message || 'Unable to retrieve applicant details.'}
+          Unable to retrieve applicant details. Please try again.
         </Text>
         <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
           <Button
@@ -203,7 +255,7 @@ const ApplicantDetailScreen: React.FC = () => {
     );
   }
 
-  if (!queryLoading && !appData && !route.params.applicantName) {
+  if (!queryLoading && !appData) {
     return (
       <SafeAreaView
         style={{

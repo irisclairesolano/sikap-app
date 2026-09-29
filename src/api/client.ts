@@ -6,7 +6,9 @@ import { notifyAuthChanged } from '../store/authEvents';
 export const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || 'https://sikap-backend-singapore.onrender.com/api/v1';
 
-console.log('🔗 API Base URL:', BASE_URL);
+if (__DEV__) {
+  console.log('🔗 API Base URL:', BASE_URL);
+}
 
 export class ApiClientError extends Error {
   readonly status: number;
@@ -31,10 +33,12 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
   const token = await SecureStore.getItemAsync('auth_token');
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
 
-  console.log(`🔗 API Request: ${BASE_URL}${endpoint}`, {
-    method: options.method || 'GET',
-    hasToken: !!token,
-  });
+  if (__DEV__) {
+    console.log(`🔗 API Request: ${BASE_URL}${endpoint}`, {
+      method: options.method || 'GET',
+      hasToken: !!token,
+    });
+  }
 
   const headers: Record<string, string> = {
     Accept: 'application/json',
@@ -89,10 +93,12 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
     onlineManager.setOnline(true);
   }
 
-  console.log(`🔗 API Response: ${endpoint}`, {
-    status: res.status,
-    ok: res.ok,
-  });
+  if (__DEV__) {
+    console.log(`🔗 API Response: ${endpoint}`, {
+      status: res.status,
+      ok: res.ok,
+    });
+  }
 
   if (res.status === 401) {
     await SecureStore.deleteItemAsync('auth_token');
@@ -104,44 +110,33 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
   if (!res.ok) {
     let errBody: { message?: string; errors?: Record<string, string[]> } = {};
     let rawText = '';
-    let contentType = res.headers.get('content-type') || '';
-
-    console.log('🔍 HTTP Response Details:', {
-      status: res.status,
-      statusText: res.statusText,
-      contentType: contentType,
-      headers: Object.fromEntries(res.headers.entries()),
-    });
+    const contentType = res.headers.get('content-type') || '';
 
     try {
       const responseText = await res.text();
       rawText = responseText;
-      console.log('🔍 Raw Response Text:', responseText);
 
       // Check if it's HTML (common error pages)
       if (responseText.includes('<!DOCTYPE html>') || responseText.includes('<html>')) {
-        console.log('🔍 Response is HTML - likely an error page');
         errBody.message = 'Server returned an error page instead of JSON';
       } else {
         // Try to parse as JSON
         errBody = JSON.parse(responseText);
-        console.log('🔍 Parsed JSON Response:', errBody);
       }
 
-      console.log('🔍 API Error Details:', {
-        status: res.status,
-        statusText: res.statusText,
-        body: errBody,
-        rawText: rawText.substring(0, 500) + (rawText.length > 500 ? '...' : ''),
-        contentType: contentType,
-      });
+      if (__DEV__) {
+        console.warn('🔍 API Error Details:', {
+          status: res.status,
+          statusText: res.statusText,
+          body: errBody,
+          rawText: rawText.substring(0, 500) + (rawText.length > 500 ? '...' : ''),
+          contentType: contentType,
+        });
+      }
     } catch (parseError) {
-      console.log('🔍 API Error Details: Could not parse response body');
-      console.log('🔍 Parse Error:', parseError);
-      console.log(
-        '🔍 Raw Response Text:',
-        rawText.substring(0, 500) + (rawText.length > 500 ? '...' : ''),
-      );
+      if (__DEV__) {
+        console.warn('🔍 API Error Details: Could not parse response body', parseError);
+      }
       errBody.message = 'Failed to parse server response';
     }
 
@@ -177,20 +172,13 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
     throw new ApiClientError(cleanDisplayMessage, res.status, errBody.errors, errBody);
   }
 
-  // Log successful response before parsing
-  console.log('🔍 API Success Response:', {
-    status: res.status,
-    statusText: res.statusText,
-    headers: Object.fromEntries(res.headers.entries()),
-  });
-
   try {
     const data = await res.json();
-    console.log('🔍 API Parsed Response:', data);
     return data;
   } catch (parseError) {
-    console.log('🔍 API Parse Error:', parseError);
-    console.log('🔍 Raw Response Text:', await res.text());
+    if (__DEV__) {
+      console.warn('🔍 API Parse Error:', parseError);
+    }
     throw new Error('Failed to parse server response');
   }
 }

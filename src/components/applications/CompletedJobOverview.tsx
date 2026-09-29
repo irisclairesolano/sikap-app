@@ -115,31 +115,41 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
         <View style={styles.partyCard}>
           <Text style={styles.partyCardEyebrow}>Hired Worker</Text>
           <View style={styles.partyRow}>
-            <Avatar url={worker.avatar_url} name={worker.name || 'Worker'} size={48} />
+            <Avatar
+              url={worker.is_deleted ? undefined : worker.avatar_url}
+              name={worker.name || 'Worker'}
+              size={48}
+            />
             <View style={styles.partyInfo}>
               <View style={styles.partyNameRow}>
                 <Text style={styles.partyName}>{worker.name || 'Worker'}</Text>
-                {worker.verification_badge && (
-                  <Ionicons name="checkmark-circle" size={16} color={colors.mintDeep} />
-                )}
+                {!worker.is_deleted &&
+                  worker.name !== 'Deleted Account' &&
+                  worker.verification_badge && (
+                    <Ionicons name="checkmark-circle" size={16} color={colors.mintDeep} />
+                  )}
               </View>
-              {worker.barangay ? (
+              {!worker.is_deleted && worker.name !== 'Deleted Account' && worker.barangay ? (
                 <Text style={styles.partySub}>
                   <Ionicons name="location-outline" size={12} color={colors.inkMuted} />{' '}
                   {worker.barangay}, {worker.municipality || 'Bulan'}
                 </Text>
               ) : null}
-              <View style={styles.partyMetaRow}>
-                <View style={styles.partyScoreBadge}>
-                  <Ionicons name="star" size={12} color={colors.gold} />
-                  <Text style={styles.partyScoreText}>{formatScore(worker.reputation_score)}</Text>
+              {!worker.is_deleted && worker.name !== 'Deleted Account' && (
+                <View style={styles.partyMetaRow}>
+                  <View style={styles.partyScoreBadge}>
+                    <Ionicons name="star" size={12} color={colors.gold} />
+                    <Text style={styles.partyScoreText}>
+                      {formatScore(worker.reputation_score)}
+                    </Text>
+                  </View>
+                  {worker.completed_jobs_count != null && (
+                    <Text style={styles.partyMetaText}>
+                      • {worker.completed_jobs_count} completed jobs
+                    </Text>
+                  )}
                 </View>
-                {worker.completed_jobs_count != null && (
-                  <Text style={styles.partyMetaText}>
-                    • {worker.completed_jobs_count} completed jobs
-                  </Text>
-                )}
-              </View>
+              )}
             </View>
           </View>
         </View>
@@ -149,24 +159,30 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
         <View style={styles.partyCard}>
           <Text style={styles.partyCardEyebrow}>Employer</Text>
           <View style={styles.partyRow}>
-            <Avatar url={employer.avatar_url} name={employer.name || 'Employer'} size={48} />
+            <Avatar
+              url={employer.is_deleted ? undefined : employer.avatar_url}
+              name={employer.name || 'Employer'}
+              size={48}
+            />
             <View style={styles.partyInfo}>
               <Text style={styles.partyName}>{employer.name || 'Employer'}</Text>
-              {employer.barangay ? (
+              {!employer.is_deleted && employer.name !== 'Deleted Account' && employer.barangay ? (
                 <Text style={styles.partySub}>
                   <Ionicons name="location-outline" size={12} color={colors.inkMuted} />{' '}
                   {employer.barangay}, {employer.municipality || 'Bulan'}
                 </Text>
               ) : null}
-              <View style={styles.partyMetaRow}>
-                <View style={styles.partyScoreBadge}>
-                  <Ionicons name="star" size={12} color={colors.gold} />
-                  <Text style={styles.partyScoreText}>
-                    {formatScore(employer.reputation_score)}
-                  </Text>
+              {!employer.is_deleted && employer.name !== 'Deleted Account' && (
+                <View style={styles.partyMetaRow}>
+                  <View style={styles.partyScoreBadge}>
+                    <Ionicons name="star" size={12} color={colors.gold} />
+                    <Text style={styles.partyScoreText}>
+                      {formatScore(employer.reputation_score)}
+                    </Text>
+                  </View>
+                  <Text style={styles.partyMetaText}>• Reputation Score</Text>
                 </View>
-                <Text style={styles.partyMetaText}>• Reputation Score</Text>
-              </View>
+              )}
             </View>
           </View>
         </View>

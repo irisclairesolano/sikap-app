@@ -9,6 +9,7 @@ import * as SecureStore from '../../utils/storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { notifyAuthChanged } from '../../store/authEvents';
 import { useAuth } from '../../hooks/useAuth';
+import { authApi } from '../../api/auth';
 
 const SettingRow = ({
   icon,
@@ -60,6 +61,7 @@ export const SettingsScreen: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { user, userRole, switchRole } = useAuth();
 
@@ -77,6 +79,74 @@ export const SettingsScreen: React.FC = () => {
         },
       },
     ]);
+  };
+
+  const executeAccountDeletion = async () => {
+    try {
+      setIsDeleting(true);
+      await authApi.deleteAccount();
+      await SecureStore.deleteItemAsync('auth_token');
+      await SecureStore.deleteItemAsync('user_profile');
+      queryClient.clear();
+      notifyAuthChanged();
+    } catch (err: any) {
+      setIsDeleting(false);
+      showAlert(
+        'Deletion Failed',
+        err?.message || 'Could not delete your account. Please try again later.',
+      );
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      const status = await authApi.getDeleteAccountStatus();
+      if (!status.can_delete) {
+        // Tier 1: Blocked
+        showAlert(
+          'Cannot Delete Account',
+          status.reason ||
+            'You have active jobs or pending applications in progress. Please conclude or cancel them before deleting your account.',
+        );
+        return;
+      }
+
+      if (status.has_warning) {
+        // Tier 2: Warned (open rating window on recently completed job)
+        showAlert(
+          'Pending Ratings',
+          `${status.warning}\n\nAre you sure you want to proceed with deleting your account? This action cannot be undone.`,
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Delete Account',
+              style: 'destructive',
+              onPress: executeAccountDeletion,
+            },
+          ],
+        );
+        return;
+      }
+
+      // Tier 3: Clean deletion allowed
+      showAlert(
+        'Delete Account',
+        'Are you sure you want to permanently delete your account? All your personal profile information will be removed and you will be logged out immediately. This action cannot be undone.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete Account',
+            style: 'destructive',
+            onPress: executeAccountDeletion,
+          },
+        ],
+      );
+    } catch (err: any) {
+      showAlert(
+        'Error',
+        err?.message || 'Unable to check account status. Please check your connection.',
+      );
+    }
   };
 
   const handleSwitchRole = () => {
@@ -182,7 +252,12 @@ export const SettingsScreen: React.FC = () => {
           <View style={styles.sectionCard}>
             <SettingRow icon="log-out-outline" title="Log Out" onPress={handleLogout} />
             <View style={styles.divider} />
-            <SettingRow icon="trash-outline" title="Delete Account" isDestructive={true} />
+            <SettingRow
+              icon="trash-outline"
+              title="Delete Account"
+              isDestructive={true}
+              onPress={handleDeleteAccount}
+            />
           </View>
         </View>
 

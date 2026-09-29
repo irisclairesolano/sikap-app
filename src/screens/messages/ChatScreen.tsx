@@ -101,6 +101,10 @@ const ChatScreen: React.FC = () => {
     (conversationUserRole === 'employer' ? conversation?.worker_id : conversation?.employer_id) ??
     0;
 
+  const isOtherUserDeleted =
+    Boolean(conversation?.other_user?.is_deleted) ||
+    conversation?.other_user?.name === 'Deleted Account';
+
   const isBlockedByMe = !!conversation?.is_blocked_by_me;
   const isBlockedByOther = !!conversation?.is_blocked_by_other;
   const isBlocked = isBlockedByMe || isBlockedByOther;
@@ -108,6 +112,7 @@ const ChatScreen: React.FC = () => {
   const [inputError, setInputError] = useState<string | null>(null);
 
   const handleOpenUserProfile = () => {
+    if (isOtherUserDeleted) return;
     if (conversationUserRole === 'employer') {
       const appId = conversation?.application_id;
       if (appId) {
@@ -417,11 +422,20 @@ const ChatScreen: React.FC = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.headerProfileBtn}
-            activeOpacity={0.7}
+            activeOpacity={isOtherUserDeleted ? 1 : 0.7}
             onPress={handleOpenUserProfile}
           >
             <View style={styles.headerAvatar}>
-              {conversation?.other_user?.avatar_url ? (
+              {isOtherUserDeleted ? (
+                <View
+                  style={[
+                    styles.headerAvatarFallback,
+                    { backgroundColor: '#F1F5F9', borderColor: colors.inkFaint },
+                  ]}
+                >
+                  <Ionicons name="person-outline" size={18} color={colors.inkMuted} />
+                </View>
+              ) : conversation?.other_user?.avatar_url ? (
                 <Image
                   source={{ uri: conversation.other_user.avatar_url }}
                   cachePolicy="memory-disk"
@@ -439,14 +453,21 @@ const ChatScreen: React.FC = () => {
             </View>
             <View style={styles.headerTitleContainer}>
               <Text style={styles.headerName} numberOfLines={1}>
-                {otherUserName || conversation?.other_user?.name}
+                {isOtherUserDeleted
+                  ? 'Deleted Account'
+                  : otherUserName || conversation?.other_user?.name}
               </Text>
               <Text style={styles.headerJob} numberOfLines={1}>
                 {jobTitle || conversation?.job_title}
               </Text>
             </View>
           </TouchableOpacity>
-          {isLocked ? (
+          {isOtherUserDeleted ? (
+            <View style={styles.lockedPill}>
+              <Ionicons name="person-remove-outline" size={12} color={colors.inkMuted} />
+              <Text style={styles.lockedPillText}>Deleted</Text>
+            </View>
+          ) : isLocked ? (
             <View style={styles.lockedPill}>
               <Ionicons name="lock-closed" size={12} color={colors.inkMuted} />
               <Text style={styles.lockedPillText}>Locked</Text>
@@ -559,8 +580,18 @@ const ChatScreen: React.FC = () => {
           </View>
         )}
 
+        {/* Deleted Account Banner */}
+        {isOtherUserDeleted && (
+          <View style={styles.deletedBanner}>
+            <Ionicons name="information-circle-outline" size={16} color={colors.inkMuted} />
+            <Text style={styles.deletedBannerText}>
+              This person's account has been deleted. You can still view your message history.
+            </Text>
+          </View>
+        )}
+
         {/* Lock Banner */}
-        {(isLocked || isUnlockRequested) && (
+        {!isOtherUserDeleted && (isLocked || isUnlockRequested) && (
           <View style={styles.lockBanner}>
             <Text style={styles.lockBannerText}>
               {isUnlockRequested
@@ -712,62 +743,72 @@ const ChatScreen: React.FC = () => {
             </View>
           )}
 
-        {/* Input Bar */}
-        {status === 'open' && !isBlocked && (
-          <>
-            <View style={styles.inputContainer}>
-              <TouchableOpacity
-                onPress={handlePickImage}
-                style={styles.iconBtn}
-                activeOpacity={0.6}
-                disabled={!isWorkerReplyAllowed}
-              >
-                <Ionicons name="image-outline" size={24} color={colors.inkMuted} />
-              </TouchableOpacity>
-              <TextInput
-                style={styles.input}
-                placeholder={
-                  !isWorkerReplyAllowed
-                    ? 'Waiting for employer to start conversation...'
-                    : 'Type a message...'
-                }
-                placeholderTextColor={colors.inkLight}
-                value={inputText}
-                onChangeText={(text) => {
-                  setInputText(text);
-                  if (inputError) setInputError(null);
-                }}
-                multiline
-                maxLength={1000}
-                editable={isWorkerReplyAllowed}
-              />
-              {inputText.length > 800 && (
-                <Text
-                  style={[styles.charCounter, inputText.length > 950 && { color: colors.error }]}
+        {/* Input Bar or Deleted Account Notice */}
+        {isOtherUserDeleted ? (
+          <View style={styles.deletedInputContainer}>
+            <Ionicons name="lock-closed-outline" size={16} color={colors.inkMuted} />
+            <Text style={styles.deletedInputText}>
+              Messaging is disabled because this account no longer exists.
+            </Text>
+          </View>
+        ) : (
+          status === 'open' &&
+          !isBlocked && (
+            <>
+              <View style={styles.inputContainer}>
+                <TouchableOpacity
+                  onPress={handlePickImage}
+                  style={styles.iconBtn}
+                  activeOpacity={0.6}
+                  disabled={!isWorkerReplyAllowed}
                 >
-                  {inputText.length}/1000
-                </Text>
-              )}
-              <TouchableOpacity
-                onPress={handleSendText}
-                style={styles.iconBtn}
-                activeOpacity={0.6}
-                disabled={!inputText.trim() || !isWorkerReplyAllowed}
-              >
-                <Ionicons
-                  name="send"
-                  size={24}
-                  color={inputText.trim() ? colors.primary : colors.inkLight}
+                  <Ionicons name="image-outline" size={24} color={colors.inkMuted} />
+                </TouchableOpacity>
+                <TextInput
+                  style={styles.input}
+                  placeholder={
+                    !isWorkerReplyAllowed
+                      ? 'Waiting for employer to start conversation...'
+                      : 'Type a message...'
+                  }
+                  placeholderTextColor={colors.inkLight}
+                  value={inputText}
+                  onChangeText={(text) => {
+                    setInputText(text);
+                    if (inputError) setInputError(null);
+                  }}
+                  multiline
+                  maxLength={1000}
+                  editable={isWorkerReplyAllowed}
                 />
-              </TouchableOpacity>
-            </View>
-            {inputError ? (
-              <View style={styles.inlineErrorBox}>
-                <Ionicons name="alert-circle" size={15} color={colors.error} />
-                <Text style={styles.inlineErrorText}>{inputError}</Text>
+                {inputText.length > 800 && (
+                  <Text
+                    style={[styles.charCounter, inputText.length > 950 && { color: colors.error }]}
+                  >
+                    {inputText.length}/1000
+                  </Text>
+                )}
+                <TouchableOpacity
+                  onPress={handleSendText}
+                  style={styles.iconBtn}
+                  activeOpacity={0.6}
+                  disabled={!inputText.trim() || !isWorkerReplyAllowed}
+                >
+                  <Ionicons
+                    name="send"
+                    size={24}
+                    color={inputText.trim() ? colors.primary : colors.inkLight}
+                  />
+                </TouchableOpacity>
               </View>
-            ) : null}
-          </>
+              {inputError ? (
+                <View style={styles.inlineErrorBox}>
+                  <Ionicons name="alert-circle" size={15} color={colors.error} />
+                  <Text style={styles.inlineErrorText}>{inputError}</Text>
+                </View>
+              ) : null}
+            </>
+          )
         )}
       </SafeAreaView>
     </KeyboardAvoidingView>
@@ -1096,6 +1137,39 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.error,
     flex: 1,
+  },
+  deletedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.inkFaint,
+  },
+  deletedBannerText: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkMuted,
+    lineHeight: 18,
+  },
+  deletedInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: colors.paper,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+  },
+  deletedInputText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkMuted,
   },
 });
 
