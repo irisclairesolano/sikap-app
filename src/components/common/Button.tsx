@@ -40,6 +40,8 @@ const Button: React.FC<ButtonProps> = ({
   icon,
   iconPosition = 'left',
   style,
+  testID,
+  ...rest
 }) => {
   const displayLabel = label || title || '';
   const variantStyle: ViewStyle =
@@ -101,6 +103,8 @@ const Button: React.FC<ButtonProps> = ({
       activeOpacity={0.7}
       accessibilityLabel={accessibilityLabel || displayLabel}
       accessibilityRole="button"
+      testID={testID}
+      {...rest}
     >
       {loading ? (
         <ActivityIndicator

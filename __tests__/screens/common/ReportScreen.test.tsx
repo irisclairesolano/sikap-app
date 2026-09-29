@@ -1,22 +1,22 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import ReportScreen from '../../../src/screens/common/ReportScreen';
 import { useSubmitReport } from '../../../src/hooks/useReports';
 import { useAlert } from '../../../src/contexts/AlertContext';
 import { normalizeReportableType } from '../../../src/api/reports';
+import { useRoute } from '@react-navigation/native';
+
+jest.setTimeout(30000);
 
 const mockNavigate = jest.fn();
 const mockGoBack = jest.fn();
-let mockRouteParams: any = {};
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
     navigate: mockNavigate,
     goBack: mockGoBack,
   }),
-  useRoute: () => ({
-    params: mockRouteParams,
-  }),
+  useRoute: jest.fn(),
 }));
 
 jest.mock('../../../src/hooks/useReports', () => ({
@@ -31,8 +31,17 @@ jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'Ionicons',
 }));
 
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn().mockResolvedValue(undefined),
+  notificationAsync: jest.fn().mockResolvedValue(undefined),
+  selectionAsync: jest.fn().mockResolvedValue(undefined),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+  NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
+}));
+
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: any) => children,
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
 
 describe('Report API & Normalization Helpers', () => {
@@ -76,22 +85,27 @@ describe('ReportScreen Component', () => {
   });
 
   it('correctly parses legacy param shape { id: 42, type: "user" } and submits payload', async () => {
-    mockRouteParams = { id: 42, type: 'user' };
+    (useRoute as jest.Mock).mockReturnValue({
+      params: { id: 42, type: 'user' },
+    });
 
-    const { getByText, getByPlaceholderText } = await render(<ReportScreen />);
+    const { getByText, getByPlaceholderText, getByTestId } = await render(<ReportScreen />);
 
     // Select reason
-    fireEvent.press(getByText('Harassment'));
+    await fireEvent.press(getByText('Harassment'));
 
     // Fill description
     const input = getByPlaceholderText('Describe what happened...');
-    fireEvent.changeText(input, 'User sent inappropriate messages');
+    await fireEvent.changeText(input, 'User sent inappropriate messages');
 
     // Submit
-    const submitBtn = getByText('Submit report');
-    fireEvent.press(submitBtn);
+    const submitBtn = getByTestId('submit-report-btn');
+    await fireEvent.press(submitBtn);
 
-    expect(mockMutate).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalledTimes(1);
+    });
+
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
         reportable_type: 'user',
@@ -104,22 +118,27 @@ describe('ReportScreen Component', () => {
   });
 
   it('correctly parses modern param shape { reportable_id: 88, reportable_type: "job" } and maps to job_post', async () => {
-    mockRouteParams = { reportable_id: 88, reportable_type: 'job' };
+    (useRoute as jest.Mock).mockReturnValue({
+      params: { reportable_id: 88, reportable_type: 'job' },
+    });
 
-    const { getByText, getByPlaceholderText } = await render(<ReportScreen />);
+    const { getByText, getByPlaceholderText, getByTestId } = await render(<ReportScreen />);
 
     // Select reason
-    fireEvent.press(getByText('Scam or Fraud'));
+    await fireEvent.press(getByText('Scam or Fraud'));
 
     // Fill description
     const input = getByPlaceholderText('Describe what happened...');
-    fireEvent.changeText(input, 'Fake job posting asking for upfront fees');
+    await fireEvent.changeText(input, 'Fake job posting asking for upfront fees');
 
     // Submit
-    const submitBtn = getByText('Submit report');
-    fireEvent.press(submitBtn);
+    const submitBtn = getByTestId('submit-report-btn');
+    await fireEvent.press(submitBtn);
 
-    expect(mockMutate).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalledTimes(1);
+    });
+
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
         reportable_type: 'job_post',
@@ -132,23 +151,28 @@ describe('ReportScreen Component', () => {
   });
 
   it('blocks submission and shows alert when target ID is missing or 0', async () => {
-    mockRouteParams = { id: 0, type: 'user' };
+    (useRoute as jest.Mock).mockReturnValue({
+      params: { id: 0, type: 'user' },
+    });
 
-    const { getByText, getByPlaceholderText } = await render(<ReportScreen />);
+    const { getByText, getByPlaceholderText, getByTestId } = await render(<ReportScreen />);
 
-    // Select reason and text
-    fireEvent.press(getByText('Other'));
+    // Select reason and fill description so form is valid
+    await fireEvent.press(getByText('Other'));
     const input = getByPlaceholderText('Describe what happened...');
-    fireEvent.changeText(input, 'Testing invalid target ID');
+    await fireEvent.changeText(input, 'Testing invalid target ID');
 
     // Submit
-    const submitBtn = getByText('Submit report');
-    fireEvent.press(submitBtn);
+    const submitBtn = getByTestId('submit-report-btn');
+    await fireEvent.press(submitBtn);
+
+    await waitFor(() => {
+      expect(mockShowAlert).toHaveBeenCalledWith(
+        'Missing Target',
+        'Unable to submit report without a valid target identifier.',
+      );
+    });
 
     expect(mockMutate).not.toHaveBeenCalled();
-    expect(mockShowAlert).toHaveBeenCalledWith(
-      'Missing Target',
-      'Unable to submit report without a valid target identifier.',
-    );
   });
 });

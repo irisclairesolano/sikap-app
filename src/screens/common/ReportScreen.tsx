@@ -103,6 +103,7 @@ export const ReportScreen: React.FC = () => {
           {REASONS.map((reason) => (
             <TouchableOpacity
               key={reason}
+              testID={`reason-chip-${reason}`}
               style={[styles.reasonChip, selectedReason === reason && styles.reasonChipActive]}
               onPress={() => setSelectedReason(reason)}
             >
@@ -119,6 +120,7 @@ export const ReportScreen: React.FC = () => {
           <Text style={styles.label}>Please provide more details</Text>
           <View style={styles.inputContainer}>
             <TextInput
+              testID="report-description-input"
               style={styles.textInput}
               placeholder="Describe what happened..."
               placeholderTextColor={colors.inkLight}
@@ -131,6 +133,7 @@ export const ReportScreen: React.FC = () => {
 
         <View style={styles.submitContainer}>
           <Button
+            testID="submit-report-btn"
             title="Submit report"
             variant="danger"
             onPress={handleSubmit}
