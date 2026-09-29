@@ -72,7 +72,12 @@ export type WorkerStackParamList = {
   };
   HireReceipt: { id: number };
   RateEmployer: { id: number; employerName: string; jobTitle: string };
-  Report: { id: number };
+  Report: {
+    id?: number;
+    type?: 'user' | 'job' | 'job_post' | 'application';
+    reportable_id?: number;
+    reportable_type?: 'user' | 'job' | 'job_post' | 'application';
+  };
   EditProfile: undefined;
   Settings: undefined;
   NotificationsList: undefined;

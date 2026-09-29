@@ -68,9 +68,12 @@ export type EmployerStackParamList = {
   CancelHire: { id: number; applicantName: string; jobTitle: string };
   MarkComplete: { id: number; jobTitle: string; workerName?: string };
   RateWorkerList: { jobId: number; jobTitle: string };
-  RateWorker: { id: number; workerName: string; jobTitle: string; jobId?: number };
-  Report: { id: number };
-  EditProfile: undefined;
+  Report: {
+    id?: number;
+    type?: 'user' | 'job' | 'job_post' | 'application';
+    reportable_id?: number;
+    reportable_type?: 'user' | 'job' | 'job_post' | 'application';
+  };
   Settings: undefined;
   Reviews: undefined;
   MyJobsList: undefined;

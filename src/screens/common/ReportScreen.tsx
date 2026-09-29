@@ -9,9 +9,16 @@ import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { useSubmitReport } from '../../hooks/useReports';
 
+import { normalizeReportableType, ReportReasonType } from '../../api/reports';
+
 // We define a generic param list for the common screen
 type ReportScreenParamList = {
-  Report: { id: number; type?: 'user' | 'job' };
+  Report: {
+    id?: number;
+    type?: string;
+    reportable_id?: number;
+    reportable_type?: string;
+  };
 };
 
 type ReportScreenRouteProp = RouteProp<ReportScreenParamList, 'Report'>;
@@ -22,7 +29,9 @@ const REASONS = ['Inappropriate Behavior', 'Scam or Fraud', 'Harassment', 'Spam'
 export const ReportScreen: React.FC = () => {
   const navigation = useNavigation<ReportScreenNavigationProp>();
   const route = useRoute<ReportScreenRouteProp>();
-  const { id, type = 'user' } = route.params || { id: 0, type: 'user' };
+  const rawParams = (route.params || {}) as any;
+  const id = Number(rawParams.reportable_id ?? rawParams.id) || 0;
+  const type = normalizeReportableType(rawParams.reportable_type ?? rawParams.type ?? 'user');
 
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [description, setDescription] = useState('');
@@ -33,10 +42,18 @@ export const ReportScreen: React.FC = () => {
   const isFormValid = selectedReason !== null && description.trim().length > 0;
 
   const handleSubmit = () => {
-    if (!selectedReason) return;
+    if (!id || id <= 0) {
+      showAlert('Missing Target', 'Unable to submit report without a valid target identifier.');
+      return;
+    }
+
+    if (!selectedReason) {
+      showAlert('Select a Reason', 'Please select a reason for reporting.');
+      return;
+    }
 
     // Map UI reason to backend enum
-    let mappedType: 'harassment' | 'fake_account' | 'inappropriate_job' | 'other' = 'other';
+    let mappedType: ReportReasonType = 'other';
     if (selectedReason === 'Harassment') mappedType = 'harassment';
     if (selectedReason === 'Scam or Fraud' || selectedReason === 'Spam')
       mappedType = 'fake_account';
@@ -44,10 +61,10 @@ export const ReportScreen: React.FC = () => {
 
     submitReport(
       {
-        reportable_type: type === 'job' ? 'job_post' : 'user',
+        reportable_type: type,
         reportable_id: id,
         type: mappedType,
-        description,
+        description: description.trim() || selectedReason,
       },
       {
         onSuccess: () => {

@@ -333,7 +333,17 @@ const ApplicantDetailScreen: React.FC = () => {
 
   const handleReport = () => {
     setMenuVisible(false);
-    navigation.navigate('Report' as any, { id: applicantId, type: 'user' });
+    const workerUserId = Number(appData?.worker?.id ?? appData?.worker_id) || 0;
+    if (!workerUserId) {
+      showAlert('Error', 'Unable to report applicant at this time (missing worker information).');
+      return;
+    }
+    navigation.navigate('Report' as any, {
+      id: workerUserId,
+      type: 'user',
+      reportable_id: workerUserId,
+      reportable_type: 'user',
+    });
   };
 
   const navigateToConfirmHire = () => {
