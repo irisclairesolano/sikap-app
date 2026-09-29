@@ -201,8 +201,10 @@ const ChatScreen: React.FC = () => {
     setShowOptionsMenu(false);
     if (!otherUserId) return;
     (navigation as any).navigate('Report', {
+      id: Number(otherUserId),
+      type: 'user',
       reportable_type: 'user',
-      reportable_id: otherUserId,
+      reportable_id: Number(otherUserId),
     });
   };
 
