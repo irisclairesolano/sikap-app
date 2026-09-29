@@ -53,6 +53,7 @@ export interface JobPost {
   tools_required?: string;
   status: 'open' | 'closed_in_progress' | 'completed' | 'cancelled';
   rating_window_expires_at: string | null;
+  completed_at?: string | null;
   created_at?: string;
   updated_at?: string;
   deleted_at?: string | null;
@@ -84,7 +85,9 @@ export interface Application {
     | 'employer_requested';
   cover_note: string | null;
   applied_at: string;
+  completed_at?: string | null;
   created_at?: string;
+  updated_at?: string;
   final_agreed_price: number | null; // only at employer_confirmed or accepted
   references_revealed: boolean; // true at Stage 2
   contact_revealed: boolean; // true at Stage 4

@@ -95,8 +95,22 @@ export const EmployerDashboardScreen: React.FC = () => {
   // Flatten all applications across jobs to create individual action items
   const allActions = allJobs.flatMap((job) =>
     (job.applications || []).map((app) => {
+      const isRatingWindowClosed = (() => {
+        if (!job.rating_window_expires_at) return false;
+        try {
+          return new Date(job.rating_window_expires_at).getTime() <= Date.now();
+        } catch {
+          return false;
+        }
+      })();
+
+      const hasReviewed = Boolean(app.has_reviewed || app.user_review);
+
       const isDone =
-        app.status === 'completed' || app.status === 'rejected' || app.status === 'withdrawn';
+        app.status === 'rejected' ||
+        app.status === 'withdrawn' ||
+        (app.status === 'completed' && (hasReviewed || isRatingWindowClosed));
+
       let title = 'Review application';
       let description = `${app.worker?.name || 'Worker'} applied for ${job.title}`;
       let stageBadge = 'Stage 1 · Review';
@@ -145,13 +159,23 @@ export const EmployerDashboardScreen: React.FC = () => {
           borderColor = colors.mint;
           break;
         case 'completed':
-          title = `Rate & review worker`;
-          description = `Completed job with ${app.worker?.name || 'Worker'} on ${job.title}`;
-          stageBadge = 'Stage 5 · Done';
-          badgeBg = '#E0DED4';
-          badgeColor = colors.inkSoft;
-          iconName = 'checkmark-done-circle-outline';
-          borderColor = colors.inkFaint;
+          if (!hasReviewed && !isRatingWindowClosed) {
+            title = `Rate & review worker`;
+            description = `Completed job with ${app.worker?.name || 'Worker'} on ${job.title}`;
+            stageBadge = 'Action · Rate Worker';
+            badgeBg = colors.gold + '25';
+            badgeColor = colors.ink;
+            iconName = 'star-outline';
+            borderColor = colors.gold + '60';
+          } else {
+            title = hasReviewed ? `Worker rated` : `Job completed`;
+            description = `Completed job with ${app.worker?.name || 'Worker'} on ${job.title}`;
+            stageBadge = hasReviewed ? 'Done · Rated' : 'Done';
+            badgeBg = '#E0DED4';
+            badgeColor = colors.inkSoft;
+            iconName = hasReviewed ? 'checkmark-circle-outline' : 'time-outline';
+            borderColor = colors.inkFaint;
+          }
           break;
         default:
           title = `Application status: ${app.status}`;
@@ -215,6 +239,29 @@ export const EmployerDashboardScreen: React.FC = () => {
       emergencyContactName: (app.worker as any)?.emergency_contact_name,
       emergencyContactPhone: (app.worker as any)?.emergency_contact_phone,
     });
+  };
+
+  const getFriendlyStatusLabel = (app: any): string => {
+    switch (app.status) {
+      case 'pending':
+        return 'Applied';
+      case 'employer_requested':
+      case 'pending_negotiation':
+        return 'Shortlisted';
+      case 'employer_confirmed':
+        return 'Offer Sent';
+      case 'accepted':
+      case 'hired':
+        return 'Hired';
+      case 'completed':
+        return app.has_reviewed || app.user_review ? 'Done · Rated' : 'Done · Awaiting Review';
+      case 'rejected':
+        return 'Declined';
+      case 'withdrawn':
+        return 'Withdrawn';
+      default:
+        return app.status ? String(app.status).replace(/_/g, ' ') : 'Applied';
+    }
   };
 
   return (
@@ -330,11 +377,23 @@ export const EmployerDashboardScreen: React.FC = () => {
                   {
                     borderColor: action.borderColor,
                     backgroundColor: action.isDone ? '#ECEAE2' : colors.paperBright,
-                    opacity: action.isDone ? 0.85 : 1,
+                    opacity: action.isDone ? 0.75 : 1,
                   },
                 ]}
-                activeOpacity={0.7}
-                onPress={() => navigateToApplicantDetail(action.app, action.job.title)}
+                activeOpacity={action.isDone ? 1 : 0.7}
+                disabled={action.isDone}
+                onPress={() => {
+                  if (action.isDone) return;
+                  if (action.app.status === 'completed') {
+                    navigation.navigate('RateWorker', {
+                      id: action.app.id,
+                      workerName: action.app.worker?.name || 'Worker',
+                      jobTitle: action.job.title || 'Job',
+                    });
+                  } else {
+                    navigateToApplicantDetail(action.app, action.job.title);
+                  }
+                }}
               >
                 <View
                   style={[
@@ -351,24 +410,14 @@ export const EmployerDashboardScreen: React.FC = () => {
                   />
                 </View>
                 <View style={styles.jobDetails}>
-                  <View
-                    style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}
+                  <Text
+                    style={[
+                      styles.jobTitle,
+                      { color: action.isDone ? colors.inkSoft : colors.ink },
+                    ]}
                   >
-                    <Text
-                      style={[
-                        styles.jobTitle,
-                        { color: action.isDone ? colors.inkSoft : colors.ink },
-                      ]}
-                    >
-                      {action.title}
-                    </Text>
-                    {action.isDone && (
-                      <View style={styles.doneMarker}>
-                        <Ionicons name="checkmark" size={10} color={colors.white} />
-                        <Text style={styles.doneMarkerText}>DONE</Text>
-                      </View>
-                    )}
-                  </View>
+                    {action.title}
+                  </Text>
                   <Text style={styles.jobSubtitle} numberOfLines={1}>
                     {action.description}
                   </Text>
@@ -390,11 +439,9 @@ export const EmployerDashboardScreen: React.FC = () => {
                     </View>
                   </View>
                 </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={action.isDone ? colors.inkFaint : colors.inkLight}
-                />
+                {!action.isDone && (
+                  <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
+                )}
               </TouchableOpacity>
             ))
           )}
@@ -487,11 +534,13 @@ export const EmployerDashboardScreen: React.FC = () => {
                       <>
                         <Ionicons name="star" size={12} color={colors.gold} />
                         <Text style={styles.ratingText}>
-                          {app.worker.reputation_score} • {app.status}
+                          {app.worker.reputation_score} • {getFriendlyStatusLabel(app)}
                         </Text>
                       </>
                     ) : (
-                      <Text style={styles.ratingText}>No ratings yet • {app.status}</Text>
+                      <Text style={styles.ratingText}>
+                        No ratings yet • {getFriendlyStatusLabel(app)}
+                      </Text>
                     )}
                   </View>
                 </View>

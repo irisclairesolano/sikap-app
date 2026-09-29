@@ -321,7 +321,7 @@ export const ApplyScreen: React.FC = () => {
           applicationId: job.application_id,
           jobTitle: job.title,
           employerName: job.employer?.name || 'Employer',
-          status: 'pending',
+          status: liveApp?.status || job.application_status || 'pending',
         });
       } else {
         (navigation as any).navigate('Mine');

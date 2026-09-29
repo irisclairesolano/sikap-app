@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
+import { CompletedJobOverview } from '../../components/applications/CompletedJobOverview';
 import { useWithdrawApplication } from '../../hooks/useApply';
 import { useApplication } from '../../hooks/useJobApplications';
 import { messagesApi } from '../../api/messages';
@@ -238,93 +239,100 @@ const ApplicationDetailScreen: React.FC = () => {
           </View>
         )}
 
-        {/* 4-Stage Tracker */}
-        <View style={styles.stages}>
-          <View style={stage >= 1 ? styles.stageActive : styles.stage}>
-            <View
-              style={[
-                styles.stageCircle,
-                stage >= 2 ? styles.stageDone : stage === 1 ? styles.stageCircleActive : null,
-              ]}
-            >
-              {stage >= 2 ? (
-                <Ionicons name="checkmark" size={14} color="white" />
-              ) : (
-                <Text style={stage === 1 ? styles.stageCircleTextActive : styles.stageCircleText}>
-                  1
-                </Text>
-              )}
+        {/* Completed Job Overview when stage 5, or 4-Stage Tracker for active stages */}
+        {stage === 5 ? (
+          <CompletedJobOverview
+            viewerRole="worker"
+            application={appData}
+            job={appData?.job}
+            onOpenChat={handleOpenChat}
+          />
+        ) : (
+          <View style={styles.stages}>
+            <View style={stage >= 1 ? styles.stageActive : styles.stage}>
+              <View
+                style={[
+                  styles.stageCircle,
+                  stage >= 2 ? styles.stageDone : stage === 1 ? styles.stageCircleActive : null,
+                ]}
+              >
+                {stage >= 2 ? (
+                  <Ionicons name="checkmark" size={14} color="white" />
+                ) : (
+                  <Text style={stage === 1 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                    1
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.stageLabel}>Applied</Text>
             </View>
-            <Text style={styles.stageLabel}>Applied</Text>
-          </View>
-          <View style={[styles.stageDivider, stage >= 2 && styles.stageDoneDivider]} />
+            <View style={[styles.stageDivider, stage >= 2 && styles.stageDoneDivider]} />
 
-          <View style={stage >= 2 ? styles.stageActive : styles.stage}>
-            <View
-              style={[
-                styles.stageCircle,
-                stage >= 3 ? styles.stageDone : stage === 2 ? styles.stageCircleActive : null,
-              ]}
-            >
-              {stage >= 3 ? (
-                <Ionicons name="checkmark" size={14} color="white" />
-              ) : (
-                <Text style={stage === 2 ? styles.stageCircleTextActive : styles.stageCircleText}>
-                  2
-                </Text>
-              )}
+            <View style={stage >= 2 ? styles.stageActive : styles.stage}>
+              <View
+                style={[
+                  styles.stageCircle,
+                  stage >= 3 ? styles.stageDone : stage === 2 ? styles.stageCircleActive : null,
+                ]}
+              >
+                {stage >= 3 ? (
+                  <Ionicons name="checkmark" size={14} color="white" />
+                ) : (
+                  <Text style={stage === 2 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                    2
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.stageLabel}>Shortlisted</Text>
             </View>
-            <Text style={styles.stageLabel}>Shortlisted</Text>
-          </View>
-          <View style={[styles.stageDivider, stage >= 3 && styles.stageDoneDivider]} />
+            <View style={[styles.stageDivider, stage >= 3 && styles.stageDoneDivider]} />
 
-          <View style={stage >= 3 ? styles.stageActive : styles.stage}>
-            <View
-              style={[
-                styles.stageCircle,
-                stage >= 4 ? styles.stageDone : stage === 3 ? styles.stageCircleActive : null,
-              ]}
-            >
-              {stage >= 4 ? (
-                <Ionicons name="checkmark" size={14} color="white" />
-              ) : (
-                <Text style={stage === 3 ? styles.stageCircleTextActive : styles.stageCircleText}>
-                  3
-                </Text>
-              )}
+            <View style={stage >= 3 ? styles.stageActive : styles.stage}>
+              <View
+                style={[
+                  styles.stageCircle,
+                  stage >= 4 ? styles.stageDone : stage === 3 ? styles.stageCircleActive : null,
+                ]}
+              >
+                {stage >= 4 ? (
+                  <Ionicons name="checkmark" size={14} color="white" />
+                ) : (
+                  <Text style={stage === 3 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                    3
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.stageLabel}>Offer</Text>
             </View>
-            <Text style={styles.stageLabel}>Offer</Text>
-          </View>
-          <View style={[styles.stageDivider, stage >= 4 && styles.stageDoneDivider]} />
+            <View style={[styles.stageDivider, stage >= 4 && styles.stageDoneDivider]} />
 
-          <View style={stage >= 4 ? styles.stageActive : styles.stage}>
-            <View
-              style={[
-                styles.stageCircle,
-                stage >= 5 ? styles.stageDone : stage === 4 ? styles.stageCircleActive : null,
-              ]}
-            >
-              {stage >= 5 ? (
-                <Ionicons name="checkmark" size={14} color="white" />
-              ) : (
-                <Text style={stage === 4 ? styles.stageCircleTextActive : styles.stageCircleText}>
-                  4
-                </Text>
-              )}
+            <View style={stage >= 4 ? styles.stageActive : styles.stage}>
+              <View
+                style={[
+                  styles.stageCircle,
+                  stage >= 5 ? styles.stageDone : stage === 4 ? styles.stageCircleActive : null,
+                ]}
+              >
+                {stage >= 5 ? (
+                  <Ionicons name="checkmark" size={14} color="white" />
+                ) : (
+                  <Text style={stage === 4 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                    4
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.stageLabel}>Hired</Text>
             </View>
-            <Text style={styles.stageLabel}>Hired</Text>
-          </View>
-          <View style={[styles.stageDivider, stage >= 5 && styles.stageDoneDivider]} />
+            <View style={styles.stageDivider} />
 
-          <View style={stage >= 5 ? styles.stageActive : styles.stage}>
-            <View style={[styles.stageCircle, stage === 5 ? styles.stageCircleActive : null]}>
-              <Text style={stage === 5 ? styles.stageCircleTextActive : styles.stageCircleText}>
-                5
-              </Text>
+            <View style={styles.stage}>
+              <View style={styles.stageCircle}>
+                <Text style={styles.stageCircleText}>5</Text>
+              </View>
+              <Text style={styles.stageLabel}>Done</Text>
             </View>
-            <Text style={styles.stageLabel}>Done</Text>
           </View>
-        </View>
+        )}
 
         {/* Dynamic Content based on Stage */}
 
@@ -464,58 +472,6 @@ const ApplicationDetailScreen: React.FC = () => {
             </View>
           </View>
         )}
-
-        {/* STAGE 5: COMPLETED */}
-        {stage === 5 && (
-          <View>
-            <View style={[styles.priceCard, styles.priceCardSky]}>
-              <Text style={[styles.priceEyebrow, { color: '#075985' }]}>Job Completed</Text>
-              <Text style={styles.priceNum}>
-                ₱{compensation ? Number(compensation).toLocaleString() : '0'}
-              </Text>
-              <Text style={styles.priceDesc}>
-                {appData?.has_reviewed
-                  ? 'Job finished and rated. Thank you!'
-                  : 'Job finished. Awaiting review.'}
-              </Text>
-            </View>
-
-            <View
-              style={[
-                styles.mintNotice,
-                appData?.has_reviewed ? styles.mintNoticeEmerald : styles.mintNoticeRose,
-              ]}
-            >
-              <Ionicons
-                name={appData?.has_reviewed ? 'checkmark-circle' : 'star'}
-                size={20}
-                color={appData?.has_reviewed ? '#15803D' : '#E11D48'}
-              />
-              <Text
-                style={[
-                  styles.mintNoticeText,
-                  { color: appData?.has_reviewed ? '#166534' : '#9F1239' },
-                ]}
-              >
-                {appData?.has_reviewed ? (
-                  <>
-                    <Text style={{ fontWeight: '700', color: '#15803D' }}>Review submitted! </Text>
-                    {appData.user_review?.overall_rating
-                      ? `You rated this employer ★ ${Number(appData.user_review.overall_rating).toFixed(1)}.`
-                      : 'Thank you for your rating and review.'}
-                  </>
-                ) : (
-                  <>
-                    <Text style={{ fontWeight: '700', color: colors.primaryDark }}>
-                      Job complete!{' '}
-                    </Text>
-                    Please rate your employer to help the community.
-                  </>
-                )}
-              </Text>
-            </View>
-          </View>
-        )}
       </ScrollView>
 
       {/* FOOTER ACTIONS */}
@@ -588,30 +544,13 @@ const ApplicationDetailScreen: React.FC = () => {
           </>
         )}
         {stage === 5 && (
-          <>
-            {!appData?.has_reviewed && (
-              <Button
-                label="Rate Employer"
-                variant="primary"
-                size="lg"
-                fullWidth
-                onPress={() =>
-                  navigation.navigate('RateEmployer', {
-                    id: applicationId,
-                    employerName: employerName || 'Employer',
-                    jobTitle: jobTitle || 'Job',
-                  })
-                }
-              />
-            )}
-            <Button
-              label="Open Chat"
-              variant={appData?.has_reviewed ? 'primary' : 'outline'}
-              size="lg"
-              fullWidth
-              onPress={handleOpenChat}
-            />
-          </>
+          <Button
+            label="Open Chat"
+            variant="outline"
+            size="lg"
+            fullWidth
+            onPress={handleOpenChat}
+          />
         )}
         {status === 'rejected' && (
           <Button

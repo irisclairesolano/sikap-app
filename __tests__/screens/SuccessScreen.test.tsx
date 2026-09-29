@@ -27,7 +27,7 @@ let mockNavigation: any = {
 };
 
 describe('SuccessScreen Component', () => {
-  let backHandlerCallback: (() => boolean) | null = null;
+  let backHandlerCallback: any = null;
 
   beforeEach(() => {
     jest.clearAllMocks();

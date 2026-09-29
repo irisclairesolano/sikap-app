@@ -9,6 +9,7 @@ import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { useSubmitReview } from '../../hooks/useReviews';
 import { useAlert } from '../../contexts/AlertContext';
+import { useApplication } from '../../hooks/useJobApplications';
 
 type RateWorkerScreenRouteProp = RouteProp<EmployerStackParamList, 'RateWorker'>;
 type RateWorkerScreenNavigationProp = NativeStackNavigationProp<
@@ -48,6 +49,18 @@ export const RateWorkerScreen: React.FC = () => {
   const route = useRoute<RateWorkerScreenRouteProp>();
   const { id, workerName, jobTitle } = route.params; // this is the applicationId
 
+  const { showAlert } = useAlert();
+  const { data: appData } = useApplication(id);
+  const application = ((appData as any)?.data ?? appData) as any;
+
+  React.useEffect(() => {
+    if (application?.has_reviewed) {
+      showAlert('Already Reviewed', 'You have already submitted a review for this worker.', [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    }
+  }, [application?.has_reviewed, navigation, showAlert]);
+
   const [quality, setQuality] = useState(0);
   const [punctuality, setPunctuality] = useState(0);
   const [communication, setCommunication] = useState(0);
@@ -56,7 +69,6 @@ export const RateWorkerScreen: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const { mutate: submitReview, isPending } = useSubmitReview();
-  const { showAlert } = useAlert();
 
   const isFormValid =
     quality > 0 && punctuality > 0 && communication > 0 && behavior > 0 && note.trim().length >= 5;
@@ -118,6 +130,10 @@ export const RateWorkerScreen: React.FC = () => {
       },
     );
   };
+
+  if (application?.has_reviewed) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>

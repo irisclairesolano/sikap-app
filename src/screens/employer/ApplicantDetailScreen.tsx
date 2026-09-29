@@ -19,6 +19,7 @@ import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { Avatar } from '../../components/common/Avatar';
+import { CompletedJobOverview } from '../../components/applications/CompletedJobOverview';
 import { useApplication } from '../../hooks/useJobApplications';
 import { messagesApi } from '../../api/messages';
 import { useAlert } from '../../contexts/AlertContext';
@@ -349,93 +350,102 @@ const ApplicantDetailScreen: React.FC = () => {
           />
         }
       >
-        {/* 5-Stage Tracker */}
-        <View style={styles.stages}>
-          <View style={stage >= 1 ? styles.stageActive : styles.stage}>
-            <View
-              style={[
-                styles.stageCircle,
-                stage >= 2 ? styles.stageDone : stage === 1 ? styles.stageCircleActive : null,
-              ]}
-            >
-              {stage >= 2 ? (
-                <Ionicons name="checkmark" size={12} color="white" />
-              ) : (
-                <Text style={stage === 1 ? styles.stageCircleTextActive : styles.stageCircleText}>
-                  1
-                </Text>
-              )}
+        {/* 5-Stage Tracker or Completed Job Overview */}
+        {status === 'completed' ? (
+          <CompletedJobOverview
+            viewerRole="employer"
+            application={appData}
+            job={appData?.job}
+            onOpenChat={handleOpenChat}
+          />
+        ) : (
+          <View style={styles.stages}>
+            <View style={stage >= 1 ? styles.stageActive : styles.stage}>
+              <View
+                style={[
+                  styles.stageCircle,
+                  stage >= 2 ? styles.stageDone : stage === 1 ? styles.stageCircleActive : null,
+                ]}
+              >
+                {stage >= 2 ? (
+                  <Ionicons name="checkmark" size={12} color="white" />
+                ) : (
+                  <Text style={stage === 1 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                    1
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.stageLabel}>Applied</Text>
             </View>
-            <Text style={styles.stageLabel}>Applied</Text>
-          </View>
-          <View style={[styles.stageDivider, stage >= 2 && styles.stageDoneDivider]} />
+            <View style={[styles.stageDivider, stage >= 2 && styles.stageDoneDivider]} />
 
-          <View style={stage >= 2 ? styles.stageActive : styles.stage}>
-            <View
-              style={[
-                styles.stageCircle,
-                stage >= 3 ? styles.stageDone : stage === 2 ? styles.stageCircleActive : null,
-              ]}
-            >
-              {stage >= 3 ? (
-                <Ionicons name="checkmark" size={12} color="white" />
-              ) : (
-                <Text style={stage === 2 ? styles.stageCircleTextActive : styles.stageCircleText}>
-                  2
-                </Text>
-              )}
+            <View style={stage >= 2 ? styles.stageActive : styles.stage}>
+              <View
+                style={[
+                  styles.stageCircle,
+                  stage >= 3 ? styles.stageDone : stage === 2 ? styles.stageCircleActive : null,
+                ]}
+              >
+                {stage >= 3 ? (
+                  <Ionicons name="checkmark" size={12} color="white" />
+                ) : (
+                  <Text style={stage === 2 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                    2
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.stageLabel}>Shortlist</Text>
             </View>
-            <Text style={styles.stageLabel}>Shortlist</Text>
-          </View>
-          <View style={[styles.stageDivider, stage >= 3 && styles.stageDoneDivider]} />
+            <View style={[styles.stageDivider, stage >= 3 && styles.stageDoneDivider]} />
 
-          <View style={stage >= 3 ? styles.stageActive : styles.stage}>
-            <View
-              style={[
-                styles.stageCircle,
-                stage >= 4 ? styles.stageDone : stage === 3 ? styles.stageCircleActive : null,
-              ]}
-            >
-              {stage >= 4 ? (
-                <Ionicons name="checkmark" size={12} color="white" />
-              ) : (
-                <Text style={stage === 3 ? styles.stageCircleTextActive : styles.stageCircleText}>
-                  3
-                </Text>
-              )}
+            <View style={stage >= 3 ? styles.stageActive : styles.stage}>
+              <View
+                style={[
+                  styles.stageCircle,
+                  stage >= 4 ? styles.stageDone : stage === 3 ? styles.stageCircleActive : null,
+                ]}
+              >
+                {stage >= 4 ? (
+                  <Ionicons name="checkmark" size={12} color="white" />
+                ) : (
+                  <Text style={stage === 3 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                    3
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.stageLabel}>Offer</Text>
             </View>
-            <Text style={styles.stageLabel}>Offer</Text>
-          </View>
-          <View style={[styles.stageDivider, stage >= 4 && styles.stageDoneDivider]} />
+            <View style={[styles.stageDivider, stage >= 4 && styles.stageDoneDivider]} />
 
-          <View style={stage >= 4 ? styles.stageActive : styles.stage}>
-            <View
-              style={[
-                styles.stageCircle,
-                stage >= 5 ? styles.stageDone : stage === 4 ? styles.stageCircleActive : null,
-              ]}
-            >
-              {stage >= 5 ? (
-                <Ionicons name="checkmark" size={12} color="white" />
-              ) : (
-                <Text style={stage === 4 ? styles.stageCircleTextActive : styles.stageCircleText}>
-                  4
-                </Text>
-              )}
+            <View style={stage >= 4 ? styles.stageActive : styles.stage}>
+              <View
+                style={[
+                  styles.stageCircle,
+                  stage >= 5 ? styles.stageDone : stage === 4 ? styles.stageCircleActive : null,
+                ]}
+              >
+                {stage >= 5 ? (
+                  <Ionicons name="checkmark" size={12} color="white" />
+                ) : (
+                  <Text style={stage === 4 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                    4
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.stageLabel}>Hired</Text>
             </View>
-            <Text style={styles.stageLabel}>Hired</Text>
-          </View>
-          <View style={[styles.stageDivider, stage >= 5 && styles.stageDoneDivider]} />
+            <View style={[styles.stageDivider, stage >= 5 && styles.stageDoneDivider]} />
 
-          <View style={stage >= 5 ? styles.stageActive : styles.stage}>
-            <View style={[styles.stageCircle, stage === 5 ? styles.stageCircleActive : null]}>
-              <Text style={stage === 5 ? styles.stageCircleTextActive : styles.stageCircleText}>
-                5
-              </Text>
+            <View style={stage >= 5 ? styles.stageActive : styles.stage}>
+              <View style={[styles.stageCircle, stage === 5 ? styles.stageCircleActive : null]}>
+                <Text style={stage === 5 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                  5
+                </Text>
+              </View>
+              <Text style={styles.stageLabel}>Done</Text>
             </View>
-            <Text style={styles.stageLabel}>Done</Text>
           </View>
-        </View>
+        )}
 
         {/* Profile Header */}
         <View style={styles.profileHeader}>
@@ -465,7 +475,7 @@ const ApplicantDetailScreen: React.FC = () => {
         </View>
 
         {/* Applicant Cover Note */}
-        {!!coverNote && (
+        {status !== 'completed' && !!coverNote && (
           <View
             style={{
               backgroundColor: colors.paperBright,
@@ -780,110 +790,119 @@ const ApplicantDetailScreen: React.FC = () => {
           </View>
         </View>
         {/* Character References */}
-        {isReferencesLocked ? (
-          <View style={styles.skillsSection}>
-            <Text style={styles.sectionEyebrow}>Character References</Text>
-            <View style={styles.privacyShield}>
-              <View style={styles.shieldHeader}>
-                <View style={styles.shieldIcon}>
-                  <Ionicons name="lock-closed" size={16} color={colors.primary} />
-                </View>
-                <View>
-                  <Text style={styles.shieldTitle}>References Locked</Text>
-                  <Text style={styles.shieldSub}>Shortlist worker to unlock references</Text>
+        {status !== 'completed' &&
+          (isReferencesLocked ? (
+            <View style={styles.skillsSection}>
+              <Text style={styles.sectionEyebrow}>Character References</Text>
+              <View style={styles.privacyShield}>
+                <View style={styles.shieldHeader}>
+                  <View style={styles.shieldIcon}>
+                    <Ionicons name="lock-closed" size={16} color={colors.primary} />
+                  </View>
+                  <View>
+                    <Text style={styles.shieldTitle}>References Locked</Text>
+                    <Text style={styles.shieldSub}>Shortlist worker to unlock references</Text>
+                  </View>
                 </View>
               </View>
             </View>
-          </View>
-        ) : (
-          <View style={styles.skillsSection}>
-            <Text style={styles.sectionEyebrow}>Character References</Text>
-            <View style={{ marginTop: 10, gap: 12 }}>
-              {!characterReferences || characterReferences.length === 0 ? (
-                <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
-                  No character references listed by worker.
-                </Text>
-              ) : (
-                characterReferences.map((ref: any) => {
-                  const refPhone =
-                    ref.contact_number || ref.phone || ref.contactNumber || ref.number;
-                  return (
-                    <View
-                      key={ref.id || ref.name}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        backgroundColor: colors.paperBright,
-                        padding: 12,
-                        borderRadius: 14,
-                        borderWidth: 1,
-                        borderColor: colors.inkFaint,
-                      }}
-                    >
+          ) : (
+            <View style={styles.skillsSection}>
+              <Text style={styles.sectionEyebrow}>Character References</Text>
+              <View style={{ marginTop: 10, gap: 12 }}>
+                {!characterReferences || characterReferences.length === 0 ? (
+                  <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
+                    No character references listed by worker.
+                  </Text>
+                ) : (
+                  characterReferences.map((ref: any) => {
+                    const refPhone =
+                      ref.contact_number || ref.phone || ref.contactNumber || ref.number;
+                    return (
                       <View
-                        style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}
+                        key={ref.id || ref.name}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          backgroundColor: colors.paperBright,
+                          padding: 12,
+                          borderRadius: 14,
+                          borderWidth: 1,
+                          borderColor: colors.inkFaint,
+                        }}
                       >
                         <View
-                          style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 20,
-                            backgroundColor: colors.peach,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
+                          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}
                         >
-                          <Ionicons name="person" size={18} color={colors.primary} />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text
-                            style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}
+                          <View
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 20,
+                              backgroundColor: colors.peach,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
                           >
-                            {ref.name}
-                          </Text>
-                          <Text
-                            style={{ fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft }}
-                          >
-                            {ref.relationship} {refPhone ? `· ${refPhone}` : ''}
-                          </Text>
+                            <Ionicons name="person" size={18} color={colors.primary} />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={{
+                                fontFamily: fonts.bodyBold,
+                                fontSize: 14,
+                                color: colors.ink,
+                              }}
+                            >
+                              {ref.name}
+                            </Text>
+                            <Text
+                              style={{
+                                fontFamily: fonts.body,
+                                fontSize: 13,
+                                color: colors.inkSoft,
+                              }}
+                            >
+                              {ref.relationship} {refPhone ? `· ${refPhone}` : ''}
+                            </Text>
+                          </View>
                         </View>
+                        {refPhone ? (
+                          <View style={{ flexDirection: 'row', gap: 8 }}>
+                            <TouchableOpacity
+                              onPress={() => Linking.openURL(`tel:${refPhone}`)}
+                              style={{
+                                padding: 8,
+                                borderRadius: 10,
+                                backgroundColor: colors.primary + '15',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <Ionicons name="call" size={16} color={colors.primary} />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              onPress={() => Linking.openURL(`sms:${refPhone}`)}
+                              style={{
+                                padding: 8,
+                                borderRadius: 10,
+                                backgroundColor: colors.primary + '15',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <Ionicons name="chatbox" size={16} color={colors.primary} />
+                            </TouchableOpacity>
+                          </View>
+                        ) : null}
                       </View>
-                      {refPhone ? (
-                        <View style={{ flexDirection: 'row', gap: 8 }}>
-                          <TouchableOpacity
-                            onPress={() => Linking.openURL(`tel:${refPhone}`)}
-                            style={{
-                              padding: 8,
-                              borderRadius: 10,
-                              backgroundColor: colors.primary + '15',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <Ionicons name="call" size={16} color={colors.primary} />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={() => Linking.openURL(`sms:${refPhone}`)}
-                            style={{
-                              padding: 8,
-                              borderRadius: 10,
-                              backgroundColor: colors.primary + '15',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <Ionicons name="chatbox" size={16} color={colors.primary} />
-                          </TouchableOpacity>
-                        </View>
-                      ) : null}
-                    </View>
-                  );
-                })
-              )}
+                    );
+                  })
+                )}
+              </View>
             </View>
-          </View>
-        )}
+          ))}
 
         {/* Contact Info & Direct Communication Channels */}
         {isContactLocked ? (
@@ -1032,117 +1051,111 @@ const ApplicantDetailScreen: React.FC = () => {
       </ScrollView>
 
       {/* Fixed Bottom Action */}
-      <View style={styles.footer}>
-        {status === 'pending' && (
-          <View style={{ gap: 6 }}>
-            <Button
-              label="Shortlist"
-              variant="primary"
-              size="lg"
-              fullWidth
-              onPress={navigateToSendRequest}
-            />
-            <Text
-              style={{
-                fontFamily: fonts.body,
-                fontSize: 12,
-                color: colors.inkSoft,
-                textAlign: 'center',
-                marginTop: 2,
-              }}
-            >
-              Shortlisting allows you to view contact info, negotiate details, and confirm the hire.
-            </Text>
-          </View>
-        )}
-        {status === 'pending_negotiation' && (
-          <View style={{ gap: 6 }}>
-            {hasRealMessageFromEmployer ? (
+      {status !== 'completed' && status !== 'rejected' && status !== 'withdrawn' && (
+        <View style={styles.footer}>
+          {status === 'pending' && (
+            <View style={{ gap: 6 }}>
               <Button
-                label="Send Offer"
+                label="Shortlist"
                 variant="primary"
                 size="lg"
                 fullWidth
-                onPress={navigateToConfirmHire}
+                onPress={navigateToSendRequest}
               />
-            ) : (
+              <Text
+                style={{
+                  fontFamily: fonts.body,
+                  fontSize: 12,
+                  color: colors.inkSoft,
+                  textAlign: 'center',
+                  marginTop: 2,
+                }}
+              >
+                Shortlisting allows you to view contact info, negotiate details, and confirm the
+                hire.
+              </Text>
+            </View>
+          )}
+          {status === 'pending_negotiation' && (
+            <View style={{ gap: 6 }}>
+              {hasRealMessageFromEmployer ? (
+                <Button
+                  label="Send Offer"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  onPress={navigateToConfirmHire}
+                />
+              ) : (
+                <Button
+                  label="Chat to Agree on Price"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  onPress={handleOpenChat}
+                />
+              )}
               <Button
-                label="Chat to Agree on Price"
+                label="Cancel"
+                variant="ghost"
+                size="base"
+                fullWidth
+                onPress={navigateToCancelHire}
+              />
+              <Text
+                style={{
+                  fontFamily: fonts.body,
+                  fontSize: 12,
+                  color: colors.inkSoft,
+                  textAlign: 'center',
+                  marginTop: 2,
+                }}
+              >
+                {hasRealMessageFromEmployer
+                  ? 'Send a formal price offer. The worker must accept before the hire is confirmed.'
+                  : 'Send a message in chat to discuss details and agree on price before making an offer.'}
+              </Text>
+            </View>
+          )}
+          {status === 'employer_confirmed' && (
+            <View style={{ gap: 6 }}>
+              <Button
+                label="Waiting for worker..."
+                variant="outline"
+                size="lg"
+                fullWidth
+                disabled
+              />
+            </View>
+          )}
+          {status === 'accepted' && (
+            <View style={{ gap: 12 }}>
+              <Button
+                label="Mark Complete"
                 variant="primary"
                 size="lg"
                 fullWidth
-                onPress={handleOpenChat}
+                onPress={() => {
+                  const jobId = appData?.job?.id || (appData as any)?.job_id;
+                  if (jobId) {
+                    navigation.navigate('MarkComplete', {
+                      id: jobId,
+                      jobTitle: jobTitle || appData?.job?.title || 'Job',
+                      workerName: applicantName || 'Worker',
+                    });
+                  } else if (!appData?.has_reviewed) {
+                    navigation.navigate('RateWorker', {
+                      id: applicantId,
+                      workerName: applicantName || 'Worker',
+                      jobTitle: jobTitle || 'Job',
+                    });
+                  }
+                }}
               />
-            )}
-            <Button
-              label="Cancel"
-              variant="ghost"
-              size="base"
-              fullWidth
-              onPress={navigateToCancelHire}
-            />
-            <Text
-              style={{
-                fontFamily: fonts.body,
-                fontSize: 12,
-                color: colors.inkSoft,
-                textAlign: 'center',
-                marginTop: 2,
-              }}
-            >
-              {hasRealMessageFromEmployer
-                ? 'Send a formal price offer. The worker must accept before the hire is confirmed.'
-                : 'Send a message in chat to discuss details and agree on price before making an offer.'}
-            </Text>
-          </View>
-        )}
-        {status === 'employer_confirmed' && (
-          <View style={{ gap: 6 }}>
-            <Button label="Waiting for worker..." variant="outline" size="lg" fullWidth disabled />
-          </View>
-        )}
-        {status === 'accepted' && (
-          <View style={{ gap: 12 }}>
-            <Button
-              label="Mark Complete"
-              variant="primary"
-              size="lg"
-              fullWidth
-              onPress={() => {
-                const jobId = appData?.job?.id || (appData as any)?.job_id;
-                if (jobId) {
-                  navigation.navigate('MarkComplete', {
-                    id: jobId,
-                    jobTitle: jobTitle || appData?.job?.title || 'Job',
-                    workerName: applicantName || 'Worker',
-                  });
-                } else {
-                  navigation.navigate('RateWorker', {
-                    id: applicantId,
-                    workerName: applicantName || 'Worker',
-                    jobTitle: jobTitle || 'Job',
-                  });
-                }
-              }}
-            />
-          </View>
-        )}
-        {status === 'completed' && (
-          <Button
-            label="Rate"
-            variant="primary"
-            size="lg"
-            fullWidth
-            onPress={() =>
-              navigation.navigate('RateWorker', {
-                id: applicantId,
-                workerName: applicantName || 'Worker',
-                jobTitle: jobTitle || 'Job',
-              })
-            }
-          />
-        )}
-      </View>
+            </View>
+          )}
+        </View>
+      )}
 
       <Modal visible={isMenuVisible} transparent animationType="fade">
         <TouchableOpacity

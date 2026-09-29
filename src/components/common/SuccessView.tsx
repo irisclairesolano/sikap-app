@@ -14,9 +14,10 @@ import { colors, fonts } from '../../theme';
 import Button from './Button';
 
 export type SuccessAction =
-  | { label: string; goBack: true }
-  | { label: string; navigateTo: { name: string; params?: object } }
-  | { label: string; popToTop: true };
+  | { label: string; goBack: true; onPress?: () => void }
+  | { label: string; navigateTo: { name: string; params?: object }; onPress?: () => void }
+  | { label: string; popToTop: true; onPress?: () => void }
+  | { label: string; onPress: () => void };
 
 export interface SuccessDetailItem {
   label: string;
