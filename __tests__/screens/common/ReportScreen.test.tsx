@@ -75,10 +75,10 @@ describe('ReportScreen Component', () => {
     });
   });
 
-  it('correctly parses legacy param shape { id: 42, type: "user" } and submits payload', () => {
+  it('correctly parses legacy param shape { id: 42, type: "user" } and submits payload', async () => {
     mockRouteParams = { id: 42, type: 'user' };
 
-    const { getByText, getByPlaceholderText } = render(<ReportScreen />);
+    const { getByText, getByPlaceholderText } = await render(<ReportScreen />);
 
     // Select reason
     fireEvent.press(getByText('Harassment'));
@@ -103,10 +103,10 @@ describe('ReportScreen Component', () => {
     );
   });
 
-  it('correctly parses modern param shape { reportable_id: 88, reportable_type: "job" } and maps to job_post', () => {
+  it('correctly parses modern param shape { reportable_id: 88, reportable_type: "job" } and maps to job_post', async () => {
     mockRouteParams = { reportable_id: 88, reportable_type: 'job' };
 
-    const { getByText, getByPlaceholderText } = render(<ReportScreen />);
+    const { getByText, getByPlaceholderText } = await render(<ReportScreen />);
 
     // Select reason
     fireEvent.press(getByText('Scam or Fraud'));
@@ -131,10 +131,10 @@ describe('ReportScreen Component', () => {
     );
   });
 
-  it('blocks submission and shows alert when target ID is missing or 0', () => {
+  it('blocks submission and shows alert when target ID is missing or 0', async () => {
     mockRouteParams = { id: 0, type: 'user' };
 
-    const { getByText, getByPlaceholderText } = render(<ReportScreen />);
+    const { getByText, getByPlaceholderText } = await render(<ReportScreen />);
 
     // Select reason and text
     fireEvent.press(getByText('Other'));
