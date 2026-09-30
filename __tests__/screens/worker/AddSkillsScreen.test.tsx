@@ -127,7 +127,7 @@ describe('AddSkillsScreen', () => {
   it('shows error warning when attempting to add a duplicate custom skill', async () => {
     const { getByPlaceholderText, getByText } = await render(<AddSkillsScreen />);
 
-    const input = getByPlaceholderText('Type custom skill e.g., Wood Carver');
+    const input = getByPlaceholderText('type custom skills');
 
     // Type a duplicate skill name
     fireEvent.changeText(input, 'Carpentry');
@@ -140,4 +140,20 @@ describe('AddSkillsScreen', () => {
       expect(mockCreateSkillMutate).not.toHaveBeenCalled();
     });
   }, 20000);
+
+  it('hides suggested skills until user types and shows matching suggestions', async () => {
+    const { getByPlaceholderText, getByText, queryByText } = await render(<AddSkillsScreen />);
+
+    // Initially suggested skills should not be displayed
+    expect(queryByText('+ Masonry')).toBeNull();
+
+    // Type in input
+    const input = getByPlaceholderText('type custom skills');
+    fireEvent.changeText(input, 'Maso');
+
+    // Now matching suggested skill should appear
+    await waitFor(() => {
+      expect(getByText('+ Masonry')).toBeTruthy();
+    });
+  });
 });

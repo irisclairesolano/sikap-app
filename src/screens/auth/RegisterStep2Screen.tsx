@@ -4,11 +4,25 @@ import { useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Controller, useForm } from 'react-hook-form';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import { ApiClientError } from '../../api/client';
 import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
+import {
+  formatBirthDateInput,
+  parseBirthDateInput,
+  formatDateToMMDDYYYY,
+  calculateAge,
+} from '../../utils/dateFormat';
 import Button from '../../components/common/Button';
 import LocationPicker from '../../components/common/LocationPicker';
 import { AuthStackParamList } from '../../navigation/authTypes';
@@ -27,6 +41,7 @@ const RegisterStep2Screen: React.FC = () => {
 
   const [banner, setBanner] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
+  const [birthDateText, setBirthDateText] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const {
@@ -102,16 +117,13 @@ const RegisterStep2Screen: React.FC = () => {
       return;
     }
 
-    // Verify age is at least 15
-    const today = new Date();
-    let age = today.getFullYear() - dateOfBirth.getFullYear();
-    const monthDiff = today.getMonth() - dateOfBirth.getMonth();
-    const dayDiff = today.getDate() - dateOfBirth.getDate();
-    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-      age--;
+    const parsed = parseBirthDateInput(birthDateText);
+    if (!parsed.isValid || !parsed.date || !parsed.formattedYMD) {
+      setBanner(parsed.error || 'Enter a valid date of birth (MM/DD/YYYY).');
+      return;
     }
 
-    if (age < 15) {
+    if (calculateAge(parsed.date) < 15) {
       setBanner('You must be at least 15 years old to register.');
       return;
     }
@@ -125,7 +137,7 @@ const RegisterStep2Screen: React.FC = () => {
       password_confirmation,
       municipality: values.municipality,
       barangay: values.barangay,
-      date_of_birth: dateOfBirth.toISOString().split('T')[0],
+      date_of_birth: parsed.formattedYMD,
     };
 
     registerMutation.mutate(payload);
@@ -204,7 +216,9 @@ const RegisterStep2Screen: React.FC = () => {
                       max={new Date().toISOString().split('T')[0]}
                       onChange={(e) => {
                         if (e.target.value) {
-                          setDateOfBirth(new Date(e.target.value));
+                          const d = new Date(e.target.value);
+                          setDateOfBirth(d);
+                          setBirthDateText(formatDateToMMDDYYYY(d));
                         }
                       }}
                       style={{
@@ -221,15 +235,24 @@ const RegisterStep2Screen: React.FC = () => {
                     />
                   ) : (
                     <>
-                      <TouchableOpacity
-                        style={styles.datePickerBtn}
-                        onPress={() => setShowDatePicker(true)}
-                      >
-                        <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
-                        <Text style={{ fontFamily: fonts.body, fontSize: 15, color: colors.ink }}>
-                          {dateOfBirth.toLocaleDateString()}
-                        </Text>
-                      </TouchableOpacity>
+                      <View style={styles.dateInputContainer}>
+                        <TextInput
+                          style={styles.dateTextInput}
+                          placeholder="MM/DD/YYYY"
+                          placeholderTextColor={colors.inkMuted}
+                          value={birthDateText}
+                          onChangeText={(text) => setBirthDateText(formatBirthDateInput(text))}
+                          keyboardType="number-pad"
+                          maxLength={10}
+                        />
+                        <TouchableOpacity
+                          style={styles.calendarIconBtn}
+                          onPress={() => setShowDatePicker(true)}
+                        >
+                          <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
+                        </TouchableOpacity>
+                      </View>
+                      <Text style={styles.dateHint}>Enter your birth date (MM/DD/YYYY)</Text>
                       {showDatePicker && (
                         <DateTimePicker
                           value={dateOfBirth}
@@ -238,7 +261,10 @@ const RegisterStep2Screen: React.FC = () => {
                           maximumDate={new Date()}
                           onValueChange={(_event, selectedDate) => {
                             setShowDatePicker(false);
-                            if (selectedDate) setDateOfBirth(selectedDate);
+                            if (selectedDate) {
+                              setDateOfBirth(selectedDate);
+                              setBirthDateText(formatDateToMMDDYYYY(selectedDate));
+                            }
                           }}
                           onDismiss={() => setShowDatePicker(false)}
                         />
@@ -389,19 +415,36 @@ const styles = StyleSheet.create({
   form: {
     gap: 14,
   },
-  datePickerBtn: {
+  dateInputContainer: {
     borderWidth: 1,
     borderColor: 'rgba(226, 232, 240, 0.80)',
     borderRadius: 14,
     backgroundColor: '#FFFFFF',
-    padding: 14,
+    paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.03,
     shadowRadius: 4,
+  },
+  dateTextInput: {
+    flex: 1,
+    paddingVertical: 14,
+    fontFamily: fonts.body,
+    fontSize: 15,
+    color: colors.ink,
+  },
+  calendarIconBtn: {
+    padding: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dateHint: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkLight,
+    marginTop: 4,
   },
   roleCard: {
     backgroundColor: '#FFFFFF',

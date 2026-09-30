@@ -8,6 +8,12 @@ import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as SecureStore from '../../utils/storage';
 import { appendFileToFormData } from '../../utils/formData';
+import {
+  formatBirthDateInput,
+  parseBirthDateInput,
+  formatDateToMMDDYYYY,
+  calculateAge,
+} from '../../utils/dateFormat';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -109,7 +115,17 @@ export const EditProfileScreen: React.FC = () => {
   const [dateOfBirth, setDateOfBirth] = useState(
     user?.date_of_birth ? new Date(user.date_of_birth) : new Date('1990-01-01'),
   );
+  const [birthDateText, setBirthDateText] = useState(
+    user?.date_of_birth ? formatDateToMMDDYYYY(user.date_of_birth) : '',
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  React.useEffect(() => {
+    if (user?.date_of_birth) {
+      setDateOfBirth(new Date(user.date_of_birth));
+      setBirthDateText(formatDateToMMDDYYYY(user.date_of_birth));
+    }
+  }, [user?.date_of_birth]);
   const [emergencyContactName, setEmergencyContactName] = useState(
     user?.emergency_contact_name || '',
   );
@@ -167,19 +183,28 @@ export const EditProfileScreen: React.FC = () => {
       }
     }
 
-    if (dateOfBirth) {
-      const today = new Date();
-      let age = today.getFullYear() - dateOfBirth.getFullYear();
-      const monthDiff = today.getMonth() - dateOfBirth.getMonth();
-      const dayDiff = today.getDate() - dateOfBirth.getDate();
-      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-        age--;
-      }
+    let formattedDOB: string | undefined = undefined;
+    if (!isVerified) {
+      if (birthDateText) {
+        const parsed = parseBirthDateInput(birthDateText);
+        if (!parsed.isValid || !parsed.date || !parsed.formattedYMD) {
+          showAlert(
+            'Invalid Date of Birth',
+            parsed.error || 'Enter a valid date of birth (MM/DD/YYYY).',
+          );
+          return;
+        }
 
-      if (age < 15) {
-        showAlert('Invalid Age', 'You must be at least 15 years old.');
-        return;
+        if (calculateAge(parsed.date) < 15) {
+          showAlert('Invalid Age', 'You must be at least 15 years old.');
+          return;
+        }
+
+        formattedDOB = parsed.formattedYMD;
       }
+    } else if (user?.date_of_birth) {
+      formattedDOB =
+        typeof user.date_of_birth === 'string' ? user.date_of_birth.split('T')[0] : undefined;
     }
 
     try {
@@ -220,8 +245,8 @@ export const EditProfileScreen: React.FC = () => {
 
         formData.append('barangay', barangay || '');
         formData.append('municipality', municipality || '');
-        if (dateOfBirth) {
-          formData.append('date_of_birth', dateOfBirth.toISOString().split('T')[0]);
+        if (formattedDOB) {
+          formData.append('date_of_birth', formattedDOB);
         }
         formData.append('emergency_contact_name', emergencyContactName || '');
         formData.append('emergency_contact_phone', emergencyContactPhone || '');
@@ -258,7 +283,7 @@ export const EditProfileScreen: React.FC = () => {
         const updateData: Record<string, any> = {
           barangay: barangay || undefined,
           municipality: municipality || undefined,
-          date_of_birth: dateOfBirth ? dateOfBirth.toISOString().split('T')[0] : undefined,
+          date_of_birth: formattedDOB || undefined,
           emergency_contact_name: emergencyContactName || undefined,
           emergency_contact_phone: emergencyContactPhone || undefined,
           bio: user?.role === 'worker' ? bio : undefined,
@@ -368,36 +393,41 @@ export const EditProfileScreen: React.FC = () => {
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Date of Birth</Text>
-            <TouchableOpacity
-              style={{
-                borderWidth: 1,
-                borderColor: isVerified ? 'transparent' : colors.inkFaint,
-                borderRadius: 12,
-                padding: 14,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 12,
-                backgroundColor: isVerified ? colors.paperBright : 'transparent',
-                opacity: isVerified ? 0.7 : 1,
-              }}
-              onPress={() => !isVerified && setShowDatePicker(true)}
-              activeOpacity={isVerified ? 1 : 0.2}
-            >
-              <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
-              <Text
-                style={{
-                  fontFamily: fonts.body,
-                  fontSize: 15,
-                  color: isVerified ? colors.inkMuted : colors.ink,
+            <View style={[styles.dateInputContainer, isVerified && styles.dateInputDisabled]}>
+              <TextInput
+                style={[styles.dateTextInput, isVerified && { color: colors.inkMuted }]}
+                placeholder="MM/DD/YYYY"
+                placeholderTextColor={colors.inkMuted}
+                value={birthDateText}
+                onChangeText={(text) => {
+                  if (!isVerified) {
+                    setBirthDateText(formatBirthDateInput(text));
+                  }
                 }}
+                keyboardType="number-pad"
+                maxLength={10}
+                editable={!isVerified}
+              />
+              <TouchableOpacity
+                style={styles.calendarIconBtn}
+                onPress={() => !isVerified && setShowDatePicker(true)}
+                disabled={isVerified}
+                activeOpacity={isVerified ? 1 : 0.2}
+                accessibilityLabel="Open calendar date picker"
               >
-                {dateOfBirth.toLocaleDateString()}
-              </Text>
-            </TouchableOpacity>
-            {isVerified && (
+                <Ionicons
+                  name="calendar-outline"
+                  size={20}
+                  color={isVerified ? colors.inkLight : colors.inkMuted}
+                />
+              </TouchableOpacity>
+            </View>
+            {isVerified ? (
               <Text style={styles.helperText}>
                 Verified accounts cannot change their date of birth.
               </Text>
+            ) : (
+              <Text style={styles.helperText}>Enter your birth date (MM/DD/YYYY)</Text>
             )}
             {showDatePicker && !isVerified && (
               <DateTimePicker
@@ -407,7 +437,10 @@ export const EditProfileScreen: React.FC = () => {
                 maximumDate={new Date()}
                 onValueChange={(_event, selectedDate) => {
                   setShowDatePicker(false);
-                  if (selectedDate) setDateOfBirth(selectedDate);
+                  if (selectedDate) {
+                    setDateOfBirth(selectedDate);
+                    setBirthDateText(formatDateToMMDDYYYY(selectedDate));
+                  }
                 }}
                 onDismiss={() => setShowDatePicker(false)}
               />
@@ -690,6 +723,32 @@ const styles = StyleSheet.create({
   avatarHint: { fontFamily: fonts.body, fontSize: 12, color: colors.inkLight, marginTop: 8 },
   formGroup: { marginBottom: 20 },
   label: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink, marginBottom: 8 },
+  dateInputContainer: {
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateInputDisabled: {
+    backgroundColor: colors.paperBright,
+    borderColor: 'transparent',
+    opacity: 0.7,
+  },
+  dateTextInput: {
+    flex: 1,
+    paddingVertical: 14,
+    fontFamily: fonts.body,
+    fontSize: 15,
+    color: colors.ink,
+  },
+  calendarIconBtn: {
+    padding: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   helperText: { fontFamily: fonts.body, fontSize: 11, color: colors.inkLight, marginTop: 4 },
   textAreaContainer: { minHeight: 100 },
 });

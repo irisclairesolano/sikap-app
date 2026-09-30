@@ -1,4 +1,4 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +15,7 @@ import { profileApi } from '../../api/profile';
 import { useAuthCheck } from '../../hooks/useAuthCheck';
 
 export const AddSkillsScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { user } = useAuthCheck();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
@@ -118,7 +119,7 @@ export const AddSkillsScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
@@ -139,7 +140,7 @@ export const AddSkillsScreen: React.FC = () => {
         <View style={styles.customInputRow}>
           <View style={{ flex: 1 }}>
             <Input
-              placeholder="Type custom skill e.g., Wood Carver"
+              placeholder="type custom skills"
               value={customSkill}
               onChangeText={(text) => {
                 setCustomSkill(text);
@@ -156,6 +157,33 @@ export const AddSkillsScreen: React.FC = () => {
             <Text style={styles.addButtonText}>+ Add</Text>
           </TouchableOpacity>
         </View>
+
+        {customSkill.trim().length > 0 && (
+          <View style={styles.suggestionsContainer}>
+            <Text style={styles.suggestionsHeader}>Suggested Matches</Text>
+            <View style={styles.chipContainer}>
+              {skills
+                .filter(
+                  (s) =>
+                    !selectedSkills.find((selected) => selected.id === s.id) &&
+                    s.name.toLowerCase().includes(customSkill.trim().toLowerCase()),
+                )
+                .map((skill) => (
+                  <TouchableOpacity
+                    key={skill.id}
+                    style={styles.chip}
+                    onPress={() => {
+                      toggleSkill(skill);
+                      setCustomSkill('');
+                      setCustomSkillError('');
+                    }}
+                  >
+                    <Text style={styles.chipText}>+ {skill.name}</Text>
+                  </TouchableOpacity>
+                ))}
+            </View>
+          </View>
+        )}
 
         <Text style={styles.sectionHeaderPrimary}>
           Selected · {selectedSkills.length + customSkills.length}
@@ -219,24 +247,9 @@ export const AddSkillsScreen: React.FC = () => {
             <Text style={styles.emptyText}>No skills selected yet.</Text>
           )}
         </View>
-
-        <Text style={styles.sectionHeader}>Suggested</Text>
-        <View style={styles.chipContainer}>
-          {skills
-            .filter((s) => !selectedSkills.find((selected) => selected.id === s.id))
-            .map((skill) => (
-              <TouchableOpacity
-                key={skill.id}
-                style={styles.chip}
-                onPress={() => toggleSkill(skill)}
-              >
-                <Text style={styles.chipText}>+ {skill.name}</Text>
-              </TouchableOpacity>
-            ))}
-        </View>
       </ScrollView>
 
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         {saveError ? (
           <Text
             style={{
@@ -255,6 +268,7 @@ export const AddSkillsScreen: React.FC = () => {
           size="lg"
           fullWidth
           loading={saveMutation.isPending}
+          style={{ shadowOpacity: 0, elevation: 0 }}
           onPress={() => {
             if (selectedSkills.length === 0 && customSkills.length === 0) {
               setSaveError('Please select or add at least one skill to continue.');
@@ -384,9 +398,11 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 32,
+    paddingTop: 12,
+    paddingBottom: 12,
     backgroundColor: colors.paper,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
   },
   customInputRow: {
     flexDirection: 'row',
@@ -411,6 +427,22 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontFamily: fonts.bodyBold,
     fontSize: 14,
+  },
+  suggestionsContainer: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: colors.paperBright,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
+  suggestionsHeader: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.inkMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
   },
 });
 

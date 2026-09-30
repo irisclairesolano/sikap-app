@@ -85,6 +85,11 @@ const ChatScreen: React.FC = () => {
   const status = conversation?.status || 'open';
   const isLocked = status === 'locked';
   const isUnlockRequested = status === 'unlock_requested';
+  const isSlotLocked =
+    Boolean((conversation as any)?.is_slot_locked) ||
+    (conversation as any)?.slots_full === true ||
+    conversation?.application_status === 'slots_filled' ||
+    (isLocked && status === 'locked' && (conversation as any)?.lock_reason === 'slots_full');
 
   // Role resolution: In this specific conversation, determine whether the user is the employer or worker
   const conversationUserRole: 'worker' | 'employer' =
@@ -693,6 +698,7 @@ const ChatScreen: React.FC = () => {
                   jobId={conversation?.job_id}
                   hasRealMessageFromEmployer={hasRealMessageFromEmployer}
                   isBlocked={isBlocked}
+                  isSlotLocked={isSlotLocked}
                   onActionComplete={refetch}
                 />
               );
@@ -732,9 +738,20 @@ const ChatScreen: React.FC = () => {
           </View>
         )}
 
+        {/* Slot locked notice */}
+        {!isOtherUserDeleted && !isBlocked && isSlotLocked && (
+          <View style={styles.firstMsgNotice}>
+            <Ionicons name="lock-closed" size={14} color={colors.inkMuted} />
+            <Text style={styles.firstMsgNoticeText}>
+              Slots are full. No other negotiation can take place.
+            </Text>
+          </View>
+        )}
+
         {/* First-message restriction notice for workers */}
         {status === 'open' &&
           !isBlocked &&
+          !isSlotLocked &&
           conversationUserRole === 'worker' &&
           !isWorkerReplyAllowed && (
             <View style={styles.firstMsgNotice}>
@@ -745,12 +762,19 @@ const ChatScreen: React.FC = () => {
             </View>
           )}
 
-        {/* Input Bar or Deleted Account Notice */}
+        {/* Input Bar or Disabled Account / Slot Locked Notice */}
         {isOtherUserDeleted ? (
           <View style={styles.deletedInputContainer}>
             <Ionicons name="lock-closed-outline" size={16} color={colors.inkMuted} />
             <Text style={styles.deletedInputText}>
               Messaging is disabled because this account no longer exists.
+            </Text>
+          </View>
+        ) : isSlotLocked ? (
+          <View style={styles.deletedInputContainer}>
+            <Ionicons name="lock-closed-outline" size={16} color={colors.inkMuted} />
+            <Text style={styles.deletedInputText}>
+              Slots are full. Messaging is disabled for this position.
             </Text>
           </View>
         ) : (

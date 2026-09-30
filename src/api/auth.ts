@@ -174,9 +174,10 @@ export const authApi = {
     });
   },
 
-  deleteAccount: async (): Promise<{ message: string }> => {
+  deleteAccount: async (reason?: string): Promise<{ message: string }> => {
     return apiClient<{ message: string }>('/auth/account', {
       method: 'DELETE',
+      body: JSON.stringify({ reason: reason || 'User self-deleted account' }),
     });
   },
 };

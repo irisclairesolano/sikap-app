@@ -32,6 +32,7 @@ interface ActionCardProps {
   jobId?: number;
   hasRealMessageFromEmployer?: boolean;
   isBlocked?: boolean;
+  isSlotLocked?: boolean;
   onActionComplete: () => void;
 }
 
@@ -52,6 +53,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
   jobId,
   hasRealMessageFromEmployer = true,
   isBlocked = false,
+  isSlotLocked = false,
   onActionComplete,
 }) => {
   const navigation = useNavigation<any>();
@@ -373,7 +375,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
         </View>
 
         {/* Worker Footer Notice */}
-        {currentUserRole === 'worker' && (
+        {currentUserRole === 'worker' && !isSlotLocked && (
           <View style={styles.chatReadyPill}>
             <Ionicons name="chatbubbles-outline" size={14} color={colors.primary} />
             <Text style={styles.chatReadyText}>
@@ -382,8 +384,20 @@ const ActionCard: React.FC<ActionCardProps> = ({
           </View>
         )}
 
-        {/* Employer Set Final Price Action */}
-        {currentUserRole === 'employer' && (
+        {/* Slot Locked Banner or Employer Actions */}
+        {isSlotLocked ? (
+          <View style={styles.slotFullBanner}>
+            <Ionicons
+              name="lock-closed"
+              size={15}
+              color={colors.inkMuted}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.slotFullBannerText}>
+              Slots are full. No other negotiation can take place.
+            </Text>
+          </View>
+        ) : currentUserRole === 'employer' ? (
           <>
             {!hasRealMessageFromEmployer ? (
               <View style={styles.chatReadyPill}>
@@ -549,7 +563,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               </View>
             )}
           </>
-        )}
+        ) : null}
       </View>
     );
   }
@@ -588,6 +602,36 @@ const ActionCard: React.FC<ActionCardProps> = ({
           <Text style={styles.frostedWaitingText}>
             Offer of {formatCurrency(card_data?.price)} sent — Waiting for worker response...
           </Text>
+        </View>
+      );
+    }
+
+    if (isSlotLocked && !['accepted', 'completed', 'hired'].includes(applicationStatus || '')) {
+      return (
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.cardIconBadge, { backgroundColor: colors.paperBright }]}>
+              <Ionicons name="lock-closed-outline" size={20} color={colors.inkMuted} />
+            </View>
+            <View style={styles.cardHeaderText}>
+              <Text style={styles.title}>Position Filled</Text>
+              <Text style={styles.subtitle}>
+                Agreed price:{' '}
+                <Text style={styles.priceHighlight}>{formatCurrency(card_data?.price)}</Text>
+              </Text>
+            </View>
+          </View>
+          <View style={styles.slotFullBanner}>
+            <Ionicons
+              name="information-circle-outline"
+              size={15}
+              color={colors.inkMuted}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.slotFullBannerText}>
+              Slots are full. No other negotiation can take place.
+            </Text>
+          </View>
         </View>
       );
     }
@@ -1409,6 +1453,23 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 13,
     color: colors.inkMuted,
+  },
+  slotFullBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(15, 23, 42, 0.10)',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginTop: 12,
+  },
+  slotFullBannerText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 12,
+    color: colors.inkMuted,
+    flex: 1,
   },
 });
 

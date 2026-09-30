@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Switch,
+  Modal,
+  TextInput,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
 import { useNavigation } from '@react-navigation/native';
@@ -10,6 +22,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { notifyAuthChanged } from '../../store/authEvents';
 import { useAuth } from '../../hooks/useAuth';
 import { authApi } from '../../api/auth';
+
+const DELETE_REASONS = [
+  'Found work / hired someone elsewhere',
+  'Not using the app anymore',
+  'Privacy or security concerns',
+  'Technical difficulties or app bugs',
+  'Other reason',
+];
 
 const SettingRow = ({
   icon,
@@ -62,6 +82,10 @@ export const SettingsScreen: React.FC = () => {
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedReason, setSelectedReason] = useState<string>(DELETE_REASONS[0]);
+  const [customReasonDetails, setCustomReasonDetails] = useState('');
+  const [deleteWarning, setDeleteWarning] = useState<string | null>(null);
 
   const { user, userRole, switchRole } = useAuth();
 
@@ -84,7 +108,15 @@ export const SettingsScreen: React.FC = () => {
   const executeAccountDeletion = async () => {
     try {
       setIsDeleting(true);
-      await authApi.deleteAccount();
+      const fullReason =
+        selectedReason === 'Other reason' && customReasonDetails.trim()
+          ? `Other: ${customReasonDetails.trim()}`
+          : customReasonDetails.trim()
+            ? `${selectedReason} - ${customReasonDetails.trim()}`
+            : selectedReason;
+
+      await authApi.deleteAccount(fullReason);
+      setShowDeleteModal(false);
       await SecureStore.deleteItemAsync('auth_token');
       await SecureStore.deleteItemAsync('user_profile');
       queryClient.clear();
@@ -111,36 +143,10 @@ export const SettingsScreen: React.FC = () => {
         return;
       }
 
-      if (status.has_warning) {
-        // Tier 2: Warned (open rating window on recently completed job)
-        showAlert(
-          'Pending Ratings',
-          `${status.warning}\n\nAre you sure you want to proceed with deleting your account? This action cannot be undone.`,
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Delete Account',
-              style: 'destructive',
-              onPress: executeAccountDeletion,
-            },
-          ],
-        );
-        return;
-      }
-
-      // Tier 3: Clean deletion allowed
-      showAlert(
-        'Delete Account',
-        'Are you sure you want to permanently delete your account? All your personal profile information will be removed and you will be logged out immediately. This action cannot be undone.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Delete Account',
-            style: 'destructive',
-            onPress: executeAccountDeletion,
-          },
-        ],
-      );
+      setDeleteWarning(status.has_warning ? status.warning : null);
+      setSelectedReason(DELETE_REASONS[0]);
+      setCustomReasonDetails('');
+      setShowDeleteModal(true);
     } catch (err: any) {
       showAlert(
         'Error',
@@ -263,6 +269,108 @@ export const SettingsScreen: React.FC = () => {
 
         <Text style={styles.versionText}>SIKAP v1.0.0</Text>
       </ScrollView>
+
+      {/* Delete Account Reason Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => !isDeleting && setShowDeleteModal(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalIconBg}>
+                <Ionicons name="trash-outline" size={24} color={colors.error} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.modalTitle}>Delete Account</Text>
+                <Text style={styles.modalSubtitle}>Please tell us why you are leaving</Text>
+              </View>
+            </View>
+
+            {deleteWarning && (
+              <View style={styles.warningBox}>
+                <Ionicons
+                  name="warning-outline"
+                  size={18}
+                  color="#B45309"
+                  style={{ marginTop: 2 }}
+                />
+                <Text style={styles.warningBoxText}>{deleteWarning}</Text>
+              </View>
+            )}
+
+            <ScrollView style={{ maxHeight: 220, marginVertical: 12 }}>
+              <Text style={styles.inputLabel}>Select a reason:</Text>
+              {DELETE_REASONS.map((reason) => {
+                const isSelected = selectedReason === reason;
+                return (
+                  <TouchableOpacity
+                    key={reason}
+                    style={[styles.reasonOption, isSelected && styles.reasonOptionSelected]}
+                    onPress={() => setSelectedReason(reason)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name={isSelected ? 'radio-button-on' : 'radio-button-off'}
+                      size={18}
+                      color={isSelected ? colors.error : colors.inkLight}
+                    />
+                    <Text
+                      style={[
+                        styles.reasonOptionText,
+                        isSelected && { fontFamily: fonts.bodyBold, color: colors.ink },
+                      ]}
+                    >
+                      {reason}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+
+            <View style={{ marginBottom: 16 }}>
+              <Text style={styles.inputLabel}>Additional feedback (optional):</Text>
+              <TextInput
+                style={styles.customReasonInput}
+                placeholder="Help us improve SIKAP..."
+                placeholderTextColor={colors.inkLight}
+                value={customReasonDetails}
+                onChangeText={setCustomReasonDetails}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+              >
+                <Text style={styles.cancelBtnText}>Keep Account</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.deleteConfirmBtn, isDeleting && { opacity: 0.7 }]}
+                onPress={executeAccountDeletion}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.deleteConfirmBtnText}>Delete Account</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -318,6 +426,135 @@ const styles = StyleSheet.create({
     color: colors.inkLight,
     textAlign: 'center',
     marginTop: 10,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    width: '100%',
+    maxHeight: '85%',
+    backgroundColor: colors.paperBright,
+    borderRadius: 20,
+    padding: 20,
+    ...shadows.color,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  modalIconBg: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontFamily: fonts.display,
+    fontSize: 18,
+    color: colors.ink,
+  },
+  modalSubtitle: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkMuted,
+    marginTop: 2,
+  },
+  warningBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FEF3C7',
+    borderColor: '#FDE68A',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    gap: 8,
+    marginBottom: 8,
+  },
+  warningBoxText: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: '#92400E',
+    lineHeight: 16,
+  },
+  inputLabel: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.ink,
+    marginBottom: 8,
+  },
+  reasonOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    backgroundColor: colors.paper,
+    marginBottom: 6,
+    gap: 10,
+  },
+  reasonOptionSelected: {
+    borderColor: colors.error,
+    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+  },
+  reasonOptionText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkSoft,
+    flex: 1,
+  },
+  customReasonInput: {
+    backgroundColor: colors.paper,
+    borderColor: colors.inkFaint,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.ink,
+    minHeight: 64,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: colors.paper,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.inkSoft,
+  },
+  deleteConfirmBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: colors.error,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteConfirmBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: '#fff',
   },
 });
 

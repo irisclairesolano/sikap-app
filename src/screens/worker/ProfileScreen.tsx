@@ -184,11 +184,11 @@ export const ProfileScreen: React.FC = () => {
           </View>
         </TouchableOpacity>
 
-        {/* Reputation Card - Macaron Peach */}
+        {/* Reputation Card - Clean Card */}
         <View style={styles.reputationCard}>
           <View style={styles.reputationHeaderRow}>
             <View style={styles.reputationBadge}>
-              <Ionicons name="shield-checkmark" size={13} color={colors.primaryDark} />
+              <Ionicons name="shield-checkmark" size={13} color="#0284C7" />
             </View>
             <Text style={styles.reputationEyebrow}>Worker Reputation</Text>
           </View>
@@ -204,11 +204,7 @@ export const ProfileScreen: React.FC = () => {
                       key={star}
                       name="star"
                       size={14}
-                      color={
-                        star <= Math.round(worker.reputation)
-                          ? colors.gold
-                          : 'rgba(255,255,255,0.7)'
-                      }
+                      color={star <= Math.round(worker.reputation) ? colors.gold : '#E2E8F0'}
                     />
                   ))}
                 </View>
@@ -221,22 +217,22 @@ export const ProfileScreen: React.FC = () => {
           <Text style={styles.reputationTagline}>Your score travels with you.</Text>
         </View>
 
-        {/* Stats Grid - Macaron Colors */}
+        {/* Stats Grid - Clean Card */}
         <View style={styles.statsGrid}>
-          <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
-            <View style={[styles.statIconCircle, { backgroundColor: 'rgba(255, 255, 255, 0.65)' }]}>
-              <Ionicons name="checkmark-done-outline" size={18} color={colors.mintDeep} />
+          <View style={styles.statBox}>
+            <View style={styles.statIconCircle}>
+              <Ionicons name="checkmark-done-outline" size={16} color="#16A34A" />
             </View>
-            <Text style={[styles.statValue, { color: colors.mintDeep }]}>{worker.jobsDone}</Text>
-            <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Jobs done</Text>
+            <Text style={styles.statValue}>{worker.jobsDone}</Text>
+            <Text style={styles.statLabel}>Jobs done</Text>
           </View>
 
-          <View style={[styles.statBox, { backgroundColor: colors.sky }]}>
-            <View style={[styles.statIconCircle, { backgroundColor: 'rgba(255, 255, 255, 0.65)' }]}>
-              <Ionicons name="calendar-outline" size={18} color={colors.skyDeep} />
+          <View style={styles.statBox}>
+            <View style={styles.statIconCircle}>
+              <Ionicons name="calendar-outline" size={16} color="#0284C7" />
             </View>
-            <Text style={[styles.statValue, { color: colors.skyDeep }]}>{worker.memberSince}</Text>
-            <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Member</Text>
+            <Text style={styles.statValue}>{worker.memberSince}</Text>
+            <Text style={styles.statLabel}>Member</Text>
           </View>
         </View>
 
@@ -263,7 +259,7 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.reviewHeader}>
             <Text style={styles.sectionEyebrow}>Work History</Text>
             <TouchableOpacity onPress={() => navigation.navigate('AddWorkHistory' as any)}>
-              <Text style={styles.viewAllText}>Edit</Text>
+              <Text style={styles.viewAllText}>+ Add</Text>
             </TouchableOpacity>
           </View>
           <View style={{ marginTop: 10, gap: 12 }}>
@@ -311,7 +307,7 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.reviewHeader}>
             <Text style={styles.sectionEyebrow}>Skills</Text>
             <TouchableOpacity onPress={() => navigation.navigate('AddSkills' as any)}>
-              <Text style={styles.viewAllText}>Edit</Text>
+              <Text style={styles.viewAllText}>+ Add</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.skillsList}>
@@ -353,7 +349,7 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.reviewHeader}>
             <Text style={styles.sectionEyebrow}>Character References</Text>
             <TouchableOpacity onPress={() => navigation.navigate('CharacterReferences' as any)}>
-              <Text style={styles.viewAllText}>Edit</Text>
+              <Text style={styles.viewAllText}>+ Add</Text>
             </TouchableOpacity>
           </View>
           <View style={{ marginTop: 10, gap: 12 }}>
@@ -474,10 +470,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   reputationCard: {
-    backgroundColor: colors.peach,
-    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     padding: 20,
     marginBottom: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.70)',
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -493,14 +491,14 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.40)',
+    backgroundColor: 'rgba(2, 132, 199, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   reputationEyebrow: {
     fontFamily: fonts.bodyBold,
     fontSize: 11,
-    color: colors.primaryDark,
+    color: '#0369A1',
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
@@ -514,7 +512,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.numericBold,
     fontSize: 48,
     lineHeight: 56,
-    color: colors.ink,
+    color: '#0F172A',
   },
   reputationStars: { alignItems: 'flex-end', paddingBottom: 6 },
   starsRow: { flexDirection: 'row', gap: 2 },
@@ -527,15 +525,18 @@ const styles = StyleSheet.create({
   reputationTagline: {
     fontFamily: fonts.displayItalic,
     fontSize: 13,
-    color: colors.primaryDark,
+    color: '#475569',
     marginTop: 8,
   },
-  statsGrid: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  statsGrid: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   statBox: {
     flex: 1,
     borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.70)',
     paddingVertical: 18,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     alignItems: 'center',
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
@@ -544,21 +545,24 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   statIconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.paper,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   statValue: {
     fontFamily: fonts.numericBold,
-    fontSize: 20,
+    fontSize: 18,
+    color: '#0F172A',
     marginTop: 6,
   },
   statLabel: {
     fontFamily: fonts.bodyBold,
     fontSize: 10,
+    color: colors.inkMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.3,
     marginTop: 3,
