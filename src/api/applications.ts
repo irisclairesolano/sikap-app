@@ -56,4 +56,10 @@ export const applicationsApi = {
     const res = await apiClient<any>(`/applications/${applicationId}`);
     return (res?.data ?? res) as Application;
   },
+
+  flagOffline: async (applicationId: number) => {
+    return apiClient<{ message: string }>(`/applications/${applicationId}/flag-offline`, {
+      method: 'POST',
+    });
+  },
 };

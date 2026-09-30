@@ -3,6 +3,13 @@ import { render, fireEvent } from '@testing-library/react-native';
 import ActionCard from '../../src/components/chat/ActionCard';
 import { Message } from '../../src/types';
 
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({
+    navigate: jest.fn(),
+    goBack: jest.fn(),
+  }),
+}));
+
 jest.mock('@tanstack/react-query', () => ({
   useQueryClient: () => ({
     invalidateQueries: jest.fn(),
@@ -134,5 +141,90 @@ describe('ActionCard Job Request Component', () => {
     expect(getByText('Hire Confirmed by Employer')).toBeTruthy();
     expect(getByText('Agreed Price: ₱1,500.00')).toBeTruthy();
     expect(getByText('Confirmed')).toBeTruthy();
+  });
+
+  it('renders Flag Job as Completed button for worker when job is in progress', async () => {
+    const flagOfflineMessage: Message = {
+      id: 102,
+      conversation_id: 5,
+      sender_id: null,
+      message_type: 'action_card',
+      card_type: 'flag_offline',
+      card_data: {
+        application_id: 42,
+        job_id: 10,
+        job_title: 'House Cleaning',
+        worker_name: 'Juan Dela Cruz',
+        employer_name: 'Cristina Solano',
+        is_flagged: false,
+      },
+      card_resolved: false,
+      created_at: '2026-09-24T00:00:00.000Z',
+    };
+
+    const { getByText } = await render(
+      <ActionCard
+        message={flagOfflineMessage}
+        currentUserId={2}
+        currentUserRole="worker"
+        conversationId={5}
+        conversationStatus="open"
+        applicationStatus="accepted"
+        onActionComplete={jest.fn()}
+      />,
+    );
+
+    expect(getByText('Finish Work')).toBeTruthy();
+    expect(getByText('Flag Job as Completed')).toBeTruthy();
+  });
+
+  it('renders Rate CTA buttons when job is completed', async () => {
+    const completedFlagOfflineMessage: Message = {
+      id: 103,
+      conversation_id: 5,
+      sender_id: null,
+      message_type: 'action_card',
+      card_type: 'flag_offline',
+      card_data: {
+        application_id: 42,
+        job_id: 10,
+        job_title: 'House Cleaning',
+        worker_name: 'Juan Dela Cruz',
+        employer_name: 'Cristina Solano',
+        is_flagged: true,
+      },
+      card_resolved: true,
+      created_at: '2026-09-24T00:00:00.000Z',
+    };
+
+    // Employer view
+    const employerRender = await render(
+      <ActionCard
+        message={completedFlagOfflineMessage}
+        currentUserId={1}
+        currentUserRole="employer"
+        conversationId={5}
+        conversationStatus="locked"
+        applicationStatus="completed"
+        onActionComplete={jest.fn()}
+      />,
+    );
+    expect(employerRender.getByText('Job Marked Complete')).toBeTruthy();
+    expect(employerRender.getByText('Rate Worker')).toBeTruthy();
+
+    // Worker view
+    const workerRender = await render(
+      <ActionCard
+        message={completedFlagOfflineMessage}
+        currentUserId={2}
+        currentUserRole="worker"
+        conversationId={5}
+        conversationStatus="locked"
+        applicationStatus="completed"
+        onActionComplete={jest.fn()}
+      />,
+    );
+    expect(workerRender.getByText('Job Marked Complete')).toBeTruthy();
+    expect(workerRender.getByText('Rate Employer')).toBeTruthy();
   });
 });

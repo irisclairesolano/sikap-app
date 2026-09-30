@@ -10,6 +10,7 @@ import {
 import { Message } from '../../types';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { apiClient } from '../../api/client';
 import { applicationsApi } from '../../api/applications';
 import { jobsApi } from '../../api/jobs';
@@ -17,7 +18,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAlert } from '../../contexts/AlertContext';
 import { useConfirmHire } from '../../hooks/useJobApplications';
 import { useMarkJobComplete } from '../../hooks/useJobs';
-import { useAcceptOffer, useRejectOffer } from '../../hooks/useApply';
+import { useAcceptOffer, useRejectOffer, useFlagOffline } from '../../hooks/useApply';
 
 interface ActionCardProps {
   message: Message;
@@ -53,12 +54,14 @@ const ActionCard: React.FC<ActionCardProps> = ({
   isBlocked = false,
   onActionComplete,
 }) => {
+  const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
   const { showAlert } = useAlert();
   const confirmHireMutation = useConfirmHire();
   const markJobCompleteMutation = useMarkJobComplete();
   const acceptOfferMutation = useAcceptOffer();
   const rejectOfferMutation = useRejectOffer();
+  const flagOfflineMutation = useFlagOffline();
 
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [priceInput, setPriceInput] = useState('');
@@ -101,18 +104,31 @@ const ActionCard: React.FC<ActionCardProps> = ({
     badgeText: string = 'Completed',
     badgeColor: string = colors.mintDeep,
     badgeBg: string = '#DCFCE7',
+    ctaButton?: { label: string; onPress: () => void; iconName?: keyof typeof Ionicons.glyphMap },
   ) => (
-    <View style={styles.etchedCard}>
-      <View style={[styles.etchedIconBadge, { backgroundColor: badgeBg }]}>
-        <Ionicons name={icon} size={15} color={badgeColor} />
+    <View style={styles.etchedCardContainer}>
+      <View style={styles.etchedCard}>
+        <View style={[styles.etchedIconBadge, { backgroundColor: badgeBg }]}>
+          <Ionicons name={icon} size={15} color={badgeColor} />
+        </View>
+        <View style={styles.etchedContent}>
+          <Text style={styles.etchedTitle}>{title}</Text>
+          {subtitle ? <Text style={styles.etchedSubtitle}>{subtitle}</Text> : null}
+        </View>
+        <View style={[styles.etchedBadge, { backgroundColor: badgeBg }]}>
+          <Text style={[styles.etchedBadgeText, { color: badgeColor }]}>{badgeText}</Text>
+        </View>
       </View>
-      <View style={styles.etchedContent}>
-        <Text style={styles.etchedTitle}>{title}</Text>
-        {subtitle ? <Text style={styles.etchedSubtitle}>{subtitle}</Text> : null}
-      </View>
-      <View style={[styles.etchedBadge, { backgroundColor: badgeBg }]}>
-        <Text style={[styles.etchedBadgeText, { color: badgeColor }]}>{badgeText}</Text>
-      </View>
+      {ctaButton && (
+        <TouchableOpacity
+          style={styles.ratingCtaBtn}
+          onPress={ctaButton.onPress}
+          activeOpacity={0.85}
+        >
+          <Ionicons name={ctaButton.iconName || 'star'} size={15} color={colors.white} />
+          <Text style={styles.ratingCtaBtnText}>{ctaButton.label}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -778,6 +794,18 @@ const ActionCard: React.FC<ActionCardProps> = ({
         'Completed',
         colors.success,
         '#DCFCE7',
+        {
+          label: 'Rate Worker',
+          iconName: 'star',
+          onPress: () => {
+            navigation.navigate('RateWorker', {
+              id: Number(card_data?.application_id || card_data?.id),
+              workerName: String(card_data?.worker_name || otherUserName || 'Worker'),
+              jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
+              jobId: Number(card_data?.job_id || jobId),
+            });
+          },
+        },
       );
     }
 
@@ -831,6 +859,32 @@ const ActionCard: React.FC<ActionCardProps> = ({
       card_resolved || applicationStatus === 'completed' || conversationStatus === 'locked';
 
     if (isOfflineResolved) {
+      const cta =
+        currentUserRole === 'employer'
+          ? {
+              label: 'Rate Worker',
+              iconName: 'star' as const,
+              onPress: () => {
+                navigation.navigate('RateWorker', {
+                  id: Number(card_data?.application_id || card_data?.id),
+                  workerName: String(card_data?.worker_name || otherUserName || 'Worker'),
+                  jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
+                  jobId: Number(card_data?.job_id || jobId),
+                });
+              },
+            }
+          : {
+              label: 'Rate Employer',
+              iconName: 'star' as const,
+              onPress: () => {
+                navigation.navigate('RateEmployer', {
+                  id: Number(card_data?.application_id || card_data?.id),
+                  employerName: String(card_data?.employer_name || otherUserName || 'Employer'),
+                  jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
+                });
+              },
+            };
+
       return renderEtchedCard(
         'Job Marked Complete',
         'Work has been completed and verified.',
@@ -838,18 +892,77 @@ const ActionCard: React.FC<ActionCardProps> = ({
         'Completed',
         colors.success,
         '#DCFCE7',
+        cta,
       );
     }
 
     if (currentUserRole === 'worker') {
-      return renderEtchedCard(
-        'Work Flagged as Done',
-        'Waiting for employer confirmation.',
-        'time-outline',
-        'Pending Confirmation',
-        colors.warning,
-        '#FEF3C7',
+      if (card_data?.is_flagged) {
+        return renderEtchedCard(
+          'Work Flagged as Done',
+          'Waiting for employer confirmation.',
+          'time-outline',
+          'Pending Confirmation',
+          colors.warning,
+          '#FEF3C7',
+        );
+      }
+
+      return (
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.cardIconBadge, { backgroundColor: '#FEF3C7' }]}>
+              <Ionicons name="flag-outline" size={20} color={colors.warning} />
+            </View>
+            <View style={styles.cardHeaderText}>
+              <Text style={styles.title}>Finish Work</Text>
+              <Text style={styles.subtitle}>
+                Flag this job as completed when you finish your work offline.
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={[styles.primaryButton, { backgroundColor: colors.warning }]}
+            onPress={() => {
+              showAlert(
+                'Flag as Completed',
+                'Have you finished all required work for this job? Your employer will be notified to confirm.',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Yes, Flag as Completed',
+                    onPress: () => {
+                      const appId = Number(card_data?.application_id || card_data?.id);
+                      flagOfflineMutation.mutate(appId, {
+                        onSuccess: () => {
+                          onActionComplete();
+                        },
+                        onError: (err: any) => {
+                          showAlert(
+                            'Action Failed',
+                            err.message || 'Unable to flag job as completed.',
+                          );
+                        },
+                      });
+                    },
+                  },
+                ],
+              );
+            }}
+            disabled={flagOfflineMutation.isPending || !!loadingAction}
+          >
+            {flagOfflineMutation.isPending ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <Text style={styles.primaryButtonText}>Flag Job as Completed</Text>
+            )}
+          </TouchableOpacity>
+        </View>
       );
+    }
+
+    if (!card_data?.is_flagged) {
+      return null;
     }
 
     const workerName = String(card_data?.worker_name || otherUserName || 'Worker');
@@ -862,7 +975,10 @@ const ActionCard: React.FC<ActionCardProps> = ({
           </View>
           <View style={styles.cardHeaderText}>
             <Text style={styles.title}>Work Flagged as Done</Text>
-            <Text style={styles.subtitle}>{workerName} flagged this job as completed offline.</Text>
+            <Text style={styles.subtitle}>
+              {workerName} flagged this job as completed offline. Please confirm and rate the
+              worker.
+            </Text>
           </View>
         </View>
         <TouchableOpacity
@@ -1020,9 +1136,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   // Subtle etched completed card
+  etchedCardContainer: {
+    marginVertical: 4,
+  },
   etchedCard: {
     marginHorizontal: 16,
-    marginVertical: 5,
+    marginVertical: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.68)',
     paddingVertical: 10,
     paddingHorizontal: 14,
@@ -1032,6 +1151,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(226, 232, 240, 0.75)',
     gap: 10,
+  },
+  ratingCtaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginTop: 6,
+    marginHorizontal: 16,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  ratingCtaBtnText: {
+    color: colors.white,
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
   },
   etchedIconBadge: {
     width: 28,

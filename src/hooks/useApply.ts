@@ -94,3 +94,26 @@ export const useRejectOffer = () => {
     },
   });
 };
+
+export const useFlagOffline = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ message: string }, Error, number>({
+    mutationFn: async (applicationId) => {
+      return apiClient<{ message: string }>(`/applications/${applicationId}/flag-offline`, {
+        method: 'POST',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['job'] });
+      queryClient.invalidateQueries({ queryKey: ['myJobs'] });
+      queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
+      queryClient.invalidateQueries({ queryKey: ['application'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+    },
+  });
+};

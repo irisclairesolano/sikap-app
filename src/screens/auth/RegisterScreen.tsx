@@ -39,8 +39,8 @@ const RegisterScreen: React.FC = () => {
     if (!name) return { status: null, message: '' };
     if (name.length < 2)
       return { status: 'invalid', message: 'Name must be at least 2 characters' };
-    if (!/^[a-zA-Z\s]+$/.test(name))
-      return { status: 'invalid', message: 'Name can only contain letters' };
+    if (!/^[a-zA-Z\s.'-]+$/.test(name))
+      return { status: 'invalid', message: 'Name can only contain letters, dots, and hyphens' };
     return { status: 'valid', message: '' };
   };
 
@@ -134,7 +134,7 @@ const RegisterScreen: React.FC = () => {
       </View>
 
       <KeyboardAwareScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) + 24 }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         enableOnAndroid={true}
