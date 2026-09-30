@@ -131,4 +131,75 @@ describe('AddCharacterReferencesScreen', () => {
       expect(getByText('Cannot be your own phone number')).toBeTruthy();
     });
   });
+
+  it('correctly loads existing references when camelCase workerProfile is returned', async () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        phone: '09111111111',
+        workerProfile: {
+          references: [
+            { id: 10, name: 'Alice Smith', phone: '09222222222', relationship: 'Supervisor' },
+          ],
+        },
+      },
+      isLoading: false,
+    });
+
+    const { getByText } = await render(<AddCharacterReferencesScreen />);
+    expect(getByText('Alice Smith')).toBeTruthy();
+    expect(getByText(/Supervisor · 09222222222/)).toBeTruthy();
+  });
+
+  it('rejects duplicate phone number when already added in another slot', async () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        phone: '09111111111',
+        worker_profile: {
+          references: [
+            { id: 10, name: 'Alice Smith', phone: '09222222222', relationship: 'Supervisor' },
+          ],
+        },
+      },
+      isLoading: false,
+    });
+
+    const { getByText, getByPlaceholderText } = await render(<AddCharacterReferencesScreen />);
+
+    // Tap Add another reference
+    await fireEvent.press(getByText('Add another reference'));
+
+    await fireEvent.changeText(getByPlaceholderText('E.g. Juan Reyes'), 'Bob Johnson');
+    await fireEvent.changeText(getByPlaceholderText('E.g. Former employer'), 'Colleague');
+    await fireEvent.changeText(getByPlaceholderText('E.g. 09123456789'), '09222222222');
+
+    await fireEvent.press(getByText('Save reference'));
+
+    await waitFor(() => {
+      expect(getByText('This phone number is already used for another reference.')).toBeTruthy();
+    });
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
+
+  it('successfully triggers saveMutation with id, name, phone, and relationship', async () => {
+    const { getByText, getByPlaceholderText } = await render(<AddCharacterReferencesScreen />);
+
+    await fireEvent.press(getByText('Add another reference'));
+
+    await fireEvent.changeText(getByPlaceholderText('E.g. Juan Reyes'), 'Maria Santos');
+    await fireEvent.changeText(getByPlaceholderText('E.g. Former employer'), 'Former Client');
+    await fireEvent.changeText(getByPlaceholderText('E.g. 09123456789'), '09333333333');
+
+    await fireEvent.press(getByText('Save reference'));
+
+    await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: null,
+          name: 'Maria Santos',
+          phone: '09333333333',
+          relationship: 'Former Client',
+        }),
+      );
+    });
+  });
 });

@@ -4,8 +4,10 @@ import IDUploadScreen from '../../../src/screens/auth/IDUploadScreen';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAlert } from '../../../src/contexts/AlertContext';
+import * as SecureStore from '../../../src/utils/storage';
+import { notifyAuthChanged } from '../../../src/store/authEvents';
 
 const mockNavigate = jest.fn();
 const mockReplace = jest.fn();
@@ -21,11 +23,12 @@ jest.mock('@react-navigation/native', () => ({
 }));
 
 const mockMutate = jest.fn();
+const mockSetQueryData = jest.fn();
 jest.mock('@tanstack/react-query', () => ({
   useMutation: jest.fn(),
   useQuery: jest.fn(),
   useQueryClient: jest.fn(() => ({
-    setQueryData: jest.fn(),
+    setQueryData: mockSetQueryData,
     invalidateQueries: jest.fn(),
   })),
 }));
@@ -54,8 +57,12 @@ jest.mock('expo-image-manipulator', () => ({
 
 jest.mock('../../../src/utils/storage', () => ({
   getItemAsync: jest.fn().mockResolvedValue('mock-token'),
-  setItemAsync: jest.fn(),
-  deleteItemAsync: jest.fn(),
+  setItemAsync: jest.fn().mockResolvedValue(undefined),
+  deleteItemAsync: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock('../../../src/store/authEvents', () => ({
+  notifyAuthChanged: jest.fn(),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -67,6 +74,8 @@ jest.mock('@expo/vector-icons', () => ({
 }));
 
 describe('IDUploadScreen', () => {
+  let mutationOptions: any = null;
+
   beforeEach(() => {
     jest.clearAllMocks();
     (useRoute as jest.Mock).mockReturnValue({
@@ -75,9 +84,12 @@ describe('IDUploadScreen', () => {
         role: 'worker',
       },
     });
-    (useMutation as jest.Mock).mockReturnValue({
-      mutate: mockMutate,
-      isPending: false,
+    (useMutation as jest.Mock).mockImplementation((options) => {
+      mutationOptions = options;
+      return {
+        mutate: mockMutate,
+        isPending: false,
+      };
     });
   });
 
@@ -145,5 +157,22 @@ describe('IDUploadScreen', () => {
 
     await fireEvent.press(submitBtn);
     expect(mockMutate).toHaveBeenCalled();
+  }, 20000);
+
+  it('onSuccess updates storage, cache, notifies auth, and replaces route with PendingVerify', async () => {
+    await render(<IDUploadScreen />);
+
+    expect(mutationOptions).toBeDefined();
+    expect(mutationOptions.onSuccess).toBeDefined();
+
+    await mutationOptions.onSuccess();
+
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      'user_profile',
+      expect.stringContaining('"registration_status":"pending_review"'),
+    );
+    expect(mockSetQueryData).toHaveBeenCalled();
+    expect(notifyAuthChanged).toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith('PendingVerify');
   });
 });

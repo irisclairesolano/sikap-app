@@ -25,9 +25,10 @@ export const HomeEmptyScreen: React.FC = () => {
   const getInitial = (name?: string) => (name ? name.charAt(0).toUpperCase() : 'M');
 
   // Calculate progress
-  const hasSkills = (profile?.worker_profile?.skills?.length || 0) > 0;
-  const hasHistory = (profile?.worker_profile?.experiences?.length || 0) > 0;
-  const hasRefs = (profile?.worker_profile?.references?.length || 0) > 0;
+  const workerProfile = profile?.worker_profile ?? (profile as any)?.workerProfile;
+  const hasSkills = (workerProfile?.skills?.length || 0) > 0;
+  const hasHistory = (workerProfile?.experiences?.length || 0) > 0;
+  const hasRefs = (workerProfile?.references?.length || 0) > 0;
 
   let progressCount = 1; // Account verified
   if (hasSkills) progressCount++;

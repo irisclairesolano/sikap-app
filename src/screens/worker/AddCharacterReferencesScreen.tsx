@@ -35,13 +35,16 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     queryFn: profileApi.getProfile,
   });
 
+  const workerProfile = profile?.worker_profile ?? (profile as any)?.workerProfile;
+  const profileReferences = workerProfile?.references;
+
   const [references, setReferences] = useState<any[]>([]);
 
   React.useEffect(() => {
-    if (profile?.worker_profile?.references) {
-      setReferences(profile.worker_profile.references);
+    if (Array.isArray(profileReferences)) {
+      setReferences(profileReferences);
     }
-  }, [profile?.worker_profile?.references]);
+  }, [profileReferences]);
 
   const [isAdding, setIsAdding] = useState(false);
 
@@ -68,24 +71,48 @@ export const AddCharacterReferencesScreen: React.FC = () => {
 
   const { showAlert } = useAlert();
 
-  const validatePhone = (value: string) => {
+  const normalizeDigits = (val: string) => val.replace(/[^0-9]/g, '');
+
+  const validatePhone = (value: string, currentEditingId: number | null = editingReferenceId) => {
     if (!value) {
       return undefined;
     }
-    const sanitized = value.replace(/[^0-9]/g, '');
+    const sanitized = normalizeDigits(value);
     if (!sanitized.startsWith('09')) {
       return 'Phone number must start with 09';
     }
     if (sanitized.length !== 11) {
       return 'Phone number must be exactly 11 digits';
     }
-    const rawUserPhone = profile?.phone ? String(profile.phone).replace(/[^0-9]/g, '') : '';
-    const userPhoneNorm = rawUserPhone.startsWith('63')
-      ? '0' + rawUserPhone.slice(2)
-      : rawUserPhone;
+
+    // Check against own user account phone
+    const rawUserPhone = profile?.phone ? normalizeDigits(String(profile.phone)) : '';
+    const userPhoneNorm =
+      rawUserPhone.startsWith('63') && rawUserPhone.length === 12
+        ? '0' + rawUserPhone.slice(2)
+        : rawUserPhone.startsWith('9') && rawUserPhone.length === 10
+          ? '0' + rawUserPhone
+          : rawUserPhone;
+
     if (userPhoneNorm && sanitized === userPhoneNorm) {
       return 'Cannot be your own phone number';
     }
+
+    // Check against existing references in list
+    const isDuplicate = references.some((ref) => {
+      if (!ref || !ref.phone) return false;
+      const refClean = normalizeDigits(String(ref.phone));
+      const isSelf =
+        currentEditingId !== null &&
+        Number(ref.id) === Number(currentEditingId) &&
+        Number(ref.id) > 0;
+      return refClean === sanitized && !isSelf;
+    });
+
+    if (isDuplicate) {
+      return 'This phone number is already used for another reference.';
+    }
+
     return undefined;
   };
 
@@ -94,7 +121,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     const newPhone = cleaned.slice(0, 11);
     setPhone(newPhone);
 
-    const errorMsg = validatePhone(newPhone);
+    const errorMsg = validatePhone(newPhone, editingReferenceId);
     if (newPhone.length === 11 || phoneError) {
       setPhoneError(errorMsg);
     } else {
@@ -103,95 +130,48 @@ export const AddCharacterReferencesScreen: React.FC = () => {
   };
 
   const saveMutation = useMutation({
-    mutationFn: async (payload: { name: string; phone: string; relationship: string }) => {
-      const errorMsg = validatePhone(payload.phone);
-      if (errorMsg) {
-        setPhoneError(errorMsg);
-        throw new Error(errorMsg);
+    mutationFn: async (payload: {
+      id?: number | null;
+      name: string;
+      phone: string;
+      relationship: string;
+    }) => {
+      if (payload.id && Number(payload.id) > 0) {
+        return profileApi.updateReference(Number(payload.id), {
+          name: payload.name,
+          phone: payload.phone,
+          relationship: payload.relationship,
+        });
       }
-
-      const cleanInput = payload.phone.replace(/[^0-9]/g, '');
-      const isDuplicatePhone = references.some((ref) => {
-        if (!ref || !ref.phone) return false;
-        const refClean = String(ref.phone).replace(/[^0-9]/g, '');
-        const isSelf = editingReferenceId !== null && Number(ref.id) === Number(editingReferenceId);
-        return refClean === cleanInput && !isSelf;
+      return profileApi.addReference({
+        name: payload.name,
+        phone: payload.phone,
+        relationship: payload.relationship,
       });
-
-      if (isDuplicatePhone) {
-        const dupError = 'This phone number is already used for another reference.';
-        setPhoneError(dupError);
-        throw new Error(dupError);
-      }
-
-      if (editingReferenceId !== null && Number(editingReferenceId) > 0) {
-        return profileApi.updateReference(Number(editingReferenceId), payload);
-      }
-      return profileApi.addReference(payload);
     },
-    onMutate: async (payload) => {
-      // Preserve active ID before handleCancel clears state
-      const activeEditingId = editingReferenceId;
-      setIsAdding(false);
-
-      const tempId = -Date.now();
-      const optimisticItem = {
-        id: activeEditingId !== null ? activeEditingId : tempId,
-        ...payload,
-      };
-
-      if (activeEditingId !== null) {
-        setReferences((prev) =>
-          prev.map((r) => (Number(r.id) === Number(activeEditingId) ? optimisticItem : r)),
-        );
-      } else {
-        setReferences((prev) => [...prev, optimisticItem]);
-      }
-
-      handleCancel();
-      return { tempId, activeEditingId };
-    },
-    onSuccess: (data, variables, context) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      const realRef = (data as any)?.reference || data;
-      if (realRef && typeof realRef === 'object' && 'id' in realRef) {
-        if (context?.activeEditingId !== null && context?.activeEditingId !== undefined) {
-          setReferences((prev) =>
-            prev.map((r) =>
-              Number(r.id) === Number(context.activeEditingId) ? (realRef as any) : r,
-            ),
-          );
-        } else {
-          setReferences((prev) =>
-            prev.map((r) => (r.id === context?.tempId ? (realRef as any) : r)),
-          );
-        }
-      }
+      handleCancel();
     },
-    onError: (err) => {
+    onError: (err: any) => {
       console.error('Failed to save reference', err);
-      if (profile?.worker_profile?.references) {
-        setReferences(profile.worker_profile.references);
-      }
-      showAlert('Error', err.message || 'Failed to save reference');
+      const serverMsg =
+        err?.errors?.phone?.[0] ||
+        err?.message ||
+        (typeof err === 'string' ? err : 'Failed to save reference');
+      setPhoneError(serverMsg.includes('phone') ? serverMsg : undefined);
+      showAlert('Error', serverMsg);
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => profileApi.removeReference(id),
-    onMutate: (id) => {
-      setIsAdding(false);
-      setReferences((prev) => prev.filter((r) => r.id !== id));
-      handleCancel();
-    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      handleCancel();
     },
     onError: (err) => {
       console.error('Failed to delete reference', err);
-      if (profile?.worker_profile?.references) {
-        setReferences(profile.worker_profile.references);
-      }
       showAlert('Error', 'Failed to delete reference');
     },
   });
@@ -452,7 +432,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                       if (!relationship.trim()) {
                         errors.relationship = 'Relationship is required';
                       }
-                      const phError = validatePhone(phone);
+                      const phError = validatePhone(phone, editingReferenceId);
                       if (!phone.trim()) {
                         errors.phone = 'Phone number is required';
                       } else if (phError) {
@@ -467,9 +447,10 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                       }
 
                       saveMutation.mutate({
-                        name,
-                        phone,
-                        relationship,
+                        id: editingReferenceId,
+                        name: name.trim(),
+                        phone: phone.trim(),
+                        relationship: relationship.trim(),
                       });
                     }}
                     disabled={saveMutation.isPending}

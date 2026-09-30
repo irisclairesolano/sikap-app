@@ -132,15 +132,51 @@ const IDUploadScreen: React.FC = () => {
     },
     onSuccess: async () => {
       setBanner('');
+      try {
+        const cachedUserStr = await SecureStore.getItemAsync('user_profile');
+        let updatedProfile: any = {};
+        if (cachedUserStr) {
+          try {
+            updatedProfile = JSON.parse(cachedUserStr);
+          } catch (e) {}
+        }
+        updatedProfile = {
+          ...updatedProfile,
+          id: userId,
+          role: userRole,
+          registration_status: 'pending_review',
+          document_url: 'uploaded',
+        };
+        await SecureStore.setItemAsync('user_profile', JSON.stringify(updatedProfile));
+      } catch (e) {
+        console.warn('Failed to update cached profile on ID upload:', e);
+      }
+
       queryClient.setQueryData(['profile'], (old: any) => {
-        if (!old) return old;
+        if (!old) {
+          return {
+            id: userId,
+            role: userRole,
+            registration_status: 'pending_review',
+            document_url: 'uploaded',
+          };
+        }
         return {
           ...old,
           registration_status: 'pending_review',
           document_url: 'uploaded',
         };
       });
+
       notifyAuthChanged();
+
+      try {
+        navigation.replace('PendingVerify');
+      } catch (e) {
+        try {
+          navigation.navigate('PendingVerify');
+        } catch (e2) {}
+      }
     },
     onError: (err: unknown) => {
       if (err instanceof Error && err.message === 'PICK_CANCELLED') return;
