@@ -360,10 +360,9 @@ const IDUploadScreen: React.FC = () => {
         >
           <Ionicons name="alert-circle" size={18} color={colors.gold} style={{ marginTop: 2 }} />
           <Text style={[styles.privacyText, { color: colors.ink }]}>
-            <Text style={styles.privacyTextBold}>Upload Guidelines: </Text>
-            Choose clear photos from your gallery. Ensure your ID and face are well-lit, not blurry,
-            and all text is clearly readable. Unclear photos will be{' '}
-            <Text style={{ color: colors.error, fontFamily: fonts.bodyBold }}>rejected</Text>.
+            <Text style={styles.privacyTextBold}>Upload Guidelines · Gabay: </Text>
+            Siguraduhing maliwanag, hindi malabo, at nababasa ang lahat ng detalye sa ID. Ligtas at
+            kumpidensyal ang iyong dokumento para sa proteksyon ng komunidad.
           </Text>
         </View>
 
@@ -394,7 +393,7 @@ const IDUploadScreen: React.FC = () => {
               <Text style={styles.uploadSubtitle}>
                 {selectedFile
                   ? `${selectedFile.name}`
-                  : "PhilSys • Driver's License • Voter's ID\nPRC • Postal ID"}
+                  : "PhilSys • Driver's License • Voter's ID\nPRC • Postal ID • Barangay ID\n(Harap ng ID)"}
               </Text>
             </TouchableOpacity>
 
@@ -418,7 +417,9 @@ const IDUploadScreen: React.FC = () => {
                 {selectedFileBack ? 'ID Back Uploaded ✓' : 'Upload ID Back (from gallery)'}
               </Text>
               <Text style={styles.uploadSubtitle}>
-                {selectedFileBack ? `${selectedFileBack.name}` : 'Back side of your ID'}
+                {selectedFileBack
+                  ? `${selectedFileBack.name}`
+                  : 'Back side of your ID · Likod ng iyong ID'}
               </Text>
             </TouchableOpacity>
 
@@ -445,7 +446,7 @@ const IDUploadScreen: React.FC = () => {
                 <Text style={styles.uploadSubtitle}>
                   {selectedSelfie
                     ? `${selectedSelfie.name}`
-                    : 'Please ensure your face and ID are clear.'}
+                    : 'Siguraduhing malinaw ang iyong mukha at ang hawak na ID.'}
                 </Text>
               </TouchableOpacity>
             ) : (

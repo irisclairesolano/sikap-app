@@ -269,7 +269,30 @@ export const JobFeedScreen: React.FC = () => {
               <ErrorBanner message={error?.message || 'Failed to load jobs.'} />
             </View>
           ) : (
-            <EmptyState message={`No jobs found for ${activeCategory}.`} />
+            <EmptyState
+              icon="briefcase-outline"
+              title="No jobs found"
+              subtitle={
+                searchQuery || activeCategory !== 'All' || locationFilter !== 'Anywhere'
+                  ? `Walang nahanap na trabaho para sa "${searchQuery || activeCategory}". Subukang i-reset ang filter.`
+                  : 'Kasalukuyang walang bakanteng trabaho. Mag-refresh mamaya para sa mga bagong post.'
+              }
+              actionLabel={
+                searchQuery || activeCategory !== 'All' || locationFilter !== 'Anywhere'
+                  ? 'Reset Filters'
+                  : undefined
+              }
+              onAction={
+                searchQuery || activeCategory !== 'All' || locationFilter !== 'Anywhere'
+                  ? () => {
+                      setActiveCategory('All');
+                      setLocationFilter('Anywhere');
+                      setSearchInput('');
+                      setSearchQuery('');
+                    }
+                  : undefined
+              }
+            />
           )
         }
         contentContainerStyle={styles.listContent}

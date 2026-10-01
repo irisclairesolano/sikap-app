@@ -24,6 +24,7 @@ import CustomInput from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import { useApplication } from '../../hooks/useJobApplications';
 import { getApplicationStageInfo } from '../../components/applications/ApplicationCard';
+import { triggerHaptic } from '../../utils/haptics';
 
 type ApplyRouteProp = RouteProp<WorkerStackParamList, 'Apply'>;
 
@@ -74,10 +75,18 @@ export const ApplyScreen: React.FC = () => {
 
   const handleSubmit = () => {
     if (isFilled) return;
-    apply({ cover_note: coverNote });
+    apply(
+      { cover_note: coverNote },
+      {
+        onSuccess: () => {
+          triggerHaptic('success');
+        },
+      },
+    );
   };
 
   const handleBackToJobs = () => {
+    triggerHaptic('light');
     navigation.navigate('Home');
   };
 
@@ -94,6 +103,7 @@ export const ApplyScreen: React.FC = () => {
             onPress: () => {
               withdraw(data.application_id, {
                 onSuccess: () => {
+                  triggerHaptic('medium');
                   navigation.navigate('Home');
                 },
                 onError: (err: any) => {

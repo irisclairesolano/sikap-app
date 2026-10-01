@@ -10,6 +10,7 @@ import Button from '../../components/common/Button';
 import { useSubmitReport } from '../../hooks/useReports';
 
 import { normalizeReportableType, ReportReasonType } from '../../api/reports';
+import { triggerHaptic } from '../../utils/haptics';
 
 // We define a generic param list for the common screen
 type ReportScreenParamList = {
@@ -79,6 +80,7 @@ export const ReportScreen: React.FC = () => {
       },
       {
         onSuccess: (res: any) => {
+          triggerHaptic('medium');
           let alertTitle = 'Report Submitted';
           let alertMsg =
             'Thank you for keeping our community safe. We will review your report shortly.';

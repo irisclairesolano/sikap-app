@@ -20,6 +20,7 @@ import { useConfirmHire } from '../../hooks/useJobApplications';
 import { useAlert } from '../../contexts/AlertContext';
 import { useConversations } from '../../hooks/useConversations';
 import { useMessages } from '../../hooks/useMessages';
+import { triggerHaptic } from '../../utils/haptics';
 
 type ConfirmHireScreenRouteProp = RouteProp<EmployerStackParamList, 'ConfirmHire'>;
 type ConfirmHireScreenNavigationProp = NativeStackNavigationProp<
@@ -92,6 +93,7 @@ const ConfirmHireScreen: React.FC = () => {
       { id: applicantId, price: numPrice },
       {
         onSuccess: (data: any) => {
+          triggerHaptic('success');
           const convId = data?.conversation_id || conversationId;
           navigation.replace('Success', {
             variant: 'confirm',

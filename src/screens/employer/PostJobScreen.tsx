@@ -34,13 +34,14 @@ const DRAFT_STORAGE_KEY = 'sikap_post_job_draft_v1';
 const DURATION_UNITS = ['Hours', 'Days', 'Weeks', 'Months'];
 const RATE_UNITS: {
   label: string;
+  sublabel: string;
   value: 'per_day' | 'per_hour' | 'per_project' | 'per_piece';
   hint: string;
 }[] = [
-  { label: 'Per Day', value: 'per_day', hint: '/ day' },
-  { label: 'Per Hour', value: 'per_hour', hint: '/ hr' },
-  { label: 'Fixed / Project', value: 'per_project', hint: 'total' },
-  { label: 'Per Piece', value: 'per_piece', hint: '/ pc' },
+  { label: 'Per Day', sublabel: 'Arawan', value: 'per_day', hint: '/ day' },
+  { label: 'Per Hour', sublabel: 'Orasan', value: 'per_hour', hint: '/ hr' },
+  { label: 'Fixed', sublabel: 'Pakyaw', value: 'per_project', hint: 'total' },
+  { label: 'Per Piece', sublabel: 'Bawat Piraso', value: 'per_piece', hint: '/ pc' },
 ];
 const DEFAULT_CATEGORIES = [
   'Construction',
@@ -938,17 +939,17 @@ export const PostJobScreen: React.FC = () => {
             />
 
             <CustomInput
-              label="Exact Location"
+              label="Exact Location · Eksaktong Lokasyon"
               value={exactLocation}
               onChangeText={setExactLocation}
-              placeholder="E.g. 123 Main St near Plaza"
+              placeholder="E.g. 123 Main St, malapit sa Munisipyo / Plaza"
               icon="map-outline"
             />
 
             {/* Pay Amount & Rate Basis Group */}
             <View style={styles.fieldBlock}>
               <CustomInput
-                label="Pay Amount (PHP) *"
+                label="Pay Amount (PHP) · Halaga ng Pasahod *"
                 value={pay}
                 onChangeText={handlePayChange}
                 placeholder="600"
@@ -957,7 +958,7 @@ export const PostJobScreen: React.FC = () => {
               />
               <View style={{ marginTop: 12 }}>
                 <Text style={styles.label}>
-                  Rate Basis<Text style={{ color: colors.error }}> *</Text>
+                  Rate Basis · Batayan ng Pasahod<Text style={{ color: colors.error }}> *</Text>
                 </Text>
                 <View style={styles.rateUnitSelector}>
                   {RATE_UNITS.map((item) => {
@@ -979,6 +980,14 @@ export const PostJobScreen: React.FC = () => {
                           ]}
                         >
                           {item.label}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.rateUnitSubtext,
+                            isSelected && styles.rateUnitSubtextActive,
+                          ]}
+                        >
+                          {item.sublabel}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -1022,7 +1031,7 @@ export const PostJobScreen: React.FC = () => {
             {/* Slots Underneath Pay & Rate Basis */}
             <View style={styles.fieldBlock}>
               <CustomInput
-                label="Slots *"
+                label="Slots · Bilang ng Manggagawa *"
                 value={slots}
                 onChangeText={handleSlotsChange}
                 placeholder="2"
@@ -1034,7 +1043,7 @@ export const PostJobScreen: React.FC = () => {
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
                 <CustomInput
-                  label="Duration (Optional)"
+                  label="Duration · Tagal"
                   value={duration}
                   onChangeText={setDuration}
                   placeholder="E.g. 5"
@@ -1043,7 +1052,7 @@ export const PostJobScreen: React.FC = () => {
                 />
               </View>
               <View style={{ flex: 1.2 }}>
-                <Text style={styles.label}>Duration Unit</Text>
+                <Text style={styles.label}>Duration Unit · Yunit</Text>
                 <View style={styles.unitSelector}>
                   {DURATION_UNITS.map((unit) => (
                     <TouchableOpacity
@@ -1070,7 +1079,7 @@ export const PostJobScreen: React.FC = () => {
 
             <View>
               <Text style={styles.label}>
-                Schedule Date<Text style={{ color: colors.error }}> *</Text>
+                Schedule Date · Petsa ng Simula<Text style={{ color: colors.error }}> *</Text>
               </Text>
               <TouchableOpacity
                 style={styles.datePickerBtn}
@@ -1095,20 +1104,20 @@ export const PostJobScreen: React.FC = () => {
             </View>
 
             <CustomInput
-              label="Description *"
+              label="Description · Detalye ng Trabaho *"
               value={description}
               onChangeText={setDescription}
-              placeholder="Need help installing..."
+              placeholder="Ilarawan ang kailangang gawin..."
               multiline
               allowEmoji={true}
               icon="create-outline"
             />
 
             <CustomInput
-              label="Tools Required (Optional)"
+              label="Tools Required · Kailangang Gamit (Opsyonal)"
               value={toolsRequired}
               onChangeText={setToolsRequired}
-              placeholder="E.g. Hammer, nails, saw"
+              placeholder="Hal. Martilyo, pako, lagari"
               icon="hammer-outline"
             />
 
@@ -1474,6 +1483,17 @@ const styles = StyleSheet.create({
   rateUnitBtnTextActive: {
     color: '#FFFFFF',
     fontFamily: fonts.bodyBold,
+  },
+  rateUnitSubtext: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    color: colors.inkMuted,
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  rateUnitSubtextActive: {
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontFamily: fonts.bodyMedium,
   },
   wagePreviewCard: {
     marginTop: 10,

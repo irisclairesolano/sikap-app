@@ -87,8 +87,9 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* 1. JOB HEADER */}
+      {/* 1. CELEBRATORY JOB HEADER */}
       <View style={styles.headerCard}>
+        <View style={styles.headerGlow} />
         <View style={styles.headerTopRow}>
           <View style={styles.refBadge}>
             <Ionicons name="document-text-outline" size={13} color={colors.inkSoft} />
@@ -96,18 +97,63 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           </View>
           <View style={styles.completedBadge}>
             <Ionicons name="checkmark-circle" size={14} color="#15803D" />
-            <Text style={styles.completedBadgeText}>Job Completed</Text>
+            <Text style={styles.completedBadgeText}>Completed</Text>
+          </View>
+        </View>
+
+        <View style={styles.celebrationRow}>
+          <Text style={styles.celebrationEmoji}>🎉</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.celebrationTitle}>Job Completed Successfully</Text>
+            {formattedCompletedDate ? (
+              <Text style={styles.completedDateText}>Finished on {formattedCompletedDate}</Text>
+            ) : null}
           </View>
         </View>
 
         <Text style={styles.jobTitle}>{job?.title || 'Job Overview'}</Text>
+      </View>
 
-        {formattedCompletedDate ? (
-          <View style={styles.dateRow}>
-            <Ionicons name="calendar-outline" size={13} color={colors.inkMuted} />
-            <Text style={styles.completedDateText}>Completed on {formattedCompletedDate}</Text>
+      {/* 2. THREE-METRIC SUMMARY CARDS */}
+      <View style={styles.metricGrid}>
+        <View style={styles.metricCard}>
+          <View style={[styles.metricIconBox, { backgroundColor: '#DCFCE7' }]}>
+            <Ionicons name="cash" size={18} color="#15803D" />
           </View>
-        ) : null}
+          <Text style={styles.metricLabel}>{agreedPrice != null ? 'Agreed Pay' : 'Pay'}</Text>
+          <Text style={styles.metricValue}>{displayCompensation || '₱0'}</Text>
+          <Text style={styles.metricSub}>{rateUnitText}</Text>
+        </View>
+
+        <View style={styles.metricCard}>
+          <View style={[styles.metricIconBox, { backgroundColor: colors.sky + '25' }]}>
+            <Ionicons name="time" size={18} color={colors.skyDeep} />
+          </View>
+          <Text style={styles.metricLabel}>Duration</Text>
+          <Text style={styles.metricValue} numberOfLines={1}>
+            {job?.duration ? `${job.duration} ${job.duration_unit || 'Days'}` : 'Finished'}
+          </Text>
+          <Text style={styles.metricSub}>
+            {job?.duration_type === 'daily' ? 'Daily' : 'Project'}
+          </Text>
+        </View>
+
+        <View style={styles.metricCard}>
+          <View style={[styles.metricIconBox, { backgroundColor: colors.butter + '60' }]}>
+            <Ionicons name="star" size={18} color={colors.gold} />
+          </View>
+          <Text style={styles.metricLabel}>Review</Text>
+          <Text style={styles.metricValue}>
+            {hasReviewed && userReview?.overall_rating
+              ? `★ ${Number(userReview.overall_rating).toFixed(1)}`
+              : hasReviewed
+                ? 'Rated'
+                : 'Pending'}
+          </Text>
+          <Text style={styles.metricSub}>
+            {hasReviewed ? 'Feedback left' : isRatingWindowClosed ? 'Window closed' : '7d Window'}
+          </Text>
+        </View>
       </View>
 
       {/* 2. COUNTERPARTY PROFILE CARD */}
@@ -396,17 +442,42 @@ const styles = StyleSheet.create({
   },
   headerCard: {
     backgroundColor: colors.paperBright,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.inkFaint,
-    ...shadows.sm,
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1.5,
+    borderColor: '#86EFAC',
+    position: 'relative',
+    overflow: 'hidden',
+    ...shadows.base,
+  },
+  headerGlow: {
+    position: 'absolute',
+    top: -20,
+    right: -20,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(187, 247, 208, 0.4)',
   },
   headerTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+  },
+  celebrationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 10,
+  },
+  celebrationEmoji: {
+    fontSize: 26,
+  },
+  celebrationTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 16,
+    color: '#15803D',
   },
   refBadge: {
     flexDirection: 'row',
@@ -438,9 +509,52 @@ const styles = StyleSheet.create({
   },
   jobTitle: {
     fontFamily: fonts.display,
-    fontSize: 20,
+    fontSize: 22,
     color: colors.ink,
-    lineHeight: 26,
+    lineHeight: 28,
+  },
+  metricGrid: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  metricCard: {
+    flex: 1,
+    backgroundColor: colors.paperBright,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    ...shadows.sm,
+    alignItems: 'center',
+  },
+  metricIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  metricLabel: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    color: colors.inkMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  metricValue: {
+    fontFamily: fonts.numericBold,
+    fontSize: 14,
+    color: colors.ink,
+    textAlign: 'center',
+  },
+  metricSub: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    color: colors.inkMuted,
+    marginTop: 2,
+    textAlign: 'center',
   },
   dateRow: {
     flexDirection: 'row',

@@ -141,9 +141,10 @@ export const ReviewsScreen: React.FC = () => {
           {reviewsList.length === 0 ? (
             <View style={styles.emptyCard}>
               <Ionicons name="chatbox-outline" size={32} color={colors.inkLight} />
-              <Text style={styles.emptyTitle}>No reviews yet</Text>
+              <Text style={styles.emptyTitle}>No reviews yet · Wala pang review</Text>
               <Text style={styles.emptySubtitle}>
-                Ratings and reviews from completed jobs will appear here.
+                Ratings and reviews from completed jobs will appear here. (Dito makikita ang mga
+                marka at pagsusuri mula sa mga natapos na trabaho).
               </Text>
             </View>
           ) : (

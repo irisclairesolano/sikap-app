@@ -9,6 +9,7 @@ import { colors, fonts } from '../../theme';
 import Button from '../../components/common/Button';
 import { useAcceptOffer, useRejectOffer } from '../../hooks/useApply';
 import { useAlert } from '../../contexts/AlertContext';
+import { triggerHaptic } from '../../utils/haptics';
 
 import { useMyApplications } from '../../hooks/useMyApplications';
 
@@ -28,6 +29,7 @@ const AcceptHireScreen: React.FC = () => {
   const handleAccept = () => {
     acceptOfferMutation.mutate(id, {
       onSuccess: () => {
+        triggerHaptic('success');
         const activeCount = myAppsData?.pages?.[0]?.data?.length || 0;
         const isFirstHire = activeCount === 0;
 
@@ -73,6 +75,7 @@ const AcceptHireScreen: React.FC = () => {
   const handleReject = () => {
     rejectOfferMutation.mutate(id, {
       onSuccess: () => {
+        triggerHaptic('medium');
         showAlert('Offer Declined', `You have declined the offer for ${jobTitle}.`, [
           { text: 'OK', onPress: () => navigation.goBack() },
         ]);

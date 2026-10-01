@@ -246,6 +246,10 @@ export const AddCharacterReferencesScreen: React.FC = () => {
           <Text style={styles.title}>
             Three people{'\n'}who can <Text style={styles.titleAccent}>vouch.</Text>
           </Text>
+          <Text style={styles.subtitleTagalog}>
+            Magdagdag ng hanggang 3 tao na makapagpapatunay ng iyong husay sa trabaho (dating amo,
+            kapitbahay, o kasamahan).
+          </Text>
 
           <View style={styles.infoBanner}>
             <Ionicons
@@ -258,7 +262,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
               <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink }}>
                 Reference contacts stay hidden
               </Text>{' '}
-              until an employer formally shortlists you.
+              until an employer formally shortlists you. (Ligtas at kumpidensyal).
             </Text>
           </View>
 
@@ -275,10 +279,10 @@ export const AddCharacterReferencesScreen: React.FC = () => {
               <Text style={styles.addTitle}>Add another reference</Text>
               <Text style={styles.addSubtitle}>
                 {3 - references.length === 3
-                  ? 'Three slots remaining'
+                  ? 'Three slots remaining (3 bakante)'
                   : 3 - references.length === 2
-                    ? 'Two slots remaining'
-                    : 'One slot remaining'}
+                    ? 'Two slots remaining (2 bakante)'
+                    : 'One slot remaining (1 bakante)'}
               </Text>
             </TouchableOpacity>
           )}
@@ -350,7 +354,9 @@ export const AddCharacterReferencesScreen: React.FC = () => {
 
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalHeaderTitle}>
-                    {editingReferenceId !== null ? 'Edit Reference' : 'Add Reference'}
+                    {editingReferenceId !== null
+                      ? 'Edit Reference · Baguhin'
+                      : 'Add Reference · Magdagdag'}
                   </Text>
                   <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
                     <Ionicons name="close" size={22} color={colors.inkSoft} />
@@ -363,7 +369,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                 >
                   <View style={{ gap: 16, paddingBottom: 24 }}>
                     <CustomInput
-                      label="Full name"
+                      label="Full name · Buong Pangalan"
                       value={name}
                       onChangeText={handleNameChange}
                       placeholder="E.g. Juan Reyes"
@@ -372,7 +378,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                       status={nameError ? 'invalid' : null}
                     />
                     <CustomInput
-                      label="Relationship"
+                      label="Relationship · Relasyon"
                       value={relationship}
                       onChangeText={handleRelationshipChange}
                       placeholder="E.g. Former employer"
@@ -381,7 +387,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                       status={relationshipError ? 'invalid' : null}
                     />
                     <CustomInput
-                      label="Phone number"
+                      label="Phone number · Numero ng Telepono"
                       value={phone}
                       onChangeText={handlePhoneChange}
                       error={phoneError}
@@ -516,12 +522,19 @@ const styles = StyleSheet.create({
     fontFamily: fonts.displayItalic,
     color: colors.primary,
   },
+  subtitleTagalog: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.inkMuted,
+    lineHeight: 20,
+    marginTop: 6,
+  },
   infoBanner: {
     flexDirection: 'row',
     backgroundColor: colors.mint,
     borderRadius: 12,
     padding: 14,
-    marginTop: 20,
+    marginTop: 16,
     alignItems: 'flex-start',
     gap: 10,
   },

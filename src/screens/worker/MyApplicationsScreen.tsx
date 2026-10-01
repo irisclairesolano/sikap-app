@@ -357,21 +357,24 @@ export const MyApplicationsScreen: React.FC = () => {
 
     if (searchQuery.trim()) {
       emptyTitle = 'No matching applications';
-      emptySubtitle = `No applications found matching "${searchQuery}".`;
+      emptySubtitle = `Walang nahanap na aplikasyon para sa "${searchQuery}".`;
     } else if (activeFilter === 'Needs Action') {
-      emptyTitle = 'All caught up!';
-      emptySubtitle = 'You have no pending job offers or reviews to complete right now.';
+      emptyTitle = 'All caught up! · Walang nakabinbin';
+      emptySubtitle = 'Wala kang pending na alok ng trabaho o pagsusuring kailangang sagutan.';
     } else if (activeFilter === 'Active') {
       emptyTitle = 'No active jobs right now';
-      emptySubtitle = 'Once an employer confirms your hire, your active jobs will appear here.';
+      emptySubtitle =
+        'Kapag kinumpirma ng employer ang pag-hire sa iyo, lalabas dito ang iyong aktibong trabaho.';
       showBrowseButton = true;
     } else if (activeFilter === 'In Review') {
       emptyTitle = 'No applications under review';
-      emptySubtitle = 'Explore jobs and submit applications to local employers in Bulan.';
+      emptySubtitle =
+        'Wala kang aplikasyong sinusuri sa ngayon. Mag-browse at mag-apply sa mga trabaho.';
       showBrowseButton = true;
     } else if (activeFilter === 'All') {
       emptyTitle = "You haven't applied to any jobs yet";
-      emptySubtitle = 'Explore local work opportunities and apply in just a few taps.';
+      emptySubtitle =
+        'Mag-explore ng mga oportunidad sa trabaho at mag-apply sa ilang simpleng pindot.';
       showBrowseButton = true;
     }
 

@@ -114,7 +114,15 @@ export const SavedJobsScreen: React.FC = () => {
         windowSize={5}
         removeClippedSubviews={true}
         ListHeaderComponent={renderHeader}
-        ListEmptyComponent={<EmptyState message="You haven't saved any jobs yet." />}
+        ListEmptyComponent={
+          <EmptyState
+            icon="bookmark-outline"
+            title="No saved jobs yet"
+            subtitle="Wala ka pang naka-save na trabaho. Mag-browse sa job feed para mag-save ng mga nais mong trabaho."
+            actionLabel="Browse Jobs"
+            onAction={() => navigation.navigate('Home')}
+          />
+        }
         contentContainerStyle={styles.listContent}
         refreshing={isFetching && !isLoading}
         onRefresh={refetch}

@@ -10,6 +10,7 @@ import Button from '../../components/common/Button';
 import { useSubmitReview } from '../../hooks/useReviews';
 import { useAlert } from '../../contexts/AlertContext';
 import { useApplication } from '../../hooks/useJobApplications';
+import { triggerHaptic } from '../../utils/haptics';
 
 type RateEmployerScreenRouteProp = RouteProp<WorkerStackParamList, 'RateEmployer'>;
 type RateEmployerScreenNavigationProp = NativeStackNavigationProp<
@@ -31,7 +32,13 @@ const RatingCategory = ({
       <Text style={styles.ratingTitle}>{title}</Text>
       <View style={styles.starsContainer}>
         {[1, 2, 3, 4, 5].map((star) => (
-          <TouchableOpacity key={star} onPress={() => onRate(star)}>
+          <TouchableOpacity
+            key={star}
+            onPress={() => {
+              triggerHaptic('light');
+              onRate(star);
+            }}
+          >
             <Ionicons
               name={star <= rating ? 'star' : 'star-outline'}
               size={26}
@@ -90,6 +97,7 @@ export const RateEmployerScreen: React.FC = () => {
       },
       {
         onSuccess: (res: any) => {
+          triggerHaptic('success');
           const hasWarnings = res?.content_warnings && res.content_warnings.length > 0;
           const msg = hasWarnings
             ? 'Salamat! Your rating helps other workers know what to expect. Note: your review contains language that may be reviewed for community standards.'
