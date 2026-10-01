@@ -63,6 +63,16 @@ export const EmployerPublicProfileScreen: React.FC = () => {
     null,
   );
 
+  const handleReportEmployer = () => {
+    if (!employerId) return;
+    navigation.navigate('Report' as any, {
+      id: Number(employerId),
+      type: 'user',
+      reportable_id: Number(employerId),
+      reportable_type: 'user',
+    });
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       {/* App Bar */}
@@ -71,7 +81,13 @@ export const EmployerPublicProfileScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <Text style={styles.appBarTitle}>Employer Profile</Text>
-        <View style={{ width: 40 }} />
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={handleReportEmployer}
+          accessibilityLabel="Report Employer"
+        >
+          <Ionicons name="flag-outline" size={20} color={colors.inkMuted} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

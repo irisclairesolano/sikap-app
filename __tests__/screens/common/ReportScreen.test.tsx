@@ -54,11 +54,14 @@ describe('Report API & Normalization Helpers', () => {
 
   it('normalizes application variations to application', () => {
     expect(normalizeReportableType('application')).toBe('application');
-    expect(normalizeReportableType('applicant')).toBe('application');
+    expect(normalizeReportableType('APPLICATION')).toBe('application');
   });
 
   it('defaults unmapped or user variations to user', () => {
     expect(normalizeReportableType('user')).toBe('user');
+    expect(normalizeReportableType('applicant')).toBe('user');
+    expect(normalizeReportableType('worker')).toBe('user');
+    expect(normalizeReportableType('employer')).toBe('user');
     expect(normalizeReportableType(undefined)).toBe('user');
     expect(normalizeReportableType(null)).toBe('user');
     expect(normalizeReportableType('unknown')).toBe('user');

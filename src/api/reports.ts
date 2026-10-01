@@ -14,7 +14,7 @@ export function normalizeReportableType(rawType?: string | null): ReportableType
   if (normalized === 'job' || normalized === 'job_post' || normalized === 'jobpost') {
     return REPORTABLE_TYPES.JOB_POST;
   }
-  if (normalized === 'application' || normalized === 'applicant') {
+  if (normalized === 'application') {
     return REPORTABLE_TYPES.APPLICATION;
   }
   return REPORTABLE_TYPES.USER;

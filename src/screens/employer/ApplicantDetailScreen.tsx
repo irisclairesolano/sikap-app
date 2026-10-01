@@ -333,17 +333,36 @@ const ApplicantDetailScreen: React.FC = () => {
 
   const handleReport = () => {
     setMenuVisible(false);
-    const workerUserId = Number(appData?.worker?.id ?? appData?.worker_id) || 0;
-    if (!workerUserId) {
-      showAlert('Error', 'Unable to report applicant at this time (missing worker information).');
+    const workerUserId =
+      Number(
+        appData?.worker?.id ??
+          appData?.worker_id ??
+          (route.params as any)?.workerId ??
+          (route.params as any)?.worker_id ??
+          (route.params as any)?.workerUserId,
+      ) || 0;
+
+    if (workerUserId > 0) {
+      navigation.navigate('Report' as any, {
+        id: workerUserId,
+        type: 'user',
+        reportable_id: workerUserId,
+        reportable_type: 'user',
+      });
       return;
     }
-    navigation.navigate('Report' as any, {
-      id: workerUserId,
-      type: 'user',
-      reportable_id: workerUserId,
-      reportable_type: 'user',
-    });
+
+    if (appId > 0) {
+      navigation.navigate('Report' as any, {
+        id: appId,
+        type: 'application',
+        reportable_id: appId,
+        reportable_type: 'application',
+      });
+      return;
+    }
+
+    showAlert('Error', 'Unable to report applicant at this time (missing worker information).');
   };
 
   const navigateToConfirmHire = () => {

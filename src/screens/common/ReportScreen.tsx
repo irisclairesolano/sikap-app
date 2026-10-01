@@ -30,8 +30,19 @@ export const ReportScreen: React.FC = () => {
   const navigation = useNavigation<ReportScreenNavigationProp>();
   const route = useRoute<ReportScreenRouteProp>();
   const rawParams = (route.params || {}) as any;
-  const id = Number(rawParams.reportable_id ?? rawParams.id) || 0;
-  const type = normalizeReportableType(rawParams.reportable_type ?? rawParams.type ?? 'user');
+  const id =
+    Number(
+      rawParams.reportable_id ??
+        rawParams.id ??
+        rawParams.userId ??
+        rawParams.jobId ??
+        rawParams.targetId ??
+        rawParams.applicantId ??
+        rawParams.applicationId,
+    ) || 0;
+  const type = normalizeReportableType(
+    rawParams.reportable_type ?? rawParams.type ?? (rawParams.jobId ? 'job_post' : 'user'),
+  );
 
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [description, setDescription] = useState('');
@@ -67,12 +78,21 @@ export const ReportScreen: React.FC = () => {
         description: description.trim() || selectedReason,
       },
       {
-        onSuccess: () => {
-          showAlert(
-            'Report Submitted',
-            'Thank you for keeping our community safe. We will review your report shortly.',
-            [{ text: 'OK', onPress: () => navigation.goBack() }],
-          );
+        onSuccess: (res: any) => {
+          let alertTitle = 'Report Submitted';
+          let alertMsg =
+            'Thank you for keeping our community safe. We will review your report shortly.';
+
+          if (res?.message === 'This is already resolved.') {
+            alertTitle = 'Notice';
+            alertMsg = 'This issue has already been reviewed or resolved by moderators.';
+          } else if (res?.message === 'You have already reported this item.') {
+            alertTitle = 'Report Received';
+            alertMsg =
+              'You have already submitted a report for this item. Our moderation team is actively reviewing it.';
+          }
+
+          showAlert(alertTitle, alertMsg, [{ text: 'OK', onPress: () => navigation.goBack() }]);
         },
         onError: (err: any) => {
           showAlert('Error', err.message || 'Failed to submit report.');
