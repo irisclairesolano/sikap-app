@@ -5,10 +5,10 @@ import {
   StyleSheet,
   Modal,
   Pressable,
-  Image,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Message } from '../../types';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -71,7 +71,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage }) 
               <Image
                 source={{ uri: (message.image_url || message.body) ?? undefined }}
                 style={styles.image}
-                resizeMode="cover"
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                transition={150}
               />
               {isPending && (
                 <View style={styles.imageLoadingOverlay}>
@@ -87,7 +89,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage }) 
                 <Image
                   source={{ uri: (message.image_url || message.body) ?? undefined }}
                   style={styles.fullImage}
-                  resizeMode="contain"
+                  contentFit="contain"
+                  cachePolicy="memory-disk"
+                  transition={150}
                 />
               </SafeAreaView>
             </Modal>

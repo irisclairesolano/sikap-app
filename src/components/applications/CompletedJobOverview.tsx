@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, shadows } from '../../theme';
 import { Avatar } from '../common/Avatar';
@@ -34,6 +35,15 @@ const formatScore = (score?: number | null): string => {
   return num.toFixed(1);
 };
 
+const isDatePast = (dateStr?: string | null): boolean => {
+  if (!dateStr) return false;
+  try {
+    return new Date(dateStr).getTime() <= new Date().getTime();
+  } catch {
+    return false;
+  }
+};
+
 export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
   viewerRole,
   application,
@@ -54,14 +64,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
   );
   const userReview = application?.user_review;
 
-  const isRatingWindowClosed = (() => {
-    if (!job?.rating_window_expires_at) return false;
-    try {
-      return new Date(job.rating_window_expires_at).getTime() <= Date.now();
-    } catch {
-      return false;
-    }
-  })();
+  const isRatingWindowClosed = isDatePast(job?.rating_window_expires_at);
 
   const categories = job?.categories || (job?.category ? [job.category] : []);
   const locationText = job?.barangay
@@ -357,7 +360,14 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
             <Text style={styles.descLabel}>Photos ({photos.length})</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
               {photos.map((uri, idx) => (
-                <Image key={idx} source={{ uri }} style={styles.photoThumb} />
+                <Image
+                  key={idx}
+                  source={{ uri }}
+                  style={styles.photoThumb}
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
+                  transition={150}
+                />
               ))}
             </ScrollView>
           </View>
