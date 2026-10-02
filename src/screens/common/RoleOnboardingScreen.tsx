@@ -30,10 +30,16 @@ export const RoleOnboardingScreen: React.FC = () => {
   const { onboardRole, isOnboardingRole, user, switchRole } = useAuth();
   const { showAlert } = useAlert();
 
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isSkipping, setIsSkipping] = useState(false);
+
   const handleCancel = async () => {
+    const isTargetWorker = targetRole === 'worker';
+    const previousRole = isTargetWorker ? 'Employer' : 'Worker';
+
     showAlert(
       'Cancel Setup?',
-      `Are you sure you want to cancel setup? This will switch your role back to ${user?.role === 'worker' ? 'Employer' : 'Worker'} Mode.`,
+      `Are you sure you want to cancel setup? This will switch your role back to ${previousRole} Mode.`,
       [
         { text: 'No', style: 'cancel' },
         {
@@ -41,9 +47,13 @@ export const RoleOnboardingScreen: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             try {
+              setIsCancelling(true);
               await switchRole();
-            } catch (e) {
-              showAlert('Error', 'Failed to switch roles.');
+              notifyAuthChanged();
+            } catch (e: any) {
+              showAlert('Error', e?.message || 'Failed to switch roles.');
+            } finally {
+              setIsCancelling(false);
             }
           },
         },
@@ -51,17 +61,20 @@ export const RoleOnboardingScreen: React.FC = () => {
     );
   };
 
-  const [isSkipping, setIsSkipping] = useState(false);
-
   const handleBackPress = () => {
     if (targetRole === 'employer') {
       showAlert(
-        'Skip Document Upload?',
-        'You can upload your business documents later in Settings. Would you like to skip this step for now?',
+        'Cancel Employer Setup?',
+        'Would you like to switch back to Worker Mode, or skip document upload and continue as an Employer?',
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: 'Stay Here', style: 'cancel' },
           {
-            text: 'Skip & Continue',
+            text: 'Switch to Worker',
+            style: 'destructive',
+            onPress: handleCancel,
+          },
+          {
+            text: 'Skip & Continue as Employer',
             onPress: async () => {
               try {
                 setIsSkipping(true);
@@ -131,9 +144,7 @@ export const RoleOnboardingScreen: React.FC = () => {
         }
       },
       onError: (err: any) => {
-        setCustomSkillsList((prev) => prev.filter((s) => s.id !== tempId));
-        setSelectedSkills((prev) => prev.filter((id) => id !== tempId));
-        setCustomSkillError(err.message || 'Failed to add custom skill');
+        // Keep in list as a client-side custom skill that will be submitted on Complete Setup
       },
     });
   };
@@ -191,11 +202,23 @@ export const RoleOnboardingScreen: React.FC = () => {
   const handleComplete = async () => {
     try {
       if (targetRole === 'worker') {
-        if (selectedSkills.length === 0) {
+        const validSkillIds = selectedSkills.filter((id) => id > 0);
+        const customNames = customSkillsList
+          .filter((s) => selectedSkills.includes(s.id))
+          .map((s) => s.name);
+
+        if (validSkillIds.length === 0 && customNames.length === 0) {
           showAlert('Required', 'Please select at least one skill.');
           return;
         }
-        await onboardRole({ targetRole, data: { skill_ids: selectedSkills } });
+
+        await onboardRole({
+          targetRole,
+          data: {
+            skill_ids: validSkillIds,
+            custom_skills: customNames,
+          },
+        });
       } else {
         // employer
         if (selectedBusinessDocs.length > 0) {
@@ -221,7 +244,7 @@ export const RoleOnboardingScreen: React.FC = () => {
 
       notifyAuthChanged();
     } catch (error: any) {
-      showAlert('Error', error.message || 'Failed to complete onboarding');
+      showAlert('Error', error?.message || 'Failed to complete onboarding');
     }
   };
 
@@ -342,17 +365,19 @@ export const RoleOnboardingScreen: React.FC = () => {
         )}
       </View>
 
-      {(isOnboardingRole || isSkipping) && (
+      {(isOnboardingRole || isSkipping || isCancelling) && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>
-            {isSkipping
-              ? 'Completing setup...'
-              : targetRole === 'employer'
-                ? selectedBusinessDocs.length > 0
-                  ? 'Uploading documents & completing setup...'
-                  : 'Completing setup...'
-                : 'Saving your skills & completing setup...'}
+            {isCancelling
+              ? 'Switching back to your previous mode...'
+              : isSkipping
+                ? 'Completing setup...'
+                : targetRole === 'employer'
+                  ? selectedBusinessDocs.length > 0
+                    ? 'Uploading documents & completing setup...'
+                    : 'Completing setup...'
+                  : 'Saving your skills & completing setup...'}
           </Text>
         </View>
       )}

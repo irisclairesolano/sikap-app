@@ -226,22 +226,25 @@ const RootNavigator: React.FC = () => {
   }
 
   // 4. ID Upload gating for Workers (Workers must upload government ID before working)
-  if (user.role === 'worker' && !isVerified) {
-    let gateStart: keyof AuthStackParamList = 'PendingVerify';
-    let params: any = undefined;
-
-    if (status === 'pending_id_upload' || (!status && !user.document_url)) {
-      gateStart = 'IDUpload';
-      params = { userId: user.id, role: user.role };
-    } else if (!status && user.document_url) {
-      gateStart = 'PendingVerify';
-    }
-
+  if (
+    user.role === 'worker' &&
+    !isVerified &&
+    (status === 'pending_id_upload' || (!status && !user.document_url))
+  ) {
     return (
       <AuthNavigator
         key={`pending-${user.id}-${status}`}
-        initialRouteName={gateStart}
-        initialParams={params}
+        initialRouteName="IDUpload"
+        initialParams={{ userId: user.id, role: user.role }}
+      />
+    );
+  }
+  if (user.role === 'worker' && !isVerified && !status && user.document_url) {
+    return (
+      <AuthNavigator
+        key={`pending-${user.id}-${status}`}
+        initialRouteName="PendingVerify"
+        initialParams={undefined}
       />
     );
   }
