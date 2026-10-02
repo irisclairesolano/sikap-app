@@ -246,11 +246,15 @@ const RootNavigator: React.FC = () => {
     );
   }
 
+  const workerSkills = user.worker_profile?.skills || (user as any).workerProfile?.skills || [];
+  const hasEmployerProf =
+    user.has_employer_profile || !!user.employer_profile || !!(user as any).employerProfile;
+  const hasWorkerProf =
+    (user.has_worker_profile || !!user.worker_profile || !!(user as any).workerProfile) &&
+    workerSkills.length > 0;
+
   const needsOnboarding =
-    (user.role === 'worker' &&
-      !user.has_worker_profile &&
-      (!user.worker_profile || (user.worker_profile.skills || []).length === 0)) ||
-    (user.role === 'employer' && !user.has_employer_profile && !user.employer_profile);
+    (user.role === 'worker' && !hasWorkerProf) || (user.role === 'employer' && !hasEmployerProf);
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>

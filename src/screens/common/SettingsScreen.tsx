@@ -23,6 +23,284 @@ import { notifyAuthChanged } from '../../store/authEvents';
 import { useAuth } from '../../hooks/useAuth';
 import { authApi } from '../../api/auth';
 
+// ─── Static content modal ────────────────────────────────────────────────────
+
+type ContentSection = { heading?: string; body: string };
+
+const ContentModal = ({
+  visible,
+  onClose,
+  icon,
+  iconColor,
+  iconBg,
+  title,
+  sections,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  icon: string;
+  iconColor: string;
+  iconBg: string;
+  title: string;
+  sections: ContentSection[];
+}) => (
+  <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <View style={cStyles.overlay}>
+      <View style={cStyles.sheet}>
+        {/* Drag handle */}
+        <View style={cStyles.handle} />
+
+        {/* Header */}
+        <View style={cStyles.sheetHeader}>
+          <View style={[cStyles.iconCircle, { backgroundColor: iconBg }]}>
+            <Ionicons name={icon as any} size={22} color={iconColor} />
+          </View>
+          <Text style={cStyles.sheetTitle}>{title}</Text>
+          <TouchableOpacity onPress={onClose} style={cStyles.closeBtn} activeOpacity={0.7}>
+            <Ionicons name="close" size={22} color={colors.inkSoft} />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={cStyles.body}>
+          {sections.map((s, i) => (
+            <View key={i} style={{ marginBottom: 18 }}>
+              {s.heading ? <Text style={cStyles.heading}>{s.heading}</Text> : null}
+              <Text style={cStyles.bodyText}>{s.body}</Text>
+            </View>
+          ))}
+        </ScrollView>
+
+        <TouchableOpacity style={cStyles.closeFullBtn} onPress={onClose} activeOpacity={0.8}>
+          <Text style={cStyles.closeFullBtnText}>Close</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </Modal>
+);
+
+const cStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: colors.paperBright,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 12,
+    paddingBottom: 32,
+    paddingHorizontal: 20,
+    maxHeight: '88%',
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.inkFaint,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 12,
+  },
+  iconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetTitle: {
+    flex: 1,
+    fontFamily: fonts.display,
+    fontSize: 18,
+    color: colors.ink,
+  },
+  closeBtn: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  body: { paddingBottom: 8 },
+  heading: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.ink,
+    marginBottom: 6,
+  },
+  bodyText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkSoft,
+    lineHeight: 20,
+  },
+  closeFullBtn: {
+    marginTop: 16,
+    backgroundColor: colors.primary,
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  closeFullBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: '#fff',
+    letterSpacing: 0.3,
+  },
+});
+
+// ─── Content data ─────────────────────────────────────────────────────────────
+
+const HELP_SECTIONS: ContentSection[] = [
+  {
+    heading: '👋 Welcome to SIKAP Help Center',
+    body: 'SIKAP connects local workers with employers in Marinduque. This guide covers the most common questions about using the app.',
+  },
+  {
+    heading: 'Getting Started',
+    body: 'After signing up, complete your profile by adding your skills, work history, and character references. A complete profile increases your chances of getting hired.\n\nEmployers can post job listings and review applicants directly from the app.',
+  },
+  {
+    heading: 'Applying for Jobs',
+    body: 'Browse available job listings in the Find tab. Tap any listing to view details and tap "Apply" to submit a cover note. You can track your applications in the Mine tab.',
+  },
+  {
+    heading: 'Hiring Process',
+    body: 'The SIKAP hiring process has four stages:\n\n1. Application Submitted — You applied.\n2. Shortlisted — The employer reviewed your application.\n3. Negotiation — Terms and compensation are discussed.\n4. Hired — The employer confirms and the job begins.',
+  },
+  {
+    heading: 'Messaging',
+    body: 'Once shortlisted, you can message the employer through the Messages tab. Conversations are only available between matched applicants and employers for privacy.',
+  },
+  {
+    heading: 'Ratings & Reviews',
+    body: 'After a job is completed, both workers and employers may leave ratings and reviews. These affect your reputation score visible on your profile.',
+  },
+  {
+    heading: 'ID Verification',
+    body: 'For security, workers must submit a valid government-issued ID (front and back) and a selfie. Verification is reviewed by our admin team within 1–3 business days.',
+  },
+  {
+    heading: 'Account Issues',
+    body: "If you're having trouble logging in, try resetting your password via the login screen. If your account is suspended or flagged, please contact SIKAP support at support@sikap.ph.",
+  },
+  {
+    heading: 'Reporting & Safety',
+    body: 'You can report suspicious users, job posts, or behavior using the Report button available on profiles and listings. Our team reviews every report.',
+  },
+  {
+    heading: 'Contact Support',
+    body: 'For additional help, email us at support@sikap.ph or reach out via our official Facebook page. We aim to respond within 24 hours on business days.',
+  },
+];
+
+const TERMS_SECTIONS: ContentSection[] = [
+  {
+    heading: 'Terms of Service',
+    body: 'Last updated: October 1, 2026\n\nBy using SIKAP, you agree to be bound by these Terms of Service. Please read them carefully.',
+  },
+  {
+    heading: '1. Acceptance of Terms',
+    body: 'By accessing or using the SIKAP platform, you confirm that you are at least 18 years old and agree to comply with these Terms. If you do not agree, do not use this application.',
+  },
+  {
+    heading: '2. Description of Service',
+    body: 'SIKAP is a platform that connects local workers and employers in the Municipality of Boac, Marinduque. We facilitate job discovery, applications, and communications between users.',
+  },
+  {
+    heading: '3. User Accounts',
+    body: 'You are responsible for maintaining the confidentiality of your account credentials. You agree to provide accurate, truthful information during registration and to keep your profile updated.\n\nSIKAP reserves the right to suspend or terminate accounts that violate these Terms.',
+  },
+  {
+    heading: '4. User Conduct',
+    body: 'You agree not to:\n• Post false or misleading job listings or profiles\n• Harass, threaten, or discriminate against other users\n• Use the platform for illegal activities\n• Circumvent security or authentication measures\n• Upload harmful or offensive content\n\nViolations may result in immediate account suspension.',
+  },
+  {
+    heading: '5. Job Listings and Applications',
+    body: 'Employers are responsible for the accuracy of their job listings. Workers are responsible for the accuracy of their applications. SIKAP does not guarantee employment outcomes and is not a party to any employment agreement between users.',
+  },
+  {
+    heading: '6. ID Verification',
+    body: 'Users may be required to submit identity documents for verification purposes. Submitted documents are reviewed by SIKAP administrators solely for identity verification and are handled in accordance with our Privacy Policy.',
+  },
+  {
+    heading: '7. Payments and Compensation',
+    body: 'SIKAP does not process payments between workers and employers. All financial agreements are made directly between users. SIKAP bears no responsibility for payment disputes.',
+  },
+  {
+    heading: '8. Content Ownership',
+    body: 'You retain ownership of content you post on SIKAP. By posting, you grant SIKAP a non-exclusive, royalty-free license to display and distribute that content within the platform.',
+  },
+  {
+    heading: '9. Limitation of Liability',
+    body: 'SIKAP is provided "as is." We are not liable for any indirect, incidental, or consequential damages arising from your use of the platform, including disputes between users.',
+  },
+  {
+    heading: '10. Changes to Terms',
+    body: 'We may update these Terms from time to time. Continued use of SIKAP after changes constitutes your acceptance of the updated Terms. We will notify users of significant changes through the app.',
+  },
+  {
+    heading: '11. Governing Law',
+    body: 'These Terms are governed by the laws of the Republic of the Philippines. Any disputes shall be subject to the jurisdiction of the appropriate courts in Marinduque.',
+  },
+  {
+    heading: '12. Contact',
+    body: 'For questions about these Terms, contact us at legal@sikap.ph.',
+  },
+];
+
+const PRIVACY_SECTIONS: ContentSection[] = [
+  {
+    heading: 'Privacy Policy',
+    body: 'Last updated: October 1, 2026\n\nSIKAP is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and protect your data.',
+  },
+  {
+    heading: '1. Information We Collect',
+    body: 'We collect:\n• Account information: name, email, phone number, date of birth, barangay, municipality\n• Profile data: skills, work history, character references, bio, profile photo\n• Identity documents: government-issued ID (front and back) and selfie for verification\n• Device information: push notification tokens\n• Usage data: screens visited, actions taken within the app',
+  },
+  {
+    heading: '2. How We Use Your Information',
+    body: 'We use your information to:\n• Create and manage your account\n• Verify your identity and prevent fraud\n• Match workers with relevant job opportunities\n• Enable communication between workers and employers\n• Send notifications about job updates and applications\n• Improve the SIKAP platform\n• Respond to support requests',
+  },
+  {
+    heading: '3. Information Sharing',
+    body: 'We share your information only:\n• With employers or workers as necessary for job applications (e.g., your name, skills, and photo)\n• With administrators for identity verification\n• When required by Philippine law or legal process\n\nWe do not sell your personal information to third parties.',
+  },
+  {
+    heading: '4. Identity Documents',
+    body: 'Government-issued IDs and selfies submitted for verification are stored securely and accessed only by SIKAP administrators for identity verification purposes. These documents are not shared with employers or other users.',
+  },
+  {
+    heading: '5. Data Retention',
+    body: 'We retain your personal information for as long as your account is active. Upon account deletion, your data is removed from our active systems within 30 days, except where retention is required by law.',
+  },
+  {
+    heading: '6. Data Security',
+    body: 'We implement industry-standard security measures to protect your information, including encrypted storage and secure HTTPS communication. However, no system is completely secure, and we cannot guarantee absolute security.',
+  },
+  {
+    heading: '7. Your Rights',
+    body: 'Under the Philippine Data Privacy Act of 2012 (Republic Act No. 10173), you have the right to:\n• Access your personal data\n• Correct inaccurate data\n• Request deletion of your data\n• Withdraw consent at any time\n\nTo exercise these rights, contact us at privacy@sikap.ph.',
+  },
+  {
+    heading: "8. Children's Privacy",
+    body: 'SIKAP is not intended for users under 18 years of age. We do not knowingly collect personal information from minors. If you believe a minor has registered, please contact us immediately.',
+  },
+  {
+    heading: '9. Changes to This Policy',
+    body: 'We may update this Privacy Policy from time to time. We will notify users of significant changes via the app. Continued use of SIKAP after changes constitutes acceptance of the updated policy.',
+  },
+  {
+    heading: '10. Contact Us',
+    body: 'For privacy concerns or data requests, contact our Data Protection Officer at privacy@sikap.ph or through our official support channels.',
+  },
+];
+
 const DELETE_REASONS = [
   'Found work / hired someone elsewhere',
   'Not using the app anymore',
@@ -86,6 +364,9 @@ export const SettingsScreen: React.FC = () => {
   const [selectedReason, setSelectedReason] = useState<string>(DELETE_REASONS[0]);
   const [customReasonDetails, setCustomReasonDetails] = useState('');
   const [deleteWarning, setDeleteWarning] = useState<string | null>(null);
+  const [showHelp, setShowHelp] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const { user, userRole, switchRole } = useAuth();
 
@@ -168,17 +449,9 @@ export const SettingsScreen: React.FC = () => {
         text: 'Continue',
         onPress: async () => {
           try {
-            const response = await switchRole();
-            if (response?.user) {
-              await SecureStore.setItemAsync('user_profile', JSON.stringify(response.user));
-            }
-            if (response?.needs_onboarding) {
-              navigation.navigate('RoleOnboarding', { targetRole: response.new_role });
-            } else {
-              notifyAuthChanged();
-            }
-          } catch (e) {
-            showAlert('Error', 'Failed to switch roles.');
+            await switchRole();
+          } catch (e: any) {
+            showAlert('Error', e?.message || 'Failed to switch roles.');
           }
         },
       },
@@ -246,11 +519,23 @@ export const SettingsScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Support</Text>
           <View style={styles.sectionCard}>
-            <SettingRow icon="help-circle-outline" title="Help Center" />
+            <SettingRow
+              icon="help-circle-outline"
+              title="Help Center"
+              onPress={() => setShowHelp(true)}
+            />
             <View style={styles.divider} />
-            <SettingRow icon="document-text-outline" title="Terms of Service" />
+            <SettingRow
+              icon="document-text-outline"
+              title="Terms of Service"
+              onPress={() => setShowTerms(true)}
+            />
             <View style={styles.divider} />
-            <SettingRow icon="lock-closed-outline" title="Privacy Policy" />
+            <SettingRow
+              icon="lock-closed-outline"
+              title="Privacy Policy"
+              onPress={() => setShowPrivacy(true)}
+            />
           </View>
         </View>
 
@@ -269,6 +554,39 @@ export const SettingsScreen: React.FC = () => {
 
         <Text style={styles.versionText}>SIKAP v1.0.0</Text>
       </ScrollView>
+
+      {/* Help Center Modal */}
+      <ContentModal
+        visible={showHelp}
+        onClose={() => setShowHelp(false)}
+        icon="help-circle-outline"
+        iconColor={colors.primary}
+        iconBg={colors.peach}
+        title="Help Center"
+        sections={HELP_SECTIONS}
+      />
+
+      {/* Terms of Service Modal */}
+      <ContentModal
+        visible={showTerms}
+        onClose={() => setShowTerms(false)}
+        icon="document-text-outline"
+        iconColor="#6366F1"
+        iconBg="#EEF2FF"
+        title="Terms of Service"
+        sections={TERMS_SECTIONS}
+      />
+
+      {/* Privacy Policy Modal */}
+      <ContentModal
+        visible={showPrivacy}
+        onClose={() => setShowPrivacy(false)}
+        icon="lock-closed-outline"
+        iconColor={colors.mintDeep}
+        iconBg={colors.mint}
+        title="Privacy Policy"
+        sections={PRIVACY_SECTIONS}
+      />
 
       {/* Delete Account Reason Modal */}
       <Modal
