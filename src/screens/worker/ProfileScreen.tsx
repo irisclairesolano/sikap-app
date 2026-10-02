@@ -11,6 +11,7 @@ import { colors, fonts, shadows } from '../../theme';
 import { profileApi } from '../../api/profile';
 import { useAuth } from '../../hooks/useAuth';
 import { useReviews } from '../../hooks/useReviews';
+import { Skill, WorkerExperience } from '../../types';
 type ProfileScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'ProfileMain'>;
 
 export const ProfileScreen: React.FC = () => {
@@ -48,6 +49,8 @@ export const ProfileScreen: React.FC = () => {
     );
   }
 
+  const workerProfile = (user as any)?.worker_profile ?? (user as any)?.workerProfile;
+
   const worker = {
     name: user.name,
     location: `${user.barangay}, ${user.municipality}`,
@@ -56,9 +59,9 @@ export const ProfileScreen: React.FC = () => {
     ratings: reviewsData?.reviews_count ?? (user as any).ratings_count ?? 0,
     jobsDone: (user as any).completed_jobs_count ?? 0,
     memberSince: (user as any).member_since || 'New',
-    skills: user.worker_profile?.skills || [],
-    bio: user.worker_profile?.bio || '',
-    experiences: user.worker_profile?.experiences || [],
+    skills: (workerProfile?.skills || []) as Skill[],
+    bio: (workerProfile?.bio || '') as string,
+    experiences: (workerProfile?.experiences || []) as WorkerExperience[],
     recentReview: (() => {
       const receivedReviews = (reviewsData?.reviews || []).filter(
         (r) =>
@@ -77,9 +80,13 @@ export const ProfileScreen: React.FC = () => {
     })(),
   };
 
-  const hasSkills = (user?.worker_profile?.skills?.length || 0) > 0;
-  const hasHistory = (user?.worker_profile?.experiences?.length || 0) > 0;
-  const hasRefs = (user?.worker_profile?.references?.length || 0) > 0;
+  const hasSkills =
+    (workerProfile?.skills?.length || 0) > 0 ||
+    ((workerProfile as any)?.custom_skills?.length || 0) > 0;
+  const hasHistory = (workerProfile?.experiences?.length || 0) > 0;
+  const hasRefs =
+    (workerProfile?.references?.length || 0) > 0 ||
+    ((workerProfile as any)?.character_references?.length || 0) > 0;
   const isProfileComplete = hasSkills && hasHistory && hasRefs;
 
   const handleRefresh = async () => {
@@ -137,7 +144,7 @@ export const ProfileScreen: React.FC = () => {
           <TouchableOpacity
             style={styles.setupBanner}
             activeOpacity={0.8}
-            onPress={() => (navigation as any).navigate('Find')}
+            onPress={() => (navigation as any).navigate('Find', { screen: 'HomeEmpty' })}
           >
             <View style={styles.setupBannerIcon}>
               <Ionicons name="alert-circle" size={24} color={colors.primaryDark} />

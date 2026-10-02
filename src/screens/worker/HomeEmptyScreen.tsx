@@ -24,11 +24,20 @@ export const HomeEmptyScreen: React.FC = () => {
 
   const getInitial = (name?: string) => (name ? name.charAt(0).toUpperCase() : 'M');
 
-  // Calculate progress
-  const workerProfile = profile?.worker_profile ?? (profile as any)?.workerProfile;
-  const hasSkills = (workerProfile?.skills?.length || 0) > 0;
+  const workerProfile =
+    profile?.worker_profile ??
+    (profile as any)?.workerProfile ??
+    user?.worker_profile ??
+    (user as any)?.workerProfile;
+
+  const hasSkills =
+    (workerProfile?.skills?.length || 0) > 0 ||
+    ((workerProfile as any)?.custom_skills?.length || 0) > 0;
   const hasHistory = (workerProfile?.experiences?.length || 0) > 0;
-  const hasRefs = (workerProfile?.references?.length || 0) > 0;
+  const hasRefs =
+    (workerProfile?.references?.length || 0) > 0 ||
+    ((workerProfile as any)?.character_references?.length || 0) > 0;
+  const isComplete = hasSkills && hasHistory && hasRefs;
 
   let progressCount = 1; // Account verified
   if (hasSkills) progressCount++;
@@ -38,10 +47,14 @@ export const HomeEmptyScreen: React.FC = () => {
   const progressPercent = Math.round((progressCount / 4) * 100);
 
   React.useEffect(() => {
-    if (isFocused && hasSkills && hasHistory && hasRefs) {
+    if (isFocused && isComplete) {
       navigation.replace('Home');
     }
-  }, [hasSkills, hasHistory, hasRefs, isFocused, navigation]);
+  }, [isComplete, isFocused, navigation]);
+
+  if (isComplete) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -202,7 +215,7 @@ export const HomeEmptyScreen: React.FC = () => {
         {/* Temporary jump to JobFeed */}
         <TouchableOpacity
           style={{ marginTop: 24, alignSelf: 'center' }}
-          onPress={() => navigation.navigate('Home')}
+          onPress={() => navigation.replace('Home')}
         >
           <Text style={{ fontFamily: fonts.bodyBold, color: colors.primary }}>Skip to Jobs</Text>
         </TouchableOpacity>

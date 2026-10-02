@@ -4,9 +4,10 @@ import { colors, fonts } from '../theme';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { profileApi } from '../api/profile';
 import { useNotifications } from '../hooks/useNotifications';
+import { useAuth } from '../hooks/useAuth';
 
 import { JobFeedScreen } from '../screens/worker/JobFeedScreen';
 import { JobDetailsScreen } from '../screens/worker/JobDetailsScreen';
@@ -114,12 +115,30 @@ const MessagesStack: React.FC = () => (
 
 // Home Stack
 const FindStack: React.FC = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: profileApi.getProfile,
+    initialData: () => queryClient.getQueryData(['profile']) ?? user,
   });
 
-  if (isLoading) {
+  const workerProfile =
+    profile?.worker_profile ??
+    (profile as any)?.workerProfile ??
+    user?.worker_profile ??
+    (user as any)?.workerProfile;
+
+  const hasSkills =
+    (workerProfile?.skills?.length || 0) > 0 ||
+    ((workerProfile as any)?.custom_skills?.length || 0) > 0;
+  const hasHistory = (workerProfile?.experiences?.length || 0) > 0;
+  const hasRefs =
+    (workerProfile?.references?.length || 0) > 0 ||
+    ((workerProfile as any)?.character_references?.length || 0) > 0;
+  const isProfileComplete = hasSkills && hasHistory && hasRefs;
+
+  if (isLoading && !profile && !user) {
     return (
       <View
         style={{
@@ -145,18 +164,22 @@ const FindStack: React.FC = () => {
     );
   }
 
-  const hasSkills = (profile?.worker_profile?.skills?.length || 0) > 0;
-  const hasHistory = (profile?.worker_profile?.experiences?.length || 0) > 0;
-  const hasRefs = (profile?.worker_profile?.references?.length || 0) > 0;
-  const isProfileComplete = hasSkills && hasHistory && hasRefs;
-
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
       initialRouteName={isProfileComplete ? 'Home' : 'HomeEmpty'}
     >
-      <Stack.Screen name="HomeEmpty" component={HomeEmptyScreen} />
-      <Stack.Screen name="Home" component={JobFeedScreen} />
+      {isProfileComplete ? (
+        <>
+          <Stack.Screen name="Home" component={JobFeedScreen} />
+          <Stack.Screen name="HomeEmpty" component={HomeEmptyScreen} />
+        </>
+      ) : (
+        <>
+          <Stack.Screen name="HomeEmpty" component={HomeEmptyScreen} />
+          <Stack.Screen name="Home" component={JobFeedScreen} />
+        </>
+      )}
       <Stack.Screen name="AddSkills" component={AddSkillsScreen} />
       <Stack.Screen name="AddWorkHistory" component={AddWorkHistoryScreen} />
       <Stack.Screen name="AddCharacterReferences" component={AddCharacterReferencesScreen} />
@@ -283,7 +306,7 @@ const WorkerNavigator: React.FC = () => {
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             (navigation as any).navigate('Find', {
-              screen: isProfileComplete ? 'Home' : 'HomeEmpty',
+              screen: 'Home',
             });
           },
         })}
