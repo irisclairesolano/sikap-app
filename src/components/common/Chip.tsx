@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { colors, fonts } from '../../theme';
+import { triggerHaptic } from '../../utils/haptics';
 
 interface ChipProps {
   label: string;
@@ -10,10 +11,15 @@ interface ChipProps {
 }
 
 export const Chip: React.FC<ChipProps> = ({ label, active, onPress, count }) => {
+  const handlePress = () => {
+    triggerHaptic('light');
+    onPress?.();
+  };
+
   return (
     <TouchableOpacity
       style={[styles.chip, active && styles.chipActive]}
-      onPress={onPress}
+      onPress={handlePress}
       activeOpacity={0.8}
     >
       <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>

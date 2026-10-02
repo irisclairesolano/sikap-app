@@ -5,6 +5,7 @@
     "version": "1.0.0",
     "scheme": "sikap",
     "sdkVersion": "57.0.0",
+    "jsEngine": "hermes",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts } from '../../theme';
+import { triggerHaptic } from '../../utils/haptics';
 
 interface StarRatingInputProps {
   label?: string;
@@ -16,6 +17,11 @@ export const StarRatingInput: React.FC<StarRatingInputProps> = ({
   onChange,
   size = 32,
 }) => {
+  const handleSelect = (star: number) => {
+    triggerHaptic('light');
+    onChange(star);
+  };
+
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -23,7 +29,7 @@ export const StarRatingInput: React.FC<StarRatingInputProps> = ({
         {[1, 2, 3, 4, 5].map((star) => (
           <TouchableOpacity
             key={star}
-            onPress={() => onChange(star)}
+            onPress={() => handleSelect(star)}
             activeOpacity={0.7}
             style={styles.starBtn}
           >

@@ -19,6 +19,7 @@ import { useAlert } from '../../contexts/AlertContext';
 import { useConfirmHire } from '../../hooks/useJobApplications';
 import { useMarkJobComplete } from '../../hooks/useJobs';
 import { useAcceptOffer, useRejectOffer, useFlagOffline } from '../../hooks/useApply';
+import { triggerHaptic } from '../../utils/haptics';
 
 interface ActionCardProps {
   message: Message;
@@ -80,12 +81,15 @@ const ActionCard: React.FC<ActionCardProps> = ({
     invalidateKeys?: unknown[][],
   ) => {
     if (isBlocked) {
+      triggerHaptic('error');
       showAlert('Action Unavailable', 'Cannot perform actions while this conversation is blocked.');
       return;
     }
+    triggerHaptic('medium');
     setLoadingAction(actionId);
     try {
       await apiCall();
+      triggerHaptic('success');
       if (invalidateKeys) {
         for (const key of invalidateKeys) {
           queryClient.invalidateQueries({ queryKey: key });
@@ -93,6 +97,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
       }
       onActionComplete();
     } catch (error: any) {
+      triggerHaptic('error');
       showAlert('Action Failed', error.message || 'Unable to complete request.');
     } finally {
       setLoadingAction(null);

@@ -44,6 +44,15 @@ export const JobFeedScreen: React.FC = () => {
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
+
+  // Debounce search input to avoid spamming the backend API
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput.trim());
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   const { user } = useAuthCheck();
   const workerProfile = user?.worker_profile;
   const userSkills: string[] = useMemo(() => {
@@ -133,112 +142,126 @@ export const JobFeedScreen: React.FC = () => {
     return name ? name.charAt(0).toUpperCase() : 'M';
   };
 
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <View style={styles.appBar}>
-        <View style={styles.appBarLeft}>
-          {user?.avatar_url ? (
-            <Image
-              cachePolicy="memory-disk"
-              priority="high"
-              transition={150}
-              source={{
-                uri: user.avatar_url.startsWith('http')
-                  ? user.avatar_url
-                  : `${process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '')}${user.avatar_url}`,
-              }}
-              style={styles.avatarImage}
-            />
-          ) : (
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{getInitial(user?.name || 'Worker')}</Text>
+  const headerComponent = useMemo(
+    () => (
+      <View style={styles.header}>
+        <View style={styles.appBar}>
+          <View style={styles.appBarLeft}>
+            {user?.avatar_url ? (
+              <Image
+                cachePolicy="memory-disk"
+                priority="high"
+                transition={150}
+                source={{
+                  uri: user.avatar_url.startsWith('http')
+                    ? user.avatar_url
+                    : `${process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '')}${user.avatar_url}`,
+                }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{getInitial(user?.name || 'Worker')}</Text>
+              </View>
+            )}
+            <View>
+              <Text style={styles.greetingSmall}>Hi,</Text>
+              <Text style={styles.greetingName}>
+                {user?.name ? user.name.split(' ')[0] : 'Worker'}
+              </Text>
             </View>
-          )}
-          <View>
-            <Text style={styles.greetingSmall}>Hi,</Text>
-            <Text style={styles.greetingName}>
-              {user?.name ? user.name.split(' ')[0] : 'Worker'}
-            </Text>
+          </View>
+          <View style={styles.appBarRight}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => (navigation as any).navigate('SavedJobs')}
+            >
+              <Ionicons name="bookmark-outline" size={24} color={colors.ink} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => (navigation as any).navigate('Notifications')}
+            >
+              <Ionicons name="notifications-outline" size={24} color={colors.ink} />
+            </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.appBarRight}>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => (navigation as any).navigate('SavedJobs')}
-          >
-            <Ionicons name="bookmark-outline" size={24} color={colors.ink} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => (navigation as any).navigate('Notifications')}
-          >
-            <Ionicons name="notifications-outline" size={24} color={colors.ink} />
-          </TouchableOpacity>
-        </View>
-      </View>
 
-      <View style={styles.searchRow}>
-        <View style={styles.searchContainer}>
-          {isLoading ? (
-            <ActivityIndicator
-              size="small"
-              color={colors.primary}
-              style={[styles.searchIcon, { marginRight: 8 }]}
+        <View style={styles.searchRow}>
+          <View style={styles.searchContainer}>
+            {isLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={colors.primary}
+                style={[styles.searchIcon, { marginRight: 8 }]}
+              />
+            ) : (
+              <Ionicons name="search" size={20} color={colors.inkMuted} style={styles.searchIcon} />
+            )}
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search jobs..."
+              placeholderTextColor={colors.inkMuted}
+              value={searchInput}
+              onChangeText={setSearchInput}
+              onSubmitEditing={() => setSearchQuery(searchInput)}
+              returnKeyType="search"
             />
-          ) : (
-            <Ionicons name="search" size={20} color={colors.inkMuted} style={styles.searchIcon} />
-          )}
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search jobs..."
-            placeholderTextColor={colors.inkMuted}
-            value={searchInput}
-            onChangeText={setSearchInput}
-            onSubmitEditing={() => setSearchQuery(searchInput)}
-            returnKeyType="search"
-          />
-          {searchInput.length > 0 && (
-            <TouchableOpacity
-              onPress={() => {
-                setSearchInput('');
-                setSearchQuery('');
-              }}
-            >
-              <Ionicons name="close-circle" size={18} color={colors.inkMuted} />
-            </TouchableOpacity>
-          )}
+            {searchInput.length > 0 && (
+              <TouchableOpacity
+                onPress={() => {
+                  setSearchInput('');
+                  setSearchQuery('');
+                }}
+              >
+                <Ionicons name="close-circle" size={18} color={colors.inkMuted} />
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModalVisible(true)}>
+            <Ionicons name="options-outline" size={24} color={colors.ink} />
+            {locationFilter !== 'Anywhere' && <View style={styles.filterActiveDot} />}
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModalVisible(true)}>
-          <Ionicons name="options-outline" size={24} color={colors.ink} />
-          {locationFilter !== 'Anywhere' && <View style={styles.filterActiveDot} />}
-        </TouchableOpacity>
-      </View>
 
-      <Text style={styles.headline}>
-        <Text style={styles.count}>{jobsList.length}</Text> jobs{' '}
-        <Text style={styles.accent}>nearby.</Text>
-      </Text>
+        <Text style={styles.headline}>
+          <Text style={styles.count}>{jobsList.length}</Text> jobs{' '}
+          <Text style={styles.accent}>nearby.</Text>
+        </Text>
 
-      <View style={styles.filterContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterScroll}
-        >
-          {feedCategories.map((category) => (
-            <TouchableOpacity
-              key={category}
-              style={[styles.chip, activeCategory === category && styles.chipActive]}
-              onPress={() => setActiveCategory(category)}
-            >
-              <Text style={[styles.chipText, activeCategory === category && styles.chipTextActive]}>
-                {category}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <View style={styles.filterContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterScroll}
+          >
+            {feedCategories.map((category) => (
+              <TouchableOpacity
+                key={category}
+                style={[styles.chip, activeCategory === category && styles.chipActive]}
+                onPress={() => setActiveCategory(category)}
+              >
+                <Text
+                  style={[styles.chipText, activeCategory === category && styles.chipTextActive]}
+                >
+                  {category}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
       </View>
-    </View>
+    ),
+    [
+      user,
+      isLoading,
+      searchInput,
+      locationFilter,
+      jobsList.length,
+      feedCategories,
+      activeCategory,
+      navigation,
+    ],
   );
 
   return (
@@ -262,7 +285,7 @@ export const JobFeedScreen: React.FC = () => {
         maxToRenderPerBatch={10}
         windowSize={5}
         removeClippedSubviews={true}
-        ListHeaderComponent={renderHeader()}
+        ListHeaderComponent={headerComponent}
         ListEmptyComponent={
           isError ? (
             <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>

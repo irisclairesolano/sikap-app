@@ -31,6 +31,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { useAlert } from '../../contexts/AlertContext';
 import MessageBubble from '../../components/chat/MessageBubble';
 import ActionCard from '../../components/chat/ActionCard';
+import QuickReplyChips from '../../components/chat/QuickReplyChips';
+import { triggerHaptic } from '../../utils/haptics';
 import { colors, fonts } from '../../theme';
 
 const EMPLOYER_OUTREACH_CARD_TYPES = [
@@ -223,6 +225,7 @@ const ChatScreen: React.FC = () => {
   const handleSendText = () => {
     const textToSend = inputText.trim();
     if (!textToSend) return;
+    triggerHaptic('light');
     setInputError(null);
     setInputText('');
     setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
@@ -781,6 +784,14 @@ const ChatScreen: React.FC = () => {
           status === 'open' &&
           !isBlocked && (
             <>
+              <QuickReplyChips
+                userRole={conversationUserRole}
+                onSelectChip={(text) => {
+                  setInputText(text);
+                  if (inputError) setInputError(null);
+                }}
+                disabled={!isWorkerReplyAllowed}
+              />
               <View style={styles.inputContainer}>
                 <TouchableOpacity
                   onPress={handlePickImage}

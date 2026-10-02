@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AlertProvider } from './src/contexts/AlertContext';
+import { ToastProvider } from './src/contexts/ToastContext';
 import { useFonts } from 'expo-font';
 import * as Linking from 'expo-linking';
 import {
@@ -127,13 +128,15 @@ export default function App() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <AlertProvider>
-            <ErrorBoundary>
-              <NavigationContainer ref={navigationRef} linking={linking}>
-                <RootNavigator />
-              </NavigationContainer>
-              <OfflineNotice />
-            </ErrorBoundary>
-            <StatusBar style="auto" />
+            <ToastProvider>
+              <ErrorBoundary>
+                <NavigationContainer ref={navigationRef} linking={linking}>
+                  <RootNavigator />
+                </NavigationContainer>
+                <OfflineNotice />
+              </ErrorBoundary>
+              <StatusBar style="auto" />
+            </ToastProvider>
           </AlertProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
