@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Share } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts } from '../../theme';
 import { JobPost } from '../../types';
 import { useReactToJob } from '../../hooks/useReactToJob';
-import { getShareLink } from '../../api/jobs';
 import { ReportJobSheet } from './ReportJobSheet';
 import { triggerHaptic } from '../../utils/haptics';
 
@@ -109,30 +108,6 @@ export const JobCard = React.memo(function JobCard({
   const handleSave = () => {
     triggerHaptic('light');
     onSave?.();
-  };
-
-  const handleShare = async () => {
-    try {
-      const result = await getShareLink(job.id);
-      const payText = job.compensation ? ` (₱${Number(job.compensation).toLocaleString()})` : '';
-      const locationText = [job.barangay, job.municipality].filter(Boolean).join(', ');
-      const message = `Check out this job on SIKAP: ${job.title}${payText}${locationText ? ` in ${locationText}` : ''}!\n\nOpen in SIKAP App: sikap://jobs/${job.id}\nWeb Preview: ${result.share_link}`;
-
-      await Share.share({
-        title: job.title,
-        message,
-        url: result.share_link,
-      });
-    } catch {
-      // Share title only — never expose raw internal IDs
-      try {
-        await Share.share({
-          message: `Check out this job on SIKAP: ${job.title}`,
-        });
-      } catch (err) {
-        console.warn('Share error:', err);
-      }
-    }
   };
 
   return (
@@ -317,47 +292,37 @@ export const JobCard = React.memo(function JobCard({
       {/* Zone 3: Bottom Action Footer */}
       <View style={styles.actionBar}>
         <TouchableOpacity
-          style={styles.actionBtn}
+          style={[styles.actionPill, job.user_has_reacted && styles.actionPillActive]}
           onPress={handleReact}
           disabled={isReacting}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           accessibilityRole="button"
-          accessibilityLabel="Mark as interested"
+          accessibilityLabel="Like job"
         >
           <Ionicons
             name={job.user_has_reacted ? 'heart' : 'heart-outline'}
             size={16}
-            color={job.user_has_reacted ? '#E85D75' : '#8C7B6A'}
+            color={job.user_has_reacted ? '#E11D48' : '#64748B'}
           />
-          <Text style={[styles.actionText, job.user_has_reacted && styles.actionTextActive]}>
-            {job.reactions_count && job.reactions_count > 0 ? `${job.reactions_count} ` : ''}
-            Interested
-          </Text>
+          {job.reactions_count && job.reactions_count > 0 ? (
+            <Text
+              style={[styles.actionCountText, job.user_has_reacted && styles.actionCountTextActive]}
+            >
+              {job.reactions_count}
+            </Text>
+          ) : null}
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.actionBtn}
-          onPress={handleShare}
-          activeOpacity={0.7}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          accessibilityRole="button"
-          accessibilityLabel="Share job"
-        >
-          <Ionicons name="share-social-outline" size={16} color="#8C7B6A" />
-          <Text style={styles.actionText}>Share</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.actionBtn}
+          style={styles.iconActionBtn}
           onPress={() => setReportSheetVisible(true)}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           accessibilityRole="button"
           accessibilityLabel="Report job"
         >
-          <Ionicons name="flag-outline" size={16} color="#8C7B6A" />
-          <Text style={styles.actionText}>Report</Text>
+          <Ionicons name="flag-outline" size={14} color="#94A3B8" />
         </TouchableOpacity>
       </View>
 
@@ -623,26 +588,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 9,
+    paddingHorizontal: 15,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
   },
-  actionBtn: {
+  actionPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    flex: 1,
-    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
-  actionText: {
+  actionPillActive: {
+    backgroundColor: '#FFF1F2',
+    borderColor: '#FECDD3',
+  },
+  actionCountText: {
+    fontFamily: fonts.numericBold,
     fontSize: 12,
-    color: '#8C7B6A',
-    fontFamily: fonts.bodyMedium,
-    fontWeight: '500',
+    color: '#64748B',
   },
-  actionTextActive: {
-    color: '#E85D75',
-    fontWeight: '600',
+  actionCountTextActive: {
+    color: '#E11D48',
+  },
+  iconActionBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
