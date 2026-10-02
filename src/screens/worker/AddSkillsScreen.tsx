@@ -12,6 +12,7 @@ import Input from '../../components/common/Input';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { skillsApi, Skill } from '../../api/skills';
 import { profileApi } from '../../api/profile';
+import { notifyAuthChanged } from '../../store/authEvents';
 import { useAuthCheck } from '../../hooks/useAuthCheck';
 
 export const AddSkillsScreen: React.FC = () => {
@@ -26,14 +27,12 @@ export const AddSkillsScreen: React.FC = () => {
   const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
-    if (user?.worker_profile?.skills) {
-      setSelectedSkills(user.worker_profile.skills);
+    const wp = user?.worker_profile ?? (user as any)?.workerProfile;
+    if (wp?.skills && Array.isArray(wp.skills)) {
+      setSelectedSkills(wp.skills);
     }
-    if (
-      (user?.worker_profile as any)?.custom_skills &&
-      Array.isArray((user?.worker_profile as any).custom_skills)
-    ) {
-      setCustomSkills((user?.worker_profile as any).custom_skills);
+    if (wp?.custom_skills && Array.isArray(wp.custom_skills)) {
+      setCustomSkills(wp.custom_skills);
     }
   }, [user]);
 
@@ -51,6 +50,8 @@ export const AddSkillsScreen: React.FC = () => {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.refetchQueries({ queryKey: ['profile'] });
+      notifyAuthChanged();
       navigation.goBack();
     },
     onError: (err: any) => {

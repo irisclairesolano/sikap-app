@@ -50,6 +50,16 @@ export const ProfileScreen: React.FC = () => {
   }
 
   const workerProfile = (user as any)?.worker_profile ?? (user as any)?.workerProfile;
+  const catalogSkills = ((workerProfile?.skills || []) as Skill[]).map((s) => ({
+    ...s,
+    isCustom: false,
+  }));
+  const customSkillsList = ((workerProfile?.custom_skills || []) as string[]).map((cs, idx) => ({
+    id: `custom-${idx}`,
+    name: cs,
+    isCustom: true,
+  }));
+  const allSkills = [...catalogSkills, ...customSkillsList];
 
   const worker = {
     name: user.name,
@@ -59,7 +69,7 @@ export const ProfileScreen: React.FC = () => {
     ratings: reviewsData?.reviews_count ?? (user as any).ratings_count ?? 0,
     jobsDone: (user as any).completed_jobs_count ?? 0,
     memberSince: (user as any).member_since || 'New',
-    skills: (workerProfile?.skills || []) as Skill[],
+    skills: allSkills,
     bio: (workerProfile?.bio || '') as string,
     experiences: (workerProfile?.experiences || []) as WorkerExperience[],
     recentReview: (() => {
@@ -323,7 +333,7 @@ export const ProfileScreen: React.FC = () => {
                 No skills added yet.
               </Text>
             ) : (
-              worker.skills.map((skill, index) => {
+              worker.skills.map((skill: any, index: number) => {
                 const isEven = index % 2 === 0;
                 const chipBg = isEven ? '#F8FAFC' : '#F1F5F9';
                 const chipBorder = isEven ? '#E2E8F0' : '#CBD5E1';
@@ -342,8 +352,33 @@ export const ProfileScreen: React.FC = () => {
                       },
                     ]}
                   >
-                    <Ionicons name="construct-outline" size={13} color={iconColor} />
+                    <Ionicons
+                      name={skill.isCustom ? 'sparkles-outline' : 'construct-outline'}
+                      size={13}
+                      color={skill.isCustom ? colors.primary : iconColor}
+                    />
                     <Text style={[styles.chipText, { color: chipTextColor }]}>{skill.name}</Text>
+                    {skill.isCustom && (
+                      <View
+                        style={{
+                          backgroundColor: colors.primaryTint,
+                          paddingHorizontal: 4,
+                          paddingVertical: 1,
+                          borderRadius: 4,
+                          marginLeft: 4,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 8.5,
+                            fontFamily: fonts.bodyBold,
+                            color: colors.primary,
+                          }}
+                        >
+                          Custom
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 );
               })
