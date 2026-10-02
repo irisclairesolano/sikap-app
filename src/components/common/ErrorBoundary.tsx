@@ -2,6 +2,8 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts } from '../../theme';
+import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
+import { triggerHaptic } from '../../utils/haptics';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -26,15 +28,18 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    triggerHaptic('warning');
     console.error('ErrorBoundary caught an unhandled error:', error, errorInfo);
   }
 
   handleReset = (): void => {
+    triggerHaptic('light');
     this.setState({ hasError: false, error: null });
     this.props.onReset?.();
   };
 
   handleHome = (): void => {
+    triggerHaptic('light');
     this.setState({ hasError: false, error: null });
     if (this.props.onHome) {
       this.props.onHome();
@@ -67,8 +72,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           </View>
           <Text style={styles.title}>Something went wrong</Text>
           <Text style={styles.message}>
-            {this.state.error?.message ||
-              'An unexpected error occurred in the application. Please try again or return to the home screen.'}
+            {this.state.error?.message
+              ? sanitizeErrorMessage(this.state.error.message)
+              : 'An unexpected error occurred in the application. Please try again or return to the home screen.'}
           </Text>
           <View style={styles.actions}>
             <TouchableOpacity
