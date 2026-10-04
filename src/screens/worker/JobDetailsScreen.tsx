@@ -6,7 +6,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Share,
   Alert,
   RefreshControl,
 } from 'react-native';
@@ -22,9 +21,7 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { Avatar } from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
-import { useReactToJob } from '../../hooks/useReactToJob';
 import { useAuth } from '../../hooks/useAuth';
-import { getShareLink } from '../../api/jobs';
 import { ReportJobSheet } from '../../components/jobs/ReportJobSheet';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
 
@@ -50,7 +47,6 @@ export const JobDetailsScreen: React.FC = () => {
   const [viewerMedia, setViewerMedia] = useState<{ type: 'photo' | 'video'; url: string } | null>(
     null,
   );
-  const { mutate: toggleReact, isPending: isReacting } = useReactToJob();
 
   const parsedPhotos: string[] = React.useMemo(() => {
     if (!job) return [];
@@ -87,30 +83,6 @@ export const JobDetailsScreen: React.FC = () => {
 
   const handleToggleSave = () => {
     toggleSave(id);
-  };
-
-  const handleReact = () => {
-    if (job) toggleReact(job.id);
-  };
-
-  const handleShare = async () => {
-    if (!job) return;
-    try {
-      const result = await getShareLink(job.id);
-      const payText = job.compensation ? ` (₱${Number(job.compensation).toLocaleString()})` : '';
-      const locationText = [job.barangay, job.municipality].filter(Boolean).join(', ');
-      const message = `Check out this job on SIKAP: ${job.title}${payText}${locationText ? ` in ${locationText}` : ''}!\n\nOpen in SIKAP App: sikap://jobs/${job.id}\nWeb Preview: ${result.share_link}`;
-
-      await Share.share({
-        title: job.title,
-        message,
-        url: result.share_link,
-      });
-    } catch (err: any) {
-      if (err?.response?.status === 410) {
-        Alert.alert('Job Closed', 'This job is no longer available.');
-      }
-    }
   };
 
   if (isLoading) {
@@ -488,39 +460,6 @@ export const JobDetailsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Social Action Bar */}
-        <View style={styles.detailActionBar}>
-          <TouchableOpacity
-            style={styles.detailActionBtn}
-            onPress={handleReact}
-            disabled={isReacting}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name={job.user_has_reacted ? 'heart' : 'heart-outline'}
-              size={18}
-              color={job.user_has_reacted ? '#E85D75' : colors.inkSoft}
-            />
-            <Text
-              style={[
-                styles.detailActionText,
-                job.user_has_reacted && styles.detailActionTextActive,
-              ]}
-            >
-              {job.reactions_count && job.reactions_count > 0 ? job.reactions_count : ''} Interested
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.detailActionBtn}
-            onPress={handleShare}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="share-social-outline" size={18} color={colors.inkSoft} />
-            <Text style={styles.detailActionText}>Share</Text>
-          </TouchableOpacity>
-        </View>
-
         <ReportJobSheet
           visible={reportSheetVisible}
           onClose={() => setReportSheetVisible(false)}
@@ -886,32 +825,6 @@ const styles = StyleSheet.create({
     color: '#B91C1C',
     textAlign: 'center',
     marginTop: 2,
-  },
-  detailActionBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FAFAF8',
-    borderRadius: 16,
-    padding: 12,
-    marginVertical: 16,
-    borderWidth: 1,
-    borderColor: '#E5E0D8',
-  },
-  detailActionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  detailActionText: {
-    fontSize: 13,
-    color: '#8C7B6A',
-    fontWeight: '500',
-  },
-  detailActionTextActive: {
-    color: '#E85D75',
-    fontWeight: '700',
   },
 });
 
