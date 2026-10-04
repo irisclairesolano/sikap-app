@@ -84,7 +84,7 @@ const linking = {
         screens: {
           Home: {
             screens: {
-              JobDetails: 'jobs/:id',
+              JobDetails: 'employer/jobs/:id',
             },
           },
         },
