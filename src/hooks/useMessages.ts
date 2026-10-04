@@ -10,8 +10,8 @@ export function useMessages(conversationId: number) {
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     initialPageParam: undefined as string | undefined,
     enabled: Boolean(conversationId && conversationId > 0),
-    refetchInterval: 3_000,
-    staleTime: 1_000,
+    refetchInterval: 1_200,
+    staleTime: 500,
     select: (data) => ({
       pages: data.pages,
       pageParams: data.pageParams,

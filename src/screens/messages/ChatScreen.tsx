@@ -79,6 +79,10 @@ const ChatScreen: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+  const isInitialMountRef = useRef(true);
+  const prevMessagesLengthRef = useRef(0);
+  const lastMessageIdRef = useRef<number | null>(null);
+  const isNearBottomRef = useRef(true);
 
   const blockUserMutation = useBlockUser();
   const unblockUserMutation = useUnblockUser();
@@ -222,9 +226,43 @@ const ChatScreen: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageCount]);
 
+  useEffect(() => {
+    if (messages.length === 0) return;
+
+    const latestMessage = messages[messages.length - 1];
+
+    if (prevMessagesLengthRef.current > 0 && messages.length > prevMessagesLengthRef.current) {
+      // Check if new incoming message from the other participant
+      const isIncoming =
+        latestMessage &&
+        latestMessage.sender_id != null &&
+        latestMessage.sender_id !== user?.id &&
+        latestMessage.id !== lastMessageIdRef.current;
+
+      if (isIncoming) {
+        triggerHaptic('medium');
+      }
+
+      // Automatically scroll to bottom on new message
+      if (isNearBottomRef.current || !isIncoming) {
+        requestAnimationFrame(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        });
+      }
+    } else if (isInitialMountRef.current && messages.length > 0) {
+      requestAnimationFrame(() => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      });
+    }
+
+    prevMessagesLengthRef.current = messages.length;
+    lastMessageIdRef.current = latestMessage?.id ?? null;
+  }, [messages, user?.id]);
+
   const handleSendText = () => {
     const textToSend = inputText.trim();
     if (!textToSend) return;
+    isNearBottomRef.current = true;
     triggerHaptic('light');
     setInputError(null);
     setInputText('');
@@ -266,6 +304,7 @@ const ChatScreen: React.FC = () => {
         console.log('Chat image compression error, using original', err);
       }
 
+      isNearBottomRef.current = true;
       sendImage.mutate(finalUri, {
         onError: (err: any) => {
           showAlert(
@@ -332,7 +371,6 @@ const ChatScreen: React.FC = () => {
 
   // Keep track of cycle index for jumping
   const [jumpIndex, setJumpIndex] = useState(0);
-  const isInitialMountRef = useRef(true);
 
   const getPinnedCardDetails = (card: (typeof messages)[0]) => {
     if (!card || !card.card_type) return null;
@@ -638,10 +676,18 @@ const ChatScreen: React.FC = () => {
           data={messages}
           keyExtractor={(item) => item.id.toString()}
           inverted={false}
-          initialNumToRender={50}
-          maxToRenderPerBatch={30}
-          windowSize={21}
-          removeClippedSubviews={false}
+          initialNumToRender={30}
+          maxToRenderPerBatch={20}
+          windowSize={11}
+          removeClippedSubviews={Platform.OS === 'android'}
+          onScroll={(event) => {
+            const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+            const paddingToBottom = 150;
+            const isNearBottom =
+              layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+            isNearBottomRef.current = isNearBottom;
+          }}
+          scrollEventThrottle={32}
           onEndReached={() => {
             if (hasNextPage) fetchNextPage();
           }}
@@ -667,6 +713,8 @@ const ChatScreen: React.FC = () => {
             if (isInitialMountRef.current) {
               flatListRef.current?.scrollToEnd({ animated: false });
               isInitialMountRef.current = false;
+            } else if (isNearBottomRef.current) {
+              flatListRef.current?.scrollToEnd({ animated: true });
             }
           }}
           onLayout={() => {
