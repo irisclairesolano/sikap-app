@@ -52,6 +52,37 @@ export const JobDetailsScreen: React.FC = () => {
   );
   const { mutate: toggleReact, isPending: isReacting } = useReactToJob();
 
+  const parsedPhotos: string[] = React.useMemo(() => {
+    if (!job) return [];
+    const raw = job.photos || (job as any).worksite_photos || (job as any).images || [];
+    if (Array.isArray(raw)) {
+      return raw
+        .map((p: any) => (typeof p === 'string' ? p : p?.url || p?.uri || ''))
+        .filter((url: string) => typeof url === 'string' && url.trim().length > 0);
+    }
+    if (typeof raw === 'string' && raw.trim() !== '') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .map((p: any) => (typeof p === 'string' ? p : p?.url || p?.uri || ''))
+            .filter((url: string) => typeof url === 'string' && url.trim().length > 0);
+        }
+        if (typeof parsed === 'string' && parsed.trim().length > 0) return [parsed.trim()];
+      } catch {
+        return [raw.trim()];
+      }
+    }
+    if (
+      (job as any).image_url &&
+      typeof (job as any).image_url === 'string' &&
+      (job as any).image_url.trim().length > 0
+    ) {
+      return [(job as any).image_url.trim()];
+    }
+    return [];
+  }, [job]);
+
   const isSaved = savedJobsData?.data?.some((j) => j.id === id) || false;
 
   const handleToggleSave = () => {
@@ -333,15 +364,17 @@ export const JobDetailsScreen: React.FC = () => {
         ) : null}
 
         {/* Media Attachments Section */}
-        {((job.photos && job.photos.length > 0) || job.video_url) && (
+        {(parsedPhotos.length > 0 || job.video_url) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Attachments & Media</Text>
+            <Text style={styles.sectionTitle}>
+              Attachments & Media ({parsedPhotos.length + (job.video_url ? 1 : 0)})
+            </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: 12, paddingTop: 6 }}
             >
-              {job.photos?.map((photoUrl: string, idx: number) => (
+              {parsedPhotos.map((photoUrl: string, idx: number) => (
                 <TouchableOpacity
                   key={idx}
                   activeOpacity={0.8}

@@ -29,6 +29,7 @@ import { colors, fonts, shadows } from '../../theme';
 import * as SecureStore from '../../utils/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { triggerHaptic } from '../../utils/haptics';
+import { MediaViewerModal } from '../../components/common/MediaViewerModal';
 
 const DRAFT_STORAGE_KEY = 'sikap_post_job_draft_v1';
 const DURATION_UNITS = ['Hours', 'Days', 'Weeks', 'Months'];
@@ -232,6 +233,9 @@ export const PostJobScreen: React.FC = () => {
           mimeType: 'video/mp4',
         }
       : null,
+  );
+  const [viewerMedia, setViewerMedia] = useState<{ type: 'photo' | 'video'; url: string } | null>(
+    null,
   );
   useEffect(() => {
     if (jobToEdit) {
@@ -1194,12 +1198,17 @@ export const PostJobScreen: React.FC = () => {
                   >
                     {photos.map((p, idx) => (
                       <View key={p.id} style={styles.previewWrapper}>
-                        <Image
-                          cachePolicy="memory-disk"
-                          source={{ uri: p.uri }}
-                          style={styles.previewImg}
-                          blurRadius={p.status !== 'success' ? 15 : 0}
-                        />
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => setViewerMedia({ type: 'photo', url: p.uri })}
+                        >
+                          <Image
+                            cachePolicy="memory-disk"
+                            source={{ uri: p.uri }}
+                            style={styles.previewImg}
+                            blurRadius={p.status !== 'success' ? 15 : 0}
+                          />
+                        </TouchableOpacity>
                         {p.status === 'uploading' && (
                           <View style={styles.imgLoaderOverlay}>
                             <ActivityIndicator size="small" color={colors.white} />
@@ -1230,7 +1239,9 @@ export const PostJobScreen: React.FC = () => {
 
                 {videoUpload && (
                   <View style={styles.previewWrapper}>
-                    <View
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => setViewerMedia({ type: 'video', url: videoUpload.uri })}
                       style={[
                         styles.previewImg,
                         {
@@ -1242,7 +1253,7 @@ export const PostJobScreen: React.FC = () => {
                       ]}
                     >
                       <Ionicons name="film-outline" size={24} color={colors.white} />
-                    </View>
+                    </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.removeMediaBtn}
                       onPress={() => setVideoUpload(null)}
@@ -1312,6 +1323,12 @@ export const PostJobScreen: React.FC = () => {
           </View>
         </View>
       </Modal>
+
+      <MediaViewerModal
+        visible={!!viewerMedia}
+        media={viewerMedia}
+        onClose={() => setViewerMedia(null)}
+      />
     </SafeAreaView>
   );
 };
