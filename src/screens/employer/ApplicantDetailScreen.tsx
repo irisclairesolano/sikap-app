@@ -445,10 +445,10 @@ const ApplicantDetailScreen: React.FC = () => {
               <View
                 style={[
                   styles.stageCircle,
-                  stage >= 2 ? styles.stageDone : stage === 1 ? styles.stageCircleActive : null,
+                  stage > 1 ? styles.stageDone : stage === 1 ? styles.stageCircleActive : null,
                 ]}
               >
-                {stage >= 2 ? (
+                {stage > 1 ? (
                   <Ionicons name="checkmark" size={12} color="white" />
                 ) : (
                   <Text style={stage === 1 ? styles.stageCircleTextActive : styles.stageCircleText}>
@@ -458,16 +458,22 @@ const ApplicantDetailScreen: React.FC = () => {
               </View>
               <Text style={styles.stageLabel}>Applied</Text>
             </View>
-            <View style={[styles.stageDivider, stage >= 2 && styles.stageDoneDivider]} />
+            <View style={styles.stageDivider}>
+              {stage > 1 ? (
+                <View style={[StyleSheet.absoluteFill, styles.stageDoneDivider]} />
+              ) : stage === 1 ? (
+                <View style={styles.stageDividerHalf} />
+              ) : null}
+            </View>
 
             <View style={stage >= 2 ? styles.stageActive : styles.stage}>
               <View
                 style={[
                   styles.stageCircle,
-                  stage >= 3 ? styles.stageDone : stage === 2 ? styles.stageCircleActive : null,
+                  stage > 2 ? styles.stageDone : stage === 2 ? styles.stageCircleActive : null,
                 ]}
               >
-                {stage >= 3 ? (
+                {stage > 2 ? (
                   <Ionicons name="checkmark" size={12} color="white" />
                 ) : (
                   <Text style={stage === 2 ? styles.stageCircleTextActive : styles.stageCircleText}>
@@ -477,16 +483,22 @@ const ApplicantDetailScreen: React.FC = () => {
               </View>
               <Text style={styles.stageLabel}>Shortlist</Text>
             </View>
-            <View style={[styles.stageDivider, stage >= 3 && styles.stageDoneDivider]} />
+            <View style={styles.stageDivider}>
+              {stage > 2 ? (
+                <View style={[StyleSheet.absoluteFill, styles.stageDoneDivider]} />
+              ) : stage === 2 ? (
+                <View style={styles.stageDividerHalf} />
+              ) : null}
+            </View>
 
             <View style={stage >= 3 ? styles.stageActive : styles.stage}>
               <View
                 style={[
                   styles.stageCircle,
-                  stage >= 4 ? styles.stageDone : stage === 3 ? styles.stageCircleActive : null,
+                  stage > 3 ? styles.stageDone : stage === 3 ? styles.stageCircleActive : null,
                 ]}
               >
-                {stage >= 4 ? (
+                {stage > 3 ? (
                   <Ionicons name="checkmark" size={12} color="white" />
                 ) : (
                   <Text style={stage === 3 ? styles.stageCircleTextActive : styles.stageCircleText}>
@@ -496,16 +508,22 @@ const ApplicantDetailScreen: React.FC = () => {
               </View>
               <Text style={styles.stageLabel}>Offer</Text>
             </View>
-            <View style={[styles.stageDivider, stage >= 4 && styles.stageDoneDivider]} />
+            <View style={styles.stageDivider}>
+              {stage > 3 ? (
+                <View style={[StyleSheet.absoluteFill, styles.stageDoneDivider]} />
+              ) : stage === 3 ? (
+                <View style={styles.stageDividerHalf} />
+              ) : null}
+            </View>
 
             <View style={stage >= 4 ? styles.stageActive : styles.stage}>
               <View
                 style={[
                   styles.stageCircle,
-                  stage >= 5 ? styles.stageDone : stage === 4 ? styles.stageCircleActive : null,
+                  stage > 4 ? styles.stageDone : stage === 4 ? styles.stageCircleActive : null,
                 ]}
               >
-                {stage >= 5 ? (
+                {stage > 4 ? (
                   <Ionicons name="checkmark" size={12} color="white" />
                 ) : (
                   <Text style={stage === 4 ? styles.stageCircleTextActive : styles.stageCircleText}>
@@ -515,13 +533,32 @@ const ApplicantDetailScreen: React.FC = () => {
               </View>
               <Text style={styles.stageLabel}>Hired</Text>
             </View>
-            <View style={[styles.stageDivider, stage >= 5 && styles.stageDoneDivider]} />
+            <View style={styles.stageDivider}>
+              {stage > 4 ? (
+                <View style={[StyleSheet.absoluteFill, styles.stageDoneDivider]} />
+              ) : stage === 4 ? (
+                <View style={styles.stageDividerHalf} />
+              ) : null}
+            </View>
 
             <View style={stage >= 5 ? styles.stageActive : styles.stage}>
-              <View style={[styles.stageCircle, stage === 5 ? styles.stageCircleActive : null]}>
-                <Text style={stage === 5 ? styles.stageCircleTextActive : styles.stageCircleText}>
-                  5
-                </Text>
+              <View
+                style={[
+                  styles.stageCircle,
+                  stage >= 5 && appData?.has_reviewed
+                    ? styles.stageDone
+                    : stage === 5
+                      ? styles.stageCircleActive
+                      : null,
+                ]}
+              >
+                {stage >= 5 && appData?.has_reviewed ? (
+                  <Ionicons name="checkmark" size={12} color="white" />
+                ) : (
+                  <Text style={stage === 5 ? styles.stageCircleTextActive : styles.stageCircleText}>
+                    5
+                  </Text>
+                )}
               </View>
               <Text style={styles.stageLabel}>Done</Text>
             </View>
@@ -1586,19 +1623,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 4,
   },
-  stageCircleActive: { borderColor: colors.primary, backgroundColor: colors.primary },
-  stageDone: { borderColor: colors.mintDeep, backgroundColor: colors.mintDeep, borderWidth: 0 },
+  stageCircleActive: {
+    borderColor: colors.mintDeep,
+    backgroundColor: colors.mint,
+    borderWidth: 2,
+  },
+  stageDone: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary,
+    borderWidth: 0,
+  },
   stageCircleText: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.inkMuted },
-  stageCircleTextActive: { fontFamily: fonts.bodyBold, fontSize: 10, color: 'white' },
+  stageCircleTextActive: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.mintDeep },
   stageLabel: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.ink },
   stageDivider: {
-    height: 2,
+    height: 3,
     flex: 1,
     backgroundColor: colors.inkFaint,
-    marginHorizontal: 8,
+    marginHorizontal: -4,
     marginBottom: 16,
+    borderRadius: 2,
+    overflow: 'hidden',
   },
   stageDoneDivider: { backgroundColor: colors.mintDeep },
+  stageDividerHalf: {
+    width: '50%',
+    height: '100%',
+    backgroundColor: colors.mint,
+  },
 });
 
 export default ApplicantDetailScreen;

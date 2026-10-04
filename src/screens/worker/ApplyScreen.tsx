@@ -24,6 +24,7 @@ import CustomInput from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import { useApplication } from '../../hooks/useJobApplications';
 import { getApplicationStageInfo } from '../../components/applications/ApplicationCard';
+import { messagesApi } from '../../api/messages';
 import { triggerHaptic } from '../../utils/haptics';
 
 type ApplyRouteProp = RouteProp<WorkerStackParamList, 'Apply'>;
@@ -140,11 +141,38 @@ export const ApplyScreen: React.FC = () => {
 
   const catStyles = getCategoryStyles(job.categories?.[0] || 'Other');
 
+  const handleOpenChat = async () => {
+    try {
+      if (liveApp?.conversation_id || (job as any)?.conversation_id) {
+        navigation.navigate('Chat', {
+          conversationId: (liveApp?.conversation_id || (job as any)?.conversation_id) as number,
+          jobTitle: job.title,
+          otherUserName: job.employer?.name || 'Employer',
+        });
+        return;
+      }
+      const res = await messagesApi.getConversations();
+      const currentAppId = activeApplicationId;
+      const conv = res.data.find((c) => c.application_id === currentAppId);
+      if (conv) {
+        navigation.navigate('Chat', {
+          conversationId: conv.id,
+          jobTitle: conv.job_title || job.title,
+          otherUserName: conv.other_user?.name || job.employer?.name || 'Employer',
+        });
+      } else {
+        showAlert('Info', 'Opening chat with employer...');
+      }
+    } catch {
+      showAlert('Error', "Couldn't open chat. Please check your connection and try again.");
+    }
+  };
+
   const currentAppStatus = liveApp?.status || (isSuccess ? 'pending' : job?.status);
   const stageInfo = getApplicationStageInfo(currentAppStatus || 'pending', liveApp?.has_reviewed);
   const currentStage = stageInfo.stage || 1;
 
-  // INLINE SUCCESS STATE (Matches Screen 15 structure for Stage 1)
+  // INLINE SUCCESS / TRACKING STATE
   if (isSuccess) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -153,7 +181,17 @@ export const ApplyScreen: React.FC = () => {
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.appBarTitleBadge}>
-            <Text style={styles.appBarTitleBadgeText}>Application</Text>
+            <Text style={styles.appBarTitleBadgeText}>
+              {currentStage === 1
+                ? 'Application'
+                : currentStage === 2
+                  ? 'Shortlisted'
+                  : currentStage === 3
+                    ? 'Offer Received'
+                    : currentStage === 4
+                      ? 'Hired'
+                      : 'Completed'}
+            </Text>
           </View>
           <TouchableOpacity style={styles.iconButton}>
             <Ionicons name="ellipsis-horizontal" size={24} color={colors.ink} />
@@ -167,23 +205,51 @@ export const ApplyScreen: React.FC = () => {
           {/* 5-Stage Stepper */}
           <View style={styles.stepper}>
             {/* Step 1: Applied */}
-            <View style={[styles.step, currentStage >= 1 && styles.stepActive]}>
-              <View style={[styles.stepCircle, currentStage >= 1 && styles.stepCircleActive]}>
+            <View style={styles.step}>
+              <View
+                style={[
+                  styles.stepCircle,
+                  currentStage > 1
+                    ? styles.stepCircleDone
+                    : currentStage === 1
+                      ? styles.stepCircleActive
+                      : null,
+                ]}
+              >
                 {currentStage > 1 ? (
                   <Ionicons name="checkmark" size={12} color={colors.white} />
                 ) : (
-                  <Text style={styles.stepCircleTextActive}>1</Text>
+                  <Text
+                    style={currentStage === 1 ? styles.stepCircleTextActive : styles.stepCircleText}
+                  >
+                    1
+                  </Text>
                 )}
               </View>
               <Text style={[styles.stepLabel, currentStage >= 1 && styles.stepLabelActive]}>
                 Applied
               </Text>
             </View>
-            <View style={[styles.stepDivider, currentStage >= 2 && styles.stepDividerActive]} />
+            <View style={styles.stepDivider}>
+              {currentStage > 1 ? (
+                <View style={[StyleSheet.absoluteFill, styles.stepDividerDone]} />
+              ) : currentStage === 1 ? (
+                <View style={styles.stepDividerHalf} />
+              ) : null}
+            </View>
 
             {/* Step 2: Shortlisted */}
-            <View style={[styles.step, currentStage >= 2 && styles.stepActive]}>
-              <View style={[styles.stepCircle, currentStage >= 2 && styles.stepCircleActive]}>
+            <View style={styles.step}>
+              <View
+                style={[
+                  styles.stepCircle,
+                  currentStage > 2
+                    ? styles.stepCircleDone
+                    : currentStage === 2
+                      ? styles.stepCircleActive
+                      : null,
+                ]}
+              >
                 {currentStage > 2 ? (
                   <Ionicons name="checkmark" size={12} color={colors.white} />
                 ) : (
@@ -198,11 +264,26 @@ export const ApplyScreen: React.FC = () => {
                 Shortlisted
               </Text>
             </View>
-            <View style={[styles.stepDivider, currentStage >= 3 && styles.stepDividerActive]} />
+            <View style={styles.stepDivider}>
+              {currentStage > 2 ? (
+                <View style={[StyleSheet.absoluteFill, styles.stepDividerDone]} />
+              ) : currentStage === 2 ? (
+                <View style={styles.stepDividerHalf} />
+              ) : null}
+            </View>
 
             {/* Step 3: Offer */}
-            <View style={[styles.step, currentStage >= 3 && styles.stepActive]}>
-              <View style={[styles.stepCircle, currentStage >= 3 && styles.stepCircleActive]}>
+            <View style={styles.step}>
+              <View
+                style={[
+                  styles.stepCircle,
+                  currentStage > 3
+                    ? styles.stepCircleDone
+                    : currentStage === 3
+                      ? styles.stepCircleActive
+                      : null,
+                ]}
+              >
                 {currentStage > 3 ? (
                   <Ionicons name="checkmark" size={12} color={colors.white} />
                 ) : (
@@ -217,11 +298,26 @@ export const ApplyScreen: React.FC = () => {
                 Offer
               </Text>
             </View>
-            <View style={[styles.stepDivider, currentStage >= 4 && styles.stepDividerActive]} />
+            <View style={styles.stepDivider}>
+              {currentStage > 3 ? (
+                <View style={[StyleSheet.absoluteFill, styles.stepDividerDone]} />
+              ) : currentStage === 3 ? (
+                <View style={styles.stepDividerHalf} />
+              ) : null}
+            </View>
 
             {/* Step 4: Hired */}
-            <View style={[styles.step, currentStage >= 4 && styles.stepActive]}>
-              <View style={[styles.stepCircle, currentStage >= 4 && styles.stepCircleActive]}>
+            <View style={styles.step}>
+              <View
+                style={[
+                  styles.stepCircle,
+                  currentStage > 4
+                    ? styles.stepCircleDone
+                    : currentStage === 4
+                      ? styles.stepCircleActive
+                      : null,
+                ]}
+              >
                 {currentStage > 4 ? (
                   <Ionicons name="checkmark" size={12} color={colors.white} />
                 ) : (
@@ -236,11 +332,26 @@ export const ApplyScreen: React.FC = () => {
                 Hired
               </Text>
             </View>
-            <View style={[styles.stepDivider, currentStage >= 5 && styles.stepDividerActive]} />
+            <View style={styles.stepDivider}>
+              {currentStage > 4 ? (
+                <View style={[StyleSheet.absoluteFill, styles.stepDividerDone]} />
+              ) : currentStage === 4 ? (
+                <View style={styles.stepDividerHalf} />
+              ) : null}
+            </View>
 
             {/* Step 5: Done */}
-            <View style={[styles.step, currentStage >= 5 && styles.stepActive]}>
-              <View style={[styles.stepCircle, currentStage >= 5 && styles.stepCircleActive]}>
+            <View style={styles.step}>
+              <View
+                style={[
+                  styles.stepCircle,
+                  currentStage >= 5 && liveApp?.has_reviewed
+                    ? styles.stepCircleDone
+                    : currentStage === 5
+                      ? styles.stepCircleActive
+                      : null,
+                ]}
+              >
                 {currentStage >= 5 && liveApp?.has_reviewed ? (
                   <Ionicons name="checkmark" size={12} color={colors.white} />
                 ) : (
@@ -257,56 +368,211 @@ export const ApplyScreen: React.FC = () => {
             </View>
           </View>
 
-          {/* Butter Success Card */}
-          <View style={styles.successCard}>
-            <View style={styles.successIconBox}>
-              <Ionicons name="paper-plane" size={22} color={colors.primary} />
-            </View>
-            <Text style={styles.successHeadline}>
-              Application{'\n'}
-              <Text style={styles.successAccent}>sent.</Text>
-            </Text>
-            <Text style={styles.successSub}>
-              {job.employer?.name || 'The employer'} is reviewing applicants now.
-            </Text>
-            {data?.content_warnings && data.content_warnings.length > 0 && (
-              <View
-                style={{
-                  marginTop: 10,
-                  padding: 10,
-                  backgroundColor: 'rgba(255,255,255,0.7)',
-                  borderRadius: 10,
-                }}
-              >
-                <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
-                  <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink }}>Note:</Text> Your
-                  application was sent, but your cover note contains language that may be reviewed
-                  for community standards.
+          {/* DYNAMIC CARDS BY STAGE */}
+          {currentStage === 1 && (
+            <>
+              {/* Butter Success Card */}
+              <View style={styles.successCard}>
+                <View style={styles.successIconBox}>
+                  <Ionicons name="paper-plane" size={22} color={colors.primary} />
+                </View>
+                <Text style={styles.successHeadline}>
+                  Application{'\n'}
+                  <Text style={styles.successAccent}>sent.</Text>
+                </Text>
+                <Text style={styles.successSub}>
+                  {job.employer?.name || 'The employer'} is reviewing applicants now.
+                </Text>
+                {data?.content_warnings && data.content_warnings.length > 0 && (
+                  <View
+                    style={{
+                      marginTop: 10,
+                      padding: 10,
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                      borderRadius: 10,
+                    }}
+                  >
+                    <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
+                      <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink }}>Note:</Text>{' '}
+                      Your application was sent, but your cover note contains language that may be
+                      reviewed for community standards.
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Privacy Shield Active */}
+              <View style={styles.shieldCard}>
+                <View style={[styles.shieldHeader, { marginBottom: 0 }]}>
+                  <View style={styles.shieldIconBox}>
+                    <Ionicons name="shield-checkmark" size={16} color={colors.mintDeep} />
+                  </View>
+                  <View>
+                    <Text style={styles.shieldSubText}>Privacy Shield Active</Text>
+                    <Text style={styles.shieldTitleText}>Only public info is visible</Text>
+                  </View>
+                </View>
+              </View>
+
+              <Button
+                label={isWithdrawing ? 'Withdrawing...' : 'Withdraw application'}
+                variant="ghost"
+                onPress={handleWithdraw}
+                loading={isWithdrawing}
+                style={{ marginTop: 32 }}
+              />
+            </>
+          )}
+
+          {currentStage === 2 && (
+            <>
+              {/* Shortlisted Hero Card */}
+              <View style={[styles.successCard, { backgroundColor: colors.peachBright }]}>
+                <View style={styles.successIconBox}>
+                  <Ionicons name="chatbubbles" size={22} color={colors.primary} />
+                </View>
+                <Text style={styles.successHeadline}>
+                  {job.employer?.name || 'The employer'}
+                  {'\n'}
+                  <Text style={styles.successAccent}>wants to talk.</Text>
+                </Text>
+                <Text style={styles.successSub}>
+                  You've been shortlisted for{' '}
+                  <Text style={{ fontFamily: fonts.bodyBold }}>{job.title}</Text>. The employer may
+                  message you to discuss details and agree on terms.
                 </Text>
               </View>
-            )}
-          </View>
 
-          {/* Privacy Shield Active */}
-          <View style={styles.shieldCard}>
-            <View style={[styles.shieldHeader, { marginBottom: 0 }]}>
-              <View style={styles.shieldIconBox}>
-                <Ionicons name="shield-checkmark" size={16} color={colors.mintDeep} />
+              {/* Unlocked Contact & References Info Card */}
+              <View style={styles.minimalistSharedBox}>
+                <View style={styles.minimalistSharedHeader}>
+                  <Ionicons name="eye-outline" size={16} color={colors.primary} />
+                  <Text style={styles.minimalistSharedTitle}>
+                    Contact & references shared with employer
+                  </Text>
+                </View>
+                <View style={styles.minimalistChipsRow}>
+                  <View style={styles.minimalistChip}>
+                    <Ionicons name="call-outline" size={13} color={colors.mintDeep} />
+                    <Text style={styles.minimalistChipText}>Mobile number</Text>
+                  </View>
+                  <View style={styles.minimalistChip}>
+                    <Ionicons name="people-outline" size={13} color={colors.mintDeep} />
+                    <Text style={styles.minimalistChipText}>Character references</Text>
+                  </View>
+                </View>
+                <Text style={styles.minimalistSharedFootnote}>
+                  You can message each other directly in chat to discuss the schedule, requirements,
+                  and agree on a price.
+                </Text>
               </View>
-              <View>
-                <Text style={styles.shieldSubText}>Privacy Shield Active</Text>
-                <Text style={styles.shieldTitleText}>Only public info is visible</Text>
-              </View>
-            </View>
-          </View>
 
-          <Button
-            label={isWithdrawing ? 'Withdrawing...' : 'Withdraw application'}
-            variant="ghost"
-            onPress={handleWithdraw}
-            loading={isWithdrawing}
-            style={{ marginTop: 32 }}
-          />
+              <View style={{ marginTop: 24, gap: 12 }}>
+                <Button
+                  label="Open Chat"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  onPress={handleOpenChat}
+                />
+                <Button
+                  label={isWithdrawing ? 'Withdrawing...' : 'Withdraw application'}
+                  variant="ghost"
+                  onPress={handleWithdraw}
+                  loading={isWithdrawing}
+                />
+              </View>
+            </>
+          )}
+
+          {currentStage === 3 && (
+            <>
+              <View style={[styles.successCard, { backgroundColor: colors.butterBright }]}>
+                <View style={styles.successIconBox}>
+                  <Ionicons name="document-text" size={22} color={colors.primary} />
+                </View>
+                <Text style={styles.successHeadline}>
+                  Offer{'\n'}
+                  <Text style={styles.successAccent}>received.</Text>
+                </Text>
+                <Text style={styles.successSub}>
+                  {job.employer?.name || 'The employer'} sent you an offer for{' '}
+                  <Text style={{ fontFamily: fonts.bodyBold }}>{job.title}</Text>.
+                </Text>
+              </View>
+
+              <View style={{ marginTop: 24, gap: 12 }}>
+                <Button
+                  label="Review Offer"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  onPress={() => {
+                    if (activeApplicationId) {
+                      navigation.navigate('AcceptHire', {
+                        id: activeApplicationId,
+                        jobTitle: job.title,
+                        employerName: job.employer?.name || 'Employer',
+                        offeredPrice: job.compensation ? String(job.compensation) : undefined,
+                        conversationId: liveApp?.conversation_id ?? undefined,
+                      });
+                    }
+                  }}
+                />
+                <Button
+                  label="Open Chat"
+                  variant="outline"
+                  size="lg"
+                  fullWidth
+                  onPress={handleOpenChat}
+                />
+              </View>
+            </>
+          )}
+
+          {currentStage >= 4 && (
+            <>
+              <View style={[styles.successCard, { backgroundColor: colors.mint }]}>
+                <View style={styles.successIconBox}>
+                  <Ionicons name="checkmark-circle" size={22} color={colors.mintDeep} />
+                </View>
+                <Text style={styles.successHeadline}>
+                  {currentStage === 4 ? 'You are\nhired!' : 'Job\ncompleted.'}
+                </Text>
+                <Text style={[styles.successSub, { color: colors.mintDeep }]}>
+                  {currentStage === 4
+                    ? `You are currently working on "${job.title}".`
+                    : `You have completed "${job.title}".`}
+                </Text>
+              </View>
+
+              <View style={{ marginTop: 24, gap: 12 }}>
+                <Button
+                  label="Open Chat"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  onPress={handleOpenChat}
+                />
+                {activeApplicationId && (
+                  <Button
+                    label="View Full Details"
+                    variant="outline"
+                    size="lg"
+                    fullWidth
+                    onPress={() => {
+                      navigation.navigate('ApplicationDetail', {
+                        applicationId: activeApplicationId,
+                        jobTitle: job.title,
+                        employerName: job.employer?.name || 'Employer',
+                        status: currentAppStatus || 'accepted',
+                      });
+                    }}
+                  />
+                )}
+              </View>
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     );
@@ -676,22 +942,31 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     backgroundColor: colors.inkFaint,
+    borderWidth: 2,
+    borderColor: colors.inkFaint,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,
   },
   stepCircleActive: {
-    backgroundColor: colors.ink,
+    backgroundColor: colors.mint,
+    borderColor: colors.mintDeep,
+    borderWidth: 2,
+  },
+  stepCircleDone: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+    borderWidth: 0,
   },
   stepCircleText: {
     fontFamily: fonts.bodyBold,
-    fontSize: 11,
-    color: colors.inkSoft,
+    fontSize: 10,
+    color: colors.inkMuted,
   },
   stepCircleTextActive: {
     fontFamily: fonts.bodyBold,
-    fontSize: 11,
-    color: colors.white,
+    fontSize: 10,
+    color: colors.mintDeep,
   },
   stepLabel: {
     fontFamily: fonts.bodyBold,
@@ -703,13 +978,70 @@ const styles = StyleSheet.create({
   },
   stepDivider: {
     flex: 1,
-    height: 2,
+    height: 3,
     backgroundColor: colors.inkFaint,
-    marginHorizontal: -8,
+    marginHorizontal: -6,
     marginBottom: 16, // to align with circle center
+    borderRadius: 2,
+    overflow: 'hidden',
   },
   stepDividerActive: {
-    backgroundColor: colors.ink,
+    backgroundColor: colors.mintDeep,
+  },
+  stepDividerDone: {
+    backgroundColor: colors.mintDeep,
+  },
+  stepDividerHalf: {
+    width: '50%',
+    height: '100%',
+    backgroundColor: colors.mint,
+  },
+  minimalistSharedBox: {
+    backgroundColor: colors.paperBright,
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 14,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  minimalistSharedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  minimalistSharedTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.ink,
+  },
+  minimalistChipsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  minimalistChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.mint,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  minimalistChipText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.mintDeep,
+  },
+  minimalistSharedFootnote: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkMuted,
+    lineHeight: 18,
   },
   successCard: {
     backgroundColor: colors.butter,

@@ -151,25 +151,31 @@ const ConfirmHireScreen: React.FC = () => {
           <View style={styles.stages}>
             <View style={styles.stageActive}>
               <View style={[styles.stageCircle, styles.stageDone]}>
-                <Ionicons name="checkmark" size={14} color="white" />
+                <Ionicons name="checkmark" size={12} color="white" />
               </View>
               <Text style={styles.stageLabel}>Applied</Text>
             </View>
-            <View style={[styles.stageDivider, styles.stageDoneDivider]} />
+            <View style={styles.stageDivider}>
+              <View style={[StyleSheet.absoluteFill, styles.stageDoneDivider]} />
+            </View>
             <View style={styles.stageActive}>
               <View style={[styles.stageCircle, styles.stageDone]}>
-                <Ionicons name="checkmark" size={14} color="white" />
+                <Ionicons name="checkmark" size={12} color="white" />
               </View>
               <Text style={styles.stageLabel}>Shortlist</Text>
             </View>
-            <View style={[styles.stageDivider, styles.stageDoneDivider]} />
+            <View style={styles.stageDivider}>
+              <View style={[StyleSheet.absoluteFill, styles.stageDoneDivider]} />
+            </View>
             <View style={styles.stageActive}>
               <View style={[styles.stageCircle, styles.stageCircleActive]}>
                 <Text style={styles.stageCircleTextActive}>3</Text>
               </View>
               <Text style={styles.stageLabel}>Offer</Text>
             </View>
-            <View style={styles.stageDivider} />
+            <View style={styles.stageDivider}>
+              <View style={styles.stageDividerHalf} />
+            </View>
             <View style={styles.stage}>
               <View style={styles.stageCircle}>
                 <Text style={styles.stageCircleText}>4</Text>
@@ -369,12 +375,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   stageCircleActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary,
+    borderColor: colors.mintDeep,
+    backgroundColor: colors.mint,
+    borderWidth: 2,
   },
   stageDone: {
-    borderColor: colors.mintDeep,
-    backgroundColor: colors.mintDeep,
+    borderColor: colors.primary,
+    backgroundColor: colors.primary,
     borderWidth: 0,
   },
   stageCircleText: {
@@ -385,7 +392,7 @@ const styles = StyleSheet.create({
   stageCircleTextActive: {
     fontFamily: fonts.bodyBold,
     fontSize: 10,
-    color: 'white',
+    color: colors.mintDeep,
   },
   stageLabel: {
     fontFamily: fonts.bodyBold,
@@ -393,14 +400,21 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   stageDivider: {
-    height: 2,
+    height: 3,
     flex: 1,
     backgroundColor: colors.inkFaint,
-    marginHorizontal: 8,
+    marginHorizontal: -4,
     marginBottom: 16,
+    borderRadius: 2,
+    overflow: 'hidden',
   },
   stageDoneDivider: {
     backgroundColor: colors.mintDeep,
+  },
+  stageDividerHalf: {
+    width: '50%',
+    height: '100%',
+    backgroundColor: colors.mint,
   },
   applicantCard: {
     flexDirection: 'row',
