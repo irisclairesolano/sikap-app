@@ -302,7 +302,7 @@ export const MyJobsScreen: React.FC = () => {
                 >
                   <Ionicons name="people" size={14} color="#15803D" />
                   <Text style={[styles.actionCountText, { color: '#15803D' }]}>
-                    {item.applications?.length || 0} applicants
+                    {item.applications?.length || 0}
                   </Text>
                 </View>
 
@@ -315,7 +315,7 @@ export const MyJobsScreen: React.FC = () => {
                   >
                     <Ionicons name="heart" size={14} color="#E11D48" />
                     <Text style={[styles.actionCountText, { color: '#E11D48' }]}>
-                      {item.reactions_count} interested
+                      {item.reactions_count}
                     </Text>
                   </View>
                 )}
