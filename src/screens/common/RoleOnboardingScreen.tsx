@@ -278,23 +278,98 @@ export const RoleOnboardingScreen: React.FC = () => {
         {targetRole === 'employer' && (
           <View style={styles.section}>
             <TouchableOpacity
-              style={styles.uploadArea}
+              style={[
+                styles.uploadArea,
+                selectedBusinessDocs.length > 0 && styles.uploadAreaSelected,
+              ]}
               onPress={handleFileSelect}
               disabled={isOnboardingRole}
+              activeOpacity={0.8}
             >
-              <View style={styles.cameraIconBox}>
-                <Ionicons name="document-text" size={24} color={colors.white} />
+              <View
+                style={[
+                  styles.cameraIconBox,
+                  selectedBusinessDocs.length > 0 && styles.cameraIconBoxSelected,
+                ]}
+              >
+                <Ionicons
+                  name={selectedBusinessDocs.length > 0 ? 'checkmark-circle' : 'document-text'}
+                  size={26}
+                  color={colors.white}
+                />
               </View>
-              <Text style={styles.uploadTitle}>
+              <Text
+                style={[
+                  styles.uploadTitle,
+                  selectedBusinessDocs.length > 0 && styles.uploadTitleSelected,
+                ]}
+              >
                 {selectedBusinessDocs.length > 0
-                  ? `${selectedBusinessDocs.length} Document(s) Selected ✓`
+                  ? `✓ ${selectedBusinessDocs.length} Document(s) Selected`
                   : 'Upload Business Document (Optional)'}
               </Text>
-              <Text style={styles.uploadSubtitle}>
-                {selectedBusinessDocs.length > 0
-                  ? selectedBusinessDocs.map((doc) => doc.name).join('\n')
-                  : 'DTI / SEC / TIN Document (Max 3 files, PDF/Image)'}
-              </Text>
+              {selectedBusinessDocs.length > 0 ? (
+                <View style={{ width: '100%', marginTop: 12, gap: 8 }}>
+                  {selectedBusinessDocs.map((doc, idx) => (
+                    <View
+                      key={idx}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: colors.white,
+                        paddingVertical: 8,
+                        paddingHorizontal: 12,
+                        borderRadius: 10,
+                        borderWidth: 1,
+                        borderColor: '#BBF7D0',
+                      }}
+                    >
+                      <Ionicons
+                        name="document-attach"
+                        size={18}
+                        color={colors.success}
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text
+                        numberOfLines={1}
+                        style={{
+                          fontFamily: fonts.bodyMedium,
+                          fontSize: 12,
+                          color: colors.inkSoft,
+                          flex: 1,
+                        }}
+                      >
+                        {doc.name}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          setSelectedBusinessDocs((prev) => prev.filter((_, i) => i !== idx));
+                        }}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        style={{ marginLeft: 8 }}
+                      >
+                        <Ionicons name="close-circle" size={18} color="#EF4444" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                  <Text
+                    style={{
+                      fontFamily: fonts.body,
+                      fontSize: 11,
+                      color: colors.success,
+                      textAlign: 'center',
+                      marginTop: 4,
+                    }}
+                  >
+                    Tap card to change or add more documents
+                  </Text>
+                </View>
+              ) : (
+                <Text style={styles.uploadSubtitle}>
+                  DTI / SEC / TIN Document (Max 3 files, PDF/Image)
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         )}
@@ -429,6 +504,11 @@ const styles = StyleSheet.create({
     padding: 32,
     alignItems: 'center',
   },
+  uploadAreaSelected: {
+    backgroundColor: '#F0FDF4',
+    borderColor: colors.success,
+    borderStyle: 'solid',
+  },
   cameraIconBox: {
     width: 56,
     height: 56,
@@ -439,12 +519,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     ...shadows.sm,
   },
+  cameraIconBoxSelected: {
+    backgroundColor: colors.success,
+  },
   uploadTitle: {
     fontFamily: fonts.bodyBold,
     fontSize: 15,
     color: colors.ink,
     marginBottom: 8,
     textAlign: 'center',
+  },
+  uploadTitleSelected: {
+    color: colors.success,
   },
   uploadSubtitle: {
     fontFamily: fonts.body,

@@ -602,48 +602,118 @@ export const EditProfileScreen: React.FC = () => {
 
               <TouchableOpacity
                 style={{
-                  backgroundColor: colors.paperBright,
-                  borderWidth: 1.5,
-                  borderColor: colors.inkFaint,
-                  borderStyle: 'dashed',
+                  backgroundColor: selectedBusinessDocs.length > 0 ? '#F0FDF4' : colors.paperBright,
+                  borderWidth: selectedBusinessDocs.length > 0 ? 2 : 1.5,
+                  borderColor: selectedBusinessDocs.length > 0 ? colors.success : colors.inkFaint,
+                  borderStyle: selectedBusinessDocs.length > 0 ? 'solid' : 'dashed',
                   borderRadius: 14,
                   padding: 20,
                   alignItems: 'center',
                 }}
                 onPress={handlePickBusinessDocs}
                 disabled={isSaving}
+                activeOpacity={0.8}
               >
-                <Ionicons
-                  name="cloud-upload"
-                  size={24}
-                  color={colors.primary}
-                  style={{ marginBottom: 6 }}
-                />
+                <View
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    backgroundColor:
+                      selectedBusinessDocs.length > 0 ? '#DCFCE7' : colors.primaryTint,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 10,
+                  }}
+                >
+                  <Ionicons
+                    name={selectedBusinessDocs.length > 0 ? 'checkmark-circle' : 'cloud-upload'}
+                    size={28}
+                    color={selectedBusinessDocs.length > 0 ? colors.success : colors.primary}
+                  />
+                </View>
                 <Text
                   style={{
                     fontFamily: fonts.bodyBold,
-                    fontSize: 14,
-                    color: colors.ink,
+                    fontSize: 15,
+                    color: selectedBusinessDocs.length > 0 ? colors.success : colors.ink,
                     textAlign: 'center',
                   }}
                 >
                   {selectedBusinessDocs.length > 0
-                    ? `${selectedBusinessDocs.length} New Document(s) Selected`
+                    ? `✓ ${selectedBusinessDocs.length} New Document(s) Selected`
                     : 'Upload New Business Documents'}
                 </Text>
-                <Text
-                  style={{
-                    fontFamily: fonts.body,
-                    fontSize: 11,
-                    color: colors.inkMuted,
-                    marginTop: 4,
-                    textAlign: 'center',
-                  }}
-                >
-                  {selectedBusinessDocs.length > 0
-                    ? selectedBusinessDocs.map((doc) => doc.name).join('\n')
-                    : 'DTI / SEC / TIN (Max 3 files, PDF/Image)'}
-                </Text>
+                {selectedBusinessDocs.length > 0 ? (
+                  <View style={{ width: '100%', marginTop: 12, gap: 8 }}>
+                    {selectedBusinessDocs.map((doc, idx) => (
+                      <View
+                        key={idx}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: colors.white,
+                          paddingVertical: 8,
+                          paddingHorizontal: 12,
+                          borderRadius: 10,
+                          borderWidth: 1,
+                          borderColor: '#BBF7D0',
+                        }}
+                      >
+                        <Ionicons
+                          name="document-attach"
+                          size={18}
+                          color={colors.success}
+                          style={{ marginRight: 8 }}
+                        />
+                        <Text
+                          numberOfLines={1}
+                          style={{
+                            fontFamily: fonts.bodyMedium,
+                            fontSize: 12,
+                            color: colors.inkSoft,
+                            flex: 1,
+                          }}
+                        >
+                          {doc.name}
+                        </Text>
+                        <TouchableOpacity
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            setSelectedBusinessDocs((prev) => prev.filter((_, i) => i !== idx));
+                          }}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                          style={{ marginLeft: 8 }}
+                        >
+                          <Ionicons name="close-circle" size={18} color="#EF4444" />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                    <Text
+                      style={{
+                        fontFamily: fonts.body,
+                        fontSize: 11,
+                        color: colors.success,
+                        textAlign: 'center',
+                        marginTop: 4,
+                      }}
+                    >
+                      Tap card to change or add more documents
+                    </Text>
+                  </View>
+                ) : (
+                  <Text
+                    style={{
+                      fontFamily: fonts.body,
+                      fontSize: 11,
+                      color: colors.inkMuted,
+                      marginTop: 4,
+                      textAlign: 'center',
+                    }}
+                  >
+                    DTI / SEC / TIN (Max 3 files, PDF/Image)
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
           )}
