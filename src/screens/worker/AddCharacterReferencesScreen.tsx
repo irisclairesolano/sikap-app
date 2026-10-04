@@ -348,8 +348,13 @@ export const AddCharacterReferencesScreen: React.FC = () => {
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           >
-            <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={handleCancel}>
-              <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+            <View style={styles.modalOverlay}>
+              <TouchableOpacity
+                style={styles.backdropTouchable}
+                activeOpacity={1}
+                onPress={handleCancel}
+              />
+              <View style={styles.modalContent}>
                 <View style={styles.dragIndicator} />
 
                 <View style={styles.modalHeader}>
@@ -463,7 +468,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                   />
                 </View>
               </View>
-            </TouchableOpacity>
+            </View>
           </KeyboardAvoidingView>
         </Modal>
       </KeyboardAvoidingView>
@@ -648,6 +653,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(43, 31, 21, 0.4)', // Ink overlaid color
     justifyContent: 'flex-end',
+  },
+  backdropTouchable: {
+    ...StyleSheet.absoluteFillObject,
   },
   modalContent: {
     backgroundColor: colors.paper,
