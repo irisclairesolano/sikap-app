@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Share } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, shadows } from '../../theme';
@@ -53,6 +53,8 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
   const job = passedJob || application?.job;
   const worker = application?.worker;
   const employer = job?.employer;
+  const counterparty = viewerRole === 'employer' ? worker : employer;
+  const counterpartyLabel = viewerRole === 'employer' ? 'Hired Worker' : 'Employer';
 
   const refNumber = job?.reference_number || `JOB-${job?.id || application?.job_post_id || '000'}`;
   const completedDateStr =
@@ -77,7 +79,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
       ? `₱${Number(agreedPrice).toLocaleString()}`
       : job?.compensation != null
         ? `₱${Number(job.compensation).toLocaleString()}`
-        : null;
+        : '₱0';
 
   const rateUnitText =
     agreedPrice != null
@@ -88,9 +90,34 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
 
   const photos = Array.isArray(job?.photos) ? job.photos : [];
 
+  // Only real, timestamped milestones — no placeholder steps with no evidence behind them.
+  const timelineSteps = [
+    { label: 'Applied', date: application?.applied_at || application?.created_at },
+    { label: 'Offer Sent', date: (application as any)?.employer_confirmed_at },
+    { label: 'Hired', date: (application as any)?.slot_locked_at },
+    { label: 'Completed', date: completedDateStr },
+  ].filter((step) => Boolean(step.date));
+
+  const handleShareReceipt = async () => {
+    const lines = [
+      `SIKAP Job Receipt — ${refNumber}`,
+      job?.title || '',
+      '',
+      `${counterpartyLabel}: ${counterparty?.name || 'N/A'}`,
+      `${rateUnitText}: ${displayCompensation}`,
+      formattedCompletedDate ? `Completed: ${formattedCompletedDate}` : '',
+      locationText ? `Location: ${locationText}` : '',
+    ].filter(Boolean);
+    try {
+      await Share.share({ message: lines.join('\n') });
+    } catch {
+      // user dismissed the share sheet — nothing to do
+    }
+  };
+
   return (
     <View style={styles.container}>
-      {/* 1. CELEBRATORY JOB HEADER */}
+      {/* HEADER — identity + the one number that matters, shown once */}
       <View style={styles.headerCard}>
         <View style={styles.headerGlow} />
         <View style={styles.headerTopRow}>
@@ -104,97 +131,67 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           </View>
         </View>
 
-        <View style={styles.celebrationRow}>
-          <Text style={styles.celebrationEmoji}>🎉</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.celebrationTitle}>Job Completed Successfully</Text>
-            {formattedCompletedDate ? (
-              <Text style={styles.completedDateText}>Finished on {formattedCompletedDate}</Text>
-            ) : null}
-          </View>
-        </View>
-
         <Text style={styles.jobTitle}>{job?.title || 'Job Overview'}</Text>
-      </View>
+        {formattedCompletedDate ? (
+          <Text style={styles.completedDateText}>Finished on {formattedCompletedDate}</Text>
+        ) : null}
 
-      {/* 2. THREE-METRIC SUMMARY CARDS */}
-      <View style={styles.metricGrid}>
-        <View style={styles.metricCard}>
-          <View style={[styles.metricIconBox, { backgroundColor: '#DCFCE7' }]}>
-            <Ionicons name="cash" size={18} color="#15803D" />
+        <View style={styles.amountRow}>
+          <View>
+            <Text style={styles.amountLabel}>{rateUnitText}</Text>
+            <Text style={styles.amountValue}>{displayCompensation}</Text>
           </View>
-          <Text style={styles.metricLabel}>{agreedPrice != null ? 'Agreed Pay' : 'Pay'}</Text>
-          <Text style={styles.metricValue}>{displayCompensation || '₱0'}</Text>
-          <Text style={styles.metricSub}>{rateUnitText}</Text>
-        </View>
-
-        <View style={styles.metricCard}>
-          <View style={[styles.metricIconBox, { backgroundColor: colors.sky + '25' }]}>
-            <Ionicons name="time" size={18} color={colors.skyDeep} />
-          </View>
-          <Text style={styles.metricLabel}>Duration</Text>
-          <Text style={styles.metricValue} numberOfLines={1}>
-            {job?.duration ? `${job.duration} ${job.duration_unit || 'Days'}` : 'Finished'}
-          </Text>
-          <Text style={styles.metricSub}>
-            {job?.duration_type === 'daily' ? 'Daily' : 'Project'}
-          </Text>
-        </View>
-
-        <View style={styles.metricCard}>
-          <View style={[styles.metricIconBox, { backgroundColor: colors.butter + '60' }]}>
-            <Ionicons name="star" size={18} color={colors.gold} />
-          </View>
-          <Text style={styles.metricLabel}>Review</Text>
-          <Text style={styles.metricValue}>
-            {hasReviewed && userReview?.overall_rating
-              ? `★ ${Number(userReview.overall_rating).toFixed(1)}`
-              : hasReviewed
-                ? 'Rated'
-                : 'Pending'}
-          </Text>
-          <Text style={styles.metricSub}>
-            {hasReviewed ? 'Feedback left' : isRatingWindowClosed ? 'Window closed' : '7d Window'}
-          </Text>
+          {job?.duration ? (
+            <View style={styles.durationPill}>
+              <Ionicons name="time-outline" size={13} color={colors.skyDeep} />
+              <Text style={styles.durationPillText}>
+                {job.duration} {job.duration_unit || 'Days'}
+              </Text>
+            </View>
+          ) : null}
         </View>
       </View>
 
-      {/* 2. COUNTERPARTY PROFILE CARD */}
-      {viewerRole === 'employer' && worker ? (
+      {/* COUNTERPARTY */}
+      {counterparty ? (
         <View style={styles.partyCard}>
-          <Text style={styles.partyCardEyebrow}>Hired Worker</Text>
+          <Text style={styles.partyCardEyebrow}>{counterpartyLabel}</Text>
           <View style={styles.partyRow}>
             <Avatar
-              url={worker.is_deleted ? undefined : worker.avatar_url}
-              name={worker.name || 'Worker'}
+              url={counterparty.is_deleted ? undefined : counterparty.avatar_url}
+              name={counterparty.name || counterpartyLabel}
               size={48}
             />
             <View style={styles.partyInfo}>
               <View style={styles.partyNameRow}>
-                <Text style={styles.partyName}>{worker.name || 'Worker'}</Text>
-                {!worker.is_deleted &&
-                  worker.name !== 'Deleted Account' &&
-                  worker.verification_badge && (
+                <Text style={styles.partyName}>{counterparty.name || counterpartyLabel}</Text>
+                {!counterparty.is_deleted &&
+                  counterparty.name !== 'Deleted Account' &&
+                  (counterparty as any).verification_badge && (
                     <Ionicons name="checkmark-circle" size={16} color={colors.mintDeep} />
                   )}
               </View>
-              {!worker.is_deleted && worker.name !== 'Deleted Account' && worker.barangay ? (
-                <Text style={styles.partySub}>
-                  <Ionicons name="location-outline" size={12} color={colors.inkMuted} />{' '}
-                  {worker.barangay}, {worker.municipality || 'Bulan'}
-                </Text>
+              {!counterparty.is_deleted && counterparty.name !== 'Deleted Account' ? (
+                <View style={styles.partyMetaRow}>
+                  {counterparty.barangay ? (
+                    <Text style={styles.partySub}>
+                      <Ionicons name="location-outline" size={12} color={colors.inkMuted} />{' '}
+                      {counterparty.barangay}, {counterparty.municipality || 'Bulan'}
+                    </Text>
+                  ) : null}
+                </View>
               ) : null}
-              {!worker.is_deleted && worker.name !== 'Deleted Account' && (
+              {!counterparty.is_deleted && counterparty.name !== 'Deleted Account' && (
                 <View style={styles.partyMetaRow}>
                   <View style={styles.partyScoreBadge}>
                     <Ionicons name="star" size={12} color={colors.gold} />
                     <Text style={styles.partyScoreText}>
-                      {formatScore(worker.reputation_score)}
+                      {formatScore((counterparty as any).reputation_score)}
                     </Text>
                   </View>
-                  {worker.completed_jobs_count != null && (
+                  {viewerRole === 'employer' && (worker as any)?.completed_jobs_count != null && (
                     <Text style={styles.partyMetaText}>
-                      • {worker.completed_jobs_count} completed jobs
+                      • {(worker as any).completed_jobs_count} completed jobs
                     </Text>
                   )}
                 </View>
@@ -204,71 +201,31 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
         </View>
       ) : null}
 
-      {viewerRole === 'worker' && employer ? (
-        <View style={styles.partyCard}>
-          <Text style={styles.partyCardEyebrow}>Employer</Text>
-          <View style={styles.partyRow}>
-            <Avatar
-              url={employer.is_deleted ? undefined : employer.avatar_url}
-              name={employer.name || 'Employer'}
-              size={48}
-            />
-            <View style={styles.partyInfo}>
-              <Text style={styles.partyName}>{employer.name || 'Employer'}</Text>
-              {!employer.is_deleted && employer.name !== 'Deleted Account' && employer.barangay ? (
-                <Text style={styles.partySub}>
-                  <Ionicons name="location-outline" size={12} color={colors.inkMuted} />{' '}
-                  {employer.barangay}, {employer.municipality || 'Bulan'}
-                </Text>
-              ) : null}
-              {!employer.is_deleted && employer.name !== 'Deleted Account' && (
-                <View style={styles.partyMetaRow}>
-                  <View style={styles.partyScoreBadge}>
-                    <Ionicons name="star" size={12} color={colors.gold} />
-                    <Text style={styles.partyScoreText}>
-                      {formatScore(employer.reputation_score)}
-                    </Text>
+      {/* TIMELINE — only steps with a real timestamp behind them */}
+      {timelineSteps.length > 0 && (
+        <View style={styles.timelineCard}>
+          <Text style={styles.sectionHeaderTitle}>Hiring & Completion Timeline</Text>
+          <View style={styles.timelineContainer}>
+            {timelineSteps.map((step, idx) => (
+              <React.Fragment key={step.label}>
+                <View style={styles.timelineStep}>
+                  <View style={styles.timelineCircle}>
+                    <Ionicons name="checkmark" size={12} color={colors.white} />
                   </View>
-                  <Text style={styles.partyMetaText}>• Reputation Score</Text>
+                  <Text style={styles.timelineLabel}>{step.label}</Text>
+                  <Text style={styles.timelineDateText}>{formatDate(step.date)}</Text>
                 </View>
-              )}
-            </View>
+                {idx < timelineSteps.length - 1 && <View style={styles.timelineLine} />}
+              </React.Fragment>
+            ))}
           </View>
         </View>
-      ) : null}
+      )}
 
-      {/* 3. COMPACT TIMELINE */}
-      <View style={styles.timelineCard}>
-        <Text style={styles.sectionHeaderTitle}>Hiring & Completion Timeline</Text>
-        <View style={styles.timelineContainer}>
-          {[
-            { label: 'Applied', date: application?.applied_at || application?.created_at },
-            { label: 'Shortlisted', date: undefined },
-            { label: 'Offered', date: (application as any)?.employer_confirmed_at },
-            { label: 'Hired', date: (application as any)?.slot_locked_at },
-            { label: 'Done', date: completedDateStr },
-          ].map((step, idx, arr) => (
-            <React.Fragment key={step.label}>
-              <View style={styles.timelineStep}>
-                <View style={styles.timelineCircle}>
-                  <Ionicons name="checkmark" size={12} color={colors.white} />
-                </View>
-                <Text style={styles.timelineLabel}>{step.label}</Text>
-                {step.date ? (
-                  <Text style={styles.timelineDateText}>{formatDate(step.date)}</Text>
-                ) : null}
-              </View>
-              {idx < arr.length - 1 && <View style={styles.timelineLine} />}
-            </React.Fragment>
-          ))}
-        </View>
-      </View>
-
-      {/* 4. JOB DETAILS & PAY */}
+      {/* JOB DETAILS */}
       <View style={styles.detailsCard}>
         <Text style={styles.sectionHeaderTitle}>Job Details</Text>
 
-        {/* Categories */}
         {categories.length > 0 && (
           <View style={styles.categoriesRow}>
             {categories.map((cat, idx) => (
@@ -279,7 +236,6 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           </View>
         )}
 
-        {/* Location & Schedule */}
         <View style={styles.metaList}>
           <View style={styles.metaItem}>
             <View style={[styles.metaIconBox, { backgroundColor: colors.sky + '25' }]}>
@@ -303,20 +259,6 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
             </View>
           ) : null}
 
-          {job?.duration ? (
-            <View style={styles.metaItem}>
-              <View style={[styles.metaIconBox, { backgroundColor: colors.butter + '50' }]}>
-                <Ionicons name="time" size={16} color={colors.primaryDark} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.metaLabel}>Duration</Text>
-                <Text style={styles.metaValue}>
-                  {job.duration} {job.duration_unit || 'Days'}
-                </Text>
-              </View>
-            </View>
-          ) : null}
-
           <View style={styles.metaItem}>
             <View style={[styles.metaIconBox, { backgroundColor: colors.peach + '40' }]}>
               <Ionicons name="people" size={16} color={colors.urgent} />
@@ -331,22 +273,6 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           </View>
         </View>
 
-        {/* Pay Display */}
-        {displayCompensation ? (
-          <View style={styles.payBox}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.payLabel}>
-                {agreedPrice != null ? 'Final Agreed Price' : 'Compensation'}
-              </Text>
-              <Text style={styles.payAmount}>{displayCompensation}</Text>
-            </View>
-            <View style={styles.payBadge}>
-              <Text style={styles.payBadgeText}>{rateUnitText}</Text>
-            </View>
-          </View>
-        ) : null}
-
-        {/* Description */}
         {job?.description ? (
           <View style={styles.descSection}>
             <Text style={styles.descLabel}>Description</Text>
@@ -354,7 +280,6 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           </View>
         ) : null}
 
-        {/* Photos */}
         {photos.length > 0 && (
           <View style={styles.photosSection}>
             <Text style={styles.descLabel}>Photos ({photos.length})</Text>
@@ -374,7 +299,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
         )}
       </View>
 
-      {/* 5. MUTED RATING STATUS (PURELY INFORMATIVE — NO ACTION BUTTON) */}
+      {/* RATING — single source of truth, no duplicate "Review" metric elsewhere */}
       <View style={styles.ratingStatusCard}>
         {hasReviewed ? (
           <View style={styles.ratingStatusInner}>
@@ -432,14 +357,19 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
         )}
       </View>
 
-      {/* 6. OPTIONAL READ-ONLY CHAT ACCESS */}
-      {onOpenChat ? (
-        <TouchableOpacity style={styles.chatLinkBtn} onPress={onOpenChat} activeOpacity={0.8}>
-          <Ionicons name="chatbubbles-outline" size={18} color={colors.primary} />
-          <Text style={styles.chatLinkText}>View Chat History</Text>
-          <Ionicons name="chevron-forward" size={16} color={colors.inkLight} />
+      {/* ACTIONS */}
+      <View style={styles.actionsRow}>
+        {onOpenChat ? (
+          <TouchableOpacity style={styles.actionBtn} onPress={onOpenChat} activeOpacity={0.8}>
+            <Ionicons name="chatbubbles-outline" size={18} color={colors.primary} />
+            <Text style={styles.actionBtnText}>View Chat History</Text>
+          </TouchableOpacity>
+        ) : null}
+        <TouchableOpacity style={styles.actionBtn} onPress={handleShareReceipt} activeOpacity={0.8}>
+          <Ionicons name="share-outline" size={18} color={colors.primary} />
+          <Text style={styles.actionBtnText}>Share Receipt</Text>
         </TouchableOpacity>
-      ) : null}
+      </View>
     </View>
   );
 };
@@ -473,21 +403,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  celebrationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
     marginBottom: 10,
-  },
-  celebrationEmoji: {
-    fontSize: 26,
-  },
-  celebrationTitle: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 16,
-    color: '#15803D',
   },
   refBadge: {
     flexDirection: 'row',
@@ -523,59 +439,47 @@ const styles = StyleSheet.create({
     color: colors.ink,
     lineHeight: 28,
   },
-  metricGrid: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  metricCard: {
-    flex: 1,
-    backgroundColor: colors.paperBright,
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: colors.inkFaint,
-    ...shadows.sm,
-    alignItems: 'center',
-  },
-  metricIconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-  },
-  metricLabel: {
+  completedDateText: {
     fontFamily: fonts.body,
-    fontSize: 10,
+    fontSize: 12,
+    color: colors.inkMuted,
+    marginTop: 2,
+  },
+  amountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(134, 239, 172, 0.5)',
+  },
+  amountLabel: {
+    fontFamily: fonts.body,
+    fontSize: 11,
     color: colors.inkMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 2,
   },
-  metricValue: {
+  amountValue: {
     fontFamily: fonts.numericBold,
-    fontSize: 14,
-    color: colors.ink,
-    textAlign: 'center',
+    fontSize: 26,
+    color: '#15803D',
   },
-  metricSub: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    color: colors.inkMuted,
-    marginTop: 2,
-    textAlign: 'center',
-  },
-  dateRow: {
+  durationPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 6,
+    gap: 5,
+    backgroundColor: colors.sky + '25',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
   },
-  completedDateText: {
-    fontFamily: fonts.body,
+  durationPillText: {
+    fontFamily: fonts.bodyBold,
     fontSize: 12,
-    color: colors.inkMuted,
+    color: colors.skyDeep,
   },
   partyCard: {
     backgroundColor: colors.paperBright,
@@ -664,7 +568,7 @@ const styles = StyleSheet.create({
   },
   timelineStep: {
     alignItems: 'center',
-    width: 54,
+    width: 70,
   },
   timelineCircle: {
     width: 22,
@@ -743,41 +647,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 13,
     color: colors.ink,
-  },
-  payBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.primaryTint,
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: colors.primarySoft + '30',
-  },
-  payLabel: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.primarySoft,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  payAmount: {
-    fontFamily: fonts.numericBold,
-    fontSize: 18,
-    color: colors.primaryDark,
-    marginTop: 2,
-  },
-  payBadge: {
-    backgroundColor: colors.white,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  payBadgeText: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 11,
-    color: colors.primaryDark,
-    textTransform: 'capitalize',
   },
   descSection: {
     gap: 4,
@@ -869,23 +738,27 @@ const styles = StyleSheet.create({
     marginTop: 2,
     lineHeight: 17,
   },
-  chatLinkBtn: {
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  actionBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 8,
     backgroundColor: colors.paperBright,
     borderRadius: 14,
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: colors.inkFaint,
     ...shadows.sm,
   },
-  chatLinkText: {
+  actionBtnText: {
     fontFamily: fonts.bodyBold,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.primary,
-    flex: 1,
-    marginLeft: 10,
   },
 });
