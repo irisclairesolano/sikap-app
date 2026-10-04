@@ -17,6 +17,7 @@ import { colors, fonts } from '../../theme';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { useAuthCheck } from '../../hooks/useAuthCheck';
 import Button from '../../components/common/Button';
+import { Image } from 'expo-image';
 
 import { useFocusEffect } from '@react-navigation/native';
 import { useEmployerJobs } from '../../hooks/useEmployerJobs';
@@ -268,15 +269,40 @@ export const EmployerDashboardScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.appBar}>
         <View style={styles.appBarLeft}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{getInitial(user?.name || 'Employer')}</Text>
-          </View>
-          <View>
+          <TouchableOpacity
+            style={styles.avatarTouchable}
+            activeOpacity={0.75}
+            onPress={() => (navigation as any).navigate('EditProfile')}
+            accessibilityRole="button"
+            accessibilityLabel="Edit profile"
+          >
+            {user?.avatar_url ? (
+              <Image
+                cachePolicy="memory-disk"
+                priority="high"
+                transition={150}
+                source={{
+                  uri: user.avatar_url.startsWith('http')
+                    ? user.avatar_url
+                    : `${process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '')}${user.avatar_url}`,
+                }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{getInitial(user?.name || 'Employer')}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.75}
+            onPress={() => (navigation as any).navigate('EditProfile')}
+          >
             <Text style={styles.greetingSmall}>Hi,</Text>
             <Text style={styles.greetingName}>
               {user?.name ? user.name.split(' ')[0] : 'Employer'}
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
         <TouchableOpacity
           style={styles.iconButton}
@@ -572,6 +598,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
+  avatarTouchable: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
   avatar: {
     width: 40,
     height: 40,
@@ -579,6 +609,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.sky,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   avatarText: {
     fontFamily: fonts.bodyBold,

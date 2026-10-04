@@ -61,7 +61,7 @@ describe('ActionCard Job Request Component', () => {
     );
 
     // Header & Announcement
-    expect(getByText('Job Request')).toBeTruthy();
+    expect(getByText('Shortlisted Application')).toBeTruthy();
     expect(getByText('Cristina Solano')).toBeTruthy();
     expect(getAllByText('House Cleaning').length).toBeGreaterThanOrEqual(1);
 
@@ -94,7 +94,7 @@ describe('ActionCard Job Request Component', () => {
       );
 
     // Header & Announcement
-    expect(getByText('Job Request')).toBeTruthy();
+    expect(getByText('Shortlisted Application')).toBeTruthy();
     expect(getByText('Juan Dela Cruz')).toBeTruthy();
     expect(getAllByText('House Cleaning').length).toBeGreaterThanOrEqual(1);
 

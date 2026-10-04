@@ -142,7 +142,13 @@ export const ProfileScreen: React.FC = () => {
       >
         {/* Profile Header */}
         <View style={styles.profileHeader}>
-          <View style={styles.avatarContainer}>
+          <TouchableOpacity
+            style={styles.avatarContainer}
+            activeOpacity={0.75}
+            onPress={() => navigation.navigate('EditProfile')}
+            accessibilityRole="button"
+            accessibilityLabel="Edit profile picture"
+          >
             {getAvatarUrl() ? (
               <Image
                 source={{ uri: getAvatarUrl()! }}
@@ -154,7 +160,7 @@ export const ProfileScreen: React.FC = () => {
                 {(employer.name || 'E').charAt(0).toUpperCase()}
               </Text>
             )}
-          </View>
+          </TouchableOpacity>
           <View style={styles.profileInfo}>
             <View style={styles.nameRow}>
               <Text style={styles.nameText}>{employer.name}</Text>

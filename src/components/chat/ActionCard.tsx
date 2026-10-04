@@ -256,7 +256,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <Ionicons name="briefcase-outline" size={20} color={colors.primary} />
           </View>
           <View style={styles.cardHeaderText}>
-            <Text style={styles.title}>Job Request</Text>
+            <Text style={styles.title}>Shortlisted Application</Text>
             <Text style={styles.subtitle} numberOfLines={1}>
               {displayJobTitle}
             </Text>
@@ -272,17 +272,17 @@ const ActionCard: React.FC<ActionCardProps> = ({
             {currentUserRole === 'worker' ? (
               <>
                 <Text style={styles.requestBannerBold}>{employerName}</Text>
-                {" sent you a job request for the '"}
+                {" shortlisted your application for '"}
                 <Text style={styles.requestBannerBold}>{displayJobTitle}</Text>
-                {"' you applied for."}
+                {"'."}
               </>
             ) : (
               <>
-                {'You sent a job request to '}
+                {'You shortlisted '}
                 <Text style={styles.requestBannerBold}>{workerName}</Text>
-                {" for the '"}
+                {" for '"}
                 <Text style={styles.requestBannerBold}>{displayJobTitle}</Text>
-                {"' they applied for."}
+                {"'."}
               </>
             )}
           </Text>

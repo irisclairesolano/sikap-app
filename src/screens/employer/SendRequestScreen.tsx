@@ -27,8 +27,8 @@ const SendRequestScreen: React.FC = () => {
     jobRequestMutation.mutate(id, {
       onSuccess: () => {
         showAlert(
-          'Request Sent!',
-          `You have sent a job request to ${applicantName}. Their references will now be visible to you.`,
+          'Applicant Shortlisted!',
+          `You have shortlisted ${applicantName}. Their contact details and character references are now visible to you.`,
           [{ text: 'OK', onPress: () => navigation.goBack() }],
         );
       },
@@ -39,7 +39,7 @@ const SendRequestScreen: React.FC = () => {
           rawMsg.includes('http://') ||
           rawMsg.includes('https://') ||
           rawMsg.includes('NotFoundHttpException')
-            ? 'Unable to send job request. Please try again.'
+            ? 'Unable to shortlist applicant. Please try again.'
             : rawMsg;
         showAlert('Error', userFriendlyMsg);
       },
@@ -49,22 +49,21 @@ const SendRequestScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Send Job Request</Text>
+        <Text style={styles.headerTitle}>Shortlist Applicant</Text>
       </View>
       <View style={styles.content}>
         <Text style={styles.prompt}>
-          Are you sure you want to send a job request to{' '}
-          <Text style={styles.bold}>{applicantName}</Text> for the position of{' '}
-          <Text style={styles.bold}>{jobTitle}</Text>?
+          Are you sure you want to shortlist <Text style={styles.bold}>{applicantName}</Text> for
+          the position of <Text style={styles.bold}>{jobTitle}</Text>?
         </Text>
         <Text style={styles.info}>
-          Sending a request will move this application to the negotiation stage. The applicant's
-          character references will be revealed so you can verify their background before confirming
-          the hire.
+          Shortlisting moves this applicant to the negotiation stage. The applicant's contact
+          details and character references will be unlocked so you can verify their background and
+          chat to agree on terms before confirming the hire.
         </Text>
 
         <Button
-          label="Send Request"
+          label="Shortlist Applicant"
           onPress={handleSendRequest}
           loading={jobRequestMutation.isPending}
           variant="primary"
