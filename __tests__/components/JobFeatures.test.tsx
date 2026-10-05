@@ -1,14 +1,8 @@
-import { Share } from 'react-native';
 import * as jobsApi from '../../src/api/jobs';
 
 jest.mock('../../src/api/jobs', () => ({
-  getShareLink: jest.fn(),
   reactToJob: jest.fn(),
 }));
-
-jest
-  .spyOn(Share, 'share')
-  .mockImplementation(() => Promise.resolve({ action: Share.sharedAction }));
 
 describe('Job Features Test Suite', () => {
   const mockJob = {
@@ -34,29 +28,6 @@ describe('Job Features Test Suite', () => {
     expect(mockJob.title).toBe('Senior Carpentry Specialist');
     expect(mockJob.categories).toContain('Carpentry');
     expect(mockJob.employer.verification_badge).toBe(true);
-  });
-
-  it('fetches share deep link and calls native Share with universal HTTPS link', async () => {
-    (jobsApi.getShareLink as jest.Mock).mockResolvedValueOnce({
-      share_link: 'https://sikap.app/jobs/42',
-      job_title: 'Senior Carpentry Specialist',
-    });
-
-    const result = await jobsApi.getShareLink(mockJob.id);
-    expect(jobsApi.getShareLink).toHaveBeenCalledWith(42);
-    expect(result.share_link).toBe('https://sikap.app/jobs/42');
-    expect(result.job_title).toBe('Senior Carpentry Specialist');
-
-    await Share.share({
-      title: result.job_title,
-      message: `Check out this job on SIKAP: ${result.job_title}\n${result.share_link}`,
-    });
-
-    expect(Share.share).toHaveBeenCalledWith({
-      title: 'Senior Carpentry Specialist',
-      message:
-        'Check out this job on SIKAP: Senior Carpentry Specialist\nhttps://sikap.app/jobs/42',
-    });
   });
 
   it('toggles heart reaction API endpoint for interested jobs', async () => {

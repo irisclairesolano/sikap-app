@@ -164,7 +164,7 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
     } else {
       displayMessage =
         res.status >= 500
-          ? 'An unexpected server error occurred. Please try again later.'
+          ? errBody.message || 'An unexpected server error occurred. Please try again later.'
           : (errBody.message ?? 'Something went wrong');
     }
 
