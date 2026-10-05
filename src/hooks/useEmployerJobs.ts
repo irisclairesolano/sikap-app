@@ -14,6 +14,7 @@ export const useCreateJob = () => {
   return useMutation({
     mutationFn: (payload: any) => jobsApi.createJob(payload),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
       queryClient.invalidateQueries({ queryKey: ['myJobs'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
     },
@@ -26,6 +27,7 @@ export const useUpdateJob = () => {
     mutationFn: ({ id, payload }: { id: number; payload: Partial<JobPost> }) =>
       jobsApi.updateJob(id, payload),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
       queryClient.invalidateQueries({ queryKey: ['myJobs'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
     },
@@ -37,6 +39,7 @@ export const useDeleteJob = () => {
   return useMutation({
     mutationFn: (id: number) => jobsApi.deleteJob(id),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
       queryClient.invalidateQueries({ queryKey: ['myJobs'] });
       queryClient.invalidateQueries({ queryKey: ['archivedJobs'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
@@ -56,6 +59,7 @@ export const useRestoreJob = () => {
   return useMutation({
     mutationFn: (id: number) => jobsApi.restoreJob(id),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
       queryClient.invalidateQueries({ queryKey: ['myJobs'] });
       queryClient.invalidateQueries({ queryKey: ['archivedJobs'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });

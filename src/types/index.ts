@@ -39,6 +39,15 @@ export interface User {
   has_employer_profile?: boolean;
   business_documents?: string[];
   is_deleted?: boolean;
+  employer_stats?: EmployerStats;
+}
+
+export interface EmployerStats {
+  total_hires: number;
+  total_paid: number;
+  active_jobs: number;
+  reputation_score: number | null;
+  ratings_count: number;
 }
 
 export interface JobPost {

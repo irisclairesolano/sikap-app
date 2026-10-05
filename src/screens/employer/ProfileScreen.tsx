@@ -13,6 +13,7 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { RefreshableContainer } from '../../components/common/RefreshableContainer';
 import { useAuth } from '../../hooks/useAuth';
 import { useEmployerJobs } from '../../hooks/useEmployerJobs';
+import { useEmployerStats } from '../../hooks/useEmployerStats';
 import { useReviews } from '../../hooks/useReviews';
 
 type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
@@ -26,6 +27,15 @@ export const ProfileScreen: React.FC = () => {
   const queryClient = useQueryClient();
   const { data: jobsResponse } = useEmployerJobs();
   const { data: reviewsData } = useReviews(undefined, 'employer');
+  const {
+    totalHires,
+    totalPaidFormatted,
+    reputation,
+    reputationFormatted,
+    ratingsCount,
+    activeJobs,
+    refetch: refetchStats,
+  } = useEmployerStats();
   const [refreshing, setRefreshing] = useState(false);
 
   const {
@@ -41,7 +51,8 @@ export const ProfileScreen: React.FC = () => {
   useFocusEffect(
     React.useCallback(() => {
       refetch();
-    }, [refetch]),
+      refetchStats();
+    }, [refetch, refetchStats]),
   );
 
   if (isLoading || (!user && !authUser)) {
@@ -77,14 +88,12 @@ export const ProfileScreen: React.FC = () => {
       ? `${profileUser.barangay || ''}, ${profileUser.municipality || ''}`
       : 'Unknown',
     verified: profileUser?.verification_badge || false,
-    reputation:
-      reviewsData?.reputation_score && reviewsData.reputation_score > 0
-        ? reviewsData.reputation_score
-        : profileUser?.reputation_score || 0,
-    ratings: reviewsData?.reviews_count ?? profileUser?.ratings_count ?? 0,
-    activeJobs: activeJobsCount || profileUser?.employer_profile?.active_jobs || 0,
-    hired: profileUser?.employer_profile?.total_hired || 0,
-    totalPaid: `₱${profileUser?.employer_profile?.total_spent || 0}`,
+    reputation: reputation,
+    reputationFormatted: reputationFormatted,
+    ratings: ratingsCount,
+    activeJobs: activeJobs,
+    hired: totalHires,
+    totalPaid: totalPaidFormatted,
     memberSince: 'New',
     recentReview,
   };
@@ -103,8 +112,14 @@ export const ProfileScreen: React.FC = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await queryClient.invalidateQueries({ queryKey: ['profile'] });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['profile'] }),
+      queryClient.invalidateQueries({ queryKey: ['employer-stats'] }),
+      queryClient.invalidateQueries({ queryKey: ['myJobs'] }),
+      queryClient.invalidateQueries({ queryKey: ['reviews'] }),
+    ]);
     await refetchProfile();
+    await refetchStats();
     setRefreshing(false);
   };
 
@@ -195,7 +210,7 @@ export const ProfileScreen: React.FC = () => {
           </View>
           <View style={styles.reputationRow}>
             <Text style={styles.reputationScore}>
-              {employer.ratings > 0 ? formatScore(employer.reputation) : 'N/A'}
+              {employer.ratings > 0 ? employer.reputationFormatted : 'N/A'}
             </Text>
             <View style={styles.reputationStars}>
               {employer.ratings > 0 ? (
@@ -211,7 +226,9 @@ export const ProfileScreen: React.FC = () => {
                 </View>
               ) : null}
               <Text style={styles.reputationCount}>
-                {employer.ratings > 0 ? `${employer.ratings} verified ratings` : 'No ratings yet'}
+                {employer.ratings > 0
+                  ? `${employer.ratings} verified rating${employer.ratings > 1 ? 's' : ''}`
+                  : 'No ratings yet'}
               </Text>
             </View>
           </View>

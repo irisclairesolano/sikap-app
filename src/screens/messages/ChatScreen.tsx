@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -48,6 +48,90 @@ const EMPLOYER_OUTREACH_CARD_TYPES = [
   'mark_complete',
   'flag_offline',
 ];
+
+export function deduplicateActionCardMessages(
+  messagesList: any[],
+  currentUserRole?: 'worker' | 'employer',
+  applicationStatus?: string,
+): any[] {
+  if (!messagesList || messagesList.length === 0) return [];
+
+  // 1. Deduplicate by message ID first
+  const seenIds = new Set<number>();
+  const uniqueById: any[] = [];
+  for (const m of messagesList) {
+    if (m && m.id != null && !seenIds.has(m.id)) {
+      seenIds.add(m.id);
+      uniqueById.push(m);
+    }
+  }
+
+  // 2. Identify the action group for each action card
+  const getActionGroup = (m: any): string | null => {
+    if (m.message_type !== 'action_card' || !m.card_type) return null;
+
+    switch (m.card_type) {
+      case 'job_request':
+      case 'confirm_hire':
+        return 'job_proposal';
+      case 'accept_or_reject':
+        return 'accept_or_reject';
+      case 'cancel_hire':
+        return 'cancel_hire';
+      case 'worker_contact_reveal':
+        return 'worker_contact_reveal';
+      case 'employer_contact_reveal':
+        return 'employer_contact_reveal';
+      case 'unlock_request':
+        return 'unlock_request';
+      case 'mark_complete':
+      case 'flag_offline':
+        // If the job is completed, there must be ONLY ONE completion action card in the whole chat
+        if (applicationStatus === 'completed') {
+          return 'job_completion';
+        }
+        return m.card_type;
+      default:
+        return m.card_type;
+    }
+  };
+
+  // Find the ID of the latest card for each action group
+  const latestActionCardIdByGroup = new Map<string, number>();
+  for (let i = uniqueById.length - 1; i >= 0; i--) {
+    const m = uniqueById[i];
+    const group = getActionGroup(m);
+    if (group && !latestActionCardIdByGroup.has(group)) {
+      latestActionCardIdByGroup.set(group, m.id);
+    }
+  }
+
+  // Check if worker has flagged the job as completed offline
+  const isWorkerFlagged = uniqueById.some(
+    (m) => m.card_type === 'flag_offline' && Boolean(m.card_data?.is_flagged),
+  );
+
+  // Filter messages: keep non-action_cards and only the latest card per action
+  return uniqueById.filter((m) => {
+    const group = getActionGroup(m);
+    if (!group) return true;
+
+    // If worker was the first to flag as complete, employer should not see "Mark Job as Complete"
+    if (m.card_type === 'mark_complete' && isWorkerFlagged && applicationStatus !== 'completed') {
+      return false;
+    }
+
+    // If cancel_hire is present but job is already accepted or completed, omit it
+    if (
+      m.card_type === 'cancel_hire' &&
+      ['accepted', 'completed'].includes(applicationStatus || '')
+    ) {
+      return false;
+    }
+
+    return latestActionCardIdByGroup.get(group) === m.id;
+  });
+}
 
 type ChatScreenParams = {
   conversationId: number;
@@ -172,7 +256,16 @@ const ChatScreen: React.FC = () => {
     }
   };
 
-  const messages = data?.messages || [];
+  const rawMessages = data?.messages || [];
+  const messages = useMemo(
+    () =>
+      deduplicateActionCardMessages(
+        rawMessages,
+        conversationUserRole,
+        conversation?.application_status,
+      ),
+    [rawMessages, conversationUserRole, conversation?.application_status],
+  );
   const messageCount = messages.length;
 
   const isWorkerReplyAllowed =
@@ -386,13 +479,32 @@ const ChatScreen: React.FC = () => {
         // Only employer can cancel hire before worker accepts
         return role === 'employer' && appStatus === 'employer_confirmed';
 
-      case 'mark_complete':
+      case 'mark_complete': {
         // Only employer can mark job complete while job is in progress and not locked
-        return role === 'employer' && appStatus === 'accepted' && convStatus !== 'locked';
+        const hasFlaggedCard = messages.some(
+          (other) =>
+            other.card_type === 'flag_offline' &&
+            Boolean(other.card_data?.is_flagged) &&
+            !other.card_resolved,
+        );
+        return (
+          role === 'employer' &&
+          appStatus === 'accepted' &&
+          convStatus !== 'locked' &&
+          !hasFlaggedCard
+        );
+      }
 
       case 'flag_offline':
-        // Only worker can flag as complete while job is in progress
-        return role === 'worker' && appStatus === 'accepted';
+        // Worker can flag as complete if not flagged yet; Employer can confirm if flagged
+        if (appStatus !== 'accepted') return false;
+        if (role === 'worker') {
+          return !m.card_data?.is_flagged;
+        }
+        if (role === 'employer') {
+          return Boolean(m.card_data?.is_flagged);
+        }
+        return false;
 
       default:
         return false;
@@ -440,7 +552,11 @@ const ChatScreen: React.FC = () => {
       case 'flag_offline':
         return {
           icon: 'flag-outline' as const,
-          label: 'Flag Job as Done',
+          label: card.card_data?.is_flagged
+            ? conversationUserRole === 'employer'
+              ? `Work flagged as done by ${card.card_data?.worker_name || otherUserName || 'Worker'}. Confirm`
+              : 'Waiting for Employer Confirmation'
+            : 'Flag Job as Done',
           color: colors.warning,
           bg: '#FEF3C7',
         };
@@ -470,6 +586,8 @@ const ChatScreen: React.FC = () => {
   const handleActionComplete = () => {
     isNearBottomRef.current = true;
     refetch();
+    queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
+    queryClient.invalidateQueries({ queryKey: ['profile'] });
     queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
     queryClient.invalidateQueries({ queryKey: ['conversations'] });
     queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });

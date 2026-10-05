@@ -12,14 +12,23 @@ export function useMessages(conversationId: number) {
     enabled: Boolean(conversationId && conversationId > 0),
     refetchInterval: 800,
     staleTime: 400,
-    select: (data) => ({
-      pages: data.pages,
-      pageParams: data.pageParams,
-      // Flat sorted list for display (oldest first)
-      messages: data.pages
-        .flatMap((p) => p.data)
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
-    }),
+    select: (data) => {
+      const allMessages = data.pages.flatMap((p) => p.data);
+      const uniqueMap = new Map<number, Message>();
+      for (const m of allMessages) {
+        if (m && m.id != null) {
+          uniqueMap.set(m.id, m);
+        }
+      }
+      const sorted = Array.from(uniqueMap.values()).sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      );
+      return {
+        pages: data.pages,
+        pageParams: data.pageParams,
+        messages: sorted,
+      };
+    },
   });
 }
 

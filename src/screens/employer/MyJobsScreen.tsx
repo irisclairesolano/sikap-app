@@ -1,27 +1,26 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  FlatList,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
-import { colors, fonts, shadows } from '../../theme';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/common/Button';
-import { useEmployerJobs, useArchivedJobs, useRestoreJob } from '../../hooks/useEmployerJobs';
-import { JobPost } from '../../types';
 import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
+import { formatRateUnit, getCategoryStyles, getRelativeTime } from '../../components/jobs/JobCard';
 import { useAlert } from '../../contexts/AlertContext';
-import { getCategoryStyles, getRelativeTime, formatRateUnit } from '../../components/jobs/JobCard';
+import { useArchivedJobs, useEmployerJobs, useRestoreJob } from '../../hooks/useEmployerJobs';
+import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
+import { colors, fonts } from '../../theme';
+import { JobPost } from '../../types';
 
 type MyJobsNavigationProp = NativeStackNavigationProp<EmployerStackParamList, 'MyJobs'>;
 

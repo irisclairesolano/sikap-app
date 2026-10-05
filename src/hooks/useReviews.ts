@@ -141,6 +141,7 @@ export const useSubmitReview = () => {
       });
 
       // 4. Invalidate all relevant queries to refetch fresh server data
+      queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.invalidateQueries({ queryKey: ['myJobs'] });

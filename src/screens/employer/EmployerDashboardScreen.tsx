@@ -21,6 +21,7 @@ import { Image } from 'expo-image';
 
 import { useFocusEffect } from '@react-navigation/native';
 import { useEmployerJobs } from '../../hooks/useEmployerJobs';
+import { useEmployerStats } from '../../hooks/useEmployerStats';
 import { JobPost } from '../../types';
 
 import { DashboardSkeleton } from '../../components/common/SkeletonLoader';
@@ -31,13 +32,21 @@ export const EmployerDashboardScreen: React.FC = () => {
   const { user } = useAuthCheck();
 
   const { data: jobsResponse, isLoading: loading, refetch, isRefetching } = useEmployerJobs();
+  const {
+    totalHires,
+    totalPaidFormatted,
+    reputationFormatted,
+    ratingsCount,
+    refetch: refetchStats,
+  } = useEmployerStats();
   const [actionPage, setActionPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
 
   useFocusEffect(
     React.useCallback(() => {
       refetch();
-    }, [refetch]),
+      refetchStats();
+    }, [refetch, refetchStats]),
   );
 
   const allJobs: JobPost[] = jobsResponse?.data || [];
@@ -47,41 +56,6 @@ export const EmployerDashboardScreen: React.FC = () => {
       (j.status as string) === 'closed_in_progress' ||
       (j.status as string) === 'in_progress',
   );
-
-  const totalHires = allJobs.reduce((acc, j) => {
-    if (j.applications && Array.isArray(j.applications) && j.applications.length > 0) {
-      const hiredCount = j.applications.filter(
-        (a: any) =>
-          a.status === 'accepted' || a.status === 'completed' || a.status === 'employer_confirmed',
-      ).length;
-      return acc + Math.max(hiredCount, (j.filled_slots ?? j.accepted_count) || 0);
-    }
-    return acc + ((j.filled_slots ?? j.accepted_count) || 0);
-  }, 0);
-
-  const totalPaid = allJobs.reduce((acc, j) => {
-    const completedApps = (j.applications || []).filter(
-      (a: any) => a.status === 'completed' || a.status === 'accepted',
-    );
-    const paid = completedApps.reduce(
-      (pAcc: number, a: any) =>
-        pAcc + (Number(a.final_agreed_price) || Number(j.compensation) || 0),
-      0,
-    );
-    return acc + paid;
-  }, 0);
-
-  const hasRatings = (user?.ratings_count ?? 0) > 0;
-
-  const reputationFormatted = (() => {
-    if (!hasRatings) return 'N/A';
-    if (user?.reputation_score === undefined || user?.reputation_score === null) return 'N/A';
-    const num = Number(user.reputation_score);
-    if (isNaN(num) || num <= 0) return '0.0';
-    if (num % 1 === 0) return num.toFixed(1);
-    if (Number(num.toFixed(1)) === num) return num.toFixed(1);
-    return Number(num.toFixed(2)).toString();
-  })();
 
   if (loading && !jobsResponse) {
     return (
@@ -348,7 +322,7 @@ export const EmployerDashboardScreen: React.FC = () => {
               </View>
               <Text style={styles.statLabel}>Total paid</Text>
             </View>
-            <Text style={styles.statNum}>₱{totalPaid.toLocaleString()}</Text>
+            <Text style={styles.statNum}>{totalPaidFormatted}</Text>
           </View>
 
           <View style={styles.statCard}>
@@ -360,7 +334,7 @@ export const EmployerDashboardScreen: React.FC = () => {
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
               <Text style={styles.statNum}>{reputationFormatted}</Text>
-              {hasRatings && <Text style={styles.statMaxScore}>/5.0</Text>}
+              {ratingsCount > 0 && <Text style={styles.statMaxScore}>/5.0</Text>}
             </View>
           </View>
         </View>

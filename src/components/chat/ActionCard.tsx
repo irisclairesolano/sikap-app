@@ -780,6 +780,10 @@ const ActionCard: React.FC<ActionCardProps> = ({
   if (card_type === 'cancel_hire') {
     if (currentUserRole === 'worker') return null;
 
+    if (['accepted', 'completed'].includes(applicationStatus || '')) {
+      return null;
+    }
+
     if (card_resolved || applicationStatus === 'cancelled') {
       return renderEtchedCard(
         'Hiring Cancelled',
@@ -789,10 +793,6 @@ const ActionCard: React.FC<ActionCardProps> = ({
         colors.error,
         '#FEE2E2',
       );
-    }
-
-    if (['accepted', 'completed'].includes(applicationStatus || '')) {
-      return null;
     }
 
     return (
@@ -895,13 +895,33 @@ const ActionCard: React.FC<ActionCardProps> = ({
     );
   }
 
-  // 7. MARK COMPLETE (Employer side)
+  // 7. MARK COMPLETE (Employer side, or completion etched card for either role)
   if (card_type === 'mark_complete') {
-    if (currentUserRole === 'worker') return null;
-
     const isJobCompleted = applicationStatus === 'completed';
 
     if (isJobCompleted) {
+      if (currentUserRole === 'worker') {
+        return renderEtchedCard(
+          'Job Marked Complete',
+          'Work has been completed and verified.',
+          'checkmark-done-circle',
+          'Completed',
+          colors.success,
+          '#DCFCE7',
+          {
+            label: 'Rate Employer',
+            iconName: 'star' as const,
+            onPress: () => {
+              navigation.navigate('RateEmployer', {
+                id: Number(card_data?.application_id || card_data?.id),
+                employerName: String(card_data?.employer_name || otherUserName || 'Employer'),
+                jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
+              });
+            },
+          },
+        );
+      }
+
       return renderEtchedCard(
         'Job Marked Complete',
         'Work has been completed and verified.',
@@ -924,8 +944,10 @@ const ActionCard: React.FC<ActionCardProps> = ({
       );
     }
 
-    // If resolved prior to full job completion (e.g. superseded by flag_offline), hide to avoid duplicate
-    if (card_resolved) {
+    if (currentUserRole === 'worker') return null;
+
+    // If resolved prior to full job completion (e.g. superseded by flag_offline), or worker already flagged, hide to avoid duplicate
+    if (card_resolved || card_data?.is_flagged || card_data?.is_worker_flagged) {
       return null;
     }
 
@@ -1113,21 +1135,19 @@ const ActionCard: React.FC<ActionCardProps> = ({
           </View>
           <View style={styles.cardHeaderText}>
             <Text style={styles.title}>Work Flagged as Done</Text>
-            <Text style={styles.subtitle}>
-              {workerName} finished work offline. Please confirm and complete the job.
-            </Text>
+            <Text style={styles.subtitle}>Work flagged as done by {workerName}. Confirm</Text>
           </View>
         </View>
         <TouchableOpacity
           style={[styles.primaryButton, { backgroundColor: colors.success }]}
           onPress={() => {
             showAlert(
-              'Confirm Job Completed',
-              'Confirm that the work was completed satisfactorily?',
+              'Confirm Work Done',
+              `Work flagged as done by ${workerName}. Confirm that the work has been completed satisfactorily?`,
               [
                 { text: 'Cancel', style: 'cancel' },
                 {
-                  text: 'Confirm & Complete',
+                  text: 'Confirm',
                   onPress: () => {
                     const targetJobId = Number(card_data?.job_id || jobId);
                     markJobCompleteMutation.mutate(targetJobId, {
@@ -1152,7 +1172,9 @@ const ActionCard: React.FC<ActionCardProps> = ({
           {markJobCompleteMutation.isPending ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.primaryButtonText}>Confirm Job Completed</Text>
+            <Text style={styles.primaryButtonText}>
+              Work flagged as done by {workerName}. Confirm
+            </Text>
           )}
         </TouchableOpacity>
       </View>

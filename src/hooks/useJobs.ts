@@ -39,6 +39,7 @@ export const useDeleteJob = () => {
       return apiClient<{ message: string }>(`/jobs/${id}`, { method: 'DELETE' });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
       queryClient.invalidateQueries({ queryKey: ['myJobs'] });
       queryClient.invalidateQueries({ queryKey: ['employer-jobs'] });
       queryClient.invalidateQueries({ queryKey: ['archivedJobs'] });
@@ -58,6 +59,7 @@ export const useMarkJobComplete = () => {
       return apiClient<{ message: string }>(`/jobs/${id}/complete`, { method: 'PATCH' });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
       queryClient.invalidateQueries({ queryKey: ['myJobs'] });
       queryClient.invalidateQueries({ queryKey: ['employer-jobs'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });

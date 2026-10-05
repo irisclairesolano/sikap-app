@@ -99,8 +99,8 @@ export const RateWorkerScreen: React.FC = () => {
           triggerHaptic('success');
           const hasWarnings = res?.content_warnings && res.content_warnings.length > 0;
           const msg = hasWarnings
-            ? 'Salamat! Your rating helps keep the community trustworthy and helps good workers get hired. Note: your review contains language that may be reviewed for community standards.'
-            : 'Salamat! Your rating helps keep the community trustworthy and helps good workers get hired.';
+            ? 'Thank you! Your rating helps keep the community trustworthy and helps good workers get hired. Note: your review contains language that may be reviewed for community standards.'
+            : 'Thank you! Your rating helps keep the community trustworthy and helps good workers get hired.';
           const avgRating = (quality + punctuality + communication + behavior) / 4;
           const passedJobId = (route.params as any)?.jobId;
 

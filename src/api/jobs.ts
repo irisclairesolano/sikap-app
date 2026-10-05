@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { JobPost, PaginatedResponse } from '../types';
+import { JobPost, PaginatedResponse, EmployerStats } from '../types';
 
 export const jobsApi = {
   createJob: async (payload: any) => {
@@ -43,6 +43,10 @@ export const jobsApi = {
     return apiClient<{ message: string }>(`/jobs/${id}/complete`, {
       method: 'PATCH',
     });
+  },
+
+  getEmployerStats: async () => {
+    return apiClient<EmployerStats>('/employer/stats');
   },
 };
 

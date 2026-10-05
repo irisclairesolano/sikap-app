@@ -46,6 +46,7 @@ export const useConfirmHire = () => {
     mutationFn: ({ id, price }: { id: number; price: number }) =>
       applicationsApi.confirmHire(id, price),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
       queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
       queryClient.invalidateQueries({ queryKey: ['application'] });
       queryClient.invalidateQueries({ queryKey: ['myJobs'] });
@@ -66,6 +67,7 @@ export const useCancelHire = () => {
   return useMutation({
     mutationFn: (applicationId: number) => applicationsApi.cancelHire(applicationId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
       queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
       queryClient.invalidateQueries({ queryKey: ['application'] });
       queryClient.invalidateQueries({ queryKey: ['myJobs'] });

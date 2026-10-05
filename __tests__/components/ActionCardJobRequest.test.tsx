@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import ActionCard from '../../src/components/chat/ActionCard';
+import { deduplicateActionCardMessages } from '../../src/screens/messages/ChatScreen';
 import { Message } from '../../src/types';
 
 jest.mock('@react-navigation/native', () => ({
@@ -226,5 +227,212 @@ describe('ActionCard Job Request Component', () => {
     );
     expect(workerRender.getByText('Job Marked Complete')).toBeTruthy();
     expect(workerRender.getByText('Rate Employer')).toBeTruthy();
+  });
+
+  it('renders Work flagged as done by [worker]. Confirm for employer when worker flags complete, without Rate Worker button', async () => {
+    const flaggedMessage: Message = {
+      id: 104,
+      conversation_id: 5,
+      sender_id: null,
+      message_type: 'action_card',
+      card_type: 'flag_offline',
+      card_data: {
+        application_id: 42,
+        job_id: 10,
+        job_title: 'House Cleaning',
+        worker_name: 'Juan Dela Cruz',
+        employer_name: 'Cristina Solano',
+        is_flagged: true,
+      },
+      card_resolved: false,
+      created_at: '2026-09-24T00:00:00.000Z',
+    };
+
+    const employerRender = await render(
+      <ActionCard
+        message={flaggedMessage}
+        currentUserId={1}
+        currentUserRole="employer"
+        conversationId={5}
+        conversationStatus="open"
+        applicationStatus="accepted"
+        onActionComplete={jest.fn()}
+      />,
+    );
+
+    expect(
+      employerRender.getAllByText('Work flagged as done by Juan Dela Cruz. Confirm').length,
+    ).toBeGreaterThanOrEqual(1);
+    expect(employerRender.queryByText('Rate Worker')).toBeNull();
+    expect(employerRender.queryByText('Mark Job as Complete')).toBeNull();
+  });
+
+  describe('deduplicateActionCardMessages', () => {
+    it('ensures there is only one card per action even with duplicates', () => {
+      const messages: Message[] = [
+        {
+          id: 1,
+          conversation_id: 10,
+          sender_id: null,
+          message_type: 'action_card',
+          card_type: 'job_request',
+          card_data: { application_id: 1 },
+          card_resolved: true,
+          created_at: '2026-09-24T01:00:00.000Z',
+        },
+        {
+          id: 2,
+          conversation_id: 10,
+          sender_id: 1,
+          message_type: 'text',
+          body: 'Hello there!',
+          card_resolved: false,
+          created_at: '2026-09-24T01:05:00.000Z',
+        },
+        {
+          id: 3,
+          conversation_id: 10,
+          sender_id: null,
+          message_type: 'action_card',
+          card_type: 'confirm_hire',
+          card_data: { application_id: 1, price: 1500 },
+          card_resolved: true,
+          created_at: '2026-09-24T01:10:00.000Z',
+        },
+        {
+          id: 4,
+          conversation_id: 10,
+          sender_id: null,
+          message_type: 'action_card',
+          card_type: 'accept_or_reject',
+          card_data: { application_id: 1, price: 1500 },
+          card_resolved: true,
+          created_at: '2026-09-24T01:15:00.000Z',
+        },
+        {
+          id: 5,
+          conversation_id: 10,
+          sender_id: null,
+          message_type: 'action_card',
+          card_type: 'accept_or_reject',
+          card_data: { application_id: 1, price: 1500 },
+          card_resolved: true,
+          created_at: '2026-09-24T01:20:00.000Z',
+        },
+        {
+          id: 6,
+          conversation_id: 10,
+          sender_id: null,
+          message_type: 'action_card',
+          card_type: 'mark_complete',
+          card_data: { application_id: 1 },
+          card_resolved: true,
+          created_at: '2026-09-24T01:25:00.000Z',
+        },
+        {
+          id: 7,
+          conversation_id: 10,
+          sender_id: null,
+          message_type: 'action_card',
+          card_type: 'flag_offline',
+          card_data: { application_id: 1, is_flagged: false },
+          card_resolved: true,
+          created_at: '2026-09-24T01:30:00.000Z',
+        },
+        {
+          id: 8,
+          conversation_id: 10,
+          sender_id: null,
+          message_type: 'action_card',
+          card_type: 'flag_offline',
+          card_data: { application_id: 1, is_flagged: true },
+          card_resolved: true,
+          created_at: '2026-09-24T01:35:00.000Z',
+        },
+      ];
+
+      const dedupedCompleted = deduplicateActionCardMessages(messages, 'employer', 'completed');
+
+      // Proposal action: only latest confirm_hire (id: 3) should remain, job_request (id: 1) removed
+      expect(dedupedCompleted.find((m) => m.id === 1)).toBeUndefined();
+      expect(dedupedCompleted.find((m) => m.id === 3)).toBeDefined();
+
+      // Text message (id: 2) must remain intact
+      expect(dedupedCompleted.find((m) => m.id === 2)).toBeDefined();
+
+      // Accept/reject action: only latest (id: 5) remains, earlier (id: 4) removed
+      expect(dedupedCompleted.find((m) => m.id === 4)).toBeUndefined();
+      expect(dedupedCompleted.find((m) => m.id === 5)).toBeDefined();
+
+      // Completed job: only one completion card remains (id: 8), mark_complete and earlier flag_offline removed
+      expect(dedupedCompleted.find((m) => m.id === 6)).toBeUndefined();
+      expect(dedupedCompleted.find((m) => m.id === 7)).toBeUndefined();
+      expect(dedupedCompleted.find((m) => m.id === 8)).toBeDefined();
+
+      // Exactly 4 messages total (1 proposal card, 1 text, 1 accept card, 1 completion card)
+      expect(dedupedCompleted.length).toBe(4);
+    });
+
+    it('omits cancel_hire card once application is accepted or completed', () => {
+      const messages: Message[] = [
+        {
+          id: 1,
+          conversation_id: 10,
+          sender_id: null,
+          message_type: 'action_card',
+          card_type: 'cancel_hire',
+          card_resolved: true,
+          created_at: '2026-09-24T01:00:00.000Z',
+        },
+      ];
+
+      const resultAccepted = deduplicateActionCardMessages(messages, 'employer', 'accepted');
+      expect(resultAccepted.length).toBe(0);
+
+      const resultCompleted = deduplicateActionCardMessages(messages, 'employer', 'completed');
+      expect(resultCompleted.length).toBe(0);
+
+      const resultConfirmed = deduplicateActionCardMessages(
+        messages,
+        'employer',
+        'employer_confirmed',
+      );
+      expect(resultConfirmed.length).toBe(1);
+    });
+
+    it('omits mark_complete when worker has flagged complete offline', () => {
+      const messages: Message[] = [
+        {
+          id: 1,
+          conversation_id: 10,
+          sender_id: null,
+          message_type: 'action_card',
+          card_type: 'mark_complete',
+          card_data: { application_id: 1, job_id: 10 },
+          card_resolved: false,
+          created_at: '2026-09-24T01:00:00.000Z',
+        },
+        {
+          id: 2,
+          conversation_id: 10,
+          sender_id: null,
+          message_type: 'action_card',
+          card_type: 'flag_offline',
+          card_data: {
+            application_id: 1,
+            job_id: 10,
+            is_flagged: true,
+            worker_name: 'Juan Dela Cruz',
+          },
+          card_resolved: false,
+          created_at: '2026-09-24T01:05:00.000Z',
+        },
+      ];
+
+      const result = deduplicateActionCardMessages(messages, 'employer', 'accepted');
+      expect(result.length).toBe(1);
+      expect(result[0].card_type).toBe('flag_offline');
+      expect(result.find((m) => m.card_type === 'mark_complete')).toBeUndefined();
+    });
   });
 });
