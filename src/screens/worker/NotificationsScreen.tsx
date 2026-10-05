@@ -94,13 +94,37 @@ export const NotificationsScreen: React.FC = () => {
           const appId =
             parsedData?.application_id ||
             parsedData?.applicationId ||
-            parsedData?.id ||
             notif.data?.application_id ||
             notif.data?.applicationId;
           const jobId =
             parsedData?.job_id || parsedData?.jobId || notif.data?.job_id || notif.data?.jobId;
 
           const notifType = parsedData?.type || notif.data?.type;
+
+          // Purely informational notifications with no action required — mark as read and do NOT redirect
+          const isInformational =
+            parsedData?.requires_action === false ||
+            parsedData?.action_required === false ||
+            notifType === 'application_rejected' ||
+            notifType === 'application_withdrawn' ||
+            notifType === 'job_bookmarked' ||
+            notifType === 'job_saved' ||
+            notifType === 'warning' ||
+            notifType === 'account_warning' ||
+            notifType === 'system_notice' ||
+            notifType === 'general_announcement' ||
+            notifType === 'info' ||
+            notifType === 'report_resolved' ||
+            notifType === 'report_submitted' ||
+            notifType === 'report_update' ||
+            notifType === 'verification_rejected' ||
+            notifType === 'verification_pending' ||
+            notifType === 'id_rejected';
+
+          if (isInformational) {
+            return;
+          }
+
           if (
             notifType === 'verification_approved' ||
             notifType === 'id_verified' ||
@@ -133,6 +157,7 @@ export const NotificationsScreen: React.FC = () => {
             return;
           }
 
+          // Actionable application notifications (offers, shortlisted, hired)
           if (appId && !isNaN(Number(appId))) {
             navigation.navigate('ApplicationDetail', { applicationId: Number(appId) });
           } else if (jobId && !isNaN(Number(jobId))) {

@@ -32,7 +32,7 @@ import { triggerHaptic } from '../../utils/haptics';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
 
 const DRAFT_STORAGE_KEY = 'sikap_post_job_draft_v1';
-const DURATION_UNITS = ['Hours', 'Days', 'Weeks', 'Months'];
+const DURATION_UNITS = ['None', 'Hours', 'Days', 'Weeks', 'Months'];
 const RATE_UNITS: {
   label: string;
   sublabel: string;
@@ -144,7 +144,7 @@ export const PostJobScreen: React.FC = () => {
 
     if (rateUnit === 'per_project') {
       const parsedDur = parseFloat(duration);
-      if (parsedDur && !isNaN(parsedDur) && parsedDur > 0) {
+      if (durationUnit !== 'None' && parsedDur && !isNaN(parsedDur) && parsedDur > 0) {
         let totalHours = 8;
         if (durationUnit === 'Hours') totalHours = parsedDur;
         else if (durationUnit === 'Days') totalHours = parsedDur * 8;
@@ -710,9 +710,12 @@ export const PostJobScreen: React.FC = () => {
       photos: remoteUrls,
       video_url: videoUpload?.remoteUrl || null,
     };
-    if (duration) {
+    if (duration && durationUnit !== 'None') {
       payload.duration = parseInt(duration, 10);
       payload.duration_unit = durationUnit;
+    } else {
+      payload.duration = null;
+      payload.duration_unit = null;
     }
     if (exactLocation) payload.exact_location = exactLocation;
     if (toolsRequired) payload.tools_required = toolsRequired;
@@ -1048,14 +1051,15 @@ export const PostJobScreen: React.FC = () => {
               <View style={{ flex: 1 }}>
                 <CustomInput
                   label="Duration"
-                  value={duration}
+                  value={durationUnit === 'None' ? '' : duration}
                   onChangeText={setDuration}
-                  placeholder="E.g. 5"
+                  placeholder={durationUnit === 'None' ? 'N/A' : 'E.g. 5'}
                   keyboardType="numeric"
                   icon="time-outline"
+                  editable={durationUnit !== 'None'}
                 />
               </View>
-              <View style={{ flex: 1.2 }}>
+              <View style={{ flex: 1.4 }}>
                 <Text style={styles.label}>Duration Unit</Text>
                 <View style={styles.unitSelector}>
                   {DURATION_UNITS.map((unit) => (
@@ -1065,6 +1069,9 @@ export const PostJobScreen: React.FC = () => {
                       onPress={() => {
                         triggerHaptic();
                         setDurationUnit(unit);
+                        if (unit === 'None') {
+                          setDuration('');
+                        }
                       }}
                     >
                       <Text

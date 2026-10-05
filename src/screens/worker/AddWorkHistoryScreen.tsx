@@ -689,9 +689,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
   },
   addButton: {
-    backgroundColor: colors.peach,
+    backgroundColor: '#E0F2FE',
     borderWidth: 2,
-    borderColor: colors.peachBright,
+    borderColor: '#BAE6FD',
     borderStyle: 'dashed',
     borderRadius: 14,
     padding: 20,
@@ -704,10 +704,10 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.skyDeep,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.primaryDark,
+    shadowColor: colors.skyDeep,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -716,7 +716,7 @@ const styles = StyleSheet.create({
   addTitle: {
     fontFamily: fonts.bodyBold,
     fontSize: 14,
-    color: colors.primaryDark,
+    color: colors.skyDeep,
   },
   bottomBar: {
     paddingHorizontal: 24,

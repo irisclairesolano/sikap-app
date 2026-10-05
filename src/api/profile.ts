@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { User, WorkerExperience, CharacterReference } from '../types';
+import { User, WorkerExperience, CharacterReference, Skill } from '../types';
 import { appendFileToFormData } from '../utils/formData';
 
 export const profileApi = {
@@ -40,11 +40,15 @@ export const profileApi = {
   },
 
   // Add skills to profile
-  addSkills: async (skillIds: number[], customSkills?: string[]): Promise<void> => {
-    await apiClient('/profile/skills', {
+  addSkills: async (
+    skillIds: number[],
+    customSkills?: string[],
+  ): Promise<{ message: string; skills: Skill[]; custom_skills?: string[]; user?: User }> => {
+    const response = await apiClient<any>('/profile/skills', {
       method: 'POST',
       body: JSON.stringify({ skill_ids: skillIds, custom_skills: customSkills || [] }),
     });
+    return response;
   },
 
   // Add work experience

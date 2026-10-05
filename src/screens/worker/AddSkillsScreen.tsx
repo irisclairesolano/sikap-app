@@ -14,6 +14,7 @@ import { skillsApi, Skill } from '../../api/skills';
 import { profileApi } from '../../api/profile';
 import { notifyAuthChanged } from '../../store/authEvents';
 import { useAuthCheck } from '../../hooks/useAuthCheck';
+import * as SecureStore from '../../utils/storage';
 
 export const AddSkillsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -43,12 +44,17 @@ export const AddSkillsScreen: React.FC = () => {
   });
 
   const saveMutation = useMutation({
-    mutationFn: () =>
-      profileApi.addSkills(
-        selectedSkills.map((s) => s.id),
-        customSkills,
-      ),
-    onSuccess: () => {
+    mutationFn: () => {
+      const validSkillIds = selectedSkills
+        .map((s) => Number(s.id))
+        .filter((id) => !isNaN(id) && id > 0);
+      return profileApi.addSkills(validSkillIds, customSkills);
+    },
+    onSuccess: async (data: any) => {
+      if (data?.user) {
+        await SecureStore.setItemAsync('user_profile', JSON.stringify(data.user));
+        queryClient.setQueryData(['profile'], data.user);
+      }
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.refetchQueries({ queryKey: ['profile'] });
       notifyAuthChanged();
@@ -137,55 +143,7 @@ export const AddSkillsScreen: React.FC = () => {
         </Text>
         <Text style={styles.subtitle}>Choose all that apply.</Text>
 
-        <Text style={styles.sectionHeader}>Custom Skill</Text>
-        <View style={styles.customInputRow}>
-          <View style={{ flex: 1 }}>
-            <Input
-              placeholder="type custom skills"
-              value={customSkill}
-              onChangeText={(text) => {
-                setCustomSkill(text);
-                setCustomSkillError('');
-              }}
-              error={customSkillError}
-            />
-          </View>
-          <TouchableOpacity
-            style={[styles.addButton, !customSkill.trim() && styles.addButtonDisabled]}
-            onPress={handleAddCustomSkill}
-            disabled={!customSkill.trim()}
-          >
-            <Text style={styles.addButtonText}>+ Add</Text>
-          </TouchableOpacity>
-        </View>
-
-        {customSkill.trim().length > 0 && (
-          <View style={styles.suggestionsContainer}>
-            <Text style={styles.suggestionsHeader}>Suggested Matches</Text>
-            <View style={styles.chipContainer}>
-              {skills
-                .filter(
-                  (s) =>
-                    !selectedSkills.find((selected) => selected.id === s.id) &&
-                    s.name.toLowerCase().includes(customSkill.trim().toLowerCase()),
-                )
-                .map((skill) => (
-                  <TouchableOpacity
-                    key={skill.id}
-                    style={styles.chip}
-                    onPress={() => {
-                      toggleSkill(skill);
-                      setCustomSkill('');
-                      setCustomSkillError('');
-                    }}
-                  >
-                    <Text style={styles.chipText}>+ {skill.name}</Text>
-                  </TouchableOpacity>
-                ))}
-            </View>
-          </View>
-        )}
-
+        {/* Selected Skills Section */}
         <Text style={styles.sectionHeaderPrimary}>
           Selected · {selectedSkills.length + customSkills.length}
         </Text>
@@ -245,8 +203,82 @@ export const AddSkillsScreen: React.FC = () => {
             </TouchableOpacity>
           ))}
           {selectedSkills.length === 0 && customSkills.length === 0 && (
-            <Text style={styles.emptyText}>No skills selected yet.</Text>
+            <Text style={styles.emptyText}>
+              No skills selected yet. Tap from below or add a custom skill.
+            </Text>
           )}
+        </View>
+
+        {/* Search & Custom Skill Input */}
+        <Text style={styles.sectionHeader}>Custom Skill</Text>
+        <View style={styles.customInputRow}>
+          <View style={{ flex: 1 }}>
+            <Input
+              placeholder="type custom skills"
+              value={customSkill}
+              onChangeText={(text) => {
+                setCustomSkill(text);
+                setCustomSkillError('');
+              }}
+              error={customSkillError}
+            />
+          </View>
+          <TouchableOpacity
+            style={[styles.addButton, !customSkill.trim() && styles.addButtonDisabled]}
+            onPress={handleAddCustomSkill}
+            disabled={!customSkill.trim()}
+          >
+            <Text style={styles.addButtonText}>+ Add</Text>
+          </TouchableOpacity>
+        </View>
+
+        {customSkill.trim().length > 0 && (
+          <View style={styles.suggestionsContainer}>
+            <Text style={styles.suggestionsHeader}>Suggested Matches</Text>
+            <View style={styles.chipContainer}>
+              {skills
+                .filter(
+                  (s) =>
+                    !selectedSkills.find((selected) => selected.id === s.id) &&
+                    s.name.toLowerCase().includes(customSkill.trim().toLowerCase()),
+                )
+                .map((skill) => (
+                  <TouchableOpacity
+                    key={skill.id}
+                    style={styles.chip}
+                    onPress={() => {
+                      toggleSkill(skill);
+                      setCustomSkill('');
+                      setCustomSkillError('');
+                    }}
+                  >
+                    <Text style={styles.chipText}>+ {skill.name}</Text>
+                  </TouchableOpacity>
+                ))}
+            </View>
+          </View>
+        )}
+
+        {/* Available Catalog Skills */}
+        <Text style={styles.sectionHeader}>Available Skills</Text>
+        <View style={styles.chipContainer}>
+          {skills
+            .filter((s) => !selectedSkills.some((sel) => sel.id === s.id))
+            .map((skill) => (
+              <TouchableOpacity
+                key={skill.id}
+                style={styles.chip}
+                onPress={() => toggleSkill(skill)}
+              >
+                <Ionicons
+                  name={getSkillIcon(skill.name) as any}
+                  size={14}
+                  color={colors.inkMuted}
+                  style={{ marginRight: 4 }}
+                />
+                <Text style={styles.chipText}>{skill.name}</Text>
+              </TouchableOpacity>
+            ))}
         </View>
       </ScrollView>
 
@@ -265,7 +297,8 @@ export const AddSkillsScreen: React.FC = () => {
           </Text>
         ) : null}
         <Button
-          label={saveMutation.isPending ? 'Saving...' : 'Next'}
+          label={saveMutation.isPending ? 'Saving...' : 'Save Skills'}
+          accessibilityLabel="Next"
           size="lg"
           fullWidth
           loading={saveMutation.isPending}
