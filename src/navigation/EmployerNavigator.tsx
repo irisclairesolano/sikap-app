@@ -16,6 +16,7 @@ import JobStatusManagementScreen from '../screens/employer/JobStatusManagementSc
 import EditProfileScreen from '../screens/common/EditProfileScreen';
 import SettingsScreen from '../screens/common/SettingsScreen';
 import ReportScreen from '../screens/common/ReportScreen';
+import SupportTicketsScreen from '../screens/common/SupportTicketsScreen';
 import RoleOnboardingScreen from '../screens/common/RoleOnboardingScreen';
 import ReviewsScreen from '../screens/worker/ReviewsScreen';
 
@@ -33,6 +34,7 @@ import SuccessScreen, { SuccessParams } from '../screens/common/SuccessScreen';
 
 export type EmployerStackParamList = {
   Success: SuccessParams;
+  SupportTickets: undefined;
   Home: undefined;
   EmployerDashboard: undefined;
   PostJob?: { job?: any } | undefined;
@@ -195,6 +197,7 @@ const ProfileStack: React.FC = () => (
     <Stack.Screen name="ProfileMain" component={ProfileScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
+    <Stack.Screen name="SupportTickets" component={SupportTicketsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />

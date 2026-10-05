@@ -38,7 +38,7 @@ const ContactSupportScreen: React.FC = () => {
     onSuccess: () => {
       showAlert(
         'Message Sent',
-        'Your support ticket has been created. Our team will email you back shortly.',
+        'Your support ticket has been created. Our team will review your request in-app.',
       );
       navigation.goBack();
     },
@@ -82,7 +82,8 @@ const ContactSupportScreen: React.FC = () => {
             </Text>
 
             <Text style={styles.body}>
-              Having trouble? Send us a message and our support team will get back to you via email.
+              Having trouble? Send us a message and our admin support team will review your ticket
+              directly in-app.
             </Text>
 
             <View style={styles.formGroup}>

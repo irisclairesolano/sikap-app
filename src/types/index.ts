@@ -383,3 +383,16 @@ export interface PaginatedMessages {
   next_cursor?: string | null;
   next_page_url?: string | null;
 }
+
+// ─── Support Tickets ──────────────────────────────────────────────────────────
+
+export interface SupportTicket {
+  id: number;
+  user_id: number;
+  subject: string;
+  message: string;
+  status: 'open' | 'processing' | 'resolved';
+  admin_reply?: string | null;
+  created_at: string;
+  updated_at: string;
+}

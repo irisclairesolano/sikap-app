@@ -22,6 +22,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { notifyAuthChanged } from '../../store/authEvents';
 import { colors, fonts, shadows } from '../../theme';
 import * as SecureStore from '../../utils/storage';
+import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
 
 // ─── Static content modal ────────────────────────────────────────────────────
 
@@ -159,7 +160,7 @@ const cStyles = StyleSheet.create({
 const HELP_SECTIONS: ContentSection[] = [
   {
     heading: '👋 Welcome to SIKAP Help Center',
-    body: 'SIKAP connects local workers with employers in the province of Sorsogon. This guide covers the most common questions about using the app.',
+    body: 'SIKAP connects local workers with employers across the Province of Sorsogon. This guide covers the most common questions about using the app.',
   },
   {
     heading: 'Getting Started',
@@ -171,7 +172,7 @@ const HELP_SECTIONS: ContentSection[] = [
   },
   {
     heading: 'Hiring Process',
-    body: 'The SIKAP hiring process has five stages:\n\n1. Application Submitted — You applied.\n2. Shortlisted — The employer reviewed your application.\n3. Negotiation — Terms and compensation are discussed.\n4. Hired — The employer confirms and the job begins.\n5. Completed — The employer marks the job as completed, and both parties can then rate each other.',
+    body: 'The SIKAP hiring process has five stages:\n\n1. Application Submitted — You applied for the job post.\n2. Shortlisted — The employer reviewed your application and opened in-app chat for negotiation.\n3. Offer Sent — The employer confirms final compensation and sends the formal hiring offer.\n4. Hired — You accept the offer and the job officially begins.\n5. Completed — Work is finished, receipt is generated, and ratings and reviews are exchanged.',
   },
   {
     heading: 'Messaging',
@@ -183,11 +184,11 @@ const HELP_SECTIONS: ContentSection[] = [
   },
   {
     heading: 'ID Verification',
-    body: 'For security, workers must submit a valid government-issued ID (front and back) and a selfie. Verification is reviewed by our admin team within 1–3 business days. And employer may upload business document available to them',
+    body: 'For security, workers must submit a valid government-issued ID (front and back) and a selfie. Employers may upload business documents available to them. Verification is reviewed by our admin team within 1–3 business days.',
   },
   {
     heading: 'Account Issues',
-    body: "If you're having trouble logging in, try resetting your password via the login screen. If your account is suspended or flagged, you may contact costumer support.",
+    body: "If you're having trouble logging in, try resetting your password via the login screen. If your account is suspended or flagged, you may submit an in-app support ticket.",
   },
   {
     heading: 'Reporting & Safety',
@@ -195,7 +196,7 @@ const HELP_SECTIONS: ContentSection[] = [
   },
   {
     heading: 'Contact Support',
-    body: 'For additional help, you may submt a support ticket . We aim to respond within 24 hours on business days.',
+    body: 'For additional help, you can submit an in-app support ticket anytime under Settings > Support Tickets. Our admin team will review and respond directly inside the app.',
   },
 ];
 
@@ -246,11 +247,11 @@ const TERMS_SECTIONS: ContentSection[] = [
   },
   {
     heading: '11. Governing Law',
-    body: 'These Terms are governed by the laws of the Republic of the Philippines. Any disputes shall be subject to the jurisdiction of the appropriate courts in Marinduque.',
+    body: 'These Terms are governed by the laws of the Republic of the Philippines. Any disputes shall be subject to the jurisdiction of the appropriate courts in Sorsogon.',
   },
   {
     heading: '12. Contact',
-    body: 'For questions about these Terms, contact us at legal@sikap.ph.',
+    body: 'For questions about these Terms, please submit an in-app support ticket through the SIKAP application.',
   },
 ];
 
@@ -285,7 +286,7 @@ const PRIVACY_SECTIONS: ContentSection[] = [
   },
   {
     heading: '7. Your Rights',
-    body: 'Under the Philippine Data Privacy Act of 2012 (Republic Act No. 10173), you have the right to:\n• Access your personal data\n• Correct inaccurate data\n• Request deletion of your data\n• Withdraw consent at any time\n\nTo exercise these rights, contact us at privacy@sikap.ph.',
+    body: 'Under the Philippine Data Privacy Act of 2012 (Republic Act No. 10173), you have the right to:\n• Access your personal data\n• Correct inaccurate data\n• Request deletion of your data\n• Withdraw consent at any time\n\nTo exercise these rights, submit an in-app request through the Help & Support section in the SIKAP app.',
   },
   {
     heading: "8. Children's Privacy",
@@ -297,7 +298,7 @@ const PRIVACY_SECTIONS: ContentSection[] = [
   },
   {
     heading: '10. Contact Us',
-    body: 'For privacy concerns or data requests, contact us through our official support channels.',
+    body: 'For privacy concerns or data requests, contact us through our official in-app support channels.',
   },
 ];
 
@@ -418,13 +419,16 @@ export const SettingsScreen: React.FC = () => {
         // Tier 1: Blocked
         showAlert(
           'Cannot Delete Account',
-          status.reason ||
-            'You have active jobs or pending applications in progress. Please conclude or cancel them before deleting your account.',
+          status.reason
+            ? sanitizeErrorMessage(status.reason)
+            : 'You have active jobs or pending applications in progress. Please conclude or cancel them before deleting your account.',
         );
         return;
       }
 
-      setDeleteWarning(status.has_warning ? status.warning : null);
+      setDeleteWarning(
+        status.has_warning && status.warning ? sanitizeErrorMessage(status.warning) : null,
+      );
       setSelectedReason(DELETE_REASONS[0]);
       setCustomReasonDetails('');
       setShowDeleteModal(true);
@@ -523,6 +527,12 @@ export const SettingsScreen: React.FC = () => {
               icon="help-circle-outline"
               title="Help Center"
               onPress={() => setShowHelp(true)}
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              icon="chatbubbles-outline"
+              title="Support Tickets"
+              onPress={() => navigation.navigate('SupportTickets' as never)}
             />
             <View style={styles.divider} />
             <SettingRow

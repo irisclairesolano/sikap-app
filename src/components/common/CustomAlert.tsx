@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Modal } from 'react-native';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import Button from './Button';
-import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
+import { sanitizeErrorMessage, sanitizeErrorTitle } from '../../utils/errorSanitizer';
 
 export interface AlertButton {
   text: string;
@@ -26,7 +26,7 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
   buttons = [{ text: 'OK' }],
   onRequestClose,
 }) => {
-  const cleanTitle = sanitizeErrorMessage(title);
+  const cleanTitle = sanitizeErrorTitle(title);
   const cleanMessage = message ? sanitizeErrorMessage(message) : undefined;
 
   // Contextual icon and background tint
