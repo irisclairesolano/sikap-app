@@ -39,10 +39,10 @@ const RATE_UNITS: {
   value: 'per_day' | 'per_hour' | 'per_project' | 'per_piece';
   hint: string;
 }[] = [
-  { label: 'Per Day', sublabel: 'Arawan', value: 'per_day', hint: '/ day' },
-  { label: 'Per Hour', sublabel: 'Orasan', value: 'per_hour', hint: '/ hr' },
-  { label: 'Fixed', sublabel: 'Pakyaw', value: 'per_project', hint: 'total' },
-  { label: 'Per Piece', sublabel: 'Bawat Piraso', value: 'per_piece', hint: '/ pc' },
+  { label: 'Per Day', sublabel: 'Daily', value: 'per_day', hint: '/ day' },
+  { label: 'Per Hour', sublabel: 'Hourly', value: 'per_hour', hint: '/ hr' },
+  { label: 'Fixed', sublabel: 'Project', value: 'per_project', hint: 'total' },
+  { label: 'Per Piece', sublabel: 'Piece Rate', value: 'per_piece', hint: '/ pc' },
 ];
 const DEFAULT_CATEGORIES = [
   'Construction',
@@ -138,7 +138,7 @@ export const PostJobScreen: React.FC = () => {
         warningText: isSuspectLow
           ? `⚠️ ₱${parsedPay.toLocaleString()} is below DOLE Region V daily minimum wage (~₱395/day). If you meant ₱${parsedPay.toLocaleString()} per hour, please tap "Per Hour" above.`
           : undefined,
-        note: `Standard daily rate (Arawan)`,
+        note: `Standard daily rate`,
       };
     }
 
@@ -159,11 +159,11 @@ export const PostJobScreen: React.FC = () => {
             hourlyEq < 50
               ? '⚠️ Estimated hourly equivalent is unusually low for this project duration.'
               : undefined,
-          note: `Total fixed contract payout (Pakyaw)`,
+          note: `Total fixed contract payout`,
         };
       }
       return {
-        equivalent: `Total fixed compensation for the completed project (Pakyaw).`,
+        equivalent: `Total fixed compensation for the completed project.`,
         isWarning: false,
         warningText: undefined,
         note: `Fixed / Project basis`,
@@ -943,17 +943,17 @@ export const PostJobScreen: React.FC = () => {
             />
 
             <CustomInput
-              label="Exact Location · Eksaktong Lokasyon"
+              label="Exact Location"
               value={exactLocation}
               onChangeText={setExactLocation}
-              placeholder="E.g. 123 Main St, malapit sa Munisipyo / Plaza"
+              placeholder="E.g. 123 Main St, near Municipal Hall / Plaza"
               icon="map-outline"
             />
 
             {/* Pay Amount & Rate Basis Group */}
             <View style={styles.fieldBlock}>
               <CustomInput
-                label="Pay Amount (PHP) · Halaga ng Pasahod *"
+                label="Pay Amount (PHP) *"
                 value={pay}
                 onChangeText={handlePayChange}
                 placeholder="600"
@@ -962,7 +962,7 @@ export const PostJobScreen: React.FC = () => {
               />
               <View style={{ marginTop: 12 }}>
                 <Text style={styles.label}>
-                  Rate Basis · Batayan ng Pasahod<Text style={{ color: colors.error }}> *</Text>
+                  Rate Basis<Text style={{ color: colors.error }}> *</Text>
                 </Text>
                 <View style={styles.rateUnitSelector}>
                   {RATE_UNITS.map((item) => {
@@ -1035,7 +1035,7 @@ export const PostJobScreen: React.FC = () => {
             {/* Slots Underneath Pay & Rate Basis */}
             <View style={styles.fieldBlock}>
               <CustomInput
-                label="Slots · Bilang ng Manggagawa *"
+                label="Slots (Workers Needed) *"
                 value={slots}
                 onChangeText={handleSlotsChange}
                 placeholder="2"
@@ -1047,7 +1047,7 @@ export const PostJobScreen: React.FC = () => {
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
                 <CustomInput
-                  label="Duration · Tagal"
+                  label="Duration"
                   value={duration}
                   onChangeText={setDuration}
                   placeholder="E.g. 5"
@@ -1056,7 +1056,7 @@ export const PostJobScreen: React.FC = () => {
                 />
               </View>
               <View style={{ flex: 1.2 }}>
-                <Text style={styles.label}>Duration Unit · Yunit</Text>
+                <Text style={styles.label}>Duration Unit</Text>
                 <View style={styles.unitSelector}>
                   {DURATION_UNITS.map((unit) => (
                     <TouchableOpacity
@@ -1083,7 +1083,7 @@ export const PostJobScreen: React.FC = () => {
 
             <View>
               <Text style={styles.label}>
-                Schedule Date · Petsa ng Simula<Text style={{ color: colors.error }}> *</Text>
+                Schedule Date<Text style={{ color: colors.error }}> *</Text>
               </Text>
               <TouchableOpacity
                 style={styles.datePickerBtn}

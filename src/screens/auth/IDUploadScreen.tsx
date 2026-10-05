@@ -360,9 +360,9 @@ const IDUploadScreen: React.FC = () => {
         >
           <Ionicons name="alert-circle" size={18} color={colors.gold} style={{ marginTop: 2 }} />
           <Text style={[styles.privacyText, { color: colors.ink }]}>
-            <Text style={styles.privacyTextBold}>Upload Guidelines · Gabay: </Text>
-            Siguraduhing maliwanag, hindi malabo, at nababasa ang lahat ng detalye sa ID. Ligtas at
-            kumpidensyal ang iyong dokumento para sa proteksyon ng komunidad.
+            <Text style={styles.privacyTextBold}>Upload Guidelines: </Text>
+            Make sure your ID is well-lit, not blurry, and all details are readable. Your documents
+            are kept safe and confidential for community verification.
           </Text>
         </View>
 
@@ -393,7 +393,7 @@ const IDUploadScreen: React.FC = () => {
               <Text style={styles.uploadSubtitle}>
                 {selectedFile
                   ? `${selectedFile.name}`
-                  : "PhilSys • Driver's License • Voter's ID\nPRC • Postal ID • Barangay ID\n(Harap ng ID)"}
+                  : "PhilSys • Driver's License • Voter's ID\nPRC • Postal ID • Barangay ID\n(Front of ID)"}
               </Text>
             </TouchableOpacity>
 
@@ -417,9 +417,7 @@ const IDUploadScreen: React.FC = () => {
                 {selectedFileBack ? 'ID Back Uploaded ✓' : 'Upload ID Back (from gallery)'}
               </Text>
               <Text style={styles.uploadSubtitle}>
-                {selectedFileBack
-                  ? `${selectedFileBack.name}`
-                  : 'Back side of your ID · Likod ng iyong ID'}
+                {selectedFileBack ? `${selectedFileBack.name}` : 'Back side of your ID'}
               </Text>
             </TouchableOpacity>
 
@@ -446,7 +444,7 @@ const IDUploadScreen: React.FC = () => {
                 <Text style={styles.uploadSubtitle}>
                   {selectedSelfie
                     ? `${selectedSelfie.name}`
-                    : 'Siguraduhing malinaw ang iyong mukha at ang hawak na ID.'}
+                    : 'Ensure your face and held ID are clearly visible.'}
                 </Text>
               </TouchableOpacity>
             ) : (

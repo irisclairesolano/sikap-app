@@ -41,7 +41,7 @@ describe('sanitizeErrorMessage', () => {
     const rawHtml = '<!DOCTYPE html><html><body>502 Bad Gateway</body></html>';
     const result = sanitizeErrorMessage(rawHtml);
     expect(result).toBe(
-      'The server is temporarily unavailable. Please try again in a few moments.',
+      'The server is temporarily unavailable (waking up). Please try again in a few moments.',
     );
   });
 
