@@ -118,7 +118,7 @@ export const SavedJobsScreen: React.FC = () => {
           <EmptyState
             icon="bookmark-outline"
             title="No saved jobs yet"
-            subtitle="Wala ka pang naka-save na trabaho. Mag-browse sa job feed para mag-save ng mga nais mong trabaho."
+            subtitle="You don't have any saved jobs yet. Browse the job feed to save jobs you're interested in."
             actionLabel="Browse Jobs"
             onAction={() => navigation.navigate('Home')}
           />

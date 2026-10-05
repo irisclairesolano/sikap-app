@@ -12,28 +12,31 @@ interface QuickReplyChipsProps {
 }
 
 const WORKER_QUICK_REPLIES = [
-  { label: 'Available bukas', text: 'Available po ako bukas magsimula.' },
-  { label: 'Exact location?', text: 'Saan po ang exact address o landmark sa Bulan?' },
+  { label: 'Available tomorrow', text: 'I am available to start tomorrow.' },
+  { label: 'Exact location?', text: 'Where is the exact address or landmark?' },
   {
-    label: 'May sariling gamit 🔨',
-    text: 'May sarili po akong mga gamit at tools para sa trabaho.',
+    label: 'Have my own tools 🔨',
+    text: 'I have my own tools and equipment for the job.',
   },
-  { label: 'Puwede tumawag?', text: 'Puwede po ba kayo tawagan para mapag-usapan ang detalye?' },
+  { label: 'Can I call?', text: 'May I give you a call to discuss the details?' },
   {
-    label: 'Deal po! 👍',
-    text: 'Sang-ayon po ako sa napagkasunduang presyo at iskedyul. Salamat!',
+    label: 'Agreed! 👍',
+    text: 'I agree with the proposed rate and schedule. Thank you!',
   },
 ];
 
 const EMPLOYER_QUICK_REPLIES = [
-  { label: 'Kailan puwede?', text: 'Kailan ka pinakamaagang puwede magsimula sa trabaho?' },
-  { label: 'Nasa Bulan ka ba?', text: 'Nasa Bulan, Sorsogon ka ba ngayon o kalapit na barangay?' },
-  { label: 'May gamit ka ba?', text: 'May sarili ka bang gamit o tools para sa trabaho na ito?' },
+  { label: 'When can you start?', text: 'When is the earliest you can start the job?' },
   {
-    label: 'Tingnan ang offer',
-    text: 'Paki-check po ang pinadala kong hiring offer sa card sa itaas.',
+    label: 'Are you nearby?',
+    text: 'Are you currently located nearby or in a neighboring barangay?',
   },
-  { label: 'Salamat!', text: 'Salamat sa mabilis na tugon!' },
+  { label: 'Do you have tools?', text: 'Do you have your own tools or equipment for this job?' },
+  {
+    label: 'Check the offer',
+    text: 'Please check the official hiring offer in the card above.',
+  },
+  { label: 'Thank you!', text: 'Thank you for the prompt response!' },
 ];
 
 export const QuickReplyChips: React.FC<QuickReplyChipsProps> = ({

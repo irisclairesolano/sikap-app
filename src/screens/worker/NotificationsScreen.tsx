@@ -109,7 +109,7 @@ export const NotificationsScreen: React.FC = () => {
             (navigation as any).navigate('Success', {
               variant: 'milestone',
               title: "You're verified, welcome!",
-              message: 'Congratulations po! Your account is verified and ready for work.',
+              message: 'Congratulations! Your account is verified and ready for work.',
               primaryAction: {
                 label: 'Start exploring',
                 navigateTo: { name: 'Home' },

@@ -24,15 +24,15 @@ describe('QuickReplyChips Component', () => {
       <QuickReplyChips userRole="worker" onSelectChip={onSelectChip} />,
     );
 
-    expect(getByText('Available bukas')).toBeTruthy();
+    expect(getByText('Available tomorrow')).toBeTruthy();
     expect(getByText('Exact location?')).toBeTruthy();
 
-    const chip = getByText('Available bukas');
+    const chip = getByText('Available tomorrow');
     await act(async () => {
       fireEvent.press(chip);
     });
 
-    expect(onSelectChip).toHaveBeenCalledWith('Available po ako bukas magsimula.');
+    expect(onSelectChip).toHaveBeenCalledWith('I am available to start tomorrow.');
   });
 
   it('renders employer quick replies when role is employer', async () => {
@@ -41,17 +41,15 @@ describe('QuickReplyChips Component', () => {
       <QuickReplyChips userRole="employer" onSelectChip={onSelectChip} />,
     );
 
-    expect(getByText('Kailan puwede?')).toBeTruthy();
-    expect(getByText('Nasa Bulan ka ba?')).toBeTruthy();
+    expect(getByText('When can you start?')).toBeTruthy();
+    expect(getByText('Are you nearby?')).toBeTruthy();
 
-    const chip = getByText('Kailan puwede?');
+    const chip = getByText('When can you start?');
     await act(async () => {
       fireEvent.press(chip);
     });
 
-    expect(onSelectChip).toHaveBeenCalledWith(
-      'Kailan ka pinakamaagang puwede magsimula sa trabaho?',
-    );
+    expect(onSelectChip).toHaveBeenCalledWith('When is the earliest you can start the job?');
   });
 
   it('calls onDismiss when close button is pressed', async () => {

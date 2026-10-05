@@ -756,7 +756,7 @@ export const PostJobScreen: React.FC = () => {
             variant: isFirstJob ? 'milestone' : 'confirm',
             title: isFirstJob ? 'Your first job is live!' : 'Your job is live!',
             message: isFirstJob
-              ? 'Congratulations po! This is your first job post on SIKAP. Workers will be notified and can start applying right away.'
+              ? 'Congratulations! This is your first job post on SIKAP. Workers will be notified and can start applying right away.'
               : 'Workers can now see it and apply. We will notify you as soon as someone applies.',
             detail: [
               { label: 'Job', value: title.trim() },
@@ -1108,20 +1108,20 @@ export const PostJobScreen: React.FC = () => {
             </View>
 
             <CustomInput
-              label="Description · Detalye ng Trabaho *"
+              label="Job Description *"
               value={description}
               onChangeText={setDescription}
-              placeholder="Ilarawan ang kailangang gawin..."
+              placeholder="Describe the tasks, requirements, and expectations..."
               multiline
               allowEmoji={true}
               icon="create-outline"
             />
 
             <CustomInput
-              label="Tools Required · Kailangang Gamit (Opsyonal)"
+              label="Tools Required (Optional)"
               value={toolsRequired}
               onChangeText={setToolsRequired}
-              placeholder="Hal. Martilyo, pako, lagari"
+              placeholder="E.g. Hammer, nails, power saw"
               icon="hammer-outline"
             />
 

@@ -247,8 +247,8 @@ export const AddCharacterReferencesScreen: React.FC = () => {
             Three people{'\n'}who can <Text style={styles.titleAccent}>vouch.</Text>
           </Text>
           <Text style={styles.subtitleTagalog}>
-            Magdagdag ng hanggang 3 tao na makapagpapatunay ng iyong husay sa trabaho (dating amo,
-            kapitbahay, o kasamahan).
+            Add up to 3 people who can vouch for your work ethic and character (former employers,
+            mentors, or colleagues).
           </Text>
 
           <View style={styles.infoBanner}>
@@ -262,7 +262,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
               <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink }}>
                 Reference contacts stay hidden
               </Text>{' '}
-              until an employer formally shortlists you. (Ligtas at kumpidensyal).
+              until an employer formally shortlists you. (Safe and confidential).
             </Text>
           </View>
 
@@ -279,10 +279,10 @@ export const AddCharacterReferencesScreen: React.FC = () => {
               <Text style={styles.addTitle}>Add another reference</Text>
               <Text style={styles.addSubtitle}>
                 {3 - references.length === 3
-                  ? 'Three slots remaining (3 bakante)'
+                  ? 'Three slots remaining'
                   : 3 - references.length === 2
-                    ? 'Two slots remaining (2 bakante)'
-                    : 'One slot remaining (1 bakante)'}
+                    ? 'Two slots remaining'
+                    : 'One slot remaining'}
               </Text>
             </TouchableOpacity>
           )}
@@ -359,9 +359,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
 
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalHeaderTitle}>
-                    {editingReferenceId !== null
-                      ? 'Edit Reference · Baguhin'
-                      : 'Add Reference · Magdagdag'}
+                    {editingReferenceId !== null ? 'Edit Reference' : 'Add Reference'}
                   </Text>
                   <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
                     <Ionicons name="close" size={22} color={colors.inkSoft} />
@@ -374,7 +372,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                 >
                   <View style={{ gap: 16, paddingBottom: 24 }}>
                     <CustomInput
-                      label="Full name · Buong Pangalan"
+                      label="Full Name"
                       value={name}
                       onChangeText={handleNameChange}
                       placeholder="E.g. Juan Reyes"
@@ -383,7 +381,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                       status={nameError ? 'invalid' : null}
                     />
                     <CustomInput
-                      label="Relationship · Relasyon"
+                      label="Relationship"
                       value={relationship}
                       onChangeText={handleRelationshipChange}
                       placeholder="E.g. Former employer"
@@ -392,7 +390,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                       status={relationshipError ? 'invalid' : null}
                     />
                     <CustomInput
-                      label="Phone number · Numero ng Telepono"
+                      label="Phone Number"
                       value={phone}
                       onChangeText={handlePhoneChange}
                       error={phoneError}

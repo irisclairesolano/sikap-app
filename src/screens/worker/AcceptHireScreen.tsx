@@ -37,8 +37,8 @@ const AcceptHireScreen: React.FC = () => {
           variant: isFirstHire ? 'milestone' : 'confirm',
           title: isFirstHire ? "You're hired for your first job!" : "You're hired!",
           message: isFirstHire
-            ? `Congratulations po! You accepted your first job offer on SIKAP for ${jobTitle}. Coordinate details in chat.`
-            : `Congrats po! ${jobTitle} is yours. Coordinate the schedule and location with ${employerName}.`,
+            ? `Congratulations! You accepted your first job offer on SIKAP for ${jobTitle}. Coordinate details in chat.`
+            : `Congrats! ${jobTitle} is yours. Coordinate the schedule and location with ${employerName}.`,
           detail: [
             { label: 'Job', value: jobTitle },
             { label: 'Employer', value: employerName },

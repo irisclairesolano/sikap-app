@@ -285,7 +285,7 @@ const ApplicationDetailScreen: React.FC = () => {
         navigation.navigate('Success', {
           variant: 'milestone',
           title: "🎉 You're Hired!",
-          message: `Congratulations po! You accepted the job offer for "${jobTitle || 'this job'}". Coordinate details in chat with ${employerName || 'the employer'}.`,
+          message: `Congratulations! You accepted the job offer for "${jobTitle || 'this job'}". Coordinate details in chat with ${employerName || 'the employer'}.`,
           detail: [
             { label: 'Job', value: jobTitle || 'Job' },
             { label: 'Employer', value: employerName || 'Employer' },

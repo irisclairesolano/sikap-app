@@ -297,8 +297,8 @@ export const JobFeedScreen: React.FC = () => {
               title="No jobs found"
               subtitle={
                 searchQuery || activeCategory !== 'All' || locationFilter !== 'Anywhere'
-                  ? `Walang nahanap na trabaho para sa "${searchQuery || activeCategory}". Subukang i-reset ang filter.`
-                  : 'Kasalukuyang walang bakanteng trabaho. Mag-refresh mamaya para sa mga bagong post.'
+                  ? `No jobs found for "${searchQuery || activeCategory}". Try resetting your filters.`
+                  : 'No available jobs at the moment. Pull down to refresh or check back later.'
               }
               actionLabel={
                 searchQuery || activeCategory !== 'All' || locationFilter !== 'Anywhere'

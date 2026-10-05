@@ -113,7 +113,7 @@ export const NotificationsScreen: React.FC = () => {
               variant: 'milestone',
               title: "You're verified, welcome!",
               message:
-                'Congratulations po! Your account is verified and ready to post jobs and hire workers.',
+                'Congratulations! Your account is verified and ready to post jobs and hire workers.',
               primaryAction: {
                 label: 'Post a job',
                 navigateTo: { name: 'PostJob' },

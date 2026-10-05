@@ -36,7 +36,7 @@ const MarkCompleteScreen: React.FC = () => {
           variant: isFirstCompleted ? 'milestone' : 'confirm',
           title: isFirstCompleted ? 'Your first job is done!' : 'Job completed!',
           message: isFirstCompleted
-            ? `Congratulations po! You just completed your first job on SIKAP. Please rate ${workerName || 'your worker'} to keep our community trusted.`
+            ? `Congratulations! You just completed your first job on SIKAP. Please rate ${workerName || 'your worker'} to keep our community trusted.`
             : `Nice work! Please rate ${workerName || 'your worker'}. It only takes a minute.`,
           detail: [
             { label: 'Job', value: jobTitle },
