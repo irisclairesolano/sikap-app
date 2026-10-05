@@ -341,14 +341,27 @@ export const MyJobsScreen: React.FC = () => {
                 <Text style={styles.cardBtnText}>Restore</Text>
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity
-                style={styles.cardBtn}
-                activeOpacity={0.75}
-                onPress={handleJobPress}
-              >
-                <Text style={styles.cardBtnText}>{activeApp ? 'Active Stage' : 'Manage'}</Text>
-                <Ionicons name="chevron-forward" size={13} color="#FFFFFF" />
-              </TouchableOpacity>
+              <View style={styles.actionBtnsGroup}>
+                <TouchableOpacity
+                  style={styles.previewBtn}
+                  activeOpacity={0.75}
+                  onPress={() =>
+                    navigation.navigate('JobStatusManagement', { id: item.id, job: item })
+                  }
+                >
+                  <Ionicons name="eye-outline" size={13} color={colors.ink} />
+                  <Text style={styles.previewBtnText}>Preview Job</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.cardBtn}
+                  activeOpacity={0.75}
+                  onPress={handleJobPress}
+                >
+                  <Text style={styles.cardBtnText}>{activeApp ? 'Active Stage' : 'Manage'}</Text>
+                  <Ionicons name="chevron-forward" size={13} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
             )}
           </View>
         </View>
@@ -686,6 +699,27 @@ const styles = StyleSheet.create({
   actionCountText: {
     fontFamily: fonts.numericBold,
     fontSize: 11.5,
+  },
+  actionBtnsGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  previewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    paddingHorizontal: 10,
+    paddingVertical: 5.5,
+    borderRadius: 8,
+  },
+  previewBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.ink,
   },
   cardBtn: {
     flexDirection: 'row',

@@ -18,9 +18,10 @@ import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { CompletedJobOverview } from '../../components/applications/CompletedJobOverview';
-import { useWithdrawApplication } from '../../hooks/useApply';
+import { useAcceptOffer, useRejectOffer, useWithdrawApplication } from '../../hooks/useApply';
 import { useApplication } from '../../hooks/useJobApplications';
 import { messagesApi } from '../../api/messages';
+import { triggerHaptic } from '../../utils/haptics';
 
 type ApplicationDetailScreenRouteProp = RouteProp<WorkerStackParamList, 'ApplicationDetail'>;
 type ApplicationDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -62,6 +63,8 @@ const ApplicationDetailScreen: React.FC = () => {
     appData?.final_agreed_price || appData?.job?.compensation || route.params?.compensation;
 
   const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawApplication();
+  const acceptOfferMutation = useAcceptOffer();
+  const rejectOfferMutation = useRejectOffer();
   const { showAlert } = useAlert();
   const [isMenuVisible, setMenuVisible] = useState(false);
 
@@ -267,6 +270,76 @@ const ApplicationDetailScreen: React.FC = () => {
               },
               onError: (err: any) => {
                 showAlert('Error', err.message || 'Could not withdraw application.');
+              },
+            });
+          },
+        },
+      ],
+    );
+  };
+
+  const handleAcceptOffer = () => {
+    acceptOfferMutation.mutate(applicationId, {
+      onSuccess: () => {
+        triggerHaptic('success');
+        navigation.navigate('Success', {
+          variant: 'milestone',
+          title: "🎉 You're Hired!",
+          message: `Congratulations po! You accepted the job offer for "${jobTitle || 'this job'}". Coordinate details in chat with ${employerName || 'the employer'}.`,
+          detail: [
+            { label: 'Job', value: jobTitle || 'Job' },
+            { label: 'Employer', value: employerName || 'Employer' },
+            ...(compensation ? [{ label: 'Agreed Price', value: `₱${compensation}` }] : []),
+          ],
+          primaryAction: {
+            label: 'Open chat',
+            navigateTo: appData?.conversation_id
+              ? {
+                  name: 'Chat',
+                  params: {
+                    conversationId: appData.conversation_id,
+                    jobTitle,
+                    otherUserName: employerName,
+                  },
+                }
+              : { name: 'ConversationsList' },
+          },
+          secondaryAction: {
+            label: 'See job details',
+            navigateTo: {
+              name: 'ApplicationDetail',
+              params: { applicationId, jobTitle, employerName },
+            },
+          },
+        });
+      },
+      onError: (err: any) => {
+        showAlert('Error', err.message || 'Failed to accept offer.');
+      },
+    });
+  };
+
+  const handleRejectOffer = () => {
+    showAlert(
+      'Decline Offer',
+      `Are you sure you want to decline the offer for "${jobTitle || 'this job'}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Yes, Decline',
+          style: 'destructive',
+          onPress: () => {
+            rejectOfferMutation.mutate(applicationId, {
+              onSuccess: () => {
+                triggerHaptic('medium');
+                showAlert(
+                  'Offer Declined',
+                  `You have declined the offer for "${jobTitle || 'this job'}".`,
+                );
+                refetch();
+              },
+              onError: (err: any) => {
+                showAlert('Error', err.message || 'Failed to decline offer.');
               },
             });
           },
@@ -641,24 +714,27 @@ const ApplicationDetailScreen: React.FC = () => {
         {stage === 3 && (
           <>
             <Button
-              label="Review Offer"
+              label="Accept Offer"
               variant="primary"
               size="lg"
               fullWidth
-              onPress={() =>
-                navigation.navigate('AcceptHire', {
-                  id: applicationId,
-                  jobTitle: jobTitle || 'Job',
-                  employerName: employerName || 'Employer',
-                  offeredPrice: compensation ? String(compensation) : undefined,
-                  conversationId: appData?.conversation_id ?? undefined,
-                })
-              }
+              loading={acceptOfferMutation.isPending}
+              disabled={acceptOfferMutation.isPending || rejectOfferMutation.isPending}
+              onPress={handleAcceptOffer}
+            />
+            <Button
+              label="Decline Offer"
+              variant="outline"
+              size="lg"
+              fullWidth
+              loading={rejectOfferMutation.isPending}
+              disabled={acceptOfferMutation.isPending || rejectOfferMutation.isPending}
+              onPress={handleRejectOffer}
             />
             <Button
               label="Open Chat"
-              variant="outline"
-              size="lg"
+              variant="ghost"
+              size="base"
               fullWidth
               onPress={handleOpenChat}
             />

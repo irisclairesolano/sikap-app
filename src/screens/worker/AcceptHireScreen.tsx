@@ -95,7 +95,7 @@ const AcceptHireScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>Review Offer</Text>
+          <Text style={styles.headerPillText}>Job Offer</Text>
         </View>
         <View style={styles.iconBtn} />
       </View>
