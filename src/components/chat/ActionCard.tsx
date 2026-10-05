@@ -31,6 +31,7 @@ interface ActionCardProps {
   otherUserName?: string;
   jobTitle?: string;
   jobId?: number;
+  finalAgreedPrice?: number | null;
   hasRealMessageFromEmployer?: boolean;
   isBlocked?: boolean;
   isSlotLocked?: boolean;
@@ -52,6 +53,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
   otherUserName,
   jobTitle,
   jobId,
+  finalAgreedPrice,
   hasRealMessageFromEmployer = true,
   isBlocked = false,
   isSlotLocked = false,
@@ -75,6 +77,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
   if (message.message_type !== 'action_card' || !message.card_type) return null;
 
   const { card_type, card_data, card_resolved } = message;
+  const effectivePrice =
+    card_data?.price ??
+    card_data?.final_agreed_price ??
+    (card_data as any)?.agreed_price ??
+    finalAgreedPrice;
 
   const handleAction = async (
     actionId: string,
@@ -229,7 +236,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
       ['employer_confirmed', 'accepted', 'completed'].includes(applicationStatus || '');
 
     if (isConfirmResolved) {
-      const displayPrice = card_data?.price || card_data?.final_agreed_price;
+      const displayPrice = effectivePrice;
       return renderEtchedCard(
         'Hire Confirmed by Employer',
         displayPrice ? `Agreed Price: ${formatCurrency(displayPrice)}` : 'Agreed price confirmed.',
@@ -610,7 +617,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
       if (applicationStatus === 'rejected' || applicationStatus === 'cancelled') {
         return renderEtchedCard(
           'Job Offer Declined',
-          `Offer of ${formatCurrency(card_data?.price)} was declined.`,
+          `Offer of ${formatCurrency(effectivePrice)} was declined.`,
           'close-circle-outline',
           'Declined',
           colors.error,
@@ -619,7 +626,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
       }
       return renderEtchedCard(
         'Job Offer Accepted',
-        `Agreed Price: ${formatCurrency(card_data?.price)}`,
+        `Agreed Price: ${formatCurrency(effectivePrice)}`,
         'checkmark-done-circle-outline',
         'Accepted',
         colors.success,
@@ -629,11 +636,28 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
     if (currentUserRole === 'employer') {
       return (
-        <View style={styles.frostedWaitingPill}>
-          <Ionicons name="time-outline" size={14} color={colors.inkMuted} />
-          <Text style={styles.frostedWaitingText}>
-            Offer of {formatCurrency(card_data?.price)} sent — Waiting for worker response...
-          </Text>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.cardIconBadge, { backgroundColor: '#DCFCE7' }]}>
+              <Ionicons name="paper-plane-outline" size={20} color={colors.success} />
+            </View>
+            <View style={styles.cardHeaderText}>
+              <Text style={styles.title}>Hire Offer Sent</Text>
+              <Text style={styles.subtitle}>
+                Agreed price:{' '}
+                <Text style={styles.priceHighlight}>{formatCurrency(effectivePrice)}</Text>
+              </Text>
+            </View>
+            <View style={[styles.headerTag, { backgroundColor: '#FEF3C7' }]}>
+              <Text style={[styles.headerTagText, { color: '#B45309' }]}>Pending</Text>
+            </View>
+          </View>
+          <View style={styles.frostedWaitingPill}>
+            <Ionicons name="time-outline" size={14} color={colors.inkMuted} />
+            <Text style={styles.frostedWaitingText}>
+              Waiting for {otherUserName || 'the worker'} to accept or decline the offer.
+            </Text>
+          </View>
         </View>
       );
     }
@@ -652,7 +676,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               <Text style={styles.title}>Position Filled</Text>
               <Text style={styles.subtitle}>
                 Agreed price:{' '}
-                <Text style={styles.priceHighlight}>{formatCurrency(card_data?.price)}</Text>
+                <Text style={styles.priceHighlight}>{formatCurrency(effectivePrice)}</Text>
               </Text>
             </View>
           </View>
@@ -681,7 +705,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <Text style={styles.title}>Job Offer Received</Text>
             <Text style={styles.subtitle}>
               Agreed price:{' '}
-              <Text style={styles.priceHighlight}>{formatCurrency(card_data?.price)}</Text>
+              <Text style={styles.priceHighlight}>{formatCurrency(effectivePrice)}</Text>
             </Text>
           </View>
         </View>

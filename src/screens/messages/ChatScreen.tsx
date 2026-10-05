@@ -447,6 +447,7 @@ const ChatScreen: React.FC = () => {
     actionableCards.length > 0 ? (jumpIndex % actionableCards.length) + 1 : 0;
 
   const handleActionComplete = () => {
+    isNearBottomRef.current = true;
     refetch();
     queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
     queryClient.invalidateQueries({ queryKey: ['conversations'] });
@@ -455,6 +456,9 @@ const ChatScreen: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ['application'] });
     queryClient.invalidateQueries({ queryKey: ['myJobs'] });
     queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }, 200);
   };
 
   const handleScrollToBottom = () => {
@@ -772,6 +776,7 @@ const ChatScreen: React.FC = () => {
                   otherUserName={conversation?.other_user?.name || ''}
                   jobTitle={jobTitle || conversation?.job_title || ''}
                   jobId={conversation?.job_id}
+                  finalAgreedPrice={conversation?.final_agreed_price}
                   hasRealMessageFromEmployer={hasRealMessageFromEmployer}
                   isBlocked={isBlocked}
                   isSlotLocked={isSlotLocked}

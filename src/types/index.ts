@@ -316,6 +316,7 @@ export interface Conversation {
   job_title: string;
   application_status?: string;
   status: 'open' | 'locked' | 'unlock_requested';
+  final_agreed_price?: number | null;
   employer_id?: number;
   worker_id?: number;
   my_role?: 'worker' | 'employer';
