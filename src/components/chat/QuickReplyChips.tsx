@@ -8,6 +8,7 @@ interface QuickReplyChipsProps {
   userRole?: 'worker' | 'employer' | 'admin';
   onSelectChip: (text: string) => void;
   disabled?: boolean;
+  onDismiss?: () => void;
 }
 
 const WORKER_QUICK_REPLIES = [
@@ -39,6 +40,7 @@ export const QuickReplyChips: React.FC<QuickReplyChipsProps> = ({
   userRole = 'worker',
   onSelectChip,
   disabled = false,
+  onDismiss,
 }) => {
   if (disabled) return null;
 
@@ -52,8 +54,24 @@ export const QuickReplyChips: React.FC<QuickReplyChipsProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.labelRow}>
-        <Ionicons name="flash-outline" size={13} color={colors.primary} />
-        <Text style={styles.promptLabel}>Quick replies</Text>
+        <View style={styles.labelLeft}>
+          <Ionicons name="flash-outline" size={13} color={colors.primary} />
+          <Text style={styles.promptLabel}>Quick replies</Text>
+        </View>
+        {onDismiss && (
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={() => {
+              triggerHaptic('light');
+              onDismiss();
+            }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel="Remove quick replies"
+          >
+            <Ionicons name="close" size={15} color={colors.inkMuted} />
+          </TouchableOpacity>
+        )}
       </View>
       <ScrollView
         horizontal
@@ -85,9 +103,18 @@ const styles = StyleSheet.create({
   labelRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     marginBottom: 4,
+  },
+  labelLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  closeBtn: {
+    padding: 2,
+    borderRadius: 12,
   },
   promptLabel: {
     fontFamily: fonts.bodyBold,

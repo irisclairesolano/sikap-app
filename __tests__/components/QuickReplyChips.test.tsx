@@ -51,11 +51,19 @@ describe('QuickReplyChips Component', () => {
     );
   });
 
-  it('returns null when disabled is true', async () => {
-    const { queryByText } = await render(
-      <QuickReplyChips userRole="worker" onSelectChip={jest.fn()} disabled={true} />,
+  it('calls onDismiss when close button is pressed', async () => {
+    const onDismiss = jest.fn();
+    const { getByLabelText } = await render(
+      <QuickReplyChips userRole="worker" onSelectChip={jest.fn()} onDismiss={onDismiss} />,
     );
 
-    expect(queryByText('Available bukas')).toBeNull();
+    const closeBtn = getByLabelText('Remove quick replies');
+    expect(closeBtn).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.press(closeBtn);
+    });
+
+    expect(onDismiss).toHaveBeenCalledTimes(1);
   });
 });

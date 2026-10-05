@@ -19,6 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useMessages, useSendMessage, useSendImage, useMarkRead } from '../../hooks/useMessages';
 import {
   useConversations,
@@ -56,6 +57,7 @@ const ChatScreen: React.FC = () => {
   const { showAlert } = useAlert();
   const route = useRoute();
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
   const {
     conversationId,
     jobTitle,
@@ -78,6 +80,9 @@ const ChatScreen: React.FC = () => {
 
   const [inputText, setInputText] = useState('');
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showQuickReplies, setShowQuickReplies] = useState(true);
+  const [showScrollBottomFab, setShowScrollBottomFab] = useState(false);
+  const [newMessagesBelow, setNewMessagesBelow] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const isInitialMountRef = useRef(true);
   const prevMessagesLengthRef = useRef(0);
@@ -243,11 +248,18 @@ const ChatScreen: React.FC = () => {
         triggerHaptic('medium');
       }
 
-      // Automatically scroll to bottom on new message
+      // Automatically scroll to bottom on new message if already near bottom
       if (isNearBottomRef.current || !isIncoming) {
         requestAnimationFrame(() => {
           flatListRef.current?.scrollToEnd({ animated: true });
         });
+      } else {
+        // User has scrolled up: increment unread messages below badge and show FAB
+        const countDiff = messages.length - prevMessagesLengthRef.current;
+        if (countDiff > 0) {
+          setNewMessagesBelow((prev) => prev + countDiff);
+          setShowScrollBottomFab(true);
+        }
       }
     } else if (isInitialMountRef.current && messages.length > 0) {
       requestAnimationFrame(() => {
@@ -434,6 +446,24 @@ const ChatScreen: React.FC = () => {
   const currentCardNumber =
     actionableCards.length > 0 ? (jumpIndex % actionableCards.length) + 1 : 0;
 
+  const handleActionComplete = () => {
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+    queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+    queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
+    queryClient.invalidateQueries({ queryKey: ['application'] });
+    queryClient.invalidateQueries({ queryKey: ['myJobs'] });
+    queryClient.invalidateQueries({ queryKey: ['notifications'] });
+  };
+
+  const handleScrollToBottom = () => {
+    flatListRef.current?.scrollToEnd({ animated: true });
+    setShowScrollBottomFab(false);
+    setNewMessagesBelow(0);
+    isNearBottomRef.current = true;
+  };
+
   const handleJumpToCard = () => {
     if (actionableCards.length === 0) return;
     const targetCard = actionableCards[jumpIndex % actionableCards.length];
@@ -446,11 +476,11 @@ const ChatScreen: React.FC = () => {
         flatListRef.current?.scrollToIndex({
           index: cardIndex,
           animated: true,
-          viewPosition: 0.25,
+          viewPosition: 0.85,
         });
       } catch {
         flatListRef.current?.scrollToOffset({
-          offset: Math.max(0, cardIndex * 120),
+          offset: Math.max(0, cardIndex * 140),
           animated: true,
         });
       }
@@ -610,19 +640,8 @@ const ChatScreen: React.FC = () => {
                   {pinnedDetails.label}
                 </Text>
               </View>
-              <View style={styles.pinnedButtonsRow}>
-                <TouchableOpacity
-                  style={styles.jumpBtn}
-                  onPress={handleJumpToCard}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.jumpBtnText}>
-                    {actionableCards.length > 1
-                      ? `Jump (${currentCardNumber}/${actionableCards.length})`
-                      : 'Jump'}
-                  </Text>
-                  <Ionicons name="swap-vertical" size={13} color={colors.primary} />
-                </TouchableOpacity>
+              <View style={styles.pinnedChevronContainer}>
+                <Ionicons name="chevron-forward" size={16} color={colors.inkMuted} />
               </View>
             </TouchableOpacity>
           </View>
@@ -682,10 +701,16 @@ const ChatScreen: React.FC = () => {
           removeClippedSubviews={Platform.OS === 'android'}
           onScroll={(event) => {
             const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-            const paddingToBottom = 150;
+            const paddingToBottom = 160;
             const isNearBottom =
               layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
             isNearBottomRef.current = isNearBottom;
+            if (isNearBottom) {
+              setShowScrollBottomFab(false);
+              setNewMessagesBelow(0);
+            } else if (contentOffset.y > 120) {
+              setShowScrollBottomFab(true);
+            }
           }}
           scrollEventThrottle={32}
           onEndReached={() => {
@@ -705,7 +730,7 @@ const ChatScreen: React.FC = () => {
               flatListRef.current?.scrollToIndex({
                 index: info.index,
                 animated: true,
-                viewPosition: 0.25,
+                viewPosition: 0.85,
               });
             }, 100);
           }}
@@ -750,13 +775,33 @@ const ChatScreen: React.FC = () => {
                   hasRealMessageFromEmployer={hasRealMessageFromEmployer}
                   isBlocked={isBlocked}
                   isSlotLocked={isSlotLocked}
-                  onActionComplete={refetch}
+                  onActionComplete={handleActionComplete}
                 />
               );
             }
             return <MessageBubble message={item} isOwnMessage={item.sender_id === user?.id} />;
           }}
         />
+
+        {/* Scroll to Bottom FAB with Unread Counter */}
+        {showScrollBottomFab && (
+          <View style={styles.fabWrapper} pointerEvents="box-none">
+            <TouchableOpacity
+              style={styles.scrollFab}
+              activeOpacity={0.85}
+              onPress={handleScrollToBottom}
+            >
+              <Ionicons name="chevron-down" size={20} color={colors.ink} />
+              {newMessagesBelow > 0 && (
+                <View style={styles.fabBadge}>
+                  <Text style={styles.fabBadgeText}>
+                    {newMessagesBelow > 99 ? '99+' : newMessagesBelow}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Blocked by me notice */}
         {isBlockedByMe && (
@@ -832,14 +877,17 @@ const ChatScreen: React.FC = () => {
           status === 'open' &&
           !isBlocked && (
             <>
-              <QuickReplyChips
-                userRole={conversationUserRole}
-                onSelectChip={(text) => {
-                  setInputText(text);
-                  if (inputError) setInputError(null);
-                }}
-                disabled={!isWorkerReplyAllowed}
-              />
+              {showQuickReplies && (
+                <QuickReplyChips
+                  userRole={conversationUserRole}
+                  onSelectChip={(text) => {
+                    setInputText(text);
+                    if (inputError) setInputError(null);
+                  }}
+                  disabled={!isWorkerReplyAllowed}
+                  onDismiss={() => setShowQuickReplies(false)}
+                />
+              )}
               <View style={styles.inputContainer}>
                 <TouchableOpacity
                   onPress={handlePickImage}
@@ -849,6 +897,19 @@ const ChatScreen: React.FC = () => {
                 >
                   <Ionicons name="image-outline" size={24} color={colors.inkMuted} />
                 </TouchableOpacity>
+                {!showQuickReplies && isWorkerReplyAllowed && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      triggerHaptic('light');
+                      setShowQuickReplies(true);
+                    }}
+                    style={styles.iconBtn}
+                    activeOpacity={0.6}
+                    accessibilityLabel="Show quick replies"
+                  >
+                    <Ionicons name="flash-outline" size={20} color={colors.primary} />
+                  </TouchableOpacity>
+                )}
                 <TextInput
                   style={styles.input}
                   placeholder={
@@ -1023,26 +1084,52 @@ const styles = StyleSheet.create({
     color: colors.ink,
     marginTop: 1,
   },
-  pinnedButtonsRow: {
-    flexDirection: 'row',
+  pinnedChevronContainer: {
+    paddingLeft: 8,
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
   },
-  jumpBtn: {
-    flexDirection: 'row',
+  fabWrapper: {
+    position: 'absolute',
+    right: 16,
+    bottom: 82,
+    zIndex: 30,
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: colors.peach,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
+    justifyContent: 'center',
+  },
+  scrollFab: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(200, 90, 50, 0.15)',
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.16,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  jumpBtnText: {
+  fabBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: colors.primary,
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: colors.white,
+  },
+  fabBadgeText: {
+    color: colors.white,
     fontFamily: fonts.bodyBold,
-    fontSize: 11,
-    color: colors.primary,
+    fontSize: 10,
   },
   pinnedDrawer: {
     padding: 12,

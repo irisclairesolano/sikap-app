@@ -55,6 +55,8 @@ export const useConfirmHire = () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['conversation'] });
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
     },
   });
 };
@@ -72,6 +74,9 @@ export const useCancelHire = () => {
       queryClient.invalidateQueries({ queryKey: ['job'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['conversation'] });
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
     },
   });
 };

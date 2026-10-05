@@ -70,6 +70,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
   const [priceInput, setPriceInput] = useState('');
   const [isPriceInputVisible, setIsPriceInputVisible] = useState(false);
   const [hireDecision, setHireDecision] = useState<'hire' | 'decline' | null>(null);
+  const [isGuideMinimized, setIsGuideMinimized] = useState(false);
 
   if (message.message_type !== 'action_card' || !message.card_type) return null;
 
@@ -289,92 +290,118 @@ const ActionCard: React.FC<ActionCardProps> = ({
         </View>
 
         {/* Next Steps Guidance */}
-        <View style={styles.guideBox}>
-          <View style={styles.guideHeader}>
-            <Ionicons name="compass-outline" size={15} color={colors.primary} />
-            <Text style={styles.guideTitle}>Next Steps</Text>
-          </View>
+        <View style={[styles.guideBox, isGuideMinimized && styles.guideBoxMinimized]}>
+          <TouchableOpacity
+            style={[styles.guideHeader, isGuideMinimized && styles.guideHeaderMinimized]}
+            onPress={() => {
+              triggerHaptic('light');
+              setIsGuideMinimized((prev) => !prev);
+            }}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={isGuideMinimized ? 'Expand next steps' : 'Minimize next steps'}
+          >
+            <View style={styles.guideHeaderLeft}>
+              <Ionicons name="compass-outline" size={15} color={colors.primary} />
+              <Text style={styles.guideTitle}>Next Steps</Text>
+              <View style={styles.guideCountBadge}>
+                <Text style={styles.guideCountText}>3 steps</Text>
+              </View>
+            </View>
+            <View style={styles.guideToggle}>
+              <Text style={styles.guideToggleText}>{isGuideMinimized ? 'Show' : 'Minimize'}</Text>
+              <Ionicons
+                name={isGuideMinimized ? 'chevron-down' : 'chevron-up'}
+                size={14}
+                color={colors.inkMuted}
+              />
+            </View>
+          </TouchableOpacity>
 
-          {currentUserRole === 'worker' ? (
+          {!isGuideMinimized && (
             <>
-              <View style={styles.guideStepRow}>
-                <View style={styles.stepNumBadge}>
-                  <Text style={styles.stepNumText}>1</Text>
-                </View>
-                <View style={styles.stepContent}>
-                  <Text style={styles.stepTitle}>Discuss Details in Chat</Text>
-                  <Text style={styles.stepDesc}>
-                    The employer will send the first message. Discuss schedule, tasks, and negotiate
-                    your agreed rate.
-                  </Text>
-                </View>
-              </View>
+              {currentUserRole === 'worker' ? (
+                <>
+                  <View style={styles.guideStepRow}>
+                    <View style={styles.stepNumBadge}>
+                      <Text style={styles.stepNumText}>1</Text>
+                    </View>
+                    <View style={styles.stepContent}>
+                      <Text style={styles.stepTitle}>Discuss Details in Chat</Text>
+                      <Text style={styles.stepDesc}>
+                        The employer will send the first message. Discuss schedule, tasks, and
+                        negotiate your agreed rate.
+                      </Text>
+                    </View>
+                  </View>
 
-              <View style={styles.guideStepRow}>
-                <View style={styles.stepNumBadge}>
-                  <Text style={styles.stepNumText}>2</Text>
-                </View>
-                <View style={styles.stepContent}>
-                  <Text style={styles.stepTitle}>Wait for Final Offer</Text>
-                  <Text style={styles.stepDesc}>
-                    Once you both agree on terms, {employerName} will set the final price and submit
-                    the official hire offer.
-                  </Text>
-                </View>
-              </View>
+                  <View style={styles.guideStepRow}>
+                    <View style={styles.stepNumBadge}>
+                      <Text style={styles.stepNumText}>2</Text>
+                    </View>
+                    <View style={styles.stepContent}>
+                      <Text style={styles.stepTitle}>Wait for Final Offer</Text>
+                      <Text style={styles.stepDesc}>
+                        Once you both agree on terms, {employerName} will set the final price and
+                        submit the official hire offer.
+                      </Text>
+                    </View>
+                  </View>
 
-              <View style={styles.guideStepRow}>
-                <View style={styles.stepNumBadge}>
-                  <Text style={styles.stepNumText}>3</Text>
-                </View>
-                <View style={styles.stepContent}>
-                  <Text style={styles.stepTitle}>Review & Accept</Text>
-                  <Text style={styles.stepDesc}>
-                    Review the offer card that appears in this chat and accept to officially start
-                    the job.
-                  </Text>
-                </View>
-              </View>
-            </>
-          ) : (
-            <>
-              <View style={styles.guideStepRow}>
-                <View style={styles.stepNumBadge}>
-                  <Text style={styles.stepNumText}>1</Text>
-                </View>
-                <View style={styles.stepContent}>
-                  <Text style={styles.stepTitle}>Message the Worker</Text>
-                  <Text style={styles.stepDesc}>
-                    Send a message below to discuss availability, tasks, and negotiate the rate with{' '}
-                    {workerName}.
-                  </Text>
-                </View>
-              </View>
+                  <View style={styles.guideStepRow}>
+                    <View style={styles.stepNumBadge}>
+                      <Text style={styles.stepNumText}>3</Text>
+                    </View>
+                    <View style={styles.stepContent}>
+                      <Text style={styles.stepTitle}>Review & Accept</Text>
+                      <Text style={styles.stepDesc}>
+                        Review the offer card that appears in this chat and accept to officially
+                        start the job.
+                      </Text>
+                    </View>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <View style={styles.guideStepRow}>
+                    <View style={styles.stepNumBadge}>
+                      <Text style={styles.stepNumText}>1</Text>
+                    </View>
+                    <View style={styles.stepContent}>
+                      <Text style={styles.stepTitle}>Message the Worker</Text>
+                      <Text style={styles.stepDesc}>
+                        Send a message below to discuss availability, tasks, and negotiate the rate
+                        with {workerName}.
+                      </Text>
+                    </View>
+                  </View>
 
-              <View style={styles.guideStepRow}>
-                <View style={styles.stepNumBadge}>
-                  <Text style={styles.stepNumText}>2</Text>
-                </View>
-                <View style={styles.stepContent}>
-                  <Text style={styles.stepTitle}>Agree on Final Price</Text>
-                  <Text style={styles.stepDesc}>
-                    Agree on the work scope and compensation terms before confirming the hire.
-                  </Text>
-                </View>
-              </View>
+                  <View style={styles.guideStepRow}>
+                    <View style={styles.stepNumBadge}>
+                      <Text style={styles.stepNumText}>2</Text>
+                    </View>
+                    <View style={styles.stepContent}>
+                      <Text style={styles.stepTitle}>Agree on Final Price</Text>
+                      <Text style={styles.stepDesc}>
+                        Agree on the work scope and compensation terms before confirming the hire.
+                      </Text>
+                    </View>
+                  </View>
 
-              <View style={styles.guideStepRow}>
-                <View style={styles.stepNumBadge}>
-                  <Text style={styles.stepNumText}>3</Text>
-                </View>
-                <View style={styles.stepContent}>
-                  <Text style={styles.stepTitle}>Set Price & Confirm</Text>
-                  <Text style={styles.stepDesc}>
-                    When you both agree, set the final price below. {workerName} will then accept to
-                    officially start.
-                  </Text>
-                </View>
-              </View>
+                  <View style={styles.guideStepRow}>
+                    <View style={styles.stepNumBadge}>
+                      <Text style={styles.stepNumText}>3</Text>
+                    </View>
+                    <View style={styles.stepContent}>
+                      <Text style={styles.stepTitle}>Set Price & Confirm</Text>
+                      <Text style={styles.stepDesc}>
+                        When you both agree, set the final price below. {workerName} will then
+                        accept to officially start.
+                      </Text>
+                    </View>
+                  </View>
+                </>
+              )}
             </>
           )}
         </View>
@@ -611,7 +638,10 @@ const ActionCard: React.FC<ActionCardProps> = ({
       );
     }
 
-    if (isSlotLocked && !['accepted', 'completed', 'hired'].includes(applicationStatus || '')) {
+    if (
+      isSlotLocked &&
+      !['employer_confirmed', 'accepted', 'completed', 'hired'].includes(applicationStatus || '')
+    ) {
       return (
         <View style={styles.card}>
           <View style={styles.cardHeader}>
@@ -662,6 +692,19 @@ const ActionCard: React.FC<ActionCardProps> = ({
               acceptOfferMutation.mutate(Number(card_data?.application_id), {
                 onSuccess: () => {
                   onActionComplete();
+                  navigation.navigate('Success', {
+                    variant: 'milestone',
+                    title: "🎉 You're Hired!",
+                    message: `Congratulations! You've officially accepted the job offer for "${jobTitle || 'this position'}". Communicate directly with your employer and give it your best!`,
+                    primaryAction: {
+                      label: 'Back to Chat',
+                      goBack: true,
+                    },
+                    secondaryAction: {
+                      label: 'View My Applications',
+                      navigateTo: { name: 'MyApplications' },
+                    },
+                  });
                 },
                 onError: (err: any) => {
                   showAlert('Action Failed', err.message || 'Unable to accept offer.');
@@ -673,7 +716,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             {acceptOfferMutation.isPending ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.actionBtnText}>Accept Offer</Text>
+              <Text style={styles.actionBtnText}>Accept Job Offer</Text>
             )}
           </TouchableOpacity>
           <TouchableOpacity
@@ -701,7 +744,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             {rejectOfferMutation.isPending ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.actionBtnText}>Decline</Text>
+              <Text style={styles.actionBtnText}>Decline Offer</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -828,14 +871,13 @@ const ActionCard: React.FC<ActionCardProps> = ({
     );
   }
 
-  // 7. MARK COMPLETE
+  // 7. MARK COMPLETE (Employer side)
   if (card_type === 'mark_complete') {
     if (currentUserRole === 'worker') return null;
 
-    const isCompleteResolved =
-      card_resolved || applicationStatus === 'completed' || conversationStatus === 'locked';
+    const isJobCompleted = applicationStatus === 'completed';
 
-    if (isCompleteResolved) {
+    if (isJobCompleted) {
       return renderEtchedCard(
         'Job Marked Complete',
         'Work has been completed and verified.',
@@ -856,6 +898,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
           },
         },
       );
+    }
+
+    // If resolved prior to full job completion (e.g. superseded by flag_offline), hide to avoid duplicate
+    if (card_resolved) {
+      return null;
     }
 
     return (
@@ -880,6 +927,10 @@ const ActionCard: React.FC<ActionCardProps> = ({
                   const targetJobId = Number(card_data?.job_id || jobId);
                   markJobCompleteMutation.mutate(targetJobId, {
                     onSuccess: () => {
+                      showAlert(
+                        'Job Completed',
+                        'The job has been marked as complete. You can now submit your review.',
+                      );
                       onActionComplete();
                     },
                     onError: (err: any) => {
@@ -895,45 +946,42 @@ const ActionCard: React.FC<ActionCardProps> = ({
           {markJobCompleteMutation.isPending ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.primaryButtonText}>Mark Complete</Text>
+            <Text style={styles.primaryButtonText}>Confirm Job Completed</Text>
           )}
         </TouchableOpacity>
       </View>
     );
   }
 
-  // 8. FLAG OFFLINE
+  // 8. FLAG OFFLINE (Worker flags, Employer confirms)
   if (card_type === 'flag_offline') {
-    const isOfflineResolved =
-      card_resolved || applicationStatus === 'completed' || conversationStatus === 'locked';
+    const isJobCompleted = applicationStatus === 'completed';
 
-    if (isOfflineResolved) {
-      const cta =
-        currentUserRole === 'employer'
-          ? {
-              label: 'Rate Worker',
-              iconName: 'star' as const,
-              onPress: () => {
-                navigation.navigate('RateWorker', {
-                  id: Number(card_data?.application_id || card_data?.id),
-                  workerName: String(card_data?.worker_name || otherUserName || 'Worker'),
-                  jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
-                  jobId: Number(card_data?.job_id || jobId),
-                });
-              },
-            }
-          : {
-              label: 'Rate Employer',
-              iconName: 'star' as const,
-              onPress: () => {
-                navigation.navigate('RateEmployer', {
-                  id: Number(card_data?.application_id || card_data?.id),
-                  employerName: String(card_data?.employer_name || otherUserName || 'Employer'),
-                  jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
-                });
-              },
-            };
+    if (isJobCompleted) {
+      // For worker: render Rate Employer CTA
+      if (currentUserRole === 'worker') {
+        return renderEtchedCard(
+          'Job Marked Complete',
+          'Work has been completed and verified.',
+          'checkmark-done-circle',
+          'Completed',
+          colors.success,
+          '#DCFCE7',
+          {
+            label: 'Rate Employer',
+            iconName: 'star' as const,
+            onPress: () => {
+              navigation.navigate('RateEmployer', {
+                id: Number(card_data?.application_id || card_data?.id),
+                employerName: String(card_data?.employer_name || otherUserName || 'Employer'),
+                jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
+              });
+            },
+          },
+        );
+      }
 
+      // For employer: render Rate Worker CTA
       return renderEtchedCard(
         'Job Marked Complete',
         'Work has been completed and verified.',
@@ -941,7 +989,18 @@ const ActionCard: React.FC<ActionCardProps> = ({
         'Completed',
         colors.success,
         '#DCFCE7',
-        cta,
+        {
+          label: 'Rate Worker',
+          iconName: 'star' as const,
+          onPress: () => {
+            navigation.navigate('RateWorker', {
+              id: Number(card_data?.application_id || card_data?.id),
+              workerName: String(card_data?.worker_name || otherUserName || 'Worker'),
+              jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
+              jobId: Number(card_data?.job_id || jobId),
+            });
+          },
+        },
       );
     }
 
@@ -955,6 +1014,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
           colors.warning,
           '#FEF3C7',
         );
+      }
+
+      // If card was resolved before completion, do not render old action card
+      if (card_resolved) {
+        return null;
       }
 
       return (
@@ -1010,7 +1074,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
       );
     }
 
-    if (!card_data?.is_flagged) {
+    // Employer side:
+    if (!card_data?.is_flagged || card_resolved) {
       return null;
     }
 
@@ -1025,8 +1090,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           <View style={styles.cardHeaderText}>
             <Text style={styles.title}>Work Flagged as Done</Text>
             <Text style={styles.subtitle}>
-              {workerName} flagged this job as completed offline. Please confirm and rate the
-              worker.
+              {workerName} finished work offline. Please confirm and complete the job.
             </Text>
           </View>
         </View>
@@ -1034,16 +1098,20 @@ const ActionCard: React.FC<ActionCardProps> = ({
           style={[styles.primaryButton, { backgroundColor: colors.success }]}
           onPress={() => {
             showAlert(
-              'Confirm & Mark Complete',
+              'Confirm Job Completed',
               'Confirm that the work was completed satisfactorily?',
               [
                 { text: 'Cancel', style: 'cancel' },
                 {
-                  text: 'Confirm & Mark Complete',
+                  text: 'Confirm & Complete',
                   onPress: () => {
                     const targetJobId = Number(card_data?.job_id || jobId);
                     markJobCompleteMutation.mutate(targetJobId, {
                       onSuccess: () => {
+                        showAlert(
+                          'Job Completed',
+                          'The job has been marked as complete. You can now submit your review.',
+                        );
                         onActionComplete();
                       },
                       onError: (err: any) => {
@@ -1060,9 +1128,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           {markJobCompleteMutation.isPending ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.primaryButtonText}>
-              Worker flagged this job as done — Confirm & Mark Complete
-            </Text>
+            <Text style={styles.primaryButtonText}>Confirm Job Completed</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -1332,14 +1398,28 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 12,
   },
+  guideBoxMinimized: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
   guideHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'space-between',
     marginBottom: 8,
     paddingBottom: 6,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(226, 232, 240, 0.70)',
+  },
+  guideHeaderMinimized: {
+    marginBottom: 0,
+    paddingBottom: 0,
+    borderBottomWidth: 0,
+  },
+  guideHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   guideTitle: {
     fontFamily: fonts.bodyBold,
@@ -1347,6 +1427,28 @@ const styles = StyleSheet.create({
     color: colors.ink,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  guideCountBadge: {
+    backgroundColor: colors.primaryTint,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginLeft: 2,
+  },
+  guideCountText: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 10,
+    color: colors.primaryDark,
+  },
+  guideToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  guideToggleText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 11,
+    color: colors.inkMuted,
   },
   guideStepRow: {
     flexDirection: 'row',

@@ -28,7 +28,7 @@ export const useNotifications = () => {
     },
     staleTime: 0,
     // Keep notifications and unread badges responsive
-    refetchInterval: 3000,
+    refetchInterval: 2000,
   });
 };
 

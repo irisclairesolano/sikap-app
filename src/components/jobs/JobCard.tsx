@@ -118,33 +118,6 @@ export const JobCard = React.memo(function JobCard({
         job.is_withdrawn && styles.cardWithdrawn,
       ]}
     >
-      {/* Tint overlay for Applied / Withdrawn states */}
-      {(isApplied || job.is_withdrawn) && (
-        <View
-          pointerEvents="none"
-          style={[styles.tintOverlay, isApplied ? styles.tintApplied : styles.tintWithdrawn]}
-        />
-      )}
-
-      {/* Top Banner Strip for Applied / Withdrawn */}
-      {(isApplied || job.is_withdrawn) && (
-        <View
-          style={[
-            styles.topBanner,
-            isApplied ? styles.topBannerApplied : styles.topBannerWithdrawn,
-          ]}
-        >
-          <Ionicons
-            name={isApplied ? 'checkmark-circle' : 'remove-circle'}
-            size={12}
-            color={isApplied ? '#15803D' : '#92400E'}
-          />
-          <Text style={[styles.topBannerText, { color: isApplied ? '#15803D' : '#92400E' }]}>
-            {isApplied ? 'Applied to this job' : 'Application Withdrawn'}
-          </Text>
-        </View>
-      )}
-
       {/* Card Header & Content (Clickable) */}
       <TouchableOpacity onPress={onPress} activeOpacity={0.75} style={styles.cardPressable}>
         {/* Zone 1: Media Section (Top - Conditional) */}
@@ -192,6 +165,23 @@ export const JobCard = React.memo(function JobCard({
             </View>
 
             <View style={styles.headerRight}>
+              {isApplied && (
+                <View style={[styles.badge, styles.badgeApplied]}>
+                  <Ionicons name="checkmark-circle" size={10} color="#15803D" />
+                  <Text style={[styles.badgeText, styles.badgeTextApplied]}>APPLIED</Text>
+                </View>
+              )}
+              {job.is_withdrawn && (
+                <View style={[styles.badge, styles.badgeWithdrawn]}>
+                  <Ionicons name="remove-circle" size={10} color="#92400E" />
+                  <Text style={[styles.badgeText, styles.badgeTextWithdrawn]}>WITHDRAWN</Text>
+                </View>
+              )}
+              {!isApplied && !job.is_withdrawn && isFilled && (
+                <View style={[styles.badge, styles.badgeFilled]}>
+                  <Text style={[styles.badgeText, styles.badgeTextFilled]}>FILLED</Text>
+                </View>
+              )}
               {isUrgent && (
                 <View style={[styles.badge, styles.badgeUrgent]}>
                   <Ionicons name="flame" size={10} color={colors.error} />
@@ -350,50 +340,14 @@ const styles = StyleSheet.create({
     elevation: 2,
     overflow: 'hidden',
   },
-  cardApplied: {},
-  cardWithdrawn: {},
+  cardApplied: {
+    borderColor: 'rgba(34, 197, 94, 0.45)',
+  },
+  cardWithdrawn: {
+    borderColor: 'rgba(245, 158, 11, 0.45)',
+  },
   cardPressable: {
     width: '100%',
-  },
-  tintOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 16,
-    overflow: 'hidden',
-    zIndex: 1,
-  },
-  tintApplied: {
-    backgroundColor: 'rgba(209, 250, 229, 0.45)',
-  },
-  tintWithdrawn: {
-    backgroundColor: 'rgba(254, 243, 199, 0.45)',
-  },
-  topBanner: {
-    paddingVertical: 5,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 5,
-    zIndex: 2,
-  },
-  topBannerApplied: {
-    backgroundColor: '#DCFCE7',
-    borderBottomWidth: 1,
-    borderBottomColor: '#86EFAC',
-  },
-  topBannerWithdrawn: {
-    backgroundColor: '#FEF3C7',
-    borderBottomWidth: 1,
-    borderBottomColor: '#FCD34D',
-  },
-  topBannerText: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 11,
-    letterSpacing: 0.3,
   },
   mediaContainer: {
     width: '100%',
@@ -490,6 +444,30 @@ const styles = StyleSheet.create({
   },
   badgeUrgent: {
     backgroundColor: colors.status.rejected.bg,
+  },
+  badgeApplied: {
+    backgroundColor: '#DCFCE7',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+  },
+  badgeTextApplied: {
+    color: '#15803D',
+  },
+  badgeWithdrawn: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+  },
+  badgeTextWithdrawn: {
+    color: '#92400E',
+  },
+  badgeFilled: {
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+  },
+  badgeTextFilled: {
+    color: '#64748B',
   },
   metaRow: {
     flexDirection: 'row',

@@ -69,6 +69,8 @@ export const useAcceptOffer = () => {
       queryClient.invalidateQueries({ queryKey: ['application'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['conversation'] });
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
     },
   });
 };
@@ -91,6 +93,8 @@ export const useRejectOffer = () => {
       queryClient.invalidateQueries({ queryKey: ['application'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['conversation'] });
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
     },
   });
 };

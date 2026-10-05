@@ -157,6 +157,8 @@ export const JobDetailsScreen: React.FC = () => {
   const remainingSlots = job?.remaining_slots ?? Math.max(0, totalSlots - filledSlots);
   const isFilled =
     remainingSlots === 0 || job?.status === 'completed' || job?.status === 'closed_in_progress';
+  const isApplied = !!((job?.is_applied || (job as any)?.has_applied) && !job?.is_withdrawn);
+  const isWithdrawn = !!job?.is_withdrawn;
 
   const getRelativeTime = (dateString?: string) => {
     if (!dateString) return 'Just now';
@@ -231,6 +233,18 @@ export const JobDetailsScreen: React.FC = () => {
                 : job.category || 'General'}
             </Text>
           </View>
+          {isApplied && (
+            <View style={[styles.badge, styles.badgeApplied]}>
+              <Ionicons name="checkmark-circle" size={10} color="#15803D" />
+              <Text style={[styles.badgeText, styles.badgeTextApplied]}>APPLIED</Text>
+            </View>
+          )}
+          {isWithdrawn && (
+            <View style={[styles.badge, styles.badgeWithdrawn]}>
+              <Ionicons name="remove-circle" size={10} color="#92400E" />
+              <Text style={[styles.badgeText, styles.badgeTextWithdrawn]}>WITHDRAWN</Text>
+            </View>
+          )}
           {isUrgent && (
             <View style={[styles.badge, styles.badgeUrgent]}>
               <Ionicons name="flame" size={10} color={colors.error} />
@@ -624,6 +638,22 @@ const styles = StyleSheet.create({
   },
   badgeUrgent: {
     backgroundColor: colors.status.rejected.bg,
+  },
+  badgeApplied: {
+    backgroundColor: '#DCFCE7',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+  },
+  badgeTextApplied: {
+    color: '#15803D',
+  },
+  badgeWithdrawn: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+  },
+  badgeTextWithdrawn: {
+    color: '#92400E',
   },
   title: {
     fontFamily: fonts.display,

@@ -108,6 +108,9 @@ const MessagesStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="ConversationsList" component={ConversationsListScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
+    <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
+    <Stack.Screen name="AcceptHire" component={AcceptHireScreen} />
+    <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>

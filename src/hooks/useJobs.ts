@@ -68,6 +68,8 @@ export const useMarkJobComplete = () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['conversation'] });
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
     },
   });
 };
