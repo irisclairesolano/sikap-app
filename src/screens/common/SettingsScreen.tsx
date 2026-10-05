@@ -1,27 +1,27 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  Modal,
-  TextInput,
   ActivityIndicator,
   KeyboardAvoidingView,
+  Modal,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { authApi } from '../../api/auth';
 import { useAlert } from '../../contexts/AlertContext';
-import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../../hooks/useAuth';
+import { notifyAuthChanged } from '../../store/authEvents';
 import { colors, fonts, shadows } from '../../theme';
 import * as SecureStore from '../../utils/storage';
-import { useQueryClient } from '@tanstack/react-query';
-import { notifyAuthChanged } from '../../store/authEvents';
-import { useAuth } from '../../hooks/useAuth';
-import { authApi } from '../../api/auth';
 
 // ─── Static content modal ────────────────────────────────────────────────────
 
@@ -159,7 +159,7 @@ const cStyles = StyleSheet.create({
 const HELP_SECTIONS: ContentSection[] = [
   {
     heading: '👋 Welcome to SIKAP Help Center',
-    body: 'SIKAP connects local workers with employers in Marinduque. This guide covers the most common questions about using the app.',
+    body: 'SIKAP connects local workers with employers in the province of Sorsogon. This guide covers the most common questions about using the app.',
   },
   {
     heading: 'Getting Started',
@@ -171,7 +171,7 @@ const HELP_SECTIONS: ContentSection[] = [
   },
   {
     heading: 'Hiring Process',
-    body: 'The SIKAP hiring process has four stages:\n\n1. Application Submitted — You applied.\n2. Shortlisted — The employer reviewed your application.\n3. Negotiation — Terms and compensation are discussed.\n4. Hired — The employer confirms and the job begins.',
+    body: 'The SIKAP hiring process has five stages:\n\n1. Application Submitted — You applied.\n2. Shortlisted — The employer reviewed your application.\n3. Negotiation — Terms and compensation are discussed.\n4. Hired — The employer confirms and the job begins.\n5. Completed — The employer marks the job as completed, and both parties can then rate each other.',
   },
   {
     heading: 'Messaging',
@@ -183,11 +183,11 @@ const HELP_SECTIONS: ContentSection[] = [
   },
   {
     heading: 'ID Verification',
-    body: 'For security, workers must submit a valid government-issued ID (front and back) and a selfie. Verification is reviewed by our admin team within 1–3 business days.',
+    body: 'For security, workers must submit a valid government-issued ID (front and back) and a selfie. Verification is reviewed by our admin team within 1–3 business days. And employer may upload business document available to them',
   },
   {
     heading: 'Account Issues',
-    body: "If you're having trouble logging in, try resetting your password via the login screen. If your account is suspended or flagged, please contact SIKAP support at support@sikap.ph.",
+    body: "If you're having trouble logging in, try resetting your password via the login screen. If your account is suspended or flagged, you may contact costumer support.",
   },
   {
     heading: 'Reporting & Safety',
@@ -195,14 +195,14 @@ const HELP_SECTIONS: ContentSection[] = [
   },
   {
     heading: 'Contact Support',
-    body: 'For additional help, email us at support@sikap.ph or reach out via our official Facebook page. We aim to respond within 24 hours on business days.',
+    body: 'For additional help, you may submt a support ticket . We aim to respond within 24 hours on business days.',
   },
 ];
 
 const TERMS_SECTIONS: ContentSection[] = [
   {
     heading: 'Terms of Service',
-    body: 'Last updated: October 1, 2026\n\nBy using SIKAP, you agree to be bound by these Terms of Service. Please read them carefully.',
+    body: 'Last updated: October 5, 2026\n\nBy using SIKAP, you agree to be bound by these Terms of Service. Please read them carefully.',
   },
   {
     heading: '1. Acceptance of Terms',
@@ -210,7 +210,7 @@ const TERMS_SECTIONS: ContentSection[] = [
   },
   {
     heading: '2. Description of Service',
-    body: 'SIKAP is a platform that connects local workers and employers in the Municipality of Boac, Marinduque. We facilitate job discovery, applications, and communications between users.',
+    body: 'SIKAP is a platform that connects local workers and employers in the Province of Sorsogon. We facilitate job discovery, applications, and communications between users.',
   },
   {
     heading: '3. User Accounts',
@@ -265,7 +265,7 @@ const PRIVACY_SECTIONS: ContentSection[] = [
   },
   {
     heading: '2. How We Use Your Information',
-    body: 'We use your information to:\n• Create and manage your account\n• Verify your identity and prevent fraud\n• Match workers with relevant job opportunities\n• Enable communication between workers and employers\n• Send notifications about job updates and applications\n• Improve the SIKAP platform\n• Respond to support requests',
+    body: 'We use your information to:\n• Create and manage your account\n• Verify your identity and prevent fraud\n• Enable communication between workers and employers\n• Send notifications about job updates and applications\n• Improve the SIKAP platform\n• Respond to support requests',
   },
   {
     heading: '3. Information Sharing',
@@ -297,7 +297,7 @@ const PRIVACY_SECTIONS: ContentSection[] = [
   },
   {
     heading: '10. Contact Us',
-    body: 'For privacy concerns or data requests, contact our Data Protection Officer at privacy@sikap.ph or through our official support channels.',
+    body: 'For privacy concerns or data requests, contact us through our official support channels.',
   },
 ];
 
