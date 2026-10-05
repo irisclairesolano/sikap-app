@@ -1,10 +1,11 @@
+import Pusher from 'pusher-js/react-native';
 import { useEffect } from 'react';
-import Pusher from 'pusher-js';
-import * as SecureStore from '../utils/storage';
-import { BASE_URL } from '../api/client';
+
 import { useQueryClient } from '@tanstack/react-query';
+import { BASE_URL } from '../api/client';
 import { Message } from '../types';
 import { triggerHaptic } from '../utils/haptics';
+import * as SecureStore from '../utils/storage';
 
 const PUSHER_KEY = process.env.EXPO_PUBLIC_PUSHER_KEY || 'sikap-pusher-key';
 const PUSHER_CLUSTER = process.env.EXPO_PUBLIC_PUSHER_CLUSTER || 'ap1';
