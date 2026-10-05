@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Image,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useAlert } from '../../contexts/AlertContext';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
@@ -47,11 +56,44 @@ export const ReportScreen: React.FC = () => {
 
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [description, setDescription] = useState('');
+  const [screenshots, setScreenshots] = useState<string[]>([]);
   const { showAlert } = useAlert();
 
   const { mutate: submitReport, isPending } = useSubmitReport();
 
   const isFormValid = selectedReason !== null && description.trim().length > 0;
+
+  const handlePickScreenshots = async () => {
+    const remainingSlots = 5 - screenshots.length;
+    if (remainingSlots <= 0) {
+      showAlert('Limit Reached', 'You can upload up to 5 screenshots per report.');
+      return;
+    }
+
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      showAlert('Permission Required', 'Please grant photo library access to attach screenshots.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      selectionLimit: remainingSlots,
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const newUris = result.assets.map((asset) => asset.uri);
+      setScreenshots((prev) => [...prev, ...newUris].slice(0, 5));
+      triggerHaptic('light');
+    }
+  };
+
+  const handleRemoveScreenshot = (indexToRemove: number) => {
+    setScreenshots((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    triggerHaptic('light');
+  };
 
   const handleSubmit = () => {
     if (!id || id <= 0) {
@@ -77,6 +119,7 @@ export const ReportScreen: React.FC = () => {
         reportable_id: id,
         type: mappedType,
         description: description.trim() || selectedReason,
+        screenshots: screenshots.length > 0 ? screenshots : undefined,
       },
       {
         onSuccess: (res: any) => {
@@ -153,6 +196,43 @@ export const ReportScreen: React.FC = () => {
           </View>
         </View>
 
+        {/* Screenshot Attachment Section */}
+        <View style={styles.screenshotsSection}>
+          <View style={styles.screenshotsHeader}>
+            <Text style={styles.label}>Attach Evidence ({screenshots.length}/5)</Text>
+            <Text style={styles.screenshotsSublabel}>
+              Screenshots help our team review and resolve faster
+            </Text>
+          </View>
+
+          <View style={styles.screenshotsGrid}>
+            {screenshots.map((uri, index) => (
+              <View key={uri + index} style={styles.screenshotThumbContainer}>
+                <Image source={{ uri }} style={styles.screenshotThumb} resizeMode="cover" />
+                <TouchableOpacity
+                  style={styles.removeScreenshotBtn}
+                  onPress={() => handleRemoveScreenshot(index)}
+                  activeOpacity={0.8}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="close" size={14} color={colors.white} />
+                </TouchableOpacity>
+              </View>
+            ))}
+
+            {screenshots.length < 5 && (
+              <TouchableOpacity
+                style={styles.addScreenshotBtn}
+                onPress={handlePickScreenshots}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="camera-outline" size={24} color={colors.primary} />
+                <Text style={styles.addScreenshotText}>Add Photo</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
         <View style={styles.submitContainer}>
           <Button
             testID="submit-report-btn"
@@ -225,6 +305,65 @@ const styles = StyleSheet.create({
     color: colors.ink,
     minHeight: 100,
     textAlignVertical: 'top',
+  },
+  screenshotsSection: {
+    marginTop: 20,
+  },
+  screenshotsHeader: {
+    marginBottom: 10,
+  },
+  screenshotsSublabel: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkMuted,
+    marginTop: 2,
+  },
+  screenshotsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  screenshotThumbContainer: {
+    position: 'relative',
+    width: 72,
+    height: 72,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: colors.inkFaint,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
+  screenshotThumb: {
+    width: '100%',
+    height: '100%',
+  },
+  removeScreenshotBtn: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addScreenshotBtn: {
+    width: 72,
+    height: 72,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: colors.primary,
+    backgroundColor: colors.paperBright,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addScreenshotText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 10,
+    color: colors.primary,
+    marginTop: 2,
   },
   submitContainer: { marginTop: 32 },
   submitBtn: { paddingVertical: 14 },

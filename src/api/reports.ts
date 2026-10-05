@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import { appendFileToFormData } from '../utils/formData';
 
 export type ReportableType = 'user' | 'job_post' | 'application';
 export type ReportReasonType = 'harassment' | 'fake_account' | 'inappropriate_job' | 'other';
@@ -25,10 +26,33 @@ export interface SubmitReportPayload {
   reportable_id: number;
   type: ReportReasonType;
   description: string;
+  screenshots?: string[];
 }
 
 export const reportsApi = {
   submitReport: async (payload: SubmitReportPayload) => {
+    if (payload.screenshots && payload.screenshots.length > 0) {
+      const formData = new FormData();
+      formData.append('reportable_type', payload.reportable_type);
+      formData.append('reportable_id', String(payload.reportable_id));
+      formData.append('type', payload.type);
+      formData.append('description', payload.description);
+
+      for (let i = 0; i < payload.screenshots.length; i++) {
+        await appendFileToFormData(
+          formData,
+          `screenshots[${i}]`,
+          payload.screenshots[i],
+          `screenshot_${i + 1}.jpg`,
+        );
+      }
+
+      return apiClient<{ message: string; report_id?: number }>('/reports', {
+        method: 'POST',
+        body: formData,
+      });
+    }
+
     return apiClient<{ message: string; report_id?: number }>('/reports', {
       method: 'POST',
       body: JSON.stringify(payload),
