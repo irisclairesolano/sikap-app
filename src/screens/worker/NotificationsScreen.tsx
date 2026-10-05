@@ -123,6 +123,16 @@ export const NotificationsScreen: React.FC = () => {
             return;
           }
 
+          const isSupportTicket =
+            notif.type?.includes('SupportTicket') ||
+            notifType === 'support_ticket' ||
+            parsedData?.ticket_id !== undefined;
+
+          if (isSupportTicket) {
+            (navigation as any).navigate('SupportTickets');
+            return;
+          }
+
           if (appId && !isNaN(Number(appId))) {
             navigation.navigate('ApplicationDetail', { applicationId: Number(appId) });
           } else if (jobId && !isNaN(Number(jobId))) {

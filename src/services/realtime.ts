@@ -1,4 +1,4 @@
-import Pusher from 'pusher-js/react-native';
+import Pusher from 'pusher-js';
 import { useEffect } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';

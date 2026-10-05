@@ -456,6 +456,22 @@ export const ProfileScreen: React.FC = () => {
             </View>
           </View>
         )}
+
+        {/* Help & Support Quick Entry */}
+        <TouchableOpacity
+          style={styles.supportCard}
+          onPress={() => navigation.navigate('SupportTickets' as any)}
+          activeOpacity={0.8}
+        >
+          <View style={styles.supportIconCircle}>
+            <Ionicons name="help-buoy" size={20} color={colors.primary} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.supportTitle}>Need Help or Support?</Text>
+            <Text style={styles.supportSubtitle}>Submit and track tickets directly in-app</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -677,6 +693,37 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.primaryDark,
     opacity: 0.8,
+  },
+  supportCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.70)',
+    gap: 12,
+    ...shadows.sm,
+  },
+  supportIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.peach,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  supportTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.ink,
+  },
+  supportSubtitle: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkMuted,
+    marginTop: 2,
   },
 });
 
