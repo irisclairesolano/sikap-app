@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -33,6 +33,9 @@ import { useAlert } from '../../contexts/AlertContext';
 import MessageBubble from '../../components/chat/MessageBubble';
 import ActionCard from '../../components/chat/ActionCard';
 import QuickReplyChips from '../../components/chat/QuickReplyChips';
+import { TypingIndicator } from '../../components/chat/TypingIndicator';
+import { useRealtimeChat } from '../../services/realtime';
+import { messagesApi } from '../../api/messages';
 import { triggerHaptic } from '../../utils/haptics';
 import { colors, fonts } from '../../theme';
 
@@ -88,6 +91,24 @@ const ChatScreen: React.FC = () => {
   const prevMessagesLengthRef = useRef(0);
   const lastMessageIdRef = useRef<number | null>(null);
   const isNearBottomRef = useRef(true);
+
+  const [typingUser, setTypingUser] = useState<string | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingPingRef = useRef<number>(0);
+
+  const handlePartnerTyping = useCallback((name: string) => {
+    setTypingUser(name);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      setTypingUser(null);
+    }, 3500);
+  }, []);
+
+  useRealtimeChat({
+    conversationId,
+    currentUserId: user?.id,
+    onTyping: handlePartnerTyping,
+  });
 
   const blockUserMutation = useBlockUser();
   const unblockUserMutation = useUnblockUser();
@@ -893,6 +914,7 @@ const ChatScreen: React.FC = () => {
                   onDismiss={() => setShowQuickReplies(false)}
                 />
               )}
+              <TypingIndicator visible={Boolean(typingUser)} userName={typingUser || undefined} />
               <View style={styles.inputContainer}>
                 <TouchableOpacity
                   onPress={handlePickImage}
@@ -927,6 +949,11 @@ const ChatScreen: React.FC = () => {
                   onChangeText={(text) => {
                     setInputText(text);
                     if (inputError) setInputError(null);
+                    const now = Date.now();
+                    if (text.trim().length > 0 && now - lastTypingPingRef.current > 2500) {
+                      lastTypingPingRef.current = now;
+                      messagesApi.sendTyping(conversationId).catch(() => {});
+                    }
                   }}
                   multiline
                   maxLength={1000}

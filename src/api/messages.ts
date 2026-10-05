@@ -57,6 +57,14 @@ export const messagesApi = {
     }),
 
   /**
+   * Notify conversation partner that user is typing.
+   */
+  sendTyping: (conversationId: number) =>
+    apiClient<{ status: string }>(`/conversations/${conversationId}/typing`, {
+      method: 'POST',
+    }),
+
+  /**
    * Get total unread message count across all conversations, optionally filtered by role.
    */
   getUnreadCount: (role?: 'worker' | 'employer' | 'all' | string) =>

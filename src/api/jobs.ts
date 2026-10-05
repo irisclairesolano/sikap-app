@@ -53,9 +53,3 @@ export const reactToJob = async (
     method: 'POST',
   });
 };
-
-export const getShareLink = async (
-  jobId: number,
-): Promise<{ share_link: string; job_title: string }> => {
-  return apiClient<{ share_link: string; job_title: string }>(`/jobs/${jobId}/share-link`);
-};

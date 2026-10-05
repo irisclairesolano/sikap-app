@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Share } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, shadows } from '../../theme';
@@ -50,6 +51,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
   job: passedJob,
   onOpenChat,
 }) => {
+  const navigation = useNavigation<any>();
   const job = passedJob || application?.job;
   const worker = application?.worker;
   const employer = job?.employer;
@@ -98,20 +100,20 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
     { label: 'Completed', date: completedDateStr },
   ].filter((step) => Boolean(step.date));
 
-  const handleShareReceipt = async () => {
-    const lines = [
-      `SIKAP Job Receipt — ${refNumber}`,
-      job?.title || '',
-      '',
-      `${counterpartyLabel}: ${counterparty?.name || 'N/A'}`,
-      `${rateUnitText}: ${displayCompensation}`,
-      formattedCompletedDate ? `Completed: ${formattedCompletedDate}` : '',
-      locationText ? `Location: ${locationText}` : '',
-    ].filter(Boolean);
-    try {
-      await Share.share({ message: lines.join('\n') });
-    } catch {
-      // user dismissed the share sheet — nothing to do
+  const handleRate = () => {
+    if (viewerRole === 'employer') {
+      navigation.navigate('RateWorker', {
+        id: Number(application?.id),
+        workerName: String(worker?.name || 'Worker'),
+        jobTitle: String(job?.title || 'Job'),
+        jobId: Number(job?.id || application?.job_post_id),
+      });
+    } else {
+      navigation.navigate('RateEmployer', {
+        id: Number(application?.id),
+        employerName: String(employer?.name || 'Employer'),
+        jobTitle: String(job?.title || 'Job'),
+      });
     }
   };
 
@@ -357,19 +359,17 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
         )}
       </View>
 
-      {/* ACTIONS */}
-      <View style={styles.actionsRow}>
-        {onOpenChat ? (
-          <TouchableOpacity style={styles.actionBtn} onPress={onOpenChat} activeOpacity={0.8}>
-            <Ionicons name="chatbubbles-outline" size={18} color={colors.primary} />
-            <Text style={styles.actionBtnText}>View Chat History</Text>
+      {/* ACTION: Rate button only if not rated yet, otherwise none */}
+      {!hasReviewed && !isRatingWindowClosed ? (
+        <View style={styles.actionsRow}>
+          <TouchableOpacity style={styles.rateBtn} onPress={handleRate} activeOpacity={0.85}>
+            <Ionicons name="star" size={18} color={colors.white} />
+            <Text style={styles.rateBtnText}>
+              {viewerRole === 'employer' ? 'Rate the Worker' : 'Rate Employer'}
+            </Text>
           </TouchableOpacity>
-        ) : null}
-        <TouchableOpacity style={styles.actionBtn} onPress={handleShareReceipt} activeOpacity={0.8}>
-          <Ionicons name="share-outline" size={18} color={colors.primary} />
-          <Text style={styles.actionBtnText}>Share Receipt</Text>
-        </TouchableOpacity>
-      </View>
+        </View>
+      ) : null}
     </View>
   );
 };
@@ -740,25 +740,22 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: 'row',
-    gap: 10,
   },
-  actionBtn: {
+  rateBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: colors.paperBright,
+    backgroundColor: colors.primary,
     borderRadius: 14,
     paddingVertical: 14,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: colors.inkFaint,
+    paddingHorizontal: 16,
     ...shadows.sm,
   },
-  actionBtnText: {
+  rateBtnText: {
     fontFamily: fonts.bodyBold,
-    fontSize: 13,
-    color: colors.primary,
+    fontSize: 15,
+    color: colors.white,
   },
 });

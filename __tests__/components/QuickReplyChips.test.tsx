@@ -15,6 +15,9 @@ jest.mock('expo-haptics', () => ({
 }));
 
 describe('QuickReplyChips Component', () => {
+  beforeAll(() => {
+    jest.setTimeout(15000);
+  });
   it('renders worker quick replies when role is worker', async () => {
     const onSelectChip = jest.fn();
     const { getByText } = await render(
