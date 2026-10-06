@@ -3,11 +3,15 @@ import { jobsApi } from '../api/jobs';
 import { EmployerStats } from '../types';
 import { useEmployerJobs } from './useEmployerJobs';
 import { useAuth } from './useAuth';
+import { useRealtimeUserEvents } from '../services/realtime';
 
 export const useEmployerStats = () => {
   const queryClient = useQueryClient();
   const { data: myJobsData } = useEmployerJobs();
   const { user: authUser } = useAuth();
+
+  // Subscribe to real-time user stats events over WebSockets
+  useRealtimeUserEvents(authUser?.id);
 
   const {
     data: stats,
@@ -17,7 +21,10 @@ export const useEmployerStats = () => {
   } = useQuery<EmployerStats, Error>({
     queryKey: ['employer-stats'],
     queryFn: jobsApi.getEmployerStats,
-    refetchInterval: 3000,
+    refetchInterval: 2500,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
     staleTime: 1000,
   });
 

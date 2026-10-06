@@ -22,13 +22,29 @@ import {
   Manrope_700Bold,
   Manrope_800ExtraBold,
 } from '@expo-google-fonts/manrope';
-import { View, Text, TouchableOpacity, ActivityIndicator, LogBox } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  LogBox,
+  AppState,
+  AppStateStatus,
+  Platform,
+} from 'react-native';
+import { focusManager } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 
 import { OfflineNotice } from './src/components/common/OfflineNotice';
 import ErrorBoundary from './src/components/common/ErrorBoundary';
+
+function onAppStateChange(status: AppStateStatus) {
+  if (Platform.OS !== 'web') {
+    focusManager.setFocused(status === 'active');
+  }
+}
 
 // Suppress upstream @react-navigation/bottom-tabs v7 internal warning:
 // CommonActions.navigate(route) in BottomTabBar.js triggers this routers warning
@@ -107,6 +123,11 @@ export default function App() {
     Manrope_700Bold,
     Manrope_800ExtraBold,
   });
+
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener('change', onAppStateChange);
+    return () => subscription.remove();
+  }, []);
 
   if (!fontsLoaded && !fontError) {
     return (

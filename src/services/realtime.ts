@@ -191,3 +191,51 @@ export function useRealtimeChat({
     };
   }, [conversationId, currentUserId, onTyping, queryClient]);
 }
+
+export function useRealtimeUserEvents(userId?: number) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!userId || userId <= 0) return;
+
+    const pusher = getPusherClient();
+    if (!pusher) return;
+
+    const channelName = `private-user.${userId}`;
+    const channel = pusher.subscribe(channelName);
+
+    channel.bind('user.stats.updated', (data: any) => {
+      if (data?.stats) {
+        queryClient.setQueryData(['employer-stats'], (old: any) => ({
+          ...(old || {}),
+          ...data.stats,
+        }));
+        queryClient.setQueryData(['profile'], (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            reputation_score:
+              data.stats.reputation_score !== undefined
+                ? data.stats.reputation_score
+                : old.reputation_score,
+            ratings_count:
+              data.stats.ratings_count !== undefined ? data.stats.ratings_count : old.ratings_count,
+            employer_stats: {
+              ...(old.employer_stats || {}),
+              ...data.stats,
+            },
+          };
+        });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+    });
+
+    return () => {
+      channel.unbind_all();
+      pusher.unsubscribe(channelName);
+    };
+  }, [userId, queryClient]);
+}
