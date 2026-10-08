@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import { useJob } from '../../hooks/useJob';
+import { useJobApplications } from '../../hooks/useJobApplications';
 import { useReviews } from '../../hooks/useReviews';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import Button from '../../components/common/Button';
@@ -23,12 +24,16 @@ const RateWorkerListScreen: React.FC = () => {
   const { jobId, jobTitle } = route.params;
 
   const { data: jobData, isLoading: isLoadingJob } = useJob(jobId);
+  const { data: applicationsData = [], isLoading: isLoadingApps } = useJobApplications(jobId);
   const { data: reviewsData, isLoading: isLoadingReviews } = useReviews(undefined, 'employer');
 
   const completedApplications = useMemo(() => {
-    if (!jobData?.applications) return [];
-    return jobData.applications.filter((app: any) => app.status === 'completed');
-  }, [jobData]);
+    const rawApps =
+      applicationsData && applicationsData.length > 0
+        ? applicationsData
+        : jobData?.applications || [];
+    return rawApps.filter((app: any) => app.status === 'completed');
+  }, [applicationsData, jobData]);
 
   const reviewedApplicationIds = useMemo(() => {
     if (!reviewsData?.reviews) return new Set<number>();
@@ -39,7 +44,11 @@ const RateWorkerListScreen: React.FC = () => {
     );
   }, [reviewsData]);
 
-  if (isLoadingJob || isLoadingReviews) {
+  if (
+    (isLoadingJob && !jobData) ||
+    (isLoadingApps && applicationsData.length === 0) ||
+    isLoadingReviews
+  ) {
     return (
       <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <LoadingSpinner />

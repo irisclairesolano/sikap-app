@@ -5,6 +5,8 @@ import { Image } from 'expo-image';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   FlatList,
+  Modal,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -17,7 +19,12 @@ import Button from '../../components/common/Button';
 import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 import { formatRateUnit, getCategoryStyles, getRelativeTime } from '../../components/jobs/JobCard';
 import { useAlert } from '../../contexts/AlertContext';
-import { useArchivedJobs, useEmployerJobs, useRestoreJob } from '../../hooks/useEmployerJobs';
+import {
+  useArchivedJobs,
+  useDeleteJob,
+  useEmployerJobs,
+  useRestoreJob,
+} from '../../hooks/useEmployerJobs';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts } from '../../theme';
 import { JobPost } from '../../types';
@@ -41,6 +48,8 @@ export const MyJobsScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { showAlert } = useAlert();
 
+  const [menuJob, setMenuJob] = useState<JobPost | null>(null);
+
   const {
     data: jobsResponse,
     isLoading: isJobsLoading,
@@ -54,11 +63,53 @@ export const MyJobsScreen: React.FC = () => {
     refetch: refetchArchived,
   } = useArchivedJobs();
   const { mutate: restoreJob, isPending: isRestoring } = useRestoreJob();
+  const { mutate: deleteJob, isPending: isDeleting } = useDeleteJob();
+
+  const handleArchiveJob = useCallback(
+    (job: JobPost) => {
+      showAlert(
+        'Archive Job Post',
+        `Are you sure you want to archive "${job.title}"? You can restore it later from the Archived tab.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Archive',
+            style: 'destructive',
+            onPress: () => {
+              deleteJob(job.id, {
+                onSuccess: () => {
+                  showAlert('Archived', 'Job post moved to archive.');
+                },
+                onError: (err: any) => {
+                  showAlert('Error', err.message || 'Could not archive job.');
+                },
+              });
+            },
+          },
+        ],
+      );
+    },
+    [deleteJob, showAlert],
+  );
+
+  const handleRestoreJob = useCallback(
+    (jobId: number) => {
+      restoreJob(jobId, {
+        onSuccess: () => {
+          showAlert('Success', 'Job post restored successfully.');
+        },
+        onError: (err: any) => {
+          showAlert('Error', err.message || 'Failed to restore job.');
+        },
+      });
+    },
+    [restoreJob, showAlert],
+  );
 
   const jobs = jobsResponse?.data || [];
   const archivedJobs = archivedResponse?.data || [];
 
-  const isLoading = isJobsLoading || isArchivedLoading || isRestoring;
+  const isLoading = isJobsLoading || isArchivedLoading || isRestoring || isDeleting;
   const isError = isJobsError || isArchivedError;
 
   const filteredJobs =
@@ -322,34 +373,43 @@ export const MyJobsScreen: React.FC = () => {
             )}
 
             {item.deleted_at ? (
-              <TouchableOpacity
-                style={[styles.cardBtn, { backgroundColor: colors.primaryDark }]}
-                activeOpacity={0.75}
-                onPress={() => {
-                  restoreJob(item.id, {
-                    onSuccess: () => {
-                      showAlert('Success', 'Job restored successfully.');
-                    },
-                    onError: (err: any) => {
-                      showAlert('Error', err.message || 'Failed to restore job.');
-                    },
-                  });
-                }}
-              >
-                <Ionicons name="refresh-outline" size={13} color="#FFFFFF" />
-                <Text style={styles.cardBtnText}>Restore</Text>
-              </TouchableOpacity>
+              <View style={styles.actionBtnsGroup}>
+                <TouchableOpacity
+                  style={styles.iconActionBtn}
+                  activeOpacity={0.75}
+                  accessibilityLabel="Preview Job"
+                  onPress={() => navigation.navigate('JobDetails', { id: item.id })}
+                >
+                  <Ionicons name="eye-outline" size={17} color={colors.ink} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.cardBtn, { backgroundColor: colors.primaryDark }]}
+                  activeOpacity={0.75}
+                  onPress={() => handleRestoreJob(item.id)}
+                >
+                  <Ionicons name="refresh-outline" size={13} color="#FFFFFF" />
+                  <Text style={styles.cardBtnText}>Restore</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.iconActionBtn}
+                  activeOpacity={0.75}
+                  accessibilityLabel="More Options"
+                  onPress={() => setMenuJob(item)}
+                >
+                  <Ionicons name="ellipsis-vertical" size={17} color={colors.ink} />
+                </TouchableOpacity>
+              </View>
             ) : (
               <View style={styles.actionBtnsGroup}>
                 <TouchableOpacity
-                  style={styles.previewBtn}
+                  style={styles.iconActionBtn}
                   activeOpacity={0.75}
-                  onPress={() =>
-                    navigation.navigate('JobStatusManagement', { id: item.id, job: item })
-                  }
+                  accessibilityLabel="Preview Job"
+                  onPress={() => navigation.navigate('JobDetails', { id: item.id })}
                 >
-                  <Ionicons name="eye-outline" size={13} color={colors.ink} />
-                  <Text style={styles.previewBtnText}>Preview Job</Text>
+                  <Ionicons name="eye-outline" size={17} color={colors.ink} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -360,13 +420,22 @@ export const MyJobsScreen: React.FC = () => {
                   <Text style={styles.cardBtnText}>{activeApp ? 'Active Stage' : 'Manage'}</Text>
                   <Ionicons name="chevron-forward" size={13} color="#FFFFFF" />
                 </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.iconActionBtn}
+                  activeOpacity={0.75}
+                  accessibilityLabel="More Options"
+                  onPress={() => setMenuJob(item)}
+                >
+                  <Ionicons name="ellipsis-vertical" size={17} color={colors.ink} />
+                </TouchableOpacity>
               </View>
             )}
           </View>
         </View>
       );
     },
-    [navigation, restoreJob, showAlert],
+    [handleRestoreJob, navigation],
   );
 
   return (
@@ -461,6 +530,204 @@ export const MyJobsScreen: React.FC = () => {
           }
         />
       )}
+
+      {/* 3-DOT ACTION MODAL */}
+      <Modal
+        visible={Boolean(menuJob)}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuJob(null)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setMenuJob(null)}>
+          <Pressable style={styles.modalSheet} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.modalHandle} />
+
+            <View style={styles.modalHeader}>
+              <View style={styles.modalRefRow}>
+                <Text style={styles.modalRefText}>
+                  {menuJob?.reference_number || `JOB-${menuJob?.id || '000'}`}
+                </Text>
+                <View
+                  style={[
+                    styles.modalStatusBadge,
+                    {
+                      backgroundColor: menuJob?.deleted_at
+                        ? '#F1F5F9'
+                        : menuJob?.status === 'completed'
+                          ? '#DCFCE7'
+                          : colors.status.accepted.bg,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.modalStatusText,
+                      {
+                        color: menuJob?.deleted_at
+                          ? '#64748B'
+                          : menuJob?.status === 'completed'
+                            ? '#15803D'
+                            : colors.status.accepted.text,
+                      },
+                    ]}
+                  >
+                    {menuJob?.deleted_at ? 'ARCHIVED' : (menuJob?.status || 'OPEN').toUpperCase()}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.modalJobTitle} numberOfLines={2}>
+                {menuJob?.title}
+              </Text>
+            </View>
+
+            <View style={styles.modalDivider} />
+
+            {/* Menu Options */}
+            <View style={styles.modalMenuOptions}>
+              {/* Option 1: Manage Applicants & Pipeline */}
+              {!menuJob?.deleted_at && (
+                <TouchableOpacity
+                  style={styles.modalMenuItem}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    const jobToOpen = menuJob;
+                    setMenuJob(null);
+                    if (jobToOpen) {
+                      navigation.navigate('JobStatusManagement', {
+                        id: jobToOpen.id,
+                        job: jobToOpen,
+                      });
+                    }
+                  }}
+                >
+                  <View style={[styles.modalMenuIconBox, { backgroundColor: colors.sky + '25' }]}>
+                    <Ionicons name="people-outline" size={18} color={colors.skyDeep} />
+                  </View>
+                  <View style={styles.modalMenuTextBox}>
+                    <Text style={styles.modalMenuTitle}>Manage Applicants & Pipeline</Text>
+                    <Text style={styles.modalMenuSub}>
+                      Review candidates, negotiation, and stage progress
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={colors.inkLight} />
+                </TouchableOpacity>
+              )}
+
+              {/* Option 2: View Job Post */}
+              <TouchableOpacity
+                style={styles.modalMenuItem}
+                activeOpacity={0.7}
+                onPress={() => {
+                  const jobId = menuJob?.id;
+                  setMenuJob(null);
+                  if (jobId) {
+                    navigation.navigate('JobDetails', { id: jobId });
+                  }
+                }}
+              >
+                <View style={[styles.modalMenuIconBox, { backgroundColor: colors.mint + '30' }]}>
+                  <Ionicons name="eye-outline" size={18} color={colors.mintDeep} />
+                </View>
+                <View style={styles.modalMenuTextBox}>
+                  <Text style={styles.modalMenuTitle}>View Job Post</Text>
+                  <Text style={styles.modalMenuSub}>
+                    Inspect the public job post with all details
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={colors.inkLight} />
+              </TouchableOpacity>
+
+              {/* Option 3: Edit Job Post (only if open) */}
+              {!menuJob?.deleted_at && menuJob?.status === 'open' && (
+                <TouchableOpacity
+                  style={styles.modalMenuItem}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    const jobToEdit = menuJob;
+                    setMenuJob(null);
+                    if (jobToEdit) {
+                      navigation.navigate('PostJob', { job: jobToEdit });
+                    }
+                  }}
+                >
+                  <View
+                    style={[styles.modalMenuIconBox, { backgroundColor: colors.butter + '50' }]}
+                  >
+                    <Ionicons name="create-outline" size={18} color={colors.gold} />
+                  </View>
+                  <View style={styles.modalMenuTextBox}>
+                    <Text style={styles.modalMenuTitle}>Edit Job Post</Text>
+                    <Text style={styles.modalMenuSub}>
+                      Update requirements, compensation, or schedule
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={colors.inkLight} />
+                </TouchableOpacity>
+              )}
+
+              {/* Option 4: Archive or Restore */}
+              {menuJob?.deleted_at ? (
+                <TouchableOpacity
+                  style={styles.modalMenuItem}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    const jobId = menuJob?.id;
+                    setMenuJob(null);
+                    if (jobId) {
+                      handleRestoreJob(jobId);
+                    }
+                  }}
+                >
+                  <View style={[styles.modalMenuIconBox, { backgroundColor: '#DCFCE7' }]}>
+                    <Ionicons name="refresh-outline" size={18} color="#15803D" />
+                  </View>
+                  <View style={styles.modalMenuTextBox}>
+                    <Text style={[styles.modalMenuTitle, { color: '#15803D' }]}>
+                      Restore Job Post
+                    </Text>
+                    <Text style={styles.modalMenuSub}>
+                      Reactivate this job and return it to your active posts
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={colors.inkLight} />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.modalMenuItem}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    const jobToArchive = menuJob;
+                    setMenuJob(null);
+                    if (jobToArchive) {
+                      handleArchiveJob(jobToArchive);
+                    }
+                  }}
+                >
+                  <View style={[styles.modalMenuIconBox, { backgroundColor: '#FEE2E2' }]}>
+                    <Ionicons name="archive-outline" size={18} color={colors.error} />
+                  </View>
+                  <View style={styles.modalMenuTextBox}>
+                    <Text style={[styles.modalMenuTitle, { color: colors.error }]}>
+                      Archive Job Post
+                    </Text>
+                    <Text style={styles.modalMenuSub}>Move this listing to the archive</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={colors.inkLight} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Cancel Button */}
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              activeOpacity={0.8}
+              onPress={() => setMenuJob(null)}
+            >
+              <Text style={styles.modalCloseBtnText}>Close</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -733,6 +1000,118 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 12,
     color: '#FFFFFF',
+  },
+  iconActionBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: colors.paperBright,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 12,
+    paddingHorizontal: 20,
+    paddingBottom: 34,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.inkFaint,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  modalHeader: {
+    gap: 6,
+  },
+  modalRefRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  modalRefText: {
+    fontFamily: fonts.numericBold,
+    fontSize: 12,
+    color: colors.inkSoft,
+  },
+  modalStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  modalStatusText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+  },
+  modalJobTitle: {
+    fontFamily: fonts.display,
+    fontSize: 18,
+    color: colors.ink,
+    lineHeight: 24,
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: colors.inkFaint,
+    marginVertical: 14,
+  },
+  modalMenuOptions: {
+    gap: 10,
+  },
+  modalMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    gap: 12,
+  },
+  modalMenuIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalMenuTextBox: {
+    flex: 1,
+  },
+  modalMenuTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.ink,
+  },
+  modalMenuSub: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkSoft,
+    marginTop: 2,
+  },
+  modalCloseBtn: {
+    marginTop: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCloseBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.inkSoft,
   },
   emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
   emptyTitle: {

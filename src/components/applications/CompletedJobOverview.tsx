@@ -12,6 +12,7 @@ export interface CompletedJobOverviewProps {
   application?: Application | null;
   job?: JobPost | null;
   onOpenChat?: () => void;
+  onViewProfile?: () => void;
 }
 
 const formatDate = (dateString?: string | null): string => {
@@ -50,10 +51,11 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
   application,
   job: passedJob,
   onOpenChat,
+  onViewProfile,
 }) => {
   const navigation = useNavigation<any>();
   const job = passedJob || application?.job;
-  const worker = application?.worker;
+  const worker = application?.worker || (job as any)?.applications?.[0]?.worker;
   const employer = job?.employer;
   const counterparty = viewerRole === 'employer' ? worker : employer;
   const counterpartyLabel = viewerRole === 'employer' ? 'Hired Worker' : 'Employer';
@@ -85,29 +87,28 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
 
   const rateUnitText =
     agreedPrice != null
-      ? 'Agreed Pay'
+      ? 'Agreed Total'
       : job?.rate_unit
         ? job.rate_unit.replace('_', ' ')
         : 'Fixed Pay';
 
   const photos = Array.isArray(job?.photos) ? job.photos : [];
 
-  // Only real, timestamped milestones — no placeholder steps with no evidence behind them.
-  const timelineSteps = [
-    { label: 'Applied', date: application?.applied_at || application?.created_at },
-    { label: 'Offer Sent', date: (application as any)?.employer_confirmed_at },
-    { label: 'Hired', date: (application as any)?.slot_locked_at },
-    { label: 'Completed', date: completedDateStr },
-  ].filter((step) => Boolean(step.date));
-
   const handleRate = () => {
     if (viewerRole === 'employer') {
-      navigation.navigate('RateWorker', {
-        id: Number(application?.id),
-        workerName: String(worker?.name || 'Worker'),
-        jobTitle: String(job?.title || 'Job'),
-        jobId: Number(job?.id || application?.job_post_id),
-      });
+      if (application) {
+        navigation.navigate('RateWorker', {
+          id: Number(application.id),
+          workerName: String(worker?.name || 'Worker'),
+          jobTitle: String(job?.title || 'Job'),
+          jobId: Number(job?.id || application.job_post_id),
+        });
+      } else if (job?.id) {
+        navigation.navigate('RateWorkerList', {
+          jobId: Number(job.id),
+          jobTitle: String(job.title || 'Job'),
+        });
+      }
     } else {
       navigation.navigate('RateEmployer', {
         id: Number(application?.id),
@@ -117,12 +118,52 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
     }
   };
 
+  const handleCounterpartyPress = () => {
+    if (onViewProfile) {
+      onViewProfile();
+      return;
+    }
+
+    if (viewerRole === 'employer') {
+      if (application) {
+        navigation.navigate('ApplicantDetail', {
+          applicantId: application.id,
+          applicantName: counterparty?.name || 'Worker',
+          jobTitle: job?.title || 'Job',
+          status: application.status,
+          barangay: counterparty?.barangay,
+          municipality: counterparty?.municipality,
+          reputationScore: (counterparty as any)?.reputation_score,
+          skills: (counterparty as any)?.skills,
+          experiences: (counterparty as any)?.experiences,
+          characterReferences: (counterparty as any)?.character_references,
+          phone: (counterparty as any)?.phone,
+          viewProfile: true,
+        });
+      }
+    } else {
+      navigation.navigate('EmployerPublicProfile', {
+        employerId: job?.employer_id || counterparty?.id,
+        employerName: counterparty?.name,
+        avatarUrl: counterparty?.avatar_url,
+        verificationBadge: (counterparty as any)?.verification_badge,
+        reputationScore: (counterparty as any)?.reputation_score,
+        barangay: job?.barangay || counterparty?.barangay,
+        municipality: job?.municipality || counterparty?.municipality,
+        businessDocuments:
+          job?.employer?.business_documents || (counterparty as any)?.business_documents || [],
+      });
+    }
+  };
+
+  const counterpartyScore = formatScore((counterparty as any)?.reputation_score);
+
   return (
     <View style={styles.container}>
-      {/* HEADER — identity + the one number that matters, shown once */}
-      <View style={styles.headerCard}>
-        <View style={styles.headerGlow} />
-        <View style={styles.headerTopRow}>
+      {/* UNIFIED SINGLE RECEIPT CARD */}
+      <View style={styles.receiptCard}>
+        {/* Receipt Header Row */}
+        <View style={styles.receiptTopRow}>
           <View style={styles.refBadge}>
             <Ionicons name="document-text-outline" size={13} color={colors.inkSoft} />
             <Text style={styles.refText}>{refNumber}</Text>
@@ -133,12 +174,14 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           </View>
         </View>
 
-        <Text style={styles.jobTitle}>{job?.title || 'Job Overview'}</Text>
+        {/* Job Title & Date */}
+        <Text style={styles.jobTitle}>{job?.title || 'Job Completion'}</Text>
         {formattedCompletedDate ? (
           <Text style={styles.completedDateText}>Finished on {formattedCompletedDate}</Text>
         ) : null}
 
-        <View style={styles.amountRow}>
+        {/* Amount & Duration Box */}
+        <View style={styles.amountBox}>
           <View>
             <Text style={styles.amountLabel}>{rateUnitText}</Text>
             <Text style={styles.amountValue}>{displayCompensation}</Text>
@@ -152,139 +195,98 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
             </View>
           ) : null}
         </View>
-      </View>
 
-      {/* COUNTERPARTY */}
-      {counterparty ? (
-        <View style={styles.partyCard}>
-          <Text style={styles.partyCardEyebrow}>{counterpartyLabel}</Text>
-          <View style={styles.partyRow}>
+        {/* Counterparty Clickable Chip (Worker or Employer) */}
+        {counterparty && (
+          <TouchableOpacity
+            style={styles.partyChip}
+            activeOpacity={0.8}
+            onPress={handleCounterpartyPress}
+          >
             <Avatar
               url={counterparty.is_deleted ? undefined : counterparty.avatar_url}
               name={counterparty.name || counterpartyLabel}
-              size={48}
+              size={36}
             />
-            <View style={styles.partyInfo}>
-              <View style={styles.partyNameRow}>
-                <Text style={styles.partyName}>{counterparty.name || counterpartyLabel}</Text>
-                {!counterparty.is_deleted &&
-                  counterparty.name !== 'Deleted Account' &&
-                  (counterparty as any).verification_badge && (
-                    <Ionicons name="checkmark-circle" size={16} color={colors.mintDeep} />
-                  )}
-              </View>
-              {!counterparty.is_deleted && counterparty.name !== 'Deleted Account' ? (
-                <View style={styles.partyMetaRow}>
-                  {counterparty.barangay ? (
-                    <Text style={styles.partySub}>
-                      <Ionicons name="location-outline" size={12} color={colors.inkMuted} />{' '}
-                      {counterparty.barangay}, {counterparty.municipality || 'Bulan'}
-                    </Text>
-                  ) : null}
-                </View>
-              ) : null}
-              {!counterparty.is_deleted && counterparty.name !== 'Deleted Account' && (
-                <View style={styles.partyMetaRow}>
-                  <View style={styles.partyScoreBadge}>
-                    <Ionicons name="star" size={12} color={colors.gold} />
-                    <Text style={styles.partyScoreText}>
-                      {formatScore((counterparty as any).reputation_score)}
-                    </Text>
+            <View style={styles.partyChipInfo}>
+              <Text style={styles.partyChipRole}>{counterpartyLabel}</Text>
+              <View style={styles.partyChipNameRow}>
+                <Text style={styles.partyChipName} numberOfLines={1}>
+                  {counterparty.name || counterpartyLabel}
+                </Text>
+                {counterpartyScore !== 'N/A' && (
+                  <View style={styles.partyChipScoreBadge}>
+                    <Ionicons name="star" size={11} color={colors.gold} />
+                    <Text style={styles.partyChipScoreText}>{counterpartyScore}</Text>
                   </View>
-                  {viewerRole === 'employer' && (worker as any)?.completed_jobs_count != null && (
-                    <Text style={styles.partyMetaText}>
-                      • {(worker as any).completed_jobs_count} completed jobs
-                    </Text>
-                  )}
-                </View>
-              )}
+                )}
+              </View>
             </View>
-          </View>
-        </View>
-      ) : null}
-
-      {/* TIMELINE — only steps with a real timestamp behind them */}
-      {timelineSteps.length > 0 && (
-        <View style={styles.timelineCard}>
-          <Text style={styles.sectionHeaderTitle}>Hiring & Completion Timeline</Text>
-          <View style={styles.timelineContainer}>
-            {timelineSteps.map((step, idx) => (
-              <React.Fragment key={step.label}>
-                <View style={styles.timelineStep}>
-                  <View style={styles.timelineCircle}>
-                    <Ionicons name="checkmark" size={12} color={colors.white} />
-                  </View>
-                  <Text style={styles.timelineLabel}>{step.label}</Text>
-                  <Text style={styles.timelineDateText}>{formatDate(step.date)}</Text>
-                </View>
-                {idx < timelineSteps.length - 1 && <View style={styles.timelineLine} />}
-              </React.Fragment>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {/* JOB DETAILS */}
-      <View style={styles.detailsCard}>
-        <Text style={styles.sectionHeaderTitle}>Job Details</Text>
-
-        {categories.length > 0 && (
-          <View style={styles.categoriesRow}>
-            {categories.map((cat, idx) => (
-              <View key={idx} style={styles.categoryChip}>
-                <Text style={styles.categoryChipText}>{cat}</Text>
-              </View>
-            ))}
-          </View>
+            <View style={styles.viewProfilePill}>
+              <Text style={styles.viewProfileText}>View Profile</Text>
+              <Ionicons name="chevron-forward" size={13} color={colors.primary} />
+            </View>
+          </TouchableOpacity>
         )}
 
-        <View style={styles.metaList}>
-          <View style={styles.metaItem}>
-            <View style={[styles.metaIconBox, { backgroundColor: colors.sky + '25' }]}>
-              <Ionicons name="location" size={16} color={colors.skyDeep} />
+        {/* Receipt Divider */}
+        <View style={styles.receiptDivider} />
+
+        {/* Receipt Details Grid */}
+        <View style={styles.detailsGrid}>
+          <View style={styles.detailRow}>
+            <View style={styles.detailIconBox}>
+              <Ionicons name="location-outline" size={15} color={colors.primary} />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.metaLabel}>Location</Text>
-              <Text style={styles.metaValue}>{locationText}</Text>
+            <View style={styles.detailTextBox}>
+              <Text style={styles.detailLabel}>Location</Text>
+              <Text style={styles.detailValue}>{locationText}</Text>
             </View>
           </View>
 
           {job?.schedule_date ? (
-            <View style={styles.metaItem}>
-              <View style={[styles.metaIconBox, { backgroundColor: colors.mint + '35' }]}>
-                <Ionicons name="calendar" size={16} color={colors.mintDeep} />
+            <View style={styles.detailRow}>
+              <View style={[styles.detailIconBox, { backgroundColor: colors.mint + '30' }]}>
+                <Ionicons name="calendar-outline" size={15} color={colors.mintDeep} />
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.metaLabel}>Schedule Date</Text>
-                <Text style={styles.metaValue}>{formatDate(job.schedule_date)}</Text>
+              <View style={styles.detailTextBox}>
+                <Text style={styles.detailLabel}>Schedule</Text>
+                <Text style={styles.detailValue}>{formatDate(job.schedule_date)}</Text>
               </View>
             </View>
           ) : null}
 
-          <View style={styles.metaItem}>
-            <View style={[styles.metaIconBox, { backgroundColor: colors.peach + '40' }]}>
-              <Ionicons name="people" size={16} color={colors.urgent} />
+          {categories.length > 0 && (
+            <View style={styles.detailRow}>
+              <View style={[styles.detailIconBox, { backgroundColor: colors.butter + '40' }]}>
+                <Ionicons name="pricetag-outline" size={15} color={colors.gold} />
+              </View>
+              <View style={styles.detailTextBox}>
+                <Text style={styles.detailLabel}>Category</Text>
+                <Text style={styles.detailValue}>{categories.join(', ')}</Text>
+              </View>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.metaLabel}>Workers Hired</Text>
-              <Text style={styles.metaValue}>
-                {job?.accepted_count ?? job?.filled_slots ?? 1} of {job?.slots ?? 1} worker
-                {(job?.slots ?? 1) > 1 ? 's' : ''}
-              </Text>
+          )}
+
+          {job?.description ? (
+            <View style={styles.detailRow}>
+              <View style={[styles.detailIconBox, { backgroundColor: colors.peach + '40' }]}>
+                <Ionicons name="document-text-outline" size={15} color={colors.urgent} />
+              </View>
+              <View style={styles.detailTextBox}>
+                <Text style={styles.detailLabel}>Description</Text>
+                <Text style={styles.detailValue} numberOfLines={3}>
+                  {job.description}
+                </Text>
+              </View>
             </View>
-          </View>
+          ) : null}
         </View>
 
-        {job?.description ? (
-          <View style={styles.descSection}>
-            <Text style={styles.descLabel}>Description</Text>
-            <Text style={styles.descText}>{job.description}</Text>
-          </View>
-        ) : null}
-
+        {/* Photos Preview */}
         {photos.length > 0 && (
           <View style={styles.photosSection}>
-            <Text style={styles.descLabel}>Photos ({photos.length})</Text>
+            <Text style={styles.detailLabel}>Work Photos ({photos.length})</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
               {photos.map((uri, idx) => (
                 <Image
@@ -293,83 +295,88 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
                   style={styles.photoThumb}
                   contentFit="cover"
                   cachePolicy="memory-disk"
-                  transition={150}
                 />
               ))}
             </ScrollView>
           </View>
         )}
-      </View>
 
-      {/* RATING — single source of truth, no duplicate "Review" metric elsewhere */}
-      <View style={styles.ratingStatusCard}>
-        {hasReviewed ? (
-          <View style={styles.ratingStatusInner}>
-            <View style={styles.ratingStatusIconCircle}>
-              <Ionicons name="star" size={18} color={colors.gold} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <View style={styles.ratingTitleRow}>
-                <Text style={styles.ratingStatusTitle}>You rated this job</Text>
-                {userReview?.overall_rating ? (
-                  <View style={styles.ratingStarsBadge}>
-                    <Ionicons name="star" size={12} color={colors.gold} />
-                    <Text style={styles.ratingStarsScore}>
-                      {Number(userReview.overall_rating).toFixed(1)}
-                    </Text>
-                  </View>
-                ) : null}
+        {/* Receipt Divider */}
+        <View style={styles.receiptDivider} />
+
+        {/* Rating Section */}
+        <View style={styles.ratingSection}>
+          {hasReviewed ? (
+            <View style={styles.ratingStatusInner}>
+              <View style={styles.ratingStatusIconCircle}>
+                <Ionicons name="star" size={16} color={colors.gold} />
               </View>
-              {userReview?.comment ? (
-                <Text style={styles.ratingComment}>"{userReview.comment}"</Text>
-              ) : (
+              <View style={{ flex: 1 }}>
+                <View style={styles.ratingTitleRow}>
+                  <Text style={styles.ratingStatusTitle}>You rated this job</Text>
+                  {userReview?.overall_rating ? (
+                    <View style={styles.ratingStarsBadge}>
+                      <Ionicons name="star" size={12} color={colors.gold} />
+                      <Text style={styles.ratingStarsScore}>
+                        {Number(userReview.overall_rating).toFixed(1)}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+                {userReview?.comment ? (
+                  <Text style={styles.ratingComment}>"{userReview.comment}"</Text>
+                ) : (
+                  <Text style={styles.ratingStatusSub}>
+                    Thank you for submitting feedback to the SIKAP community.
+                  </Text>
+                )}
+              </View>
+            </View>
+          ) : isRatingWindowClosed ? (
+            <View style={styles.ratingStatusInner}>
+              <View style={[styles.ratingStatusIconCircle, { backgroundColor: '#E2E8F0' }]}>
+                <Ionicons name="time-outline" size={16} color={colors.inkSoft} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.ratingStatusTitle}>Rating window closed</Text>
                 <Text style={styles.ratingStatusSub}>
-                  Thank you for submitting feedback to the SIKAP community.
+                  The 7-day feedback window for this completed job has ended.
                 </Text>
-              )}
+              </View>
             </View>
-          </View>
-        ) : isRatingWindowClosed ? (
-          <View style={styles.ratingStatusInner}>
-            <View style={[styles.ratingStatusIconCircle, { backgroundColor: '#E2E8F0' }]}>
-              <Ionicons name="time-outline" size={18} color={colors.inkSoft} />
+          ) : (
+            <View style={styles.ratingPendingBox}>
+              <View style={styles.ratingStatusInner}>
+                <View
+                  style={[styles.ratingStatusIconCircle, { backgroundColor: colors.butter + '50' }]}
+                >
+                  <Ionicons name="star-outline" size={16} color={colors.gold} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.ratingStatusTitle}>Rating window open</Text>
+                  <Text style={styles.ratingStatusSub}>
+                    Share your experience to help the community.
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity style={styles.rateBtn} onPress={handleRate} activeOpacity={0.85}>
+                <Ionicons name="star" size={16} color={colors.white} />
+                <Text style={styles.rateBtnText}>
+                  {viewerRole === 'employer' ? 'Rate Worker' : 'Rate Employer'}
+                </Text>
+              </TouchableOpacity>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.ratingStatusTitle}>Rating window closed</Text>
-              <Text style={styles.ratingStatusSub}>
-                The 7-day feedback window for this completed job has ended.
-              </Text>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.ratingStatusInner}>
-            <View
-              style={[styles.ratingStatusIconCircle, { backgroundColor: colors.butter + '50' }]}
-            >
-              <Ionicons name="star-outline" size={18} color={colors.ink} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.ratingStatusTitle}>Rating window open</Text>
-              <Text style={styles.ratingStatusSub}>
-                You have not submitted a rating yet. You can submit your rating from your Dashboard
-                or notification alerts.
-              </Text>
-            </View>
-          </View>
+          )}
+        </View>
+
+        {/* Chat History Action (Optional) */}
+        {onOpenChat && (
+          <TouchableOpacity style={styles.chatHistoryBtn} onPress={onOpenChat} activeOpacity={0.75}>
+            <Ionicons name="chatbubbles-outline" size={15} color={colors.primary} />
+            <Text style={styles.chatHistoryText}>View Chat History</Text>
+          </TouchableOpacity>
         )}
       </View>
-
-      {/* ACTION: Rate button only if not rated yet, otherwise none */}
-      {!hasReviewed && !isRatingWindowClosed ? (
-        <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.rateBtn} onPress={handleRate} activeOpacity={0.85}>
-            <Ionicons name="star" size={18} color={colors.white} />
-            <Text style={styles.rateBtnText}>
-              {viewerRole === 'employer' ? 'Rate the Worker' : 'Rate Employer'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      ) : null}
     </View>
   );
 };
@@ -378,32 +385,20 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
     paddingBottom: 24,
-    gap: 16,
   },
-  headerCard: {
+  receiptCard: {
     backgroundColor: colors.paperBright,
     borderRadius: 20,
-    padding: 18,
+    padding: 20,
     borderWidth: 1.5,
     borderColor: '#86EFAC',
-    position: 'relative',
-    overflow: 'hidden',
     ...shadows.base,
   },
-  headerGlow: {
-    position: 'absolute',
-    top: -20,
-    right: -20,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(187, 247, 208, 0.4)',
-  },
-  headerTopRow: {
+  receiptTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   refBadge: {
     flexDirection: 'row',
@@ -411,7 +406,7 @@ const styles = StyleSheet.create({
     gap: 4,
     backgroundColor: colors.paperCream,
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 6,
   },
   refText: {
@@ -443,35 +438,37 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 12,
     color: colors.inkMuted,
-    marginTop: 2,
+    marginTop: 3,
   },
-  amountRow: {
+  amountBox: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 16,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(134, 239, 172, 0.5)',
+    padding: 14,
+    backgroundColor: colors.paperCream,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
   },
   amountLabel: {
     fontFamily: fonts.body,
     fontSize: 11,
-    color: colors.inkMuted,
+    color: colors.inkSoft,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 2,
   },
   amountValue: {
-    fontFamily: fonts.numericBold,
-    fontSize: 26,
-    color: '#15803D',
+    fontFamily: fonts.display,
+    fontSize: 24,
+    color: colors.primaryDark,
+    lineHeight: 30,
   },
   durationPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: colors.sky + '25',
+    gap: 4,
+    backgroundColor: colors.sky + '20',
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 10,
@@ -481,281 +478,201 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.skyDeep,
   },
-  partyCard: {
-    backgroundColor: colors.paperBright,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.inkFaint,
-    ...shadows.sm,
-  },
-  partyCardEyebrow: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    color: colors.inkMuted,
-    marginBottom: 10,
-  },
-  partyRow: {
+  partyChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 10,
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 10,
   },
-  partyInfo: {
+  partyChipInfo: {
     flex: 1,
-    gap: 2,
   },
-  partyNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  partyName: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 15,
-    color: colors.ink,
-  },
-  partySub: {
+  partyChipRole: {
     fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.inkSoft,
-  },
-  partyMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 2,
-  },
-  partyScoreBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: colors.butter + '60',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  partyScoreText: {
-    fontFamily: fonts.numericBold,
-    fontSize: 11,
-    color: colors.ink,
-  },
-  partyMetaText: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.inkMuted,
-  },
-  timelineCard: {
-    backgroundColor: colors.paperBright,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.inkFaint,
-    ...shadows.sm,
-  },
-  sectionHeaderTitle: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 14,
-    color: colors.ink,
-    marginBottom: 12,
-  },
-  timelineContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
-  },
-  timelineStep: {
-    alignItems: 'center',
-    width: 70,
-  },
-  timelineCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#15803D',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  timelineLabel: {
-    fontFamily: fonts.bodyBold,
     fontSize: 10,
-    color: colors.inkSoft,
-    textAlign: 'center',
-  },
-  timelineDateText: {
-    fontFamily: fonts.body,
-    fontSize: 9,
     color: colors.inkMuted,
-    textAlign: 'center',
-    marginTop: 2,
-  },
-  timelineLine: {
-    flex: 1,
-    height: 2,
-    backgroundColor: '#86EFAC',
-    marginTop: 10,
-  },
-  detailsCard: {
-    backgroundColor: colors.paperBright,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.inkFaint,
-    gap: 14,
-    ...shadows.sm,
-  },
-  categoriesRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  categoryChip: {
-    backgroundColor: colors.paperCream,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  categoryChipText: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 12,
-    color: colors.inkSoft,
-  },
-  metaList: {
-    gap: 10,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  metaIconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  metaLabel: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.inkMuted,
-  },
-  metaValue: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 13,
-    color: colors.ink,
-  },
-  descSection: {
-    gap: 4,
-    borderTopWidth: 1,
-    borderTopColor: colors.inkFaint,
-    paddingTop: 12,
-  },
-  descLabel: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 12,
-    color: colors.inkSoft,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  descText: {
+  partyChipNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 1,
+  },
+  partyChipName: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.ink,
+    flexShrink: 1,
+  },
+  partyChipScoreBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  partyChipScoreText: {
+    fontFamily: fonts.numericBold,
+    fontSize: 11,
+    color: colors.gold,
+  },
+  viewProfilePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingHorizontal: 6,
+  },
+  viewProfileText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.primary,
+  },
+  receiptDivider: {
+    borderTopWidth: 1,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+    marginVertical: 16,
+  },
+  detailsGrid: {
+    gap: 12,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  detailIconBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: colors.sky + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  detailTextBox: {
+    flex: 1,
+  },
+  detailLabel: {
     fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  detailValue: {
+    fontFamily: fonts.bodyBold,
     fontSize: 13,
-    color: colors.inkSoft,
-    lineHeight: 19,
+    color: colors.ink,
+    marginTop: 1,
+    lineHeight: 18,
   },
   photosSection: {
-    borderTopWidth: 1,
-    borderTopColor: colors.inkFaint,
-    paddingTop: 12,
+    marginTop: 12,
   },
   photoThumb: {
-    width: 90,
-    height: 90,
+    width: 70,
+    height: 70,
     borderRadius: 10,
     marginRight: 8,
-    backgroundColor: colors.paperCream,
+    backgroundColor: colors.inkFaint,
   },
-  ratingStatusCard: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: colors.inkFaint,
+  ratingSection: {
+    marginTop: 2,
   },
   ratingStatusInner: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: 10,
   },
   ratingStatusIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.butter + '60',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FEF3C7',
     alignItems: 'center',
     justifyContent: 'center',
   },
   ratingTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 8,
   },
   ratingStatusTitle: {
     fontFamily: fonts.bodyBold,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.ink,
   },
   ratingStarsBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: colors.butter + '80',
+    backgroundColor: '#FEF3C7',
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: 1,
     borderRadius: 6,
   },
   ratingStarsScore: {
     fontFamily: fonts.numericBold,
-    fontSize: 12,
-    color: colors.ink,
+    fontSize: 11,
+    color: colors.gold,
   },
   ratingComment: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
+    fontFamily: fonts.body,
+    fontSize: 12,
     color: colors.inkSoft,
     fontStyle: 'italic',
-    marginTop: 4,
-    lineHeight: 18,
+    marginTop: 3,
+    lineHeight: 16,
   },
   ratingStatusSub: {
     fontFamily: fonts.body,
     fontSize: 12,
-    color: colors.inkMuted,
+    color: colors.inkSoft,
     marginTop: 2,
-    lineHeight: 17,
+    lineHeight: 16,
   },
-  actionsRow: {
-    flexDirection: 'row',
+  ratingPendingBox: {
+    gap: 12,
   },
   rateBtn: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
     backgroundColor: colors.primary,
-    borderRadius: 14,
-    paddingVertical: 14,
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    ...shadows.sm,
+    borderRadius: 12,
+    gap: 6,
+    marginTop: 6,
   },
   rateBtnText: {
     fontFamily: fonts.bodyBold,
-    fontSize: 15,
+    fontSize: 13,
     color: colors.white,
+  },
+  chatHistoryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    marginTop: 12,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+  },
+  chatHistoryText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.primary,
   },
 });

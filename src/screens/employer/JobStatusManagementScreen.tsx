@@ -23,6 +23,7 @@ import { useJobApplications } from '../../hooks/useJobApplications';
 import { useReviews } from '../../hooks/useReviews';
 import { Avatar } from '../../components/common/Avatar';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
+import { CompletedJobOverview } from '../../components/applications/CompletedJobOverview';
 
 const formatDate = (dateString?: string | null): string => {
   if (!dateString) return '';
@@ -371,341 +372,46 @@ export const JobStatusManagementScreen: React.FC = () => {
         {/* ============================================================ */}
         {job.status === 'completed' ? (
           <>
-            {/* 1. Celebratory Hero Banner */}
-            <View style={styles.completedHeroCard}>
-              <View style={styles.completedHeroGlow} />
-              <View style={styles.completedHeroTop}>
-                <View style={styles.refBadge}>
-                  <Ionicons name="document-text-outline" size={13} color={colors.inkSoft} />
-                  <Text style={styles.refText}>{job.reference_number}</Text>
-                </View>
-                <View style={styles.completedStatusBadge}>
-                  <Ionicons name="checkmark-circle" size={14} color="#15803D" />
-                  <Text style={styles.completedStatusBadgeText}>Completed</Text>
-                </View>
-              </View>
+            {completedApps.length > 0 ? (
+              completedApps.map((app) => (
+                <CompletedJobOverview
+                  key={app.id}
+                  viewerRole="employer"
+                  application={app}
+                  job={job}
+                  onOpenChat={
+                    app.conversation_id
+                      ? () =>
+                          (navigation as any).navigate('Chat', {
+                            conversationId: app.conversation_id,
+                            jobTitle: job.title,
+                            otherUserName: app.worker?.name || 'Worker',
+                          })
+                      : undefined
+                  }
+                  onViewProfile={() =>
+                    navigation.navigate('ApplicantDetail', {
+                      applicantId: app.id,
+                      applicantName: app.worker?.name || 'Worker',
+                      jobTitle: job.title,
+                      status: app.status,
+                      barangay: app.worker?.barangay,
+                      municipality: app.worker?.municipality,
+                      reputationScore: app.worker?.reputation_score,
+                      skills: app.worker?.skills,
+                      experiences: app.worker?.experiences,
+                      characterReferences: app.worker?.character_references || undefined,
+                      phone: app.worker?.phone || undefined,
+                      viewProfile: true,
+                    })
+                  }
+                />
+              ))
+            ) : (
+              <CompletedJobOverview viewerRole="employer" job={job} />
+            )}
 
-              <View style={styles.celebrationRow}>
-                <Text style={styles.celebrationEmoji}>🎉</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.celebrationTitle}>Job Completed Successfully</Text>
-                  <Text style={styles.celebrationSubtitle}>
-                    {job.completed_at || job.updated_at
-                      ? `Finished on ${formatDate(job.completed_at || job.updated_at)}`
-                      : 'All hired workers have finished this task.'}
-                  </Text>
-                </View>
-              </View>
-
-              <Text style={styles.completedJobTitle}>{job.title}</Text>
-            </View>
-
-            {/* 2. Three-Metric Stats Grid */}
-            <View style={styles.metricGrid}>
-              <View style={styles.metricCard}>
-                <View style={[styles.metricIconBox, { backgroundColor: '#DCFCE7' }]}>
-                  <Ionicons name="cash" size={18} color="#15803D" />
-                </View>
-                <Text style={styles.metricLabel}>Total Payout</Text>
-                <Text style={styles.metricValue}>₱{Number(totalPaid).toLocaleString()}</Text>
-                <Text style={styles.metricSub}>Paid to Workers</Text>
-              </View>
-
-              <View style={styles.metricCard}>
-                <View style={[styles.metricIconBox, { backgroundColor: colors.sky + '25' }]}>
-                  <Ionicons name="people" size={18} color={colors.skyDeep} />
-                </View>
-                <Text style={styles.metricLabel}>Workers</Text>
-                <Text style={styles.metricValue}>{completedCount} Hired</Text>
-                <Text style={styles.metricSub}>All Finished</Text>
-              </View>
-
-              <View style={styles.metricCard}>
-                <View style={[styles.metricIconBox, { backgroundColor: colors.butter + '60' }]}>
-                  <Ionicons name="time" size={18} color={colors.gold} />
-                </View>
-                <Text style={styles.metricLabel}>Duration</Text>
-                <Text style={styles.metricValue} numberOfLines={1}>
-                  {job.duration ? `${job.duration} ${job.duration_unit || 'Days'}` : 'Flexible'}
-                </Text>
-                <Text style={styles.metricSub}>
-                  {job.duration_type === 'daily' ? 'Daily' : 'Project'}
-                </Text>
-              </View>
-            </View>
-
-            {/* 3. Completed Workers & Ratings Section */}
-            <View style={styles.card}>
-              <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionTitle}>
-                  Hired Workers ({completedApps.length > 0 ? completedApps.length : completedCount})
-                </Text>
-                {unreviewedCount > 0 && (
-                  <View style={styles.pendingReviewsBadge}>
-                    <Text style={styles.pendingReviewsBadgeText}>{unreviewedCount} To Rate</Text>
-                  </View>
-                )}
-              </View>
-
-              {completedApps.length === 0 ? (
-                <View style={styles.noWorkersBox}>
-                  <Ionicons
-                    name="checkmark-done-circle-outline"
-                    size={36}
-                    color={colors.mintDeep}
-                  />
-                  <Text style={styles.noWorkersText}>
-                    All contract tasks have been marked complete.
-                  </Text>
-                </View>
-              ) : (
-                <View style={{ gap: 14 }}>
-                  {completedApps.map((app) => {
-                    const worker = app.worker;
-                    const review = reviewByAppId.get(app.id) || app.user_review;
-                    const isReviewed = Boolean(review || app.has_reviewed);
-                    const workerAgreedPrice = app.final_agreed_price || job.compensation;
-
-                    return (
-                      <View key={app.id} style={styles.completedWorkerCard}>
-                        <View style={styles.completedWorkerHeader}>
-                          <Avatar
-                            url={worker?.is_deleted ? undefined : worker?.avatar_url}
-                            name={worker?.name || 'Worker'}
-                            size={44}
-                          />
-                          <View style={{ flex: 1 }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                              <Text style={styles.workerNameText}>{worker?.name || 'Worker'}</Text>
-                              {worker?.verification_badge && (
-                                <Ionicons
-                                  name="checkmark-circle"
-                                  size={16}
-                                  color={colors.mintDeep}
-                                />
-                              )}
-                            </View>
-                            <Text style={styles.workerLocationText}>
-                              {worker?.barangay
-                                ? `${worker.barangay}, ${worker.municipality || 'Bulan'}`
-                                : 'Worker'}
-                            </Text>
-                          </View>
-                          <View style={styles.agreedPayBadge}>
-                            <Text style={styles.agreedPayText}>
-                              ₱{Number(workerAgreedPrice).toLocaleString()}
-                            </Text>
-                          </View>
-                        </View>
-
-                        {/* Review / Rating Status Box */}
-                        <View style={styles.workerRatingBox}>
-                          {isReviewed ? (
-                            <View style={{ gap: 4 }}>
-                              <View style={styles.ratingStatusRow}>
-                                <View style={styles.starScoreBadge}>
-                                  <Ionicons name="star" size={13} color={colors.gold} />
-                                  <Text style={styles.starScoreText}>
-                                    {review?.overall_rating
-                                      ? Number(review.overall_rating).toFixed(1)
-                                      : '5.0'}
-                                  </Text>
-                                </View>
-                                <Text style={styles.ratingSubmittedText}>Rating Submitted</Text>
-                              </View>
-                              {review?.comment ? (
-                                <Text style={styles.reviewCommentQuote}>"{review.comment}"</Text>
-                              ) : null}
-                            </View>
-                          ) : (
-                            <View style={{ gap: 10 }}>
-                              <View style={styles.ratingPendingRow}>
-                                <Ionicons name="time-outline" size={16} color={colors.gold} />
-                                <Text style={styles.ratingPendingText}>
-                                  Rating window open (7 days to review)
-                                </Text>
-                              </View>
-                              <Button
-                                label="★ Rate Worker"
-                                variant="primary"
-                                size="base"
-                                fullWidth
-                                onPress={() =>
-                                  navigation.navigate('RateWorker', {
-                                    id: app.id,
-                                    workerName: worker?.name || 'Worker',
-                                    jobTitle: job.title,
-                                    jobId: job.id,
-                                  })
-                                }
-                              />
-                            </View>
-                          )}
-                        </View>
-
-                        {/* Worker Action Links */}
-                        <View style={styles.workerActionsRow}>
-                          <TouchableOpacity
-                            style={styles.workerActionBtn}
-                            onPress={() => {
-                              if (app.conversation_id) {
-                                (navigation as any).navigate('Chat', {
-                                  conversationId: app.conversation_id,
-                                  jobTitle: job.title,
-                                  otherUserName: worker?.name || 'Worker',
-                                });
-                              } else {
-                                navigation.navigate('ApplicantDetail', {
-                                  applicantId: app.id,
-                                  applicantName: worker?.name || 'Worker',
-                                  jobTitle: job.title,
-                                  status: app.status,
-                                  barangay: worker?.barangay,
-                                  municipality: worker?.municipality,
-                                });
-                              }
-                            }}
-                          >
-                            <Ionicons name="chatbubbles-outline" size={15} color={colors.primary} />
-                            <Text style={styles.workerActionBtnText}>Chat History</Text>
-                          </TouchableOpacity>
-
-                          <TouchableOpacity
-                            style={styles.workerActionBtn}
-                            onPress={() =>
-                              navigation.navigate('ApplicantDetail', {
-                                applicantId: app.id,
-                                applicantName: worker?.name || 'Worker',
-                                jobTitle: job.title,
-                                status: app.status,
-                                barangay: worker?.barangay,
-                                municipality: worker?.municipality,
-                                reputationScore: worker?.reputation_score,
-                                skills: worker?.skills,
-                                experiences: worker?.experiences,
-                                characterReferences: worker?.character_references || undefined,
-                                phone: worker?.phone || undefined,
-                              })
-                            }
-                          >
-                            <Ionicons name="person-outline" size={15} color={colors.inkSoft} />
-                            <Text style={[styles.workerActionBtnText, { color: colors.inkSoft }]}>
-                              View Profile
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    );
-                  })}
-                </View>
-              )}
-            </View>
-
-            {/* 4. Job Specifications & Attachments */}
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Job Specifications</Text>
-
-              {job.categories && job.categories.length > 0 && (
-                <View style={styles.categoriesRow}>
-                  {job.categories.map((cat: string, idx: number) => (
-                    <View key={idx} style={styles.categoryChip}>
-                      <Text style={styles.categoryChipText}>{cat}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-
-              <View style={styles.metaGrid}>
-                <View style={styles.metaItem}>
-                  <Ionicons name="location-outline" size={16} color={colors.inkSoft} />
-                  <Text style={styles.metaValue}>
-                    {job.barangay}, {job.municipality}
-                  </Text>
-                </View>
-
-                {job.exact_location ? (
-                  <View style={styles.metaItem}>
-                    <Ionicons name="navigate-outline" size={16} color={colors.inkSoft} />
-                    <Text style={styles.metaValue}>{job.exact_location}</Text>
-                  </View>
-                ) : null}
-              </View>
-
-              <View style={styles.divider} />
-
-              <Text style={styles.subsectionTitle}>Description</Text>
-              <Text style={styles.descriptionText}>{job.description}</Text>
-
-              {job.tools_required ? (
-                <>
-                  <View style={styles.divider} />
-                  <Text style={styles.subsectionTitle}>Tools Required</Text>
-                  <Text style={styles.descriptionText}>{job.tools_required}</Text>
-                </>
-              ) : null}
-
-              {(parsedPhotos.length > 0 || job.video_url) && (
-                <>
-                  <View style={styles.divider} />
-                  <Text style={styles.subsectionTitle}>
-                    Attachments & Media ({parsedPhotos.length + (job.video_url ? 1 : 0)})
-                  </Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ gap: 10, paddingTop: 6 }}
-                  >
-                    {parsedPhotos.map((photoUrl: string, idx: number) => (
-                      <TouchableOpacity
-                        key={idx}
-                        activeOpacity={0.8}
-                        onPress={() => setViewerMedia({ type: 'photo', url: photoUrl })}
-                      >
-                        <Image
-                          cachePolicy="memory-disk"
-                          source={{ uri: photoUrl }}
-                          style={{
-                            width: 100,
-                            height: 100,
-                            borderRadius: 12,
-                            backgroundColor: colors.inkFaint,
-                          }}
-                        />
-                      </TouchableOpacity>
-                    ))}
-
-                    {job.video_url && (
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => setViewerMedia({ type: 'video', url: job.video_url! })}
-                        style={{
-                          width: 140,
-                          height: 100,
-                          borderRadius: 12,
-                          backgroundColor: '#1E1E1E',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Ionicons name="play-circle" size={36} color={colors.white} />
-                        <Text
-                          style={{
-                            fontFamily: fonts.bodyBold,
-                            fontSize: 11,
-                            color: colors.white,
-                            marginTop: 4,
-                          }}
-                        >
-                          Play Video
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </ScrollView>
-                </>
-              )}
-            </View>
-
-            {/* 5. Bottom Actions */}
+            {/* Bottom Actions for Completed Job */}
             <View style={styles.actionsCard}>
               {unreviewedCount > 0 && (
                 <Button
