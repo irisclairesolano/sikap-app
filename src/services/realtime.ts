@@ -153,7 +153,8 @@ export function useRealtimeChat({
         return { ...old, pages: newPages };
       });
 
-      // Invalidate conversation list preview and unread count
+      // Invalidate conversation details (for locked status) and list preview
+      queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     });
 

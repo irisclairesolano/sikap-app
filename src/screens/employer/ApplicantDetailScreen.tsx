@@ -124,15 +124,25 @@ const ApplicantDetailScreen: React.FC = () => {
         });
         return;
       }
-      const res = await messagesApi.getConversations();
+      const res = await messagesApi.getConversations('employer');
       const currentAppId = appData?.id ?? appId;
-      const conv = res.data.find((c) => c.application_id === currentAppId);
+      const convList: any[] = Array.isArray((res as any)?.data)
+        ? (res as any).data
+        : Array.isArray(res)
+          ? (res as any)
+          : [];
+      const conv = convList.find((c: any) => c.application_id === currentAppId);
       if (conv) {
         navigation.navigate('Chat', {
           conversationId: conv.id,
           jobTitle: conv.job_title || appData?.job?.title || jobTitle,
           otherUserName: conv.other_user?.name || applicantName,
         });
+      } else {
+        showAlert(
+          'Chat Pending',
+          'A conversation for this application is being prepared. Please refresh or try again in a moment.',
+        );
       }
     } catch {
       showAlert('Error', "Couldn't open chat. Please check your connection and try again.");
