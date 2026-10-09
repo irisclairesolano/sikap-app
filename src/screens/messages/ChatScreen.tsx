@@ -455,8 +455,12 @@ const ChatScreen: React.FC = () => {
 
     switch (m.card_type) {
       case 'unlock_request':
-        // Only employer can unlock, and only if conversation is not already open
-        return role === 'employer' && convStatus !== 'open';
+        return (
+          role === 'employer' &&
+          convStatus === 'unlock_requested' &&
+          !m.card_resolved &&
+          !m.card_data?.declined
+        );
 
       case 'job_request':
       case 'confirm_hire':
@@ -563,7 +567,7 @@ const ChatScreen: React.FC = () => {
       case 'unlock_request':
         return {
           icon: 'lock-open-outline' as const,
-          label: 'Approve Chat Reopen',
+          label: 'Review Reopen Request',
           color: colors.primary,
           bg: colors.peach,
         };
@@ -1016,6 +1020,64 @@ const ChatScreen: React.FC = () => {
             <Text style={styles.deletedInputText}>
               Slots are full. Messaging is disabled for this position.
             </Text>
+          </View>
+        ) : isLocked || isUnlockRequested ? (
+          <View style={styles.lockedBottomContainer}>
+            <View style={styles.lockedBottomContent}>
+              <Ionicons
+                name={isUnlockRequested ? 'time-outline' : 'lock-closed-outline'}
+                size={18}
+                color={isUnlockRequested ? colors.warning : colors.inkMuted}
+              />
+              <Text style={styles.lockedBottomText}>
+                {isUnlockRequested
+                  ? conversationUserRole === 'employer'
+                    ? 'Worker requested to reopen this chat.'
+                    : 'Reopen request pending employer approval.'
+                  : 'This chat is closed.'}
+              </Text>
+            </View>
+            {conversationUserRole === 'employer' ? (
+              <TouchableOpacity
+                style={styles.lockedBottomBtn}
+                onPress={() =>
+                  unlockConversation.mutate(conversationId, {
+                    onSuccess: () => {
+                      refetch();
+                      handleActionComplete();
+                    },
+                  })
+                }
+                disabled={unlockConversation.isPending}
+                activeOpacity={0.8}
+              >
+                {unlockConversation.isPending ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <Text style={styles.lockedBottomBtnText}>Unlock Chat</Text>
+                )}
+              </TouchableOpacity>
+            ) : isLocked ? (
+              <TouchableOpacity
+                style={styles.lockedBottomBtn}
+                onPress={() =>
+                  requestUnlock.mutate(conversationId, {
+                    onSuccess: () => {
+                      refetch();
+                      handleActionComplete();
+                    },
+                  })
+                }
+                disabled={requestUnlock.isPending}
+                activeOpacity={0.8}
+              >
+                {requestUnlock.isPending ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <Text style={styles.lockedBottomBtnText}>Request to Reopen</Text>
+                )}
+              </TouchableOpacity>
+            ) : null}
           </View>
         ) : (
           status === 'open' &&
@@ -1492,6 +1554,42 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 13,
     color: colors.inkMuted,
+  },
+  lockedBottomContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#F8FAFC',
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+    gap: 12,
+  },
+  lockedBottomContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  lockedBottomText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkMuted,
+    flex: 1,
+  },
+  lockedBottomBtn: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lockedBottomBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.white,
   },
 });
 

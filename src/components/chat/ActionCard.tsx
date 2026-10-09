@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { apiClient } from '../../api/client';
 import { applicationsApi } from '../../api/applications';
-import { jobsApi } from '../../api/jobs';
+import { messagesApi } from '../../api/messages';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAlert } from '../../contexts/AlertContext';
 import { useConfirmHire } from '../../hooks/useJobApplications';
@@ -1178,6 +1178,143 @@ const ActionCard: React.FC<ActionCardProps> = ({
           )}
         </TouchableOpacity>
       </View>
+    );
+  }
+
+  // 9. UNLOCK REQUEST (Worker requests reopen, Employer approves or declines)
+  if (card_type === 'unlock_request') {
+    const workerName = String(card_data?.worker_name || otherUserName || 'Worker');
+
+    if (conversationStatus === 'open' || (card_resolved && !card_data?.declined)) {
+      return renderEtchedCard(
+        'Chat Reopened',
+        currentUserRole === 'employer'
+          ? 'You reopened this conversation.'
+          : 'Employer approved reopening this chat.',
+        'lock-open',
+        'Reopened',
+        colors.success,
+        '#DCFCE7',
+      );
+    }
+
+    if (card_data?.declined) {
+      return renderEtchedCard(
+        'Reopen Request Declined',
+        currentUserRole === 'employer'
+          ? 'You declined to reopen this conversation.'
+          : 'Employer declined to reopen this conversation.',
+        'close-circle-outline',
+        'Closed',
+        colors.inkMuted,
+        colors.paper,
+      );
+    }
+
+    // Pending employer decision
+    if (currentUserRole === 'employer') {
+      return (
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.cardIconBadge, { backgroundColor: colors.peach }]}>
+              <Ionicons name="lock-open-outline" size={20} color={colors.primary} />
+            </View>
+            <View style={styles.cardHeaderText}>
+              <Text style={styles.title}>Reopen Chat Request</Text>
+              <Text style={styles.subtitle}>
+                {workerName} has requested to reopen this conversation.
+              </Text>
+            </View>
+          </View>
+          <View style={styles.rowButtons}>
+            <TouchableOpacity
+              style={[styles.actionBtn, { backgroundColor: colors.primary }]}
+              onPress={() => {
+                showAlert(
+                  'Unlock Conversation',
+                  `Are you sure you want to reopen this chat with ${workerName}?`,
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Unlock',
+                      onPress: () => {
+                        handleAction(
+                          'unlock',
+                          () => messagesApi.unlockConversation(conversationId),
+                          [
+                            ['conversations'],
+                            ['conversation', conversationId],
+                            ['messages', conversationId],
+                          ],
+                        );
+                      },
+                    },
+                  ],
+                );
+              }}
+              disabled={!!loadingAction}
+            >
+              {loadingAction === 'unlock' ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.actionBtnText}>Unlock Chat</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.actionBtn,
+                {
+                  backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                  borderWidth: 1,
+                  borderColor: colors.error,
+                },
+              ]}
+              onPress={() => {
+                showAlert(
+                  'Decline Request',
+                  'Are you sure you want to keep this conversation closed?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Keep Closed',
+                      style: 'destructive',
+                      onPress: () => {
+                        handleAction(
+                          'decline-unlock',
+                          () => messagesApi.declineUnlock(conversationId),
+                          [
+                            ['conversations'],
+                            ['conversation', conversationId],
+                            ['messages', conversationId],
+                          ],
+                        );
+                      },
+                    },
+                  ],
+                );
+              }}
+              disabled={!!loadingAction}
+            >
+              {loadingAction === 'decline-unlock' ? (
+                <ActivityIndicator color={colors.error} />
+              ) : (
+                <Text style={[styles.actionBtnText, { color: colors.error }]}>Keep Closed</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+
+    // Pending for worker
+    return renderEtchedCard(
+      'Reopen Request Sent',
+      'Waiting for employer approval to reopen this conversation.',
+      'time-outline',
+      'Pending',
+      colors.warning,
+      '#FEF3C7',
     );
   }
 

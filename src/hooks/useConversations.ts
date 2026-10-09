@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { messagesApi } from '../api/messages';
-import { Conversation } from '../types';
 
 export function useConversations(role?: 'worker' | 'employer' | 'all' | string) {
   return useQuery({
@@ -35,6 +34,18 @@ export function useRequestUnlock() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (conversationId: number) => messagesApi.requestUnlock(conversationId),
+    onSuccess: (_, conversationId) => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+    },
+  });
+}
+
+export function useDeclineUnlock() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (conversationId: number) => messagesApi.declineUnlock(conversationId),
     onSuccess: (_, conversationId) => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
       queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });

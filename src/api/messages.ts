@@ -101,4 +101,13 @@ export const messagesApi = {
       method: 'PATCH',
       headers: getSocketHeaders(),
     }),
+
+  /**
+   * Employer declines request to reopen a locked conversation.
+   */
+  declineUnlock: (conversationId: number) =>
+    apiClient<{ message: string }>(`/conversations/${conversationId}/decline-unlock`, {
+      method: 'PATCH',
+      headers: getSocketHeaders(),
+    }),
 };
