@@ -62,6 +62,21 @@ export function getPusherClient(): Pusher | null {
   return pusherInstance;
 }
 
+export function disconnectPusher(): void {
+  if (pusherInstance) {
+    try {
+      pusherInstance.disconnect();
+    } catch {
+      // ignore
+    }
+    pusherInstance = null;
+  }
+}
+
+export function getPusherSocketId(): string | undefined {
+  return pusherInstance?.connection?.socket_id;
+}
+
 export interface UseRealtimeChatOptions {
   conversationId: number;
   currentUserId?: number;
@@ -85,7 +100,7 @@ export function useRealtimeChat({
     const channel = pusher.subscribe(channelName);
 
     // 1. Listen for new incoming messages / cards
-    channel.bind('message.sent', (data: any) => {
+    const handleIncomingMessage = (data: any) => {
       if (!data || !data.id) return;
 
       const incomingMessage: Message = {
@@ -108,7 +123,7 @@ export function useRealtimeChat({
         triggerHaptic('light');
       }
 
-      // Immediately write into query cache
+      // Immediately write into query cache across pages
       queryClient.setQueryData(['messages', conversationId], (old: any) => {
         if (!old || !old.pages || old.pages.length === 0) {
           return {
@@ -117,49 +132,61 @@ export function useRealtimeChat({
           };
         }
 
-        const newPages = [...old.pages];
+        let found = false;
+        const newPages = old.pages.map((page: any) => {
+          const pageData: Message[] = page.data || [];
+          if (pageData.some((m) => m.id === incomingMessage.id)) {
+            found = true;
+            return {
+              ...page,
+              data: pageData.map((m) => (m.id === incomingMessage.id ? incomingMessage : m)),
+            };
+          }
+          return page;
+        });
+
+        if (found) {
+          return { ...old, pages: newPages };
+        }
+
+        // Check if this replaces an optimistic message from current user on the last page
         const lastPageIndex = newPages.length - 1;
         const lastPage = newPages[lastPageIndex];
         const existingData: Message[] = lastPage.data || [];
 
-        // Check if message is already in cache (either exact ID or replacing an optimistic pending message)
-        const alreadyExists = existingData.some((m) => m.id === incomingMessage.id);
-        if (alreadyExists) {
+        const pendingIdx = existingData.findIndex(
+          (m) =>
+            m.id < 0 &&
+            m.sender_id === incomingMessage.sender_id &&
+            (m.body === incomingMessage.body || m.message_type === incomingMessage.message_type),
+        );
+
+        if (pendingIdx !== -1) {
+          const updated = [...existingData];
+          updated[pendingIdx] = incomingMessage;
+          newPages[lastPageIndex] = { ...lastPage, data: updated };
+        } else {
           newPages[lastPageIndex] = {
             ...lastPage,
-            data: existingData.map((m) => (m.id === incomingMessage.id ? incomingMessage : m)),
+            data: [...existingData, incomingMessage],
           };
-        } else {
-          // Check if this replaces an optimistic message from current user
-          const pendingIdx = existingData.findIndex(
-            (m) =>
-              m.id < 0 &&
-              m.sender_id === incomingMessage.sender_id &&
-              (m.body === incomingMessage.body || m.message_type === incomingMessage.message_type),
-          );
-
-          if (pendingIdx !== -1) {
-            const updated = [...existingData];
-            updated[pendingIdx] = incomingMessage;
-            newPages[lastPageIndex] = { ...lastPage, data: updated };
-          } else {
-            newPages[lastPageIndex] = {
-              ...lastPage,
-              data: [...existingData, incomingMessage],
-            };
-          }
         }
 
         return { ...old, pages: newPages };
       });
 
-      // Invalidate conversation details (for locked status) and list preview
+      // Invalidate conversation details, list preview, and unread counts
       queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
-    });
+      queryClient.invalidateQueries({ queryKey: ['conversations', 'unread-count'] });
+    };
+
+    channel.bind('message.sent', handleIncomingMessage);
+    channel.bind('.message.sent', handleIncomingMessage);
+    channel.bind('App\\Events\\MessageSent', handleIncomingMessage);
 
     // 2. Listen for read receipts
-    channel.bind('messages.read', (data: any) => {
+    const handleMessagesRead = (data: any) => {
       if (!data) return;
 
       queryClient.setQueryData(['messages', conversationId], (old: any) => {
@@ -176,19 +203,63 @@ export function useRealtimeChat({
 
         return { ...old, pages: newPages };
       });
-    });
+
+      queryClient.invalidateQueries({ queryKey: ['conversations', 'unread-count'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    };
+
+    channel.bind('messages.read', handleMessagesRead);
+    channel.bind('.messages.read', handleMessagesRead);
+    channel.bind('App\\Events\\MessagesRead', handleMessagesRead);
 
     // 3. Listen for typing events
-    channel.bind('user.typing', (data: any) => {
+    const handleUserTyping = (data: any) => {
       if (!data || data.user_id === currentUserId) return;
       if (onTyping) {
         onTyping(data.user_name || 'Someone');
       }
-    });
+    };
+
+    channel.bind('user.typing', handleUserTyping);
+    channel.bind('.user.typing', handleUserTyping);
+    channel.bind('App\\Events\\UserTyping', handleUserTyping);
+
+    // 4. Listen for conversation updates (status changed: locked, open, unlock_requested)
+    const handleConversationUpdate = (data: any) => {
+      if (!data || data.id !== conversationId) return;
+
+      queryClient.setQueryData(['conversation', conversationId], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          status: data.status ?? old.status,
+          last_message_at: data.last_message_at ?? old.last_message_at,
+          last_message_preview: data.last_message_preview ?? old.last_message_preview,
+        };
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    };
+
+    channel.bind('conversation.updated', handleConversationUpdate);
+    channel.bind('.conversation.updated', handleConversationUpdate);
+    channel.bind('App\\Events\\ConversationUpdated', handleConversationUpdate);
+
+    // 5. On socket reconnection, refresh active conversation messages
+    const handleStateChange = (states: { previous: string; current: string }) => {
+      if (states.current === 'connected' && states.previous !== 'connecting') {
+        queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+        queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+      }
+    };
+
+    pusher.connection.bind('state_change', handleStateChange);
 
     return () => {
       channel.unbind_all();
       pusher.unsubscribe(channelName);
+      pusher.connection.unbind('state_change', handleStateChange);
     };
   }, [conversationId, currentUserId, onTyping, queryClient]);
 }
@@ -272,9 +343,63 @@ export function useRealtimeUserEvents(userId?: number) {
     channel.bind('.user.verification.updated', handleVerificationUpdate);
     channel.bind('App\\Events\\UserVerificationUpdated', handleVerificationUpdate);
 
+    // 3. Handle Real-Time Incoming Message for any conversation
+    const handleUserMessage = (data: any) => {
+      if (!data) return;
+
+      // Invalidate conversations list and unread count
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations', 'unread-count'] });
+      if (data.conversation_id) {
+        queryClient.invalidateQueries({ queryKey: ['conversation', data.conversation_id] });
+      }
+
+      // If incoming from another user, provide a light haptic pulse
+      if (data.sender_id && data.sender_id !== userId) {
+        triggerHaptic('light');
+      }
+    };
+
+    channel.bind('message.sent', handleUserMessage);
+    channel.bind('.message.sent', handleUserMessage);
+    channel.bind('App\\Events\\MessageSent', handleUserMessage);
+
+    // 4. Handle Read Receipts
+    const handleUserMessagesRead = () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations', 'unread-count'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    };
+
+    channel.bind('messages.read', handleUserMessagesRead);
+    channel.bind('.messages.read', handleUserMessagesRead);
+    channel.bind('App\\Events\\MessagesRead', handleUserMessagesRead);
+
+    // 5. Handle Conversation Updates (Status Changes)
+    const handleUserConversationUpdate = (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      if (data?.id) {
+        queryClient.invalidateQueries({ queryKey: ['conversation', data.id] });
+      }
+    };
+
+    channel.bind('conversation.updated', handleUserConversationUpdate);
+    channel.bind('.conversation.updated', handleUserConversationUpdate);
+    channel.bind('App\\Events\\ConversationUpdated', handleUserConversationUpdate);
+
+    // 6. On socket reconnection, refresh conversations and unread count
+    const handleUserStateChange = (states: { previous: string; current: string }) => {
+      if (states.current === 'connected' && states.previous !== 'connecting') {
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        queryClient.invalidateQueries({ queryKey: ['conversations', 'unread-count'] });
+      }
+    };
+
+    pusher.connection.bind('state_change', handleUserStateChange);
+
     return () => {
       channel.unbind_all();
       pusher.unsubscribe(channelName);
+      pusher.connection.unbind('state_change', handleUserStateChange);
     };
   }, [userId, queryClient]);
 }

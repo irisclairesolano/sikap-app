@@ -10,8 +10,7 @@ export function useMessages(conversationId: number) {
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     initialPageParam: undefined as string | undefined,
     enabled: Boolean(conversationId && conversationId > 0),
-    refetchInterval: 800,
-    staleTime: 400,
+    staleTime: 1000 * 60 * 5,
     select: (data) => {
       const allMessages = data.pages.flatMap((p) => p.data);
       const uniqueMap = new Map<number, Message>();

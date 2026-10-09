@@ -1,6 +1,12 @@
 import { apiClient } from './client';
 import { Conversation, Message, PaginatedMessages } from '../types';
 import { appendFileToFormData } from '../utils/formData';
+import { getPusherSocketId } from '../services/realtime';
+
+function getSocketHeaders(): Record<string, string> {
+  const socketId = getPusherSocketId();
+  return socketId ? { 'X-Socket-ID': socketId } : {};
+}
 
 export const messagesApi = {
   /**
@@ -29,7 +35,10 @@ export const messagesApi = {
   sendMessage: (conversationId: number, body: string) =>
     apiClient<Message>(`/conversations/${conversationId}/messages`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getSocketHeaders(),
+      },
       body: JSON.stringify({ body }),
     }),
 
@@ -44,6 +53,7 @@ export const messagesApi = {
     await appendFileToFormData(formData, 'image', imageUri, filename, type);
     return apiClient<Message>(`/conversations/${conversationId}/messages`, {
       method: 'POST',
+      headers: getSocketHeaders(),
       body: formData,
     });
   },
@@ -54,6 +64,7 @@ export const messagesApi = {
   markRead: (conversationId: number) =>
     apiClient<{ message: string }>(`/conversations/${conversationId}/read`, {
       method: 'PATCH',
+      headers: getSocketHeaders(),
     }),
 
   /**
@@ -62,6 +73,7 @@ export const messagesApi = {
   sendTyping: (conversationId: number) =>
     apiClient<{ status: string }>(`/conversations/${conversationId}/typing`, {
       method: 'POST',
+      headers: getSocketHeaders(),
     }),
 
   /**
@@ -78,6 +90,7 @@ export const messagesApi = {
   unlockConversation: (conversationId: number) =>
     apiClient<{ message: string }>(`/conversations/${conversationId}/unlock`, {
       method: 'PATCH',
+      headers: getSocketHeaders(),
     }),
 
   /**
@@ -86,5 +99,6 @@ export const messagesApi = {
   requestUnlock: (conversationId: number) =>
     apiClient<{ message: string }>(`/conversations/${conversationId}/request-unlock`, {
       method: 'PATCH',
+      headers: getSocketHeaders(),
     }),
 };

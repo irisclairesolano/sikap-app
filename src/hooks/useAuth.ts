@@ -3,6 +3,7 @@ import * as SecureStore from '../utils/storage';
 import { authApi } from '../api/auth';
 import { profileApi } from '../api/profile';
 import { notifyAuthChanged, setGuestInitialRoute } from '../store/authEvents';
+import { disconnectPusher } from '../services/realtime';
 import { LoginRequest, RegisterRequest, User } from '../types';
 
 export const useAuth = () => {
@@ -60,6 +61,9 @@ export const useAuth = () => {
       // Remove token and profile from SecureStore
       await SecureStore.deleteItemAsync('auth_token');
       await SecureStore.deleteItemAsync('user_profile');
+
+      // Disconnect Pusher socket connection
+      disconnectPusher();
 
       // Clear all cached data
       queryClient.clear();

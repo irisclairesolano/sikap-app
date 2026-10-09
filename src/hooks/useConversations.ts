@@ -6,8 +6,7 @@ export function useConversations(role?: 'worker' | 'employer' | 'all' | string) 
   return useQuery({
     queryKey: ['conversations', role ?? 'default'],
     queryFn: () => messagesApi.getConversations(role).then((res) => res.data),
-    refetchInterval: 3_000,
-    staleTime: 1_000,
+    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -15,8 +14,7 @@ export function useUnreadMessageCount(role?: 'worker' | 'employer' | 'all' | str
   return useQuery({
     queryKey: ['conversations', 'unread-count', role ?? 'default'],
     queryFn: () => messagesApi.getUnreadCount(role).then((res) => res.unread_count),
-    refetchInterval: 3_000,
-    staleTime: 1_000,
+    staleTime: 1000 * 60 * 5,
     select: (count) => count ?? 0,
   });
 }
@@ -49,7 +47,6 @@ export function useConversation(conversationId: number) {
   return useQuery({
     queryKey: ['conversation', conversationId],
     queryFn: () => messagesApi.getConversation(conversationId),
-    refetchInterval: 1_500,
-    staleTime: 500,
+    staleTime: 1000 * 60 * 5,
   });
 }
