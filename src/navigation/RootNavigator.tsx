@@ -357,6 +357,10 @@ const RootNavigator: React.FC = () => {
   const { user, isLoading, isVerified } = useAuthCheck();
   const { expoPushToken } = usePushNotifications();
 
+  // Subscribe to real-time events at the root level for immediate cache invalidation & live approval
+  const { useRealtimeUserEvents } = require('../services/realtime');
+  useRealtimeUserEvents(user?.id);
+
   React.useEffect(() => {
     if (user && expoPushToken) {
       profileApi.updateProfile({ expo_push_token: expoPushToken.data }).catch((err) => {
@@ -433,24 +437,20 @@ const RootNavigator: React.FC = () => {
     );
   }
 
-  // 4. ID Upload gating for Workers (Workers must upload government ID before working)
-  if (
-    user.role === 'worker' &&
-    !isVerified &&
-    (status === 'pending_id_upload' || (!status && !user.document_url))
-  ) {
+  // 4. ID Upload gating for both Workers & Employers (Both must upload government ID before access)
+  if (!isVerified && (status === 'pending_id_upload' || (!status && !user.document_url))) {
     return (
       <AuthNavigator
-        key={`pending-${user.id}-${status}`}
+        key={`pending-id-${user.id}-${status}`}
         initialRouteName="IDUpload"
         initialParams={{ userId: user.id, role: user.role }}
       />
     );
   }
-  if (user.role === 'worker' && !isVerified && !status && user.document_url) {
+  if (!isVerified && !status && user.document_url) {
     return (
       <AuthNavigator
-        key={`pending-${user.id}-${status}`}
+        key={`pending-verify-${user.id}-${status}`}
         initialRouteName="PendingVerify"
         initialParams={undefined}
       />

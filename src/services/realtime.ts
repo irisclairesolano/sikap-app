@@ -205,7 +205,8 @@ export function useRealtimeUserEvents(userId?: number) {
     const channelName = `private-user.${userId}`;
     const channel = pusher.subscribe(channelName);
 
-    channel.bind('user.stats.updated', (data: any) => {
+    // 1. Handle Real-Time User Stats Update
+    const handleStatsUpdate = async (data: any) => {
       if (data?.stats) {
         queryClient.setQueryData(['employer-stats'], (old: any) => ({
           ...(old || {}),
@@ -213,7 +214,7 @@ export function useRealtimeUserEvents(userId?: number) {
         }));
         queryClient.setQueryData(['profile'], (old: any) => {
           if (!old) return old;
-          return {
+          const updated = {
             ...old,
             reputation_score:
               data.stats.reputation_score !== undefined
@@ -226,13 +227,50 @@ export function useRealtimeUserEvents(userId?: number) {
               ...data.stats,
             },
           };
+          SecureStore.setItemAsync('user_profile', JSON.stringify(updated)).catch(() => {});
+          return updated;
         });
       }
 
-      queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      queryClient.invalidateQueries({ queryKey: ['reviews'] });
-    });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['employer-stats'] }),
+        queryClient.invalidateQueries({ queryKey: ['profile'] }),
+        queryClient.invalidateQueries({ queryKey: ['reviews'] }),
+      ]);
+    };
+
+    channel.bind('user.stats.updated', handleStatsUpdate);
+    channel.bind('.user.stats.updated', handleStatsUpdate);
+    channel.bind('App\\Events\\UserStatsUpdated', handleStatsUpdate);
+
+    // 2. Handle Real-Time Verification Status Update (e.g., Admin Approval)
+    const handleVerificationUpdate = async (data: any) => {
+      if (!data) return;
+      queryClient.setQueryData(['profile'], (old: any) => {
+        if (!old) return old;
+        const updated = {
+          ...old,
+          registration_status: data.registration_status ?? old.registration_status,
+          verification_status: data.verification_status ?? old.verification_status,
+          verification_badge:
+            data.verification_badge !== undefined
+              ? Boolean(data.verification_badge)
+              : old.verification_badge,
+          rejection_reason:
+            data.rejection_reason !== undefined ? data.rejection_reason : old.rejection_reason,
+        };
+        SecureStore.setItemAsync('user_profile', JSON.stringify(updated)).catch(() => {});
+        return updated;
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ['profile'] });
+      const { notifyAuthChanged } = await import('../store/authEvents');
+      notifyAuthChanged();
+    };
+
+    channel.bind('user.verification.updated', handleVerificationUpdate);
+    channel.bind('.user.verification.updated', handleVerificationUpdate);
+    channel.bind('App\\Events\\UserVerificationUpdated', handleVerificationUpdate);
 
     return () => {
       channel.unbind_all();

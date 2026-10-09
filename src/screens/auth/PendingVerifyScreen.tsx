@@ -11,6 +11,8 @@ import { notifyAuthChanged, setGuestInitialRoute } from '../../store/authEvents'
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthCheck } from '../../hooks/useAuthCheck';
+import { profileApi } from '../../api/profile';
+import { useRealtimeUserEvents } from '../../services/realtime';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'PendingVerify'>;
 
@@ -22,6 +24,10 @@ const PendingVerifyScreen: React.FC = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const appState = useRef(AppState.currentState);
   const { user } = useAuthCheck();
+
+  // Listen to user verification updates in real time
+  useRealtimeUserEvents(user?.id);
+
   const isRejected =
     user?.registration_status === 'rejected' || user?.verification_status === 'rejected';
 
@@ -40,18 +46,42 @@ const PendingVerifyScreen: React.FC = () => {
 
   useEffect(() => {
     if (isRejected) return;
-    const interval = setInterval(() => {
-      notifyAuthChanged();
-    }, 10000);
+    const interval = setInterval(async () => {
+      try {
+        const freshUser = await profileApi.getProfile();
+        if (freshUser) {
+          const currentRegStatus = user?.registration_status;
+          const currentVerStatus = user?.verification_status;
+          if (
+            freshUser.registration_status !== currentRegStatus ||
+            freshUser.verification_status !== currentVerStatus
+          ) {
+            await SecureStore.setItemAsync('user_profile', JSON.stringify(freshUser));
+            queryClient.setQueryData(['profile'], freshUser);
+            await queryClient.invalidateQueries({ queryKey: ['profile'] });
+            notifyAuthChanged();
+          }
+        }
+      } catch (_) {}
+    }, 5000);
     return () => clearInterval(interval);
-  }, [isRejected]);
+  }, [isRejected, user?.registration_status, user?.verification_status, queryClient]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    // Adding a small delay just to show the spinner briefly
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    notifyAuthChanged();
-    setIsRefreshing(false);
+    try {
+      const freshUser = await profileApi.getProfile();
+      if (freshUser) {
+        await SecureStore.setItemAsync('user_profile', JSON.stringify(freshUser));
+        queryClient.setQueryData(['profile'], freshUser);
+        await queryClient.invalidateQueries({ queryKey: ['profile'] });
+        notifyAuthChanged();
+      }
+    } catch (err) {
+      console.warn('Failed to refresh verification status:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const signOut = async () => {

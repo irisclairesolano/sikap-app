@@ -82,8 +82,8 @@ const OTPVerifyScreen: React.FC = () => {
         const userRole = response?.user?.role || role;
         const regStatus = response?.registration_status || response?.user?.registration_status;
 
-        // Employers or already-approved users should not be forced to IDUpload
-        if (userRole === 'employer' || regStatus === 'approved') {
+        // Already-approved users should not be forced to IDUpload
+        if (regStatus === 'approved') {
           return;
         }
 

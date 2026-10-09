@@ -63,32 +63,58 @@ export const RoleOnboardingScreen: React.FC = () => {
 
   const handleBackPress = () => {
     if (targetRole === 'employer') {
-      showAlert(
-        'Cancel Employer Setup?',
-        'Would you like to switch back to Worker Mode, or skip document upload and continue as an Employer?',
-        [
-          { text: 'Stay Here', style: 'cancel' },
-          {
-            text: 'Switch to Worker',
-            style: 'destructive',
-            onPress: handleCancel,
-          },
-          {
-            text: 'Skip & Continue as Employer',
-            onPress: async () => {
-              try {
-                setIsSkipping(true);
-                await onboardRole({ targetRole, data: {} });
-                notifyAuthChanged();
-              } catch (error: any) {
-                showAlert('Error', error.message || 'Failed to skip onboarding');
-              } finally {
-                setIsSkipping(false);
-              }
+      const hasWorkerProfile = !!user?.has_worker_profile;
+
+      if (hasWorkerProfile) {
+        showAlert(
+          'Cancel Employer Setup?',
+          'Would you like to switch back to Worker Mode, or skip document upload and continue as an Employer?',
+          [
+            { text: 'Stay Here', style: 'cancel' },
+            {
+              text: 'Switch to Worker',
+              style: 'destructive',
+              onPress: handleCancel,
             },
-          },
-        ],
-      );
+            {
+              text: 'Skip & Continue as Employer',
+              onPress: async () => {
+                try {
+                  setIsSkipping(true);
+                  await onboardRole({ targetRole, data: {} });
+                  notifyAuthChanged();
+                } catch (error: any) {
+                  showAlert('Error', error.message || 'Failed to skip onboarding');
+                } finally {
+                  setIsSkipping(false);
+                }
+              },
+            },
+          ],
+        );
+      } else {
+        showAlert(
+          'Skip Document Upload?',
+          'You can upload business documents anytime in your profile. Skipping this will not affect your ability to post jobs or use your account.',
+          [
+            { text: 'Stay Here', style: 'cancel' },
+            {
+              text: 'Skip and Continue',
+              onPress: async () => {
+                try {
+                  setIsSkipping(true);
+                  await onboardRole({ targetRole, data: {} });
+                  notifyAuthChanged();
+                } catch (error: any) {
+                  showAlert('Error', error.message || 'Failed to skip onboarding');
+                } finally {
+                  setIsSkipping(false);
+                }
+              },
+            },
+          ],
+        );
+      }
     } else {
       handleCancel();
     }
