@@ -145,6 +145,8 @@ const IDUploadScreen: React.FC = () => {
           id: userId,
           role: userRole,
           registration_status: 'pending_review',
+          verification_status: 'pending',
+          rejection_reason: null,
           document_url: 'uploaded',
         };
         await SecureStore.setItemAsync('user_profile', JSON.stringify(updatedProfile));
@@ -158,16 +160,21 @@ const IDUploadScreen: React.FC = () => {
             id: userId,
             role: userRole,
             registration_status: 'pending_review',
+            verification_status: 'pending',
+            rejection_reason: null,
             document_url: 'uploaded',
           };
         }
         return {
           ...old,
           registration_status: 'pending_review',
+          verification_status: 'pending',
+          rejection_reason: null,
           document_url: 'uploaded',
         };
       });
 
+      await queryClient.invalidateQueries({ queryKey: ['profile'] });
       notifyAuthChanged();
 
       try {

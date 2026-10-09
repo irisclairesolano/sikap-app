@@ -386,11 +386,35 @@ export function useRealtimeUserEvents(userId?: number) {
     channel.bind('.conversation.updated', handleUserConversationUpdate);
     channel.bind('App\\Events\\ConversationUpdated', handleUserConversationUpdate);
 
-    // 6. On socket reconnection, refresh conversations and unread count
+    // 6. Handle Real-Time In-App Notifications
+    const handleNotificationSent = (data: any) => {
+      if (!data) return;
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
+      triggerHaptic('light');
+    };
+
+    channel.bind('notification.sent', handleNotificationSent);
+    channel.bind('.notification.sent', handleNotificationSent);
+    channel.bind('App\\Events\\NotificationSent', handleNotificationSent);
+
+    // 7. Handle Notification Read Receipts
+    const handleNotificationRead = () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
+    };
+
+    channel.bind('notification.read', handleNotificationRead);
+    channel.bind('.notification.read', handleNotificationRead);
+    channel.bind('App\\Events\\NotificationRead', handleNotificationRead);
+
+    // 8. On socket reconnection, refresh conversations, unread count, and notifications
     const handleUserStateChange = (states: { previous: string; current: string }) => {
       if (states.current === 'connected' && states.previous !== 'connecting') {
         queryClient.invalidateQueries({ queryKey: ['conversations'] });
         queryClient.invalidateQueries({ queryKey: ['conversations', 'unread-count'] });
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
       }
     };
 

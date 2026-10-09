@@ -94,6 +94,28 @@ const linking = {
               JobDetails: 'jobs/:id',
             },
           },
+          MyJobs: {
+            screens: {
+              ApplicationDetail: 'applications/:applicationId',
+            },
+          },
+          Messages: {
+            screens: {
+              ConversationsList: 'messages',
+              Chat: 'chat/:conversationId',
+            },
+          },
+          Notifications: {
+            screens: {
+              NotificationsList: 'notifications',
+            },
+          },
+          Profile: {
+            screens: {
+              Profile: 'profile',
+              SupportTickets: 'support',
+            },
+          },
         },
       },
       Employer: {
@@ -101,8 +123,40 @@ const linking = {
           Home: {
             screens: {
               JobDetails: 'employer/jobs/:id',
+              ApplicantDetail: 'applicants/:applicantId',
+              RateWorkerList: 'rate-worker/:jobId',
             },
           },
+          Jobs: {
+            screens: {
+              MyJobs: 'employer/my-jobs',
+              PostJob: 'employer/post-job',
+              JobStatusManagement: 'employer/manage-job/:id',
+            },
+          },
+          Messages: {
+            screens: {
+              ConversationsList: 'employer/messages',
+              Chat: 'employer/chat/:conversationId',
+            },
+          },
+          Notifications: {
+            screens: {
+              NotificationsList: 'employer/notifications',
+            },
+          },
+          Profile: {
+            screens: {
+              EmployerProfile: 'employer/profile',
+              SupportTickets: 'employer/support',
+            },
+          },
+        },
+      },
+      Auth: {
+        screens: {
+          PendingVerify: 'verification',
+          IDUpload: 'upload-id',
         },
       },
     },

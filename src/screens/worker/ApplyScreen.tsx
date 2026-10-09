@@ -60,7 +60,7 @@ export const ApplyScreen: React.FC = () => {
     job?.application_id) as number | undefined;
 
   const { data: liveApp } = useApplication(activeApplicationId as number, {
-    refetchInterval: 3000,
+    staleTime: 1000 * 60 * 5,
     enabled: !!activeApplicationId,
   });
 

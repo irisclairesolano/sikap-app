@@ -21,11 +21,9 @@ export const useEmployerStats = () => {
   } = useQuery<EmployerStats, Error>({
     queryKey: ['employer-stats'],
     queryFn: jobsApi.getEmployerStats,
-    refetchInterval: 2500,
-    refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
     refetchOnMount: 'always',
-    staleTime: 1000,
+    staleTime: 1000 * 60 * 5,
   });
 
   // Fallback calculation from cached jobs if stats endpoint has not resolved yet

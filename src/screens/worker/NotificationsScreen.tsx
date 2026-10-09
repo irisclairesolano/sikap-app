@@ -117,11 +117,24 @@ export const NotificationsScreen: React.FC = () => {
             notifType === 'report_resolved' ||
             notifType === 'report_submitted' ||
             notifType === 'report_update' ||
-            notifType === 'verification_rejected' ||
-            notifType === 'verification_pending' ||
-            notifType === 'id_rejected';
+            notifType === 'verification_pending';
 
           if (isInformational) {
+            return;
+          }
+
+          const conversationId = parsedData?.conversation_id || notif.data?.conversation_id;
+          if (conversationId && !isNaN(Number(conversationId))) {
+            (navigation as any).navigate('Chat', { conversationId: Number(conversationId) });
+            return;
+          }
+
+          if (
+            notifType === 'verification_rejected' ||
+            notifType === 'id_rejected' ||
+            (notifType === 'id_verification' && parsedData?.status === 'rejected')
+          ) {
+            (navigation as any).navigate('PendingVerify');
             return;
           }
 
