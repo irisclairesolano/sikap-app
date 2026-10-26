@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts } from '../../theme';
 import { Application } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export interface ApplicationCardProps {
   application: Application;
@@ -26,12 +27,16 @@ export const getCategoryStyles = (category?: string) => {
   }
 };
 
-export const getApplicationStageInfo = (status: string, hasReviewed?: boolean) => {
+export const getApplicationStageInfo = (
+  status: string,
+  hasReviewed?: boolean,
+  t?: (key: any) => string,
+) => {
   switch (status) {
     case 'pending':
       return {
         stage: 1,
-        badgeLabel: 'Under Review',
+        badgeLabel: t ? t('status_under_review') : 'Under Review',
         badgeIcon: 'hourglass-outline' as const,
         badgeBg: '#FEF3C7',
         badgeColor: '#D97706',
@@ -44,7 +49,7 @@ export const getApplicationStageInfo = (status: string, hasReviewed?: boolean) =
     case 'employer_requested':
       return {
         stage: 2,
-        badgeLabel: 'Shortlisted',
+        badgeLabel: t ? t('status_shortlisted') : 'Shortlisted',
         badgeIcon: 'chatbubble-ellipses-outline' as const,
         badgeBg: '#F3E8FF',
         badgeColor: '#7E22CE',
@@ -55,7 +60,7 @@ export const getApplicationStageInfo = (status: string, hasReviewed?: boolean) =
     case 'employer_confirmed':
       return {
         stage: 3,
-        badgeLabel: 'Offer Received',
+        badgeLabel: t ? t('status_job_offer') : 'Offer Received',
         badgeIcon: 'flash-outline' as const,
         badgeBg: '#FFE4E6',
         badgeColor: '#E11D48',
@@ -67,7 +72,7 @@ export const getApplicationStageInfo = (status: string, hasReviewed?: boolean) =
     case 'hired':
       return {
         stage: 4,
-        badgeLabel: 'Hired · Active',
+        badgeLabel: t ? t('status_hired') : 'Hired · Active',
         badgeIcon: 'checkmark-circle' as const,
         badgeBg: '#DCFCE7',
         badgeColor: '#15803D',
@@ -78,7 +83,13 @@ export const getApplicationStageInfo = (status: string, hasReviewed?: boolean) =
     case 'completed':
       return {
         stage: 5,
-        badgeLabel: hasReviewed ? 'Done · Rated' : 'Done',
+        badgeLabel: t
+          ? hasReviewed
+            ? `${t('status_completed')} · Rated`
+            : t('status_completed')
+          : hasReviewed
+            ? 'Done · Rated'
+            : 'Done',
         badgeIcon: hasReviewed ? ('checkmark-circle' as const) : ('ribbon-outline' as const),
         badgeBg: hasReviewed ? '#DCFCE7' : '#E0F2FE',
         badgeColor: hasReviewed ? '#15803D' : '#0369A1',
@@ -91,7 +102,7 @@ export const getApplicationStageInfo = (status: string, hasReviewed?: boolean) =
     case 'withdrawn':
       return {
         stage: 0,
-        badgeLabel: 'Withdrawn',
+        badgeLabel: t ? t('status_withdrawn') : 'Withdrawn',
         badgeIcon: 'arrow-undo-outline' as const,
         badgeBg: '#FFEDD5',
         badgeColor: '#EA580C',
@@ -102,7 +113,7 @@ export const getApplicationStageInfo = (status: string, hasReviewed?: boolean) =
     case 'rejected':
       return {
         stage: 0,
-        badgeLabel: 'Closed',
+        badgeLabel: t ? t('status_declined') : 'Closed',
         badgeIcon: 'close-circle-outline' as const,
         badgeBg: '#F1F5F9',
         badgeColor: '#64748B',
@@ -113,7 +124,7 @@ export const getApplicationStageInfo = (status: string, hasReviewed?: boolean) =
     default:
       return {
         stage: 1,
-        badgeLabel: 'Submitted',
+        badgeLabel: t ? t('status_under_review') : 'Submitted',
         badgeIcon: 'document-text-outline' as const,
         badgeBg: '#FEF3C7',
         badgeColor: '#D97706',
@@ -153,8 +164,9 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
   onReviewOffer,
   onRateEmployer,
 }) => {
+  const { t } = useLanguage();
   const { job, status } = application;
-  const stageInfo = getApplicationStageInfo(status, application.has_reviewed);
+  const stageInfo = getApplicationStageInfo(status, application.has_reviewed, t);
   const catStyles = getCategoryStyles(job?.categories?.[0] || job?.category || 'Other');
 
   // Compensation display
@@ -336,7 +348,7 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
             onPress={() => (onReviewOffer ? onReviewOffer(application) : onPress())}
             activeOpacity={0.8}
           >
-            <Text style={styles.quickActionBtnUrgentText}>Review Offer</Text>
+            <Text style={styles.quickActionBtnUrgentText}>{t('review_offer')}</Text>
           </TouchableOpacity>
         )}
 
@@ -346,7 +358,7 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
             onPress={() => (onRateEmployer ? onRateEmployer(application) : onPress())}
             activeOpacity={0.8}
           >
-            <Text style={styles.quickActionBtnPrimaryText}>Rate Employer</Text>
+            <Text style={styles.quickActionBtnPrimaryText}>{t('rate_review_partner')}</Text>
           </TouchableOpacity>
         )}
 

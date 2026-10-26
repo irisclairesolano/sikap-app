@@ -7,6 +7,7 @@ import { JobPost } from '../../types';
 import { useReactToJob } from '../../hooks/useReactToJob';
 import { ReportJobSheet } from './ReportJobSheet';
 import { triggerHaptic } from '../../utils/haptics';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface JobCardProps {
   job: JobPost;
@@ -72,6 +73,7 @@ export const JobCard = React.memo(function JobCard({
   onSave,
   isSaved,
 }: JobCardProps) {
+  const { t } = useLanguage();
   const isUrgent = !!(job.is_urgent || job.urgent);
   const isVerified = job.employer?.verification_badge;
   const primaryCategory = job.categories?.[0] || job.category || 'Other';
@@ -168,24 +170,32 @@ export const JobCard = React.memo(function JobCard({
               {isApplied && (
                 <View style={[styles.badge, styles.badgeApplied]}>
                   <Ionicons name="checkmark-circle" size={10} color="#15803D" />
-                  <Text style={[styles.badgeText, styles.badgeTextApplied]}>APPLIED</Text>
+                  <Text style={[styles.badgeText, styles.badgeTextApplied]}>
+                    {t('already_applied').toUpperCase()}
+                  </Text>
                 </View>
               )}
               {job.is_withdrawn && (
                 <View style={[styles.badge, styles.badgeWithdrawn]}>
                   <Ionicons name="remove-circle" size={10} color="#92400E" />
-                  <Text style={[styles.badgeText, styles.badgeTextWithdrawn]}>WITHDRAWN</Text>
+                  <Text style={[styles.badgeText, styles.badgeTextWithdrawn]}>
+                    {t('status_withdrawn').toUpperCase()}
+                  </Text>
                 </View>
               )}
               {!isApplied && !job.is_withdrawn && isFilled && (
                 <View style={[styles.badge, styles.badgeFilled]}>
-                  <Text style={[styles.badgeText, styles.badgeTextFilled]}>FILLED</Text>
+                  <Text style={[styles.badgeText, styles.badgeTextFilled]}>
+                    {t('closed').toUpperCase()}
+                  </Text>
                 </View>
               )}
               {isUrgent && (
                 <View style={[styles.badge, styles.badgeUrgent]}>
                   <Ionicons name="flame" size={10} color={colors.error} />
-                  <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
+                  <Text style={[styles.badgeText, { color: colors.error }]}>
+                    {t('urgent').toUpperCase()}
+                  </Text>
                 </View>
               )}
               {onSave && (
@@ -266,7 +276,11 @@ export const JobCard = React.memo(function JobCard({
               <Text style={styles.rateAmount}>{formatCompensation(job.compensation)}</Text>
               <Text style={styles.rateUnit}>
                 {' '}
-                / {formatRateUnit(job.rate_unit, job.duration_type)}
+                {job.rate_unit === 'per_hour'
+                  ? `/ ${t('per_hour')}`
+                  : job.rate_unit === 'per_project'
+                    ? `· ${t('fixed_per_project')}`
+                    : `/ ${t('per_day')}`}
               </Text>
             </View>
 

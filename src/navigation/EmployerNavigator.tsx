@@ -5,6 +5,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { colors } from '../theme';
 import { useNotifications } from '../hooks/useNotifications';
+import { useLanguage } from '../contexts/LanguageContext';
 
 import { EmployerDashboardScreen } from '../screens/employer/EmployerDashboardScreen';
 import ProfileScreen from '../screens/employer/ProfileScreen';
@@ -211,6 +212,7 @@ const ProfileStack: React.FC = () => (
 );
 
 const EmployerNavigator: React.FC = () => {
+  const { t } = useLanguage();
   const { data } = useNotifications();
   const unreadCount = data?.unread_count || 0;
   const { data: unreadMessages } = useUnreadMessageCount('employer');
@@ -255,6 +257,9 @@ const EmployerNavigator: React.FC = () => {
       <Tab.Screen
         name="Home"
         component={HomeStack}
+        options={{
+          tabBarLabel: 'Dashboard',
+        }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             (navigation as any).navigate('Home', { screen: 'EmployerDashboard' });
@@ -264,6 +269,9 @@ const EmployerNavigator: React.FC = () => {
       <Tab.Screen
         name="MyJobs"
         component={MyJobsStack}
+        options={{
+          tabBarLabel: t('my_jobs'),
+        }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             (navigation as any).navigate('MyJobs', { screen: 'MyJobsList' });
@@ -274,6 +282,7 @@ const EmployerNavigator: React.FC = () => {
         name="Messages"
         component={MessagesStack}
         options={{
+          tabBarLabel: t('messages'),
           tabBarBadge: (unreadMessages ?? 0) > 0 ? unreadMessages : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
@@ -287,6 +296,7 @@ const EmployerNavigator: React.FC = () => {
         name="Notifications"
         component={NotificationsStack}
         options={{
+          tabBarLabel: t('notifications'),
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
@@ -299,6 +309,9 @@ const EmployerNavigator: React.FC = () => {
       <Tab.Screen
         name="Profile"
         component={ProfileStack}
+        options={{
+          tabBarLabel: t('profile'),
+        }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             (navigation as any).navigate('Profile', { screen: 'ProfileMain' });

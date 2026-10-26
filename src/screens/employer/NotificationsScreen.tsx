@@ -14,6 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
   useNotifications,
   useMarkNotificationAsRead,
@@ -27,6 +28,7 @@ type NotificationsScreenNavigationProp = NativeStackNavigationProp<
 
 export const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation<NotificationsScreenNavigationProp>();
+  const { t } = useLanguage();
   const { data, isLoading, refetch } = useNotifications();
   const markAsReadMutation = useMarkNotificationAsRead();
   const markAllAsReadMutation = useMarkAllNotificationsAsRead();
@@ -249,7 +251,7 @@ export const NotificationsScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>Notifications</Text>
+          <Text style={styles.headerPillText}>{t('notifications')}</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>

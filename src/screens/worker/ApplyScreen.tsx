@@ -26,6 +26,7 @@ import { useApplication } from '../../hooks/useJobApplications';
 import { getApplicationStageInfo } from '../../components/applications/ApplicationCard';
 import { messagesApi } from '../../api/messages';
 import { triggerHaptic } from '../../utils/haptics';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type ApplyRouteProp = RouteProp<WorkerStackParamList, 'Apply'>;
 
@@ -45,6 +46,7 @@ const getCategoryStyles = (category: string) => {
 };
 
 export const ApplyScreen: React.FC = () => {
+  const { t } = useLanguage();
   const route = useRoute<ApplyRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const { id } = route.params;
@@ -93,28 +95,24 @@ export const ApplyScreen: React.FC = () => {
 
   const handleWithdraw = () => {
     if (data?.application_id) {
-      showAlert(
-        'Withdraw Application',
-        'Are you sure you want to withdraw? The employer will be notified, and this action cannot be undone.',
-        [
-          { text: 'No, continue', style: 'cancel' },
-          {
-            text: 'Yes, withdraw',
-            style: 'destructive',
-            onPress: () => {
-              withdraw(data.application_id, {
-                onSuccess: () => {
-                  triggerHaptic('medium');
-                  navigation.navigate('Home');
-                },
-                onError: (err: any) => {
-                  showAlert('Error', err.message || 'Could not withdraw application.');
-                },
-              });
-            },
+      showAlert(t('withdraw_application'), t('withdraw_confirm'), [
+        { text: 'No, continue', style: 'cancel' },
+        {
+          text: 'Yes, withdraw',
+          style: 'destructive',
+          onPress: () => {
+            withdraw(data.application_id, {
+              onSuccess: () => {
+                triggerHaptic('medium');
+                navigation.navigate('Home');
+              },
+              onError: (err: any) => {
+                showAlert('Error', err.message || 'Could not withdraw application.');
+              },
+            });
           },
-        ],
-      );
+        },
+      ]);
     }
   };
 
@@ -684,7 +682,7 @@ export const ApplyScreen: React.FC = () => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
-          <Text style={styles.appBarTitle}>Apply</Text>
+          <Text style={styles.appBarTitle}>{t('apply_now')}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -701,9 +699,7 @@ export const ApplyScreen: React.FC = () => {
         {isFilled && (
           <View style={styles.filledWarningBanner}>
             <Ionicons name="lock-closed" size={16} color="#991B1B" />
-            <Text style={styles.filledWarningText}>
-              All slots for this job have been filled. Applications are no longer accepted.
-            </Text>
+            <Text style={styles.filledWarningText}>{t('job_closed_notice')}</Text>
           </View>
         )}
 
@@ -727,7 +723,7 @@ export const ApplyScreen: React.FC = () => {
             <View style={styles.summaryWageBox}>
               <Text style={styles.summaryWage}>₱{job.compensation}</Text>
               <Text style={styles.summaryDuration}>
-                per {job.duration_type === 'daily' ? 'day' : 'project'}
+                {job.duration_type === 'daily' ? t('per_day') : t('fixed_per_project')}
               </Text>
             </View>
           </View>
@@ -735,10 +731,10 @@ export const ApplyScreen: React.FC = () => {
           {/* Form Section */}
           <View style={styles.section}>
             <CustomInput
-              label="Add a short note (optional)"
+              label={t('cover_note')}
               value={coverNote}
               onChangeText={setCoverNote}
-              placeholder="E.g. I have 3 years of experience in this role..."
+              placeholder={t('tell_employer_why_fit')}
               multiline
               maxLength={maxLength}
             />
@@ -764,7 +760,7 @@ export const ApplyScreen: React.FC = () => {
 
         <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
           <Button
-            label={isFilled ? 'All Slots Filled' : 'Send application'}
+            label={isFilled ? t('closed') : t('submit_application')}
             size="lg"
             onPress={handleSubmit}
             loading={isPending}

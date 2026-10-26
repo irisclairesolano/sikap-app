@@ -26,8 +26,10 @@ import { JobPost } from '../../types';
 
 import { DashboardSkeleton } from '../../components/common/SkeletonLoader';
 import { RefreshableContainer } from '../../components/common/RefreshableContainer';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const EmployerDashboardScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<EmployerStackParamList>>();
   const { user } = useAuthCheck();
 
@@ -219,23 +221,25 @@ export const EmployerDashboardScreen: React.FC = () => {
   const getFriendlyStatusLabel = (app: any): string => {
     switch (app.status) {
       case 'pending':
-        return 'Applied';
+        return t('status_under_review');
       case 'employer_requested':
       case 'pending_negotiation':
-        return 'Shortlisted';
+        return t('status_shortlisted');
       case 'employer_confirmed':
-        return 'Offer Sent';
+        return t('status_job_offer');
       case 'accepted':
       case 'hired':
-        return 'Hired';
+        return t('status_hired');
       case 'completed':
-        return app.has_reviewed || app.user_review ? 'Done · Rated' : 'Done · Awaiting Review';
+        return app.has_reviewed || app.user_review
+          ? `${t('status_completed')} · Rated`
+          : `${t('status_completed')} · Awaiting Review`;
       case 'rejected':
-        return 'Declined';
+        return t('status_declined');
       case 'withdrawn':
-        return 'Withdrawn';
+        return t('status_withdrawn');
       default:
-        return app.status ? String(app.status).replace(/_/g, ' ') : 'Applied';
+        return app.status ? String(app.status).replace(/_/g, ' ') : t('status_under_review');
     }
   };
 
@@ -330,7 +334,7 @@ export const EmployerDashboardScreen: React.FC = () => {
               <View style={styles.statIconCircle}>
                 <Ionicons name="star" size={15} color="#EAB308" />
               </View>
-              <Text style={styles.statLabel}>Reputation</Text>
+              <Text style={styles.statLabel}>{t('reputation_score')}</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
               <Text style={styles.statNum}>{reputationFormatted}</Text>
@@ -340,7 +344,7 @@ export const EmployerDashboardScreen: React.FC = () => {
         </View>
 
         <Button
-          label="Post a new job"
+          label={t('post_a_job')}
           size="lg"
           fullWidth
           onPress={() => navigation.navigate('PostJob')}

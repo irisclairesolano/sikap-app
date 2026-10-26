@@ -21,11 +21,13 @@ import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 import Button from '../../components/common/Button';
 import { Application } from '../../types';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type FilterType = 'All' | 'Needs Action' | 'Active' | 'In Review' | 'History';
 const FILTERS: FilterType[] = ['All', 'Needs Action', 'Active', 'In Review', 'History'];
 
 export const MyApplicationsScreen: React.FC = () => {
+  const { t } = useLanguage();
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc' | 'pay'>('desc');
   const [searchQuery, setSearchQuery] = useState('');
@@ -186,7 +188,7 @@ export const MyApplicationsScreen: React.FC = () => {
           {canGoBack && <Ionicons name="arrow-back" size={24} color={colors.ink} />}
         </TouchableOpacity>
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>My Applications</Text>
+          <Text style={styles.headerPillText}>{t('my_applications')}</Text>
         </View>
         <TouchableOpacity style={styles.iconBtn} onPress={() => refetch()}>
           <Ionicons name="reload-outline" size={20} color={colors.inkSoft} />
@@ -207,15 +209,13 @@ export const MyApplicationsScreen: React.FC = () => {
             <View style={{ flex: 1 }}>
               <Text style={styles.urgentTitle}>
                 {offersWaitingCount === 1
-                  ? '1 Job Offer Waiting for You!'
-                  : `${offersWaitingCount} Job Offers Waiting for You!`}
+                  ? `1 ${t('status_job_offer')}!`
+                  : `${offersWaitingCount} ${t('status_job_offer')}!`}
               </Text>
-              <Text style={styles.urgentSubtitle}>
-                An employer sent you a price offer. Tap to review and accept.
-              </Text>
+              <Text style={styles.urgentSubtitle}>{t('employer_sent_offer_notice')}</Text>
             </View>
             <View style={styles.urgentBadge}>
-              <Text style={styles.urgentBadgeText}>View</Text>
+              <Text style={styles.urgentBadgeText}>{t('review_offer')}</Text>
             </View>
           </TouchableOpacity>
         ) : unratedCompletedCount > 0 && activeFilter !== 'Needs Action' ? (
@@ -228,12 +228,10 @@ export const MyApplicationsScreen: React.FC = () => {
               <Ionicons name="ribbon-outline" size={18} color="#0369A1" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.completedNoticeTitle}>Job Completed!</Text>
-              <Text style={styles.completedNoticeSubtitle}>
-                Please rate your employer to finalize the record.
-              </Text>
+              <Text style={styles.completedNoticeTitle}>{t('status_completed')}</Text>
+              <Text style={styles.completedNoticeSubtitle}>{t('job_marked_completed_notice')}</Text>
             </View>
-            <Text style={styles.completedNoticeLink}>Rate →</Text>
+            <Text style={styles.completedNoticeLink}>{t('rate_review_partner')} →</Text>
           </TouchableOpacity>
         ) : (
           /* Quick Summary Glance Bar */
@@ -340,7 +338,16 @@ export const MyApplicationsScreen: React.FC = () => {
                     isNeedsAction && !isSelected && styles.chipTextNeedsAction,
                   ]}
                 >
-                  {filter} · <Text style={styles.chipCount}>{count}</Text>
+                  {filter === 'All'
+                    ? t('all')
+                    : filter === 'In Review'
+                      ? t('status_under_review')
+                      : filter === 'Active'
+                        ? t('status_hired')
+                        : filter === 'History'
+                          ? t('status_completed')
+                          : filter}{' '}
+                  · <Text style={styles.chipCount}>{count}</Text>
                 </Text>
               </TouchableOpacity>
             );

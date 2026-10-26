@@ -3,6 +3,7 @@ import React, { useCallback, useMemo } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BARANGAYS_BY_MUNICIPALITY, MUNICIPALITIES } from '../../constants/locations';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { colors, fonts } from '../../theme';
 
 type LocationPickerProps = {
@@ -23,6 +24,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   barangayError,
 }) => {
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const [municipalityModalVisible, setMunicipalityModalVisible] = React.useState(false);
   const [barangayModalVisible, setBarangayModalVisible] = React.useState(false);
 
@@ -152,14 +154,14 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       {/* Municipality Picker */}
       <View style={styles.pickerContainer}>
         <Text style={styles.label}>
-          Municipality <Text style={{ color: colors.error }}>*</Text>
+          {t('municipality')} <Text style={{ color: colors.error }}>*</Text>
         </Text>
         <TouchableOpacity
           style={[styles.pickerButton, municipalityError && styles.pickerButtonError]}
           onPress={() => setMunicipalityModalVisible(true)}
         >
           <Text style={[styles.pickerText, !municipalityValue && styles.pickerPlaceholder]}>
-            {municipalityValue || 'Select municipality'}
+            {municipalityValue || t('municipality')}
           </Text>
           <Ionicons name="chevron-down" size={20} color={colors.inkSoft} />
         </TouchableOpacity>
@@ -174,7 +176,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       {/* Barangay Picker */}
       <View style={styles.pickerContainer}>
         <Text style={styles.label}>
-          Barangay <Text style={{ color: colors.error }}>*</Text>
+          {t('barangay')} <Text style={{ color: colors.error }}>*</Text>
         </Text>
         <TouchableOpacity
           style={[

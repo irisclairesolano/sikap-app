@@ -28,6 +28,7 @@ import {
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts } from '../../theme';
 import { JobPost } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type MyJobsNavigationProp = NativeStackNavigationProp<EmployerStackParamList, 'MyJobs'>;
 
@@ -42,6 +43,7 @@ const formatCompensation = (amount: number | string | undefined | null): string 
 };
 
 export const MyJobsScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation<MyJobsNavigationProp>();
   const route = useRoute<any>();
   const [activeTab, setActiveTab] = useState<'Active' | 'Past' | 'Archived'>('Active');
@@ -443,7 +445,7 @@ export const MyJobsScreen: React.FC = () => {
       <View style={styles.header}>
         <View style={styles.iconBtn} />
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>My Job Posts</Text>
+          <Text style={styles.headerPillText}>{t('my_jobs')}</Text>
         </View>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('PostJob')}>
           <Ionicons name="add" size={26} color={colors.primary} />
@@ -505,7 +507,7 @@ export const MyJobsScreen: React.FC = () => {
               : `You don't have any ${activeTab.toLowerCase()} job postings right now.`}
           </Text>
           <Button
-            title="Post a Job"
+            title={t('post_a_job')}
             onPress={() => navigation.navigate('PostJob')}
             style={{ marginTop: 16, minWidth: 160 }}
           />

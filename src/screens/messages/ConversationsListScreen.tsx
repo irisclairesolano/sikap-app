@@ -15,6 +15,7 @@ import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/useAuth';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface Props {
   navigation: any;
@@ -38,6 +39,7 @@ const formatConversationTime = (dateString: string) => {
 };
 
 const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const currentRole = (user?.role as 'worker' | 'employer') || 'worker';
   const { data, isLoading, isError, refetch } = useConversations(currentRole);
@@ -64,7 +66,7 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
         {canGoBack && <Ionicons name="arrow-back" size={24} color={colors.ink} />}
       </TouchableOpacity>
       <View style={styles.headerPill}>
-        <Text style={styles.headerPillText}>Messages</Text>
+        <Text style={styles.headerPillText}>{t('messages')}</Text>
       </View>
       <TouchableOpacity style={styles.iconBtn} onPress={() => refetch()}>
         <Ionicons name="reload-outline" size={20} color={colors.inkSoft} />
@@ -127,12 +129,8 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.emptyIconCircle}>
             <Ionicons name="chatbubbles-outline" size={44} color={colors.primary} />
           </View>
-          <Text style={styles.emptyTitle}>No conversations yet</Text>
-          <Text style={styles.emptySubtitle}>
-            {isWorker
-              ? 'Your chats will appear here once an employer sends you a job request.'
-              : 'Send a job request to a worker from your applicants to start chatting.'}
-          </Text>
+          <Text style={styles.emptyTitle}>{t('no_conversations_yet')}</Text>
+          <Text style={styles.emptySubtitle}>{t('no_messages_here')}</Text>
           <TouchableOpacity
             style={styles.emptyActionButton}
             activeOpacity={0.8}
@@ -151,7 +149,7 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
               style={{ marginRight: 6 }}
             />
             <Text style={styles.emptyActionButtonText}>
-              {isWorker ? 'Explore Jobs' : 'View My Jobs'}
+              {isWorker ? t('find_jobs') : t('my_jobs')}
             </Text>
           </TouchableOpacity>
         </View>

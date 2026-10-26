@@ -30,6 +30,7 @@ import {
 import { useBlockUser, useUnblockUser } from '../../hooks/useBlockedUsers';
 import { useAuth } from '../../hooks/useAuth';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import MessageBubble from '../../components/chat/MessageBubble';
 import ActionCard from '../../components/chat/ActionCard';
 import QuickReplyChips from '../../components/chat/QuickReplyChips';
@@ -142,6 +143,7 @@ type ChatScreenParams = {
 
 const ChatScreen: React.FC = () => {
   const { showAlert } = useAlert();
+  const { t } = useLanguage();
   const route = useRoute();
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -740,7 +742,7 @@ const ChatScreen: React.FC = () => {
                     isBlockedByMe ? { color: colors.primary } : { color: colors.error },
                   ]}
                 >
-                  {isBlockedByMe ? 'Unblock User' : 'Block User'}
+                  {isBlockedByMe ? t('unblock_user') : t('block_user')}
                 </Text>
               </TouchableOpacity>
 
@@ -754,7 +756,7 @@ const ChatScreen: React.FC = () => {
                 }}
               >
                 <Ionicons name="flag-outline" size={20} color={colors.ink} />
-                <Text style={styles.optionsMenuText}>Report User</Text>
+                <Text style={styles.optionsMenuText}>{t('report_user')}</Text>
               </TouchableOpacity>
             </View>
           </Pressable>
@@ -1122,7 +1124,7 @@ const ChatScreen: React.FC = () => {
                   placeholder={
                     !isWorkerReplyAllowed
                       ? 'Waiting for employer to start conversation...'
-                      : 'Type a message...'
+                      : t('type_message_placeholder')
                   }
                   placeholderTextColor={colors.inkLight}
                   value={inputText}

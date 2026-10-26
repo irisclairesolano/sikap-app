@@ -24,10 +24,12 @@ import Button from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { ReportJobSheet } from '../../components/jobs/ReportJobSheet';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type JobDetailsRouteProp = RouteProp<WorkerStackParamList, 'JobDetails'>;
 
 export const JobDetailsScreen: React.FC = () => {
+  const { t } = useLanguage();
   const route = useRoute<JobDetailsRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const id = Number(route.params.id);
@@ -236,19 +238,25 @@ export const JobDetailsScreen: React.FC = () => {
           {isApplied && (
             <View style={[styles.badge, styles.badgeApplied]}>
               <Ionicons name="checkmark-circle" size={10} color="#15803D" />
-              <Text style={[styles.badgeText, styles.badgeTextApplied]}>APPLIED</Text>
+              <Text style={[styles.badgeText, styles.badgeTextApplied]}>
+                {t('already_applied').toUpperCase()}
+              </Text>
             </View>
           )}
           {isWithdrawn && (
             <View style={[styles.badge, styles.badgeWithdrawn]}>
               <Ionicons name="remove-circle" size={10} color="#92400E" />
-              <Text style={[styles.badgeText, styles.badgeTextWithdrawn]}>WITHDRAWN</Text>
+              <Text style={[styles.badgeText, styles.badgeTextWithdrawn]}>
+                {t('status_withdrawn').toUpperCase()}
+              </Text>
             </View>
           )}
           {isUrgent && (
             <View style={[styles.badge, styles.badgeUrgent]}>
               <Ionicons name="flame" size={10} color={colors.error} />
-              <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
+              <Text style={[styles.badgeText, { color: colors.error }]}>
+                {t('urgent').toUpperCase()}
+              </Text>
             </View>
           )}
         </View>
@@ -267,12 +275,10 @@ export const JobDetailsScreen: React.FC = () => {
           </View>
           <Text style={styles.payPeriod}>
             {job.rate_unit === 'per_hour'
-              ? 'per hour'
+              ? t('per_hour')
               : job.rate_unit === 'per_project'
-                ? 'fixed / per project'
-                : job.rate_unit === 'per_piece'
-                  ? 'per piece'
-                  : 'per day'}
+                ? t('fixed_per_project')
+                : t('per_day')}
           </Text>
         </View>
 
@@ -282,7 +288,7 @@ export const JobDetailsScreen: React.FC = () => {
             <View style={styles.infoIconBox}>
               <Ionicons name="location" size={20} color={colors.primaryDark} />
             </View>
-            <Text style={styles.infoLabel}>Location</Text>
+            <Text style={styles.infoLabel}>{t('location')}</Text>
             <Text style={styles.infoValue} numberOfLines={2}>
               {job.municipality}
             </Text>
@@ -302,7 +308,7 @@ export const JobDetailsScreen: React.FC = () => {
             <View style={styles.infoIconBox}>
               <Ionicons name="people" size={20} color={colors.primaryDark} />
             </View>
-            <Text style={styles.infoLabel}>Slots</Text>
+            <Text style={styles.infoLabel}>{t('slots_available')}</Text>
             <Text style={styles.infoValue}>
               {filledSlots} / {totalSlots}
             </Text>
@@ -319,7 +325,7 @@ export const JobDetailsScreen: React.FC = () => {
 
         {/* Description Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Job Description</Text>
+          <Text style={styles.sectionTitle}>{t('job_description')}</Text>
           <Text style={styles.descriptionText}>{job.description}</Text>
         </View>
 
@@ -540,15 +546,13 @@ export const JobDetailsScreen: React.FC = () => {
           <View style={styles.filledCard}>
             <View style={styles.alreadyAppliedRow}>
               <Ionicons name="lock-closed" size={18} color={colors.error} />
-              <Text style={styles.filledTitle}>All slots have been filled</Text>
+              <Text style={styles.filledTitle}>{t('closed')}</Text>
             </View>
-            <Text style={styles.filledSubtitle}>
-              This job is no longer accepting new applications.
-            </Text>
+            <Text style={styles.filledSubtitle}>{t('job_closed_notice')}</Text>
           </View>
         ) : (
           <Button
-            label="Apply for this job"
+            label={t('apply_now')}
             size="lg"
             onPress={() => navigation.navigate('Apply', { id: job.id })}
             fullWidth

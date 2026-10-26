@@ -33,6 +33,7 @@ import LocationPicker from '../../components/common/LocationPicker';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 import { ApiClientError } from '../../api/client';
 import { colors, fonts, shadows } from '../../theme';
@@ -40,6 +41,7 @@ import { colors, fonts, shadows } from '../../theme';
 export const EditProfileScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { user, refetchProfile } = useAuth();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
 
   const [name, setName] = useState(user?.name || '');
@@ -334,7 +336,7 @@ export const EditProfileScreen: React.FC = () => {
             <Ionicons name="close" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.headerPill}>
-            <Text style={styles.headerPillText}>Edit Profile</Text>
+            <Text style={styles.headerPillText}>{t('edit_profile')}</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
@@ -372,7 +374,7 @@ export const EditProfileScreen: React.FC = () => {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Full Name</Text>
+            <Text style={styles.label}>{t('full_name')}</Text>
             <Input
               value={name}
               onChangeText={setName}
@@ -392,7 +394,7 @@ export const EditProfileScreen: React.FC = () => {
           />
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Date of Birth</Text>
+            <Text style={styles.label}>{t('date_of_birth')}</Text>
             <View style={[styles.dateInputContainer, isVerified && styles.dateInputDisabled]}>
               <TextInput
                 style={[styles.dateTextInput, isVerified && { color: colors.inkMuted }]}
@@ -450,7 +452,7 @@ export const EditProfileScreen: React.FC = () => {
           {user?.role === 'worker' && (
             <>
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Emergency Contact Name</Text>
+                <Text style={styles.label}>{t('emergency_contact_name')}</Text>
                 <Input
                   value={emergencyContactName}
                   onChangeText={(text) => {
@@ -465,7 +467,7 @@ export const EditProfileScreen: React.FC = () => {
                 </Text>
               </View>
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Emergency Contact Phone</Text>
+                <Text style={styles.label}>{t('emergency_contact_phone')}</Text>
                 <Input
                   value={emergencyContactPhone}
                   onChangeText={(text) => {
@@ -734,7 +736,7 @@ export const EditProfileScreen: React.FC = () => {
           </View>
 
           <Button
-            title={isSaving ? 'Saving...' : 'Save changes'}
+            title={isSaving ? t('loading') : t('save')}
             onPress={handleSave}
             disabled={isSaving}
             style={{ marginTop: 24 }}

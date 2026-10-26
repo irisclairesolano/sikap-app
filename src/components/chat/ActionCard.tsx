@@ -16,6 +16,7 @@ import { applicationsApi } from '../../api/applications';
 import { messagesApi } from '../../api/messages';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useConfirmHire } from '../../hooks/useJobApplications';
 import { useMarkJobComplete } from '../../hooks/useJobs';
 import { useAcceptOffer, useRejectOffer, useFlagOffline } from '../../hooks/useApply';
@@ -62,6 +63,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
   const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
   const { showAlert } = useAlert();
+  const { t } = useLanguage();
   const confirmHireMutation = useConfirmHire();
   const markJobCompleteMutation = useMarkJobComplete();
   const acceptOfferMutation = useAcceptOffer();
@@ -588,7 +590,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                     {confirmHireMutation.isPending ? (
                       <ActivityIndicator color={colors.white} />
                     ) : (
-                      <Text style={styles.primaryButtonText}>Confirm Hire</Text>
+                      <Text style={styles.primaryButtonText}>{t('confirm_hire')}</Text>
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -596,7 +598,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                     onPress={() => setIsPriceInputVisible(false)}
                     disabled={!!loadingAction}
                   >
-                    <Text style={styles.cancelPriceBtnText}>Cancel</Text>
+                    <Text style={styles.cancelPriceBtnText}>{t('cancel')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -702,7 +704,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <Ionicons name="document-text-outline" size={20} color={colors.success} />
           </View>
           <View style={styles.cardHeaderText}>
-            <Text style={styles.title}>Job Offer Received</Text>
+            <Text style={styles.title}>{t('job_offer_received')}</Text>
             <Text style={styles.subtitle}>
               Agreed price:{' '}
               <Text style={styles.priceHighlight}>{formatCurrency(effectivePrice)}</Text>
@@ -740,7 +742,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             {acceptOfferMutation.isPending ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.actionBtnText}>Accept Job Offer</Text>
+              <Text style={styles.actionBtnText}>{t('accept_offer')}</Text>
             )}
           </TouchableOpacity>
           <TouchableOpacity
@@ -768,7 +770,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             {rejectOfferMutation.isPending ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.actionBtnText}>Decline Offer</Text>
+              <Text style={styles.actionBtnText}>{t('decline_offer')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -802,7 +804,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <Ionicons name="close-circle-outline" size={20} color={colors.error} />
           </View>
           <View style={styles.cardHeaderText}>
-            <Text style={styles.title}>Cancel Hire</Text>
+            <Text style={styles.title}>{t('cancel_hire')}</Text>
             <Text style={styles.subtitle}>You can cancel this hire before the worker accepts.</Text>
           </View>
         </View>
@@ -840,7 +842,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           {loadingAction === 'cancel' ? (
             <ActivityIndicator color={colors.error} />
           ) : (
-            <Text style={styles.outlineButtonErrorText}>Cancel Hire</Text>
+            <Text style={styles.outlineButtonErrorText}>{t('cancel_hire')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -958,7 +960,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <Ionicons name="checkmark-circle-outline" size={20} color={colors.success} />
           </View>
           <View style={styles.cardHeaderText}>
-            <Text style={styles.title}>Mark Job as Complete</Text>
+            <Text style={styles.title}>{t('mark_as_completed')}</Text>
             <Text style={styles.subtitle}>Tap when the work has been fully finished.</Text>
           </View>
         </View>
@@ -992,7 +994,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           {markJobCompleteMutation.isPending ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.primaryButtonText}>Confirm Job Completed</Text>
+            <Text style={styles.primaryButtonText}>{t('mark_as_completed')}</Text>
           )}
         </TouchableOpacity>
       </View>

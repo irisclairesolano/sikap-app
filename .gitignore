@@ -44,3 +44,7 @@ yarn-error.*
 
 # project docs
 /docs/
+
+# build binaries
+*.apk
+*.aab

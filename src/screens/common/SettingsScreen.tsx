@@ -18,6 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 import { notifyAuthChanged } from '../../store/authEvents';
 import { colors, fonts, shadows } from '../../theme';
@@ -356,12 +357,14 @@ export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
   const { showAlert } = useAlert();
+  const { language, setLanguage, t } = useLanguage();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [selectedReason, setSelectedReason] = useState<string>(DELETE_REASONS[0]);
   const [customReasonDetails, setCustomReasonDetails] = useState('');
   const [deleteWarning, setDeleteWarning] = useState<string | null>(null);
@@ -372,10 +375,10 @@ export const SettingsScreen: React.FC = () => {
   const { user, userRole, switchRole } = useAuth();
 
   const handleLogout = () => {
-    showAlert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
+    showAlert(t('log_out'), t('confirm_logout_msg'), [
+      { text: t('cancel'), style: 'cancel' },
       {
-        text: 'Log Out',
+        text: t('log_out'),
         style: 'destructive',
         onPress: async () => {
           await SecureStore.deleteItemAsync('auth_token');
@@ -405,10 +408,7 @@ export const SettingsScreen: React.FC = () => {
       notifyAuthChanged();
     } catch (err: any) {
       setIsDeleting(false);
-      showAlert(
-        'Deletion Failed',
-        err?.message || 'Could not delete your account. Please try again later.',
-      );
+      showAlert('Deletion Failed', err?.message || t('delete_account_failed'));
     }
   };
 
@@ -421,7 +421,7 @@ export const SettingsScreen: React.FC = () => {
           'Cannot Delete Account',
           status.reason
             ? sanitizeErrorMessage(status.reason)
-            : 'You have active jobs or pending applications in progress. Please conclude or cancel them before deleting your account.',
+            : t('delete_account_blocked_active_jobs'),
         );
         return;
       }
@@ -442,20 +442,20 @@ export const SettingsScreen: React.FC = () => {
 
   const handleSwitchRole = () => {
     const isTargetWorker = userRole === 'employer';
-    const title = isTargetWorker ? 'Switch to Worker Mode' : 'Switch to Employer Mode';
+    const title = isTargetWorker ? t('switch_to_worker') : t('switch_to_employer');
     const message = isTargetWorker
-      ? 'You are about to log in as a Worker. This mode lets you browse local job postings, apply for jobs, and manage bookmarked jobs.\n\nIf your worker profile is missing skills data, you will be guided through a quick setup first.'
-      : 'You are about to log in as an Employer. This mode lets you post job listings, review applicants, and hire workers.';
+      ? `${t('switch_worker_desc')}\n\n${t('switch_worker_skills_note')}`
+      : t('switch_employer_desc');
 
     showAlert(title, message, [
-      { text: 'Cancel', style: 'cancel' },
+      { text: t('cancel'), style: 'cancel' },
       {
-        text: 'Continue',
+        text: t('continue'),
         onPress: async () => {
           try {
             await switchRole();
           } catch (e: any) {
-            showAlert('Error', e?.message || 'Failed to switch roles.');
+            showAlert('Error', e?.message || t('failed_switch_roles'));
           }
         },
       },
@@ -469,42 +469,49 @@ export const SettingsScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>Settings</Text>
+          <Text style={styles.headerPillText}>{t('settings')}</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
+          <Text style={styles.sectionTitle}>{t('account')}</Text>
           <View style={styles.sectionCard}>
             <SettingRow
               icon="person-outline"
-              title="Edit Profile"
+              title={t('edit_profile')}
               onPress={() => navigation.navigate('EditProfile')}
             />
             <View style={styles.divider} />
             <SettingRow
               icon="mail-outline"
-              title="Email Address"
+              title={t('email_address')}
               subtitle={user?.email || 'N/A'}
               type="text"
             />
             <View style={styles.divider} />
             <SettingRow
               icon="swap-horizontal-outline"
-              title={userRole === 'worker' ? 'Log in as Employer' : 'Log in as Worker'}
+              title={userRole === 'worker' ? t('login_as_employer') : t('login_as_worker')}
               onPress={handleSwitchRole}
             />
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
+          <Text style={styles.sectionTitle}>{t('preferences')}</Text>
           <View style={styles.sectionCard}>
             <SettingRow
+              icon="language-outline"
+              title={t('language')}
+              subtitle={language === 'tl' ? 'Tagalog (Filipino)' : 'English'}
+              onPress={() => setShowLanguageModal(true)}
+            />
+            <View style={styles.divider} />
+            <SettingRow
               icon="notifications-outline"
-              title="Push Notifications"
+              title={t('push_notifications')}
               type="toggle"
               value={notificationsEnabled}
               onToggle={setNotificationsEnabled}
@@ -512,7 +519,7 @@ export const SettingsScreen: React.FC = () => {
             <View style={styles.divider} />
             <SettingRow
               icon="location-outline"
-              title="Location Services"
+              title={t('location_services')}
               type="toggle"
               value={locationEnabled}
               onToggle={setLocationEnabled}
@@ -521,29 +528,29 @@ export const SettingsScreen: React.FC = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Support</Text>
+          <Text style={styles.sectionTitle}>{t('support')}</Text>
           <View style={styles.sectionCard}>
             <SettingRow
               icon="help-circle-outline"
-              title="Help Center"
+              title={t('help_center')}
               onPress={() => setShowHelp(true)}
             />
             <View style={styles.divider} />
             <SettingRow
               icon="chatbubbles-outline"
-              title="Support Tickets"
+              title={t('support_tickets')}
               onPress={() => navigation.navigate('SupportTickets' as never)}
             />
             <View style={styles.divider} />
             <SettingRow
               icon="document-text-outline"
-              title="Terms of Service"
+              title={t('terms_of_service')}
               onPress={() => setShowTerms(true)}
             />
             <View style={styles.divider} />
             <SettingRow
               icon="lock-closed-outline"
-              title="Privacy Policy"
+              title={t('privacy_policy')}
               onPress={() => setShowPrivacy(true)}
             />
           </View>
@@ -551,11 +558,11 @@ export const SettingsScreen: React.FC = () => {
 
         <View style={styles.section}>
           <View style={styles.sectionCard}>
-            <SettingRow icon="log-out-outline" title="Log Out" onPress={handleLogout} />
+            <SettingRow icon="log-out-outline" title={t('log_out')} onPress={handleLogout} />
             <View style={styles.divider} />
             <SettingRow
               icon="trash-outline"
-              title="Delete Account"
+              title={t('delete_account')}
               isDestructive={true}
               onPress={handleDeleteAccount}
             />
@@ -597,6 +604,107 @@ export const SettingsScreen: React.FC = () => {
         title="Privacy Policy"
         sections={PRIVACY_SECTIONS}
       />
+
+      {/* Language Selection Modal */}
+      <Modal
+        visible={showLanguageModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <TouchableOpacity
+          style={cStyles.overlay}
+          activeOpacity={1}
+          onPress={() => setShowLanguageModal(false)}
+        >
+          <View style={cStyles.sheet}>
+            <View style={cStyles.handle} />
+            <View style={cStyles.sheetHeader}>
+              <View style={[cStyles.iconCircle, { backgroundColor: colors.peach }]}>
+                <Ionicons name="language-outline" size={22} color={colors.primary} />
+              </View>
+              <Text style={cStyles.sheetTitle}>
+                {language === 'tl' ? 'Pumili ng Wika' : 'Select Language'}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowLanguageModal(false)}
+                style={cStyles.closeBtn}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close" size={22} color={colors.inkSoft} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ paddingVertical: 14, gap: 10 }}>
+              <TouchableOpacity
+                style={[
+                  styles.reasonOption,
+                  language === 'en' && {
+                    borderColor: colors.primary,
+                    backgroundColor: 'rgba(232, 116, 74, 0.08)',
+                  },
+                  { paddingVertical: 14 },
+                ]}
+                onPress={async () => {
+                  await setLanguage('en');
+                  setShowLanguageModal(false);
+                }}
+              >
+                <Ionicons
+                  name={language === 'en' ? 'radio-button-on' : 'radio-button-off'}
+                  size={20}
+                  color={language === 'en' ? colors.primary : colors.inkFaint}
+                />
+                <Text
+                  style={[
+                    styles.reasonOptionText,
+                    language === 'en' && { fontFamily: fonts.bodyBold, color: colors.primary },
+                  ]}
+                >
+                  English
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.reasonOption,
+                  language === 'tl' && {
+                    borderColor: colors.primary,
+                    backgroundColor: 'rgba(232, 116, 74, 0.08)',
+                  },
+                  { paddingVertical: 14 },
+                ]}
+                onPress={async () => {
+                  await setLanguage('tl');
+                  setShowLanguageModal(false);
+                }}
+              >
+                <Ionicons
+                  name={language === 'tl' ? 'radio-button-on' : 'radio-button-off'}
+                  size={20}
+                  color={language === 'tl' ? colors.primary : colors.inkFaint}
+                />
+                <Text
+                  style={[
+                    styles.reasonOptionText,
+                    language === 'tl' && { fontFamily: fonts.bodyBold, color: colors.primary },
+                  ]}
+                >
+                  Tagalog (Filipino)
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={cStyles.closeFullBtn}
+              onPress={() => setShowLanguageModal(false)}
+              activeOpacity={0.8}
+            >
+              <Text style={cStyles.closeFullBtnText}>{t('close')}</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Delete Account Reason Modal */}
       <Modal

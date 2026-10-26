@@ -12,9 +12,11 @@ import { profileApi } from '../../api/profile';
 import { useAuth } from '../../hooks/useAuth';
 import { useReviews } from '../../hooks/useReviews';
 import { Skill, WorkerExperience } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
 type ProfileScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'ProfileMain'>;
 
 export const ProfileScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const { refetchProfile } = useAuth();
   const queryClient = useQueryClient();
@@ -133,7 +135,7 @@ export const ProfileScreen: React.FC = () => {
       <View style={styles.header}>
         <View style={styles.iconBtn} />
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>Public profile</Text>
+          <Text style={styles.headerPillText}>{t('my_profile')}</Text>
         </View>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Settings')}>
           <Ionicons name="settings-outline" size={24} color={colors.ink} />
@@ -207,7 +209,7 @@ export const ProfileScreen: React.FC = () => {
             <View style={styles.reputationBadge}>
               <Ionicons name="shield-checkmark" size={13} color="#0284C7" />
             </View>
-            <Text style={styles.reputationEyebrow}>Worker Reputation</Text>
+            <Text style={styles.reputationEyebrow}>{t('reputation_score')}</Text>
           </View>
           <View style={styles.reputationRow}>
             <Text style={styles.reputationScore}>
@@ -227,7 +229,9 @@ export const ProfileScreen: React.FC = () => {
                 </View>
               ) : null}
               <Text style={styles.reputationCount}>
-                {worker.ratings > 0 ? `${worker.ratings} verified ratings` : 'No ratings yet'}
+                {worker.ratings > 0
+                  ? `${worker.ratings} ${t('reviews_ratings')}`
+                  : 'No ratings yet'}
               </Text>
             </View>
           </View>
@@ -241,7 +245,7 @@ export const ProfileScreen: React.FC = () => {
               <Ionicons name="checkmark-done-outline" size={16} color="#16A34A" />
             </View>
             <Text style={styles.statValue}>{worker.jobsDone}</Text>
-            <Text style={styles.statLabel}>Jobs done</Text>
+            <Text style={styles.statLabel}>{t('completed_jobs')}</Text>
           </View>
 
           <View style={styles.statBox}>
@@ -249,7 +253,7 @@ export const ProfileScreen: React.FC = () => {
               <Ionicons name="calendar-outline" size={16} color="#0284C7" />
             </View>
             <Text style={styles.statValue}>{worker.memberSince}</Text>
-            <Text style={styles.statLabel}>Member</Text>
+            <Text style={styles.statLabel}>{t('member_since')}</Text>
           </View>
         </View>
 
@@ -274,7 +278,7 @@ export const ProfileScreen: React.FC = () => {
         {/* Work History */}
         <View style={styles.skillsSection}>
           <View style={styles.reviewHeader}>
-            <Text style={styles.sectionEyebrow}>Work History</Text>
+            <Text style={styles.sectionEyebrow}>{t('work_experience')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('AddWorkHistory' as any)}>
               <Text style={styles.viewAllText}>+ Add</Text>
             </TouchableOpacity>
@@ -322,7 +326,7 @@ export const ProfileScreen: React.FC = () => {
         {/* Skills */}
         <View style={styles.skillsSection}>
           <View style={styles.reviewHeader}>
-            <Text style={styles.sectionEyebrow}>Skills</Text>
+            <Text style={styles.sectionEyebrow}>{t('skills')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('AddSkills' as any)}>
               <Text style={styles.viewAllText}>+ Add</Text>
             </TouchableOpacity>
@@ -389,7 +393,7 @@ export const ProfileScreen: React.FC = () => {
         {/* Character References */}
         <View style={styles.reviewSection}>
           <View style={styles.reviewHeader}>
-            <Text style={styles.sectionEyebrow}>Character References</Text>
+            <Text style={styles.sectionEyebrow}>{t('character_references')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('CharacterReferences' as any)}>
               <Text style={styles.viewAllText}>+ Add</Text>
             </TouchableOpacity>

@@ -15,6 +15,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useEmployerJobs } from '../../hooks/useEmployerJobs';
 import { useEmployerStats } from '../../hooks/useEmployerStats';
 import { useReviews } from '../../hooks/useReviews';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
   EmployerStackParamList,
@@ -23,6 +24,7 @@ type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<EmployerProfileScreenNavigationProp>();
+  const { t } = useLanguage();
   const { user: authUser, refetchProfile } = useAuth();
   const queryClient = useQueryClient();
   const { data: jobsResponse } = useEmployerJobs();
@@ -139,7 +141,7 @@ export const ProfileScreen: React.FC = () => {
           <Ionicons name="create-outline" size={22} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>Employer Profile</Text>
+          <Text style={styles.headerPillText}>{t('my_profile')}</Text>
         </View>
         <TouchableOpacity
           style={styles.iconBtn}
@@ -206,7 +208,7 @@ export const ProfileScreen: React.FC = () => {
             <View style={styles.reputationBadge}>
               <Ionicons name="shield-checkmark" size={13} color="#0284C7" />
             </View>
-            <Text style={styles.reputationEyebrow}>Employer Reputation</Text>
+            <Text style={styles.reputationEyebrow}>{t('reputation_score')}</Text>
           </View>
           <View style={styles.reputationRow}>
             <Text style={styles.reputationScore}>

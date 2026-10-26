@@ -24,6 +24,7 @@ import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { EmptyState } from '../../components/common/EmptyState';
 import { useAuthCheck } from '../../hooks/useAuthCheck';
 import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const CATEGORIES = [
   'All',
@@ -38,6 +39,7 @@ const CATEGORIES = [
 const LOCATIONS = ['Anywhere', 'Same Barangay', 'Same Municipality'];
 
 export const JobFeedScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const [activeCategory, setActiveCategory] = useState('All');
   const [locationFilter, setLocationFilter] = useState('Anywhere');
@@ -200,7 +202,7 @@ export const JobFeedScreen: React.FC = () => {
             )}
             <TextInput
               style={styles.searchInput}
-              placeholder="Search jobs..."
+              placeholder={t('search_jobs_placeholder')}
               placeholderTextColor={colors.inkMuted}
               value={searchInput}
               onChangeText={setSearchInput}
@@ -244,7 +246,7 @@ export const JobFeedScreen: React.FC = () => {
                 <Text
                   style={[styles.chipText, activeCategory === category && styles.chipTextActive]}
                 >
-                  {category}
+                  {category === 'All' ? t('all') : category}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -294,7 +296,7 @@ export const JobFeedScreen: React.FC = () => {
           ) : (
             <EmptyState
               icon="briefcase-outline"
-              title="No jobs found"
+              title={t('no_jobs_found')}
               subtitle={
                 searchQuery || activeCategory !== 'All' || locationFilter !== 'Anywhere'
                   ? `No jobs found for "${searchQuery || activeCategory}". Try resetting your filters.`
@@ -327,7 +329,9 @@ export const JobFeedScreen: React.FC = () => {
       <Modal visible={isFilterModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Filter by Location</Text>
+            <Text style={styles.modalTitle}>
+              {t('filter')} - {t('location')}
+            </Text>
             {LOCATIONS.map((loc) => (
               <TouchableOpacity
                 key={loc}
@@ -354,7 +358,7 @@ export const JobFeedScreen: React.FC = () => {
               style={styles.modalCloseBtn}
               onPress={() => setFilterModalVisible(false)}
             >
-              <Text style={styles.modalCloseText}>Close</Text>
+              <Text style={styles.modalCloseText}>{t('closed')}</Text>
             </TouchableOpacity>
           </View>
         </View>
