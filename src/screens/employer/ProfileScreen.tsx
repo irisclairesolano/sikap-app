@@ -306,7 +306,7 @@ export const ProfileScreen: React.FC = () => {
             <Ionicons name="help-buoy" size={20} color={colors.primary} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.supportTitle}>Need Help or Support?</Text>
+            <Text style={styles.supportTitle}>{t('need_help_or_support')}</Text>
             <Text style={styles.supportSubtitle}>Submit and track tickets directly in-app</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />

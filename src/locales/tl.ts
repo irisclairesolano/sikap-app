@@ -219,6 +219,7 @@ export const tl: Record<TranslationKey, string> = {
   // 162-180: Common Actions, Errors & Prompts
   save: 'I-save',
   cancel: 'Kanselahin',
+  decline: 'Tanggihan',
   confirm: 'Kumpirmahin',
   back: 'Bumalik',
   next: 'Susunod',
@@ -256,4 +257,205 @@ export const tl: Record<TranslationKey, string> = {
     'Sabihin sa employer kung bakit ikaw ang angkop na tao para sa trabahong ito.',
   employer_sent_offer_notice:
     'Nagpadala ang employer ng opisyal na alok sa trabaho. Tingnan sa ibaba ang detalye ng bayad.',
+
+  // Group 1: Worker Previewing Employer Profile
+  employer_profile: 'Profile ng Nag-aalok ng Trabaho',
+  about_the_employer: 'Tungkol sa Nag-aalok ng Trabaho',
+  tap_view_employer_profile: 'I-tap para makita ang profile at mga dokumento ng employer →',
+  verified_employer: 'Beripikadong Employer',
+  unverified_employer: 'Hindi Pa Beripikadong Employer',
+  employer_reputation: 'Reputasyon ng Employer',
+  overall_employer_rating: 'Kabuuang Rating ng Employer',
+  no_ratings_yet: 'Wala pang rating (0 review)',
+  verification_and_documents: 'Beripikasyon at mga Dokumento',
+  business_doc_verified: 'Beripikado ang Dokumento ng Negosyo',
+  documents_under_review: 'Sinusuri pa ang mga Dokumento',
+  business_doc_not_verified: 'Hindi Beripikado ang Dokumento ng Negosyo',
+  employer_doc_verified_desc:
+    'Nakumpleto na ng employer na ito ang beripikasyon ng mga dokumento ng negosyo sa SIKAP.',
+  employer_doc_under_review_desc:
+    'Naipasa na ang mga dokumento ng negosyo at kasalukuyang sinusuri ng mga admin ng SIKAP.',
+  employer_doc_not_verified_desc:
+    'Hindi pa nakukumpleto ng employer na ito ang beripikasyon ng mga dokumento ng negosyo sa SIKAP.',
+  attached_business_docs: 'Mga Kalakip na Dokumento ng Negosyo:',
+  pdf_view: 'PDF',
+  reviews_feedback: 'Mga Review at Komento',
+  loading_reviews: 'Kinukuha ang mga review...',
+  no_reviews_yet: 'Wala pang review',
+  no_reviews_employer_desc:
+    'Lalabas dito ang mga review ng mga manggagawang nakatapos na ng trabaho para kay {employerName} kapag naisumite na ang mga ito.',
+  verified_worker: 'Beripikadong Manggagawa',
+  completed_job: 'Natapos na Trabaho',
+
+  // Group 2: Reporting Module & Sheets
+  submit_a_report: 'Magsumite ng Ulat',
+  whats_the_issue: 'Ano ang problema?',
+  report_anonymous_notice:
+    'Hindi makikita kung sino ang nag-report. Sinusuri namin ang lahat ng ulat para mapanatiling ligtas ang komunidad.',
+  reason_inappropriate_behavior: 'Hindi Angkop na Pag-uugali',
+  reason_scam_fraud: 'Panloloko o Pekeng Trabaho',
+  reason_fake_scam_job: 'Panloloko o Pekeng Trabaho',
+  reason_harassment: 'Pangha-harass',
+  reason_spam: 'Spam',
+  reason_inappropriate_content: 'Hindi Angkop na Nilalaman',
+  reason_other_report: 'Iba pa',
+  provide_more_details: 'Magbigay pa ng detalye',
+  describe_what_happened: 'Ikuwento kung ano ang nangyari...',
+  describe_why_reporting_job: 'Sabihin kung bakit mo inire-report ang trabahong ito...',
+  attach_evidence: 'Maglakip ng Ebidensya',
+  screenshots_help_review:
+    'Makakatulong ang mga screenshot para mas mabilis naming masuri at maaksyunan ang report.',
+  add_photo: 'Magdagdag ng Larawan',
+  submit_report: 'Isumite ang Report',
+  upload_limit_screenshots: 'Maaari kang mag-upload ng hanggang 5 screenshot sa bawat report.',
+  photo_library_permission_required:
+    'Payagan ang app na i-access ang mga larawan sa iyong phone para makapagdagdag ka ng mga screenshot.',
+  please_select_report_reason: 'Pumili muna ng dahilan ng pag-report.',
+  report_submitted_title: 'Naipasa na ang Report',
+  report_submitted_desc:
+    'Salamat sa pagtulong na mapanatiling ligtas ang ating komunidad. Susuriin namin ang iyong report sa lalong madaling panahon.',
+  already_reported_item:
+    'Nakapag-report ka na tungkol dito. Kasalukuyan na itong sinusuri ng aming team.',
+
+  // Group 3: Jobs, Details, Applications
+  duration: 'Tagal ng Trabaho',
+  flexible: 'Maaaring Pag-usapan',
+  tools_required: 'Mga Kagamitang Kailangan',
+  attachments_media: 'Mga Kalakip at Media',
+  play_video: 'I-play ang Video',
+  all_filled: 'Wala nang Bakante',
+  slots_left: 'bakante pa',
+  needs_action: 'Kailangan ng Aksyon',
+  active_hired: 'Kasalukuyang Trabaho',
+  in_review: 'Sinusuri',
+  history: 'Kasaysayan',
+  all_caught_up: 'Wala ka nang kailangang asikasuhin!',
+  no_pending_offers_reviews:
+    'Wala kang nakabinbing alok sa trabaho o review na kailangan mong sagutin.',
+  no_active_jobs_title: 'Wala ka pang kasalukuyang trabaho',
+  no_active_jobs_desc:
+    'Kapag kinumpirma ng employer na ikaw ang kukunin, lalabas dito ang trabaho mo.',
+  no_applications_under_review_title: 'Wala kang application na sinusuri',
+  no_applications_under_review_desc:
+    'Wala kang application na kasalukuyang sinusuri. Maghanap ng trabaho at mag-apply.',
+  no_applications_yet_title: 'Wala ka pang ina-applyang trabaho',
+  no_applications_yet_desc: 'Tingnan ang mga trabahong available at mag-apply sa ilang tap lang.',
+  browse_available_jobs: 'Tingnan ang mga Trabaho',
+  jobs_nearby: 'trabahong malapit sa iyo.',
+  location_anywhere: 'Kahit Saan',
+  location_same_barangay: 'Sa Parehong Barangay',
+  location_same_municipality: 'Sa Parehong Munisipyo',
+  reset_filters: 'I-reset ang mga Filter',
+  your_own_job_posting: 'Ikaw ang nag-post ng trabahong ito.',
+  cannot_apply_own_job: 'Hindi ka puwedeng mag-apply sa trabahong ikaw mismo ang nag-post.',
+  already_applied_job: 'Nag-apply ka na sa trabahong ito.',
+  click_to_manage_app: 'I-tap dito para pamahalaan ang application mo →',
+
+  // Group 4: Need Help & Support / Support Tickets
+  need_help_or_support: 'Kailangan mo ba ng Tulong?',
+  help_and_support: 'Tulong at Suporta',
+  my_tickets: 'Mga Request Ko',
+  new_ticket: 'Bagong Request',
+  ticket_number: 'Request #{id}',
+  status_in_review: 'Sinusuri',
+  status_resolved: 'Nalutas',
+  status_open: 'Bukas',
+  sikap_admin_team: 'Admin Team ng SIKAP',
+  response_available: 'May Sagot na',
+  in_review_by_admin: 'Sinusuri ito ng admin ng SIKAP. Dito lalabas ang sagot.',
+  tap_to_expand: 'I-tap para makita ang buong detalye',
+  tap_to_collapse: 'I-tap para itago ang detalye',
+  no_support_tickets_yet: 'Wala Ka Pang Support Request',
+  support_tickets_empty_desc:
+    'May tanong ka ba tungkol sa job post, beripikasyon, o account mo? Magpadala ng support request at sasagot ang admin team dito mismo sa app.',
+  submit_support_ticket: 'Magpadala ng Support Request',
+  support_in_app_notice:
+    'Dito mismo sa SIKAP inaasikaso ang mga support request. Makikita ang sagot ng admin sa tab na “Mga Request Ko.”',
+  subject: 'Paksa',
+  subject_placeholder: 'Hal. Tanong tungkol sa status ng trabaho, pag-upload ng ID, o account',
+  issue_description: 'Paglalarawan ng Problema',
+  issue_description_placeholder:
+    'Ilarawan nang mas detalyado kung ano ang kailangan mo ng tulong...',
+  submit_ticket_btn: 'Ipadala ang Request',
+  ticket_submitted_title: 'Naipadala na ang Request',
+  ticket_submitted_desc:
+    'Natanggap na namin ang iyong support request. Susuriin ito ng admin team at sasagot dito mismo sa app.',
+  contact_support_title: 'Tulong at Suporta',
+  contact_support_desc:
+    'May problema ka ba? Magpadala ng mensahe at susuriin ng admin support team ang request mo dito mismo sa app.',
+
+  // Group 5: Messages & Chat Features
+  search_messages_placeholder: 'Maghanap gamit ang pangalan o trabaho...',
+  concluded: 'Tapos na',
+  no_conversations_matching: 'Walang usapang tumutugma sa “{searchQuery}”',
+  action_required: 'Kailangan ng Aksyon',
+  deleted_account_notice:
+    'Nabura na ang account ng taong ito. Makikita mo pa rin ang mga dati ninyong mensahe.',
+  chat_locked_concluded: 'Naka-lock ang chat nang matapos ang trabaho.',
+  reopen_pending_employer:
+    'Naghihintay ng pag-apruba ng employer ang request na buksan muli ang chat.',
+  request_to_reopen: 'Humiling na Buksan Muli',
+  unlock_chat: 'Buksan ang Chat',
+  user_blocked_by_me: 'Naka-block ang user na ito sa iyo.',
+  cannot_message_user: 'Hindi mo maaaring padalhan ng mensahe ang user na ito.',
+  employer_will_send_first_msg:
+    'Ang employer ang unang magpapadala ng mensahe o alok sa trabaho para masimulan ang usapan.',
+  messaging_disabled_deleted_account:
+    'Hindi na puwedeng magpadala ng mensahe dahil wala na ang account na ito.',
+  slots_full_messaging_disabled:
+    'Wala nang bakante para sa trabahong ito, kaya hindi na puwedeng magpadala ng mensahe tungkol dito.',
+  slots_full_no_negotiation:
+    'Wala nang bakante, kaya hindi na puwedeng makipag-usap para sa ibang kasunduan.',
+  chat_is_open_notice:
+    'Bukas ang chat · Maaari ninyong pag-usapan ng employer ang mga detalye ng trabaho.',
+  send_message_before_hire_notice:
+    'Magpadala muna ng mensahe sa manggagawa bago magpasya kung kukunin siya.',
+  hire_decision: 'Desisyon sa Pagkuha',
+  hire_decision_prompt:
+    'Gusto mo bang kunin ang aplikanteng ito o tanggihan ang kanyang application?',
+  hire_worker: 'Kunin ang Manggagawa',
+  decline_applicant: 'Tanggihan ang Application',
+  set_final_price_confirm_hire: 'Itakda ang Napagkasunduang Bayad at Kumpirmahin ang Pagkuha',
+  set_final_agreed_price: 'Itakda ang Napagkasunduang Bayad',
+  enter_agreed_price_placeholder: 'Ilagay ang napagkasunduang bayad (₱)',
+  shortlisted_application: 'Napiling Application',
+  stage_2: 'Yugto 2',
+  next_steps: 'Mga Susunod na Hakbang',
+  hire_offer_sent: 'Naipadala na ang Alok sa Trabaho',
+  waiting_worker_response:
+    'Hinihintay ang sagot ni {workerName} kung tatanggapin o tatanggihan niya ang alok.',
+  job_offer_declined: 'Tinanggihan ang Alok sa Trabaho',
+  job_offer_accepted: 'Tinanggap ang Alok sa Trabaho',
+  position_filled: 'May Napili Nang Manggagawa',
+  hiring_cancelled: 'Kinansela ang Pagkuha',
+  cancel_hire_before_accept:
+    'Maaari mong kanselahin ang pagkuha bago tanggapin ng manggagawa ang alok.',
+  employer_contact: 'Contact ng Employer',
+  worker_contact: 'Contact ng Manggagawa',
+  job_marked_complete: 'Minarkahang Tapos na ang Trabaho',
+  work_completed_verified: 'Natapos na at nakumpirma ang pagkakagawa ng trabaho.',
+  rate_employer: 'I-rate ang Employer',
+  rate_worker: 'I-rate ang Manggagawa',
+  mark_complete_subtitle: 'I-tap kapag ganap nang tapos ang trabaho.',
+  quick_replies: 'Mabilisang Sagot',
+  qr_worker_available_label: 'Available bukas',
+  qr_worker_available_text: 'Available ako bukas.',
+  qr_worker_location_label: 'Eksaktong lugar?',
+  qr_worker_location_text: 'Ano ang eksaktong address o malapit na palatandaan ng lugar?',
+  qr_worker_tools_label: 'May sariling gamit 🔨',
+  qr_worker_tools_text: 'May sarili akong mga kagamitan para sa trabaho.',
+  qr_worker_call_label: 'Puwede tumawag?',
+  qr_worker_call_text: 'Puwede ba kitang tawagan para mapag-usapan ang mga detalye?',
+  qr_worker_agreed_label: 'Sang-ayon! 👍',
+  qr_worker_agreed_text: 'Sumasang-ayon ako sa napag-usapang bayad at iskedyul. Salamat!',
+  qr_employer_start_label: 'Kailan makakapagsimula?',
+  qr_employer_start_text: 'Kailan ka pinakamaagang makakapagsimula?',
+  qr_employer_nearby_label: 'Malapit ka lang ba?',
+  qr_employer_nearby_text: 'Malapit ka lang ba o nasa katabing barangay?',
+  qr_employer_tools_label: 'May kagamitan ka ba?',
+  qr_employer_tools_text: 'May sarili ka bang mga kagamitan para sa trabahong ito?',
+  qr_employer_offer_label: 'Tingnan ang alok',
+  qr_employer_offer_text: 'Pakitingnan ang opisyal na alok sa trabaho sa card sa itaas.',
+  qr_employer_thanks_label: 'Salamat!',
+  qr_employer_thanks_text: 'Salamat sa mabilis mong pagsagot!',
 };

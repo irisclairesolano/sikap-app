@@ -8,6 +8,7 @@ import { useReactToJob } from '../../hooks/useReactToJob';
 import { ReportJobSheet } from './ReportJobSheet';
 import { triggerHaptic } from '../../utils/haptics';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TranslatableText } from '../common/TranslatableText';
 
 interface JobCardProps {
   job: JobPost;
@@ -226,12 +227,12 @@ export const JobCard = React.memo(function JobCard({
             <View style={styles.dot} />
             {isFilled ? (
               <Text style={[styles.metaText, styles.slotFilledText]}>
-                Filled ({totalSlots}/{totalSlots})
+                {t('all_filled')} ({totalSlots}/{totalSlots})
               </Text>
             ) : totalSlots > 1 ? (
               filledSlots > 0 ? (
                 <Text style={[styles.metaText, styles.slotLeftText]}>
-                  {remainingSlots} of {totalSlots} slots left
+                  {remainingSlots} {t('slots_left')}
                 </Text>
               ) : (
                 <Text style={styles.metaText}>{totalSlots} slots</Text>
@@ -251,11 +252,14 @@ export const JobCard = React.memo(function JobCard({
             <Text style={styles.metaText}>{getRelativeTime(job.created_at)}</Text>
           </View>
 
-          {/* Truncated Description Snippet */}
+          {/* Truncated Description Snippet with On-Demand Translation */}
           {job.description ? (
-            <Text style={styles.descriptionSnippet} numberOfLines={2}>
-              {job.description}
-            </Text>
+            <TranslatableText
+              text={job.description}
+              style={styles.descriptionSnippet}
+              numberOfLines={2}
+              compact
+            />
           ) : null}
 
           {/* Optional Tools Required Pill */}
@@ -263,7 +267,7 @@ export const JobCard = React.memo(function JobCard({
             <View style={styles.toolsRow}>
               <Ionicons name="construct-outline" size={13} color={colors.primary} />
               <Text style={styles.toolsText} numberOfLines={1}>
-                <Text style={styles.toolsLabel}>Tools required: </Text>
+                <Text style={styles.toolsLabel}>{t('tools_required')}: </Text>
                 {job.tools_required}
               </Text>
             </View>

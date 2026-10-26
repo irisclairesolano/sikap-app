@@ -26,6 +26,8 @@ import { useAuthCheck } from '../../hooks/useAuthCheck';
 import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 import { useLanguage } from '../../contexts/LanguageContext';
 
+import { TranslationKey } from '../../locales/en';
+
 const CATEGORIES = [
   'All',
   'Construction',
@@ -36,7 +38,11 @@ const CATEGORIES = [
   'Craft',
 ];
 
-const LOCATIONS = ['Anywhere', 'Same Barangay', 'Same Municipality'];
+const LOCATIONS: { key: string; labelKey: TranslationKey }[] = [
+  { key: 'Anywhere', labelKey: 'location_anywhere' },
+  { key: 'Same Barangay', labelKey: 'location_same_barangay' },
+  { key: 'Same Municipality', labelKey: 'location_same_municipality' },
+];
 
 export const JobFeedScreen: React.FC = () => {
   const { t } = useLanguage();
@@ -227,8 +233,7 @@ export const JobFeedScreen: React.FC = () => {
         </View>
 
         <Text style={styles.headline}>
-          <Text style={styles.count}>{jobsList.length}</Text> jobs{' '}
-          <Text style={styles.accent}>nearby.</Text>
+          <Text style={styles.count}>{jobsList.length}</Text> {t('jobs_nearby')}
         </Text>
 
         <View style={styles.filterContainer}>
@@ -263,6 +268,7 @@ export const JobFeedScreen: React.FC = () => {
       feedCategories,
       activeCategory,
       navigation,
+      t,
     ],
   );
 
@@ -304,7 +310,7 @@ export const JobFeedScreen: React.FC = () => {
               }
               actionLabel={
                 searchQuery || activeCategory !== 'All' || locationFilter !== 'Anywhere'
-                  ? 'Reset Filters'
+                  ? t('reset_filters')
                   : undefined
               }
               onAction={
@@ -334,22 +340,22 @@ export const JobFeedScreen: React.FC = () => {
             </Text>
             {LOCATIONS.map((loc) => (
               <TouchableOpacity
-                key={loc}
+                key={loc.key}
                 style={styles.modalOption}
                 onPress={() => {
-                  setLocationFilter(loc);
+                  setLocationFilter(loc.key);
                   setFilterModalVisible(false);
                 }}
               >
                 <Text
                   style={[
                     styles.modalOptionText,
-                    locationFilter === loc && styles.modalOptionActive,
+                    locationFilter === loc.key && styles.modalOptionActive,
                   ]}
                 >
-                  {loc}
+                  {t(loc.labelKey)}
                 </Text>
-                {locationFilter === loc && (
+                {locationFilter === loc.key && (
                   <Ionicons name="checkmark" size={20} color={colors.primary} />
                 )}
               </TouchableOpacity>
@@ -358,7 +364,7 @@ export const JobFeedScreen: React.FC = () => {
               style={styles.modalCloseBtn}
               onPress={() => setFilterModalVisible(false)}
             >
-              <Text style={styles.modalCloseText}>{t('closed')}</Text>
+              <Text style={styles.modalCloseText}>{t('close')}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -266,13 +266,13 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <Ionicons name="briefcase-outline" size={20} color={colors.primary} />
           </View>
           <View style={styles.cardHeaderText}>
-            <Text style={styles.title}>Shortlisted Application</Text>
+            <Text style={styles.title}>{t('shortlisted_application')}</Text>
             <Text style={styles.subtitle} numberOfLines={1}>
               {displayJobTitle}
             </Text>
           </View>
           <View style={styles.headerTag}>
-            <Text style={styles.headerTagText}>Stage 2</Text>
+            <Text style={styles.headerTagText}>{t('stage_2')}</Text>
           </View>
         </View>
 
@@ -312,7 +312,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           >
             <View style={styles.guideHeaderLeft}>
               <Ionicons name="compass-outline" size={15} color={colors.primary} />
-              <Text style={styles.guideTitle}>Next Steps</Text>
+              <Text style={styles.guideTitle}>{t('next_steps')}</Text>
               <View style={styles.guideCountBadge}>
                 <Text style={styles.guideCountText}>3 steps</Text>
               </View>
@@ -419,9 +419,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
         {currentUserRole === 'worker' && !isSlotLocked && (
           <View style={styles.chatReadyPill}>
             <Ionicons name="chatbubbles-outline" size={14} color={colors.primary} />
-            <Text style={styles.chatReadyText}>
-              Chat is open · Feel free to discuss terms with the employer
-            </Text>
+            <Text style={styles.chatReadyText}>{t('chat_is_open_notice')}</Text>
           </View>
         )}
 
@@ -434,9 +432,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               color={colors.inkMuted}
               style={{ marginRight: 6 }}
             />
-            <Text style={styles.slotFullBannerText}>
-              Slots are full. No other negotiation can take place.
-            </Text>
+            <Text style={styles.slotFullBannerText}>{t('slots_full_no_negotiation')}</Text>
           </View>
         ) : currentUserRole === 'employer' ? (
           <>
@@ -444,7 +440,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               <View style={styles.chatReadyPill}>
                 <Ionicons name="chatbubbles-outline" size={14} color={colors.inkMuted} />
                 <Text style={[styles.chatReadyText, { color: colors.inkMuted }]}>
-                  Send a message to the worker before making a hiring decision.
+                  {t('send_message_before_hire_notice')}
                 </Text>
               </View>
             ) : hireDecision !== 'hire' ? (
@@ -463,7 +459,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 >
                   <Ionicons name="help-circle-outline" size={17} color={colors.primary} />
                   <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink }}>
-                    Hire Decision
+                    {t('hire_decision')}
                   </Text>
                 </View>
                 <Text
@@ -475,7 +471,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                     lineHeight: 18,
                   }}
                 >
-                  Do you want to proceed with hiring this applicant or decline their application?
+                  {t('hire_decision_prompt')}
                 </Text>
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                   <TouchableOpacity
@@ -485,7 +481,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       setIsPriceInputVisible(true);
                     }}
                   >
-                    <Text style={styles.actionBtnText}>Hire Worker</Text>
+                    <Text style={styles.actionBtnText}>{t('hire_worker')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
@@ -500,7 +496,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                     disabled={!!loadingAction}
                     onPress={() => {
                       showAlert(
-                        'Decline Applicant',
+                        t('decline_applicant'),
                         'Are you sure you want to decline this applicant? This will close the conversation and send them an encouraging update.',
                         [
                           { text: 'Cancel', style: 'cancel' },
@@ -526,7 +522,9 @@ const ActionCard: React.FC<ActionCardProps> = ({
                     {loadingAction === 'decline' ? (
                       <ActivityIndicator color={colors.error} />
                     ) : (
-                      <Text style={[styles.actionBtnText, { color: colors.error }]}>Decline</Text>
+                      <Text style={[styles.actionBtnText, { color: colors.error }]}>
+                        {t('decline')}
+                      </Text>
                     )}
                   </TouchableOpacity>
                 </View>
@@ -540,14 +538,14 @@ const ActionCard: React.FC<ActionCardProps> = ({
               >
                 <View style={styles.togglePriceLeft}>
                   <Ionicons name="cash-outline" size={17} color={colors.primary} />
-                  <Text style={styles.togglePriceBtnText}>Set Final Price & Confirm Hire</Text>
+                  <Text style={styles.togglePriceBtnText}>{t('set_final_price_confirm_hire')}</Text>
                 </View>
                 <Ionicons name="chevron-down" size={17} color={colors.primary} />
               </TouchableOpacity>
             ) : (
               <View style={styles.priceSection}>
                 <View style={styles.priceSectionHeader}>
-                  <Text style={styles.priceSectionTitle}>Set Final Agreed Price</Text>
+                  <Text style={styles.priceSectionTitle}>{t('set_final_agreed_price')}</Text>
                   <TouchableOpacity
                     onPress={() => setIsPriceInputVisible(false)}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -557,7 +555,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 </View>
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter agreed price (₱)"
+                  placeholder={t('enter_agreed_price_placeholder')}
                   placeholderTextColor={colors.inkLight}
                   keyboardType="numeric"
                   value={priceInput}
@@ -618,7 +616,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
     if (isOfferResolved) {
       if (applicationStatus === 'rejected' || applicationStatus === 'cancelled') {
         return renderEtchedCard(
-          'Job Offer Declined',
+          t('job_offer_declined'),
           `Offer of ${formatCurrency(effectivePrice)} was declined.`,
           'close-circle-outline',
           'Declined',
@@ -627,7 +625,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
         );
       }
       return renderEtchedCard(
-        'Job Offer Accepted',
+        t('job_offer_accepted'),
         `Agreed Price: ${formatCurrency(effectivePrice)}`,
         'checkmark-done-circle-outline',
         'Accepted',
@@ -644,7 +642,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               <Ionicons name="paper-plane-outline" size={20} color={colors.success} />
             </View>
             <View style={styles.cardHeaderText}>
-              <Text style={styles.title}>Hire Offer Sent</Text>
+              <Text style={styles.title}>{t('hire_offer_sent')}</Text>
               <Text style={styles.subtitle}>
                 Agreed price:{' '}
                 <Text style={styles.priceHighlight}>{formatCurrency(effectivePrice)}</Text>
@@ -657,7 +655,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           <View style={styles.frostedWaitingPill}>
             <Ionicons name="time-outline" size={14} color={colors.inkMuted} />
             <Text style={styles.frostedWaitingText}>
-              Waiting for {otherUserName || 'the worker'} to accept or decline the offer.
+              {t('waiting_worker_response', { workerName: otherUserName || 'the worker' })}
             </Text>
           </View>
         </View>
@@ -675,7 +673,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               <Ionicons name="lock-closed-outline" size={20} color={colors.inkMuted} />
             </View>
             <View style={styles.cardHeaderText}>
-              <Text style={styles.title}>Position Filled</Text>
+              <Text style={styles.title}>{t('position_filled')}</Text>
               <Text style={styles.subtitle}>
                 Agreed price:{' '}
                 <Text style={styles.priceHighlight}>{formatCurrency(effectivePrice)}</Text>
@@ -689,9 +687,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               color={colors.inkMuted}
               style={{ marginRight: 6 }}
             />
-            <Text style={styles.slotFullBannerText}>
-              Slots are full. No other negotiation can take place.
-            </Text>
+            <Text style={styles.slotFullBannerText}>{t('slots_full_no_negotiation')}</Text>
           </View>
         </View>
       );
@@ -788,7 +784,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
     if (card_resolved || applicationStatus === 'cancelled') {
       return renderEtchedCard(
-        'Hiring Cancelled',
+        t('hiring_cancelled'),
         'This hiring was cancelled.',
         'close-circle-outline',
         'Cancelled',
@@ -805,7 +801,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           </View>
           <View style={styles.cardHeaderText}>
             <Text style={styles.title}>{t('cancel_hire')}</Text>
-            <Text style={styles.subtitle}>You can cancel this hire before the worker accepts.</Text>
+            <Text style={styles.subtitle}>{t('cancel_hire_before_accept')}</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -859,7 +855,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <Ionicons name="call" size={18} color={colors.primary} />
           </View>
           <View style={styles.cardHeaderText}>
-            <Text style={styles.title}>Employer Contact</Text>
+            <Text style={styles.title}>{t('employer_contact')}</Text>
             <Text style={styles.subtitle}>{String(card_data?.employer_name ?? '')}</Text>
           </View>
         </View>
@@ -883,7 +879,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <Ionicons name="call" size={18} color={colors.primary} />
           </View>
           <View style={styles.cardHeaderText}>
-            <Text style={styles.title}>Worker Contact</Text>
+            <Text style={styles.title}>{t('worker_contact')}</Text>
             <Text style={styles.subtitle}>{String(card_data?.worker_name ?? '')}</Text>
           </View>
         </View>
@@ -904,14 +900,14 @@ const ActionCard: React.FC<ActionCardProps> = ({
     if (isJobCompleted) {
       if (currentUserRole === 'worker') {
         return renderEtchedCard(
-          'Job Marked Complete',
-          'Work has been completed and verified.',
+          t('job_marked_complete'),
+          t('work_completed_verified'),
           'checkmark-done-circle',
           'Completed',
           colors.success,
           '#DCFCE7',
           {
-            label: 'Rate Employer',
+            label: t('rate_employer'),
             iconName: 'star' as const,
             onPress: () => {
               navigation.navigate('RateEmployer', {
@@ -925,14 +921,14 @@ const ActionCard: React.FC<ActionCardProps> = ({
       }
 
       return renderEtchedCard(
-        'Job Marked Complete',
-        'Work has been completed and verified.',
+        t('job_marked_complete'),
+        t('work_completed_verified'),
         'checkmark-done-circle',
         'Completed',
         colors.success,
         '#DCFCE7',
         {
-          label: 'Rate Worker',
+          label: t('rate_worker'),
           iconName: 'star',
           onPress: () => {
             navigation.navigate('RateWorker', {
@@ -961,7 +957,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           </View>
           <View style={styles.cardHeaderText}>
             <Text style={styles.title}>{t('mark_as_completed')}</Text>
-            <Text style={styles.subtitle}>Tap when the work has been fully finished.</Text>
+            <Text style={styles.subtitle}>{t('mark_complete_subtitle')}</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -1009,14 +1005,14 @@ const ActionCard: React.FC<ActionCardProps> = ({
       // For worker: render Rate Employer CTA
       if (currentUserRole === 'worker') {
         return renderEtchedCard(
-          'Job Marked Complete',
-          'Work has been completed and verified.',
+          t('job_marked_complete'),
+          t('work_completed_verified'),
           'checkmark-done-circle',
           'Completed',
           colors.success,
           '#DCFCE7',
           {
-            label: 'Rate Employer',
+            label: t('rate_employer'),
             iconName: 'star' as const,
             onPress: () => {
               navigation.navigate('RateEmployer', {
@@ -1031,14 +1027,14 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
       // For employer: render Rate Worker CTA
       return renderEtchedCard(
-        'Job Marked Complete',
-        'Work has been completed and verified.',
+        t('job_marked_complete'),
+        t('work_completed_verified'),
         'checkmark-done-circle',
         'Completed',
         colors.success,
         '#DCFCE7',
         {
-          label: 'Rate Worker',
+          label: t('rate_worker'),
           iconName: 'star' as const,
           onPress: () => {
             navigation.navigate('RateWorker', {

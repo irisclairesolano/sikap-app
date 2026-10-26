@@ -782,7 +782,8 @@ const ChatScreen: React.FC = () => {
                     style={{ marginRight: 3 }}
                   />
                   <Text style={styles.pinnedEyebrow}>
-                    ACTION REQUIRED ({currentCardNumber}/{actionableCards.length})
+                    {t('action_required').toUpperCase()} ({currentCardNumber}/
+                    {actionableCards.length})
                   </Text>
                 </View>
                 <Text style={styles.pinnedTitle} numberOfLines={1}>
@@ -800,9 +801,7 @@ const ChatScreen: React.FC = () => {
         {isOtherUserDeleted && (
           <View style={styles.deletedBanner}>
             <Ionicons name="information-circle-outline" size={16} color={colors.inkMuted} />
-            <Text style={styles.deletedBannerText}>
-              This person's account has been deleted. You can still view your message history.
-            </Text>
+            <Text style={styles.deletedBannerText}>{t('messaging_disabled_deleted_account')}</Text>
           </View>
         )}
 
@@ -810,9 +809,7 @@ const ChatScreen: React.FC = () => {
         {!isOtherUserDeleted && (isLocked || isUnlockRequested) && (
           <View style={styles.lockBanner}>
             <Text style={styles.lockBannerText}>
-              {isUnlockRequested
-                ? 'Reopen request pending employer approval.'
-                : 'This chat was locked when the job concluded.'}
+              {isUnlockRequested ? t('reopen_pending_employer') : t('chat_locked_concluded')}
             </Text>
             {conversationUserRole === 'employer' ? (
               <TouchableOpacity
@@ -822,7 +819,7 @@ const ChatScreen: React.FC = () => {
                 }
                 disabled={unlockConversation.isPending}
               >
-                <Text style={styles.bannerBtnText}>Unlock Chat</Text>
+                <Text style={styles.bannerBtnText}>{t('unlock_chat')}</Text>
               </TouchableOpacity>
             ) : isLocked ? (
               <TouchableOpacity
@@ -830,7 +827,7 @@ const ChatScreen: React.FC = () => {
                 onPress={() => requestUnlock.mutate(conversationId, { onSuccess: () => refetch() })}
                 disabled={requestUnlock.isPending}
               >
-                <Text style={styles.bannerBtnText}>Request to Reopen</Text>
+                <Text style={styles.bannerBtnText}>{t('request_to_reopen')}</Text>
               </TouchableOpacity>
             ) : (
               <Text style={styles.pendingText}>Request Pending…</Text>
@@ -978,7 +975,7 @@ const ChatScreen: React.FC = () => {
             <View style={styles.blockedBannerLeft}>
               <Ionicons name="information-circle-outline" size={16} color={colors.inkMuted} />
               <Text style={[styles.blockedBannerText, { color: colors.inkMuted }]}>
-                You cannot message this user.
+                {t('cannot_message_user')}
               </Text>
             </View>
           </View>
@@ -988,9 +985,7 @@ const ChatScreen: React.FC = () => {
         {!isOtherUserDeleted && !isBlocked && isSlotLocked && (
           <View style={styles.firstMsgNotice}>
             <Ionicons name="lock-closed" size={14} color={colors.inkMuted} />
-            <Text style={styles.firstMsgNoticeText}>
-              Slots are full. No other negotiation can take place.
-            </Text>
+            <Text style={styles.firstMsgNoticeText}>{t('slots_full_no_negotiation')}</Text>
           </View>
         )}
 
@@ -1002,9 +997,7 @@ const ChatScreen: React.FC = () => {
           !isWorkerReplyAllowed && (
             <View style={styles.firstMsgNotice}>
               <Ionicons name="information-circle-outline" size={14} color={colors.inkMuted} />
-              <Text style={styles.firstMsgNoticeText}>
-                The employer will send the first message or job offer to start the conversation.
-              </Text>
+              <Text style={styles.firstMsgNoticeText}>{t('employer_will_send_first_msg')}</Text>
             </View>
           )}
 
@@ -1012,16 +1005,12 @@ const ChatScreen: React.FC = () => {
         {isOtherUserDeleted ? (
           <View style={styles.deletedInputContainer}>
             <Ionicons name="lock-closed-outline" size={16} color={colors.inkMuted} />
-            <Text style={styles.deletedInputText}>
-              Messaging is disabled because this account no longer exists.
-            </Text>
+            <Text style={styles.deletedInputText}>{t('messaging_disabled_deleted_account')}</Text>
           </View>
         ) : isSlotLocked ? (
           <View style={styles.deletedInputContainer}>
             <Ionicons name="lock-closed-outline" size={16} color={colors.inkMuted} />
-            <Text style={styles.deletedInputText}>
-              Slots are full. Messaging is disabled for this position.
-            </Text>
+            <Text style={styles.deletedInputText}>{t('slots_full_messaging_disabled')}</Text>
           </View>
         ) : isLocked || isUnlockRequested ? (
           <View style={styles.lockedBottomContainer}>
@@ -1035,8 +1024,8 @@ const ChatScreen: React.FC = () => {
                 {isUnlockRequested
                   ? conversationUserRole === 'employer'
                     ? 'Worker requested to reopen this chat.'
-                    : 'Reopen request pending employer approval.'
-                  : 'This chat is closed.'}
+                    : t('reopen_pending_employer')
+                  : t('chat_locked_concluded')}
               </Text>
             </View>
             {conversationUserRole === 'employer' ? (
@@ -1056,7 +1045,7 @@ const ChatScreen: React.FC = () => {
                 {unlockConversation.isPending ? (
                   <ActivityIndicator size="small" color={colors.white} />
                 ) : (
-                  <Text style={styles.lockedBottomBtnText}>Unlock Chat</Text>
+                  <Text style={styles.lockedBottomBtnText}>{t('unlock_chat')}</Text>
                 )}
               </TouchableOpacity>
             ) : isLocked ? (
@@ -1076,7 +1065,7 @@ const ChatScreen: React.FC = () => {
                 {requestUnlock.isPending ? (
                   <ActivityIndicator size="small" color={colors.white} />
                 ) : (
-                  <Text style={styles.lockedBottomBtnText}>Request to Reopen</Text>
+                  <Text style={styles.lockedBottomBtnText}>{t('request_to_reopen')}</Text>
                 )}
               </TouchableOpacity>
             ) : null}
@@ -1123,7 +1112,7 @@ const ChatScreen: React.FC = () => {
                   style={styles.input}
                   placeholder={
                     !isWorkerReplyAllowed
-                      ? 'Waiting for employer to start conversation...'
+                      ? t('employer_will_send_first_msg')
                       : t('type_message_placeholder')
                   }
                   placeholderTextColor={colors.inkLight}

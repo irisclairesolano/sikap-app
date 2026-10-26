@@ -25,6 +25,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { ReportJobSheet } from '../../components/jobs/ReportJobSheet';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TranslatableText } from '../../components/common/TranslatableText';
 
 type JobDetailsRouteProp = RouteProp<WorkerStackParamList, 'JobDetails'>;
 
@@ -298,9 +299,9 @@ export const JobDetailsScreen: React.FC = () => {
             <View style={styles.infoIconBox}>
               <Ionicons name="time" size={20} color={colors.primaryDark} />
             </View>
-            <Text style={styles.infoLabel}>Duration</Text>
+            <Text style={styles.infoLabel}>{t('duration')}</Text>
             <Text style={styles.infoValue} numberOfLines={2}>
-              {job.duration ? `${job.duration} ${job.duration_unit || 'Days'}` : 'Flexible'}
+              {job.duration ? `${job.duration} ${job.duration_unit || 'Days'}` : t('flexible')}
             </Text>
           </View>
 
@@ -318,7 +319,7 @@ export const JobDetailsScreen: React.FC = () => {
                 isFilled && { color: colors.error, fontFamily: fonts.bodyBold },
               ]}
             >
-              {isFilled ? 'All filled' : `${remainingSlots} left`}
+              {isFilled ? t('all_filled') : `${remainingSlots} ${t('slots_left')}`}
             </Text>
           </View>
         </View>
@@ -326,13 +327,13 @@ export const JobDetailsScreen: React.FC = () => {
         {/* Description Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('job_description')}</Text>
-          <Text style={styles.descriptionText}>{job.description}</Text>
+          <TranslatableText text={job.description} style={styles.descriptionText} />
         </View>
 
         {/* Tools Required Section */}
         {job.tools_required ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Tools Required</Text>
+            <Text style={styles.sectionTitle}>{t('tools_required')}</Text>
             <View
               style={{
                 flexDirection: 'row',
@@ -359,7 +360,7 @@ export const JobDetailsScreen: React.FC = () => {
         {(parsedPhotos.length > 0 || job.video_url) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
-              Attachments & Media ({parsedPhotos.length + (job.video_url ? 1 : 0)})
+              {t('attachments_media')} ({parsedPhotos.length + (job.video_url ? 1 : 0)})
             </Text>
             <ScrollView
               horizontal
@@ -419,7 +420,7 @@ export const JobDetailsScreen: React.FC = () => {
                       marginTop: 4,
                     }}
                   >
-                    Play Video
+                    {t('play_video')}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -429,7 +430,7 @@ export const JobDetailsScreen: React.FC = () => {
 
         {/* Employer Card */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About the Employer</Text>
+          <Text style={styles.sectionTitle}>{t('about_the_employer')}</Text>
           <TouchableOpacity
             style={styles.employerCard}
             activeOpacity={0.8}
@@ -472,7 +473,7 @@ export const JobDetailsScreen: React.FC = () => {
                   marginTop: 2,
                 }}
               >
-                Tap to view public profile & verification docs →
+                {t('tap_view_employer_profile')}
               </Text>
             </View>
 
@@ -500,7 +501,7 @@ export const JobDetailsScreen: React.FC = () => {
             <View style={styles.alreadyAppliedRow}>
               <Ionicons name="information-circle" size={20} color={colors.primary} />
               <Text style={[styles.alreadyAppliedTitle, { color: colors.ink }]}>
-                This is your job posting.
+                {t('your_own_job_posting')}
               </Text>
             </View>
             <Text
@@ -511,14 +512,14 @@ export const JobDetailsScreen: React.FC = () => {
                 marginTop: 4,
               }}
             >
-              You cannot apply for jobs that you have posted.
+              {t('cannot_apply_own_job')}
             </Text>
           </View>
         ) : job.is_applied || job.has_applied || job.application_id ? (
           <View style={styles.alreadyAppliedCard}>
             <View style={styles.alreadyAppliedRow}>
               <Ionicons name="checkmark-circle" size={20} color={colors.mintDeep} />
-              <Text style={styles.alreadyAppliedTitle}>You have already applied for this job.</Text>
+              <Text style={styles.alreadyAppliedTitle}>{t('already_applied_job')}</Text>
             </View>
             <TouchableOpacity
               style={styles.alreadyAppliedBtn}
@@ -537,9 +538,7 @@ export const JobDetailsScreen: React.FC = () => {
                 }
               }}
             >
-              <Text style={styles.alreadyAppliedBtnText}>
-                Click here to manage your application →
-              </Text>
+              <Text style={styles.alreadyAppliedBtnText}>{t('click_to_manage_app')}</Text>
             </TouchableOpacity>
           </View>
         ) : isFilled ? (

@@ -95,7 +95,7 @@ const NewPasswordScreen: React.FC = () => {
                 setError('');
               }}
               rightIcon={{
-                name: showPassword ? 'eye-off' : 'eye',
+                name: showPassword ? 'eye' : 'eye-off',
                 type: 'ionicon',
                 onPress: () => setShowPassword(!showPassword),
               }}
@@ -113,7 +113,7 @@ const NewPasswordScreen: React.FC = () => {
                 setError('');
               }}
               rightIcon={{
-                name: showConfirmPassword ? 'eye-off' : 'eye',
+                name: showConfirmPassword ? 'eye' : 'eye-off',
                 type: 'ionicon',
                 onPress: () => setShowConfirmPassword(!showConfirmPassword),
               }}

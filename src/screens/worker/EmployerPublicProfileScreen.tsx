@@ -20,10 +20,12 @@ import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { Avatar } from '../../components/common/Avatar';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
 import { useReviews } from '../../hooks/useReviews';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type EmployerPublicProfileRouteProp = RouteProp<WorkerStackParamList, 'EmployerPublicProfile'>;
 
 export const EmployerPublicProfileScreen: React.FC = () => {
+  const { t } = useLanguage();
   const route = useRoute<EmployerPublicProfileRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const {
@@ -80,7 +82,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
         <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.appBarTitle}>Employer Profile</Text>
+        <Text style={styles.appBarTitle}>{t('employer_profile')}</Text>
         <TouchableOpacity
           style={styles.iconButton}
           onPress={handleReportEmployer}
@@ -120,17 +122,17 @@ export const EmployerPublicProfileScreen: React.FC = () => {
           {verificationBadge ? (
             <View style={styles.verifiedChip}>
               <Ionicons name="shield-checkmark" size={14} color={colors.mintDeep} />
-              <Text style={styles.verifiedText}>Verified Employer</Text>
+              <Text style={styles.verifiedText}>{t('verified_employer')}</Text>
             </View>
           ) : businessDocuments && businessDocuments.length > 0 ? (
             <View style={styles.unverifiedChip}>
               <Ionicons name="time-outline" size={14} color={colors.inkMuted} />
-              <Text style={styles.unverifiedText}>Verification Pending</Text>
+              <Text style={styles.unverifiedText}>{t('verification_pending')}</Text>
             </View>
           ) : (
             <View style={styles.unverifiedChip}>
               <Ionicons name="alert-circle-outline" size={14} color={colors.inkMuted} />
-              <Text style={styles.unverifiedText}>Unverified Employer</Text>
+              <Text style={styles.unverifiedText}>{t('unverified_employer')}</Text>
             </View>
           )}
 
@@ -147,7 +149,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
 
         {/* Reputation Score Card - Frosted Crystal Glass */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Employer Reputation</Text>
+          <Text style={styles.sectionTitle}>{t('employer_reputation')}</Text>
           <View style={styles.reputationWrapper}>
             <View style={styles.ambientGlowAzure} pointerEvents="none" />
             <View style={styles.ambientGlowGold} pointerEvents="none" />
@@ -179,8 +181,8 @@ export const EmployerPublicProfileScreen: React.FC = () => {
                   ) : null}
                   <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
                     {reviewsCount > 0
-                      ? `Overall Employer Rating (${reviewsCount} ${reviewsCount === 1 ? 'review' : 'reviews'})`
-                      : 'No ratings yet (0 reviews)'}
+                      ? `${t('overall_employer_rating')} (${reviewsCount} ${reviewsCount === 1 ? 'review' : 'reviews'})`
+                      : t('no_ratings_yet')}
                   </Text>
                 </View>
               </View>
@@ -190,7 +192,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
 
         {/* Verification & Business Documents */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Verification & Documents</Text>
+          <Text style={styles.sectionTitle}>{t('verification_and_documents')}</Text>
           <View style={styles.docCard}>
             <View style={styles.docHeader}>
               <Ionicons
@@ -212,23 +214,23 @@ export const EmployerPublicProfileScreen: React.FC = () => {
               />
               <Text style={styles.docTitle}>
                 {verificationBadge
-                  ? 'Business Document Verified'
+                  ? t('business_doc_verified')
                   : effectiveDocs && effectiveDocs.length > 0
-                    ? 'Documents Under Review'
-                    : 'Business Document Not Verified'}
+                    ? t('documents_under_review')
+                    : t('business_doc_not_verified')}
               </Text>
             </View>
             <Text style={styles.docDesc}>
               {verificationBadge
-                ? 'This employer has completed business document verification with SIKAP Admins.'
+                ? t('employer_doc_verified_desc')
                 : effectiveDocs && effectiveDocs.length > 0
-                  ? 'Business documents have been submitted and are currently undergoing verification by SIKAP administrators.'
-                  : 'This employer has not yet completed business document verification with SIKAP Admins.'}
+                  ? t('employer_doc_under_review_desc')
+                  : t('employer_doc_not_verified_desc')}
             </Text>
 
             {effectiveDocs && effectiveDocs.length > 0 && (
               <View style={styles.docList}>
-                <Text style={styles.docSubheader}>Attached Business Documents:</Text>
+                <Text style={styles.docSubheader}>{t('attached_business_docs')}</Text>
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -295,11 +297,13 @@ export const EmployerPublicProfileScreen: React.FC = () => {
 
         {/* Worker Reviews & Feedback Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Reviews & Feedback ({reviewsCount})</Text>
+          <Text style={styles.sectionTitle}>
+            {t('reviews_feedback')} ({reviewsCount})
+          </Text>
           {isLoadingReviews ? (
             <View style={styles.loadingReviewsBox}>
               <ActivityIndicator size="small" color={colors.primary} />
-              <Text style={styles.loadingReviewsText}>Loading reviews...</Text>
+              <Text style={styles.loadingReviewsText}>{t('loading_reviews')}</Text>
             </View>
           ) : reviews.length === 0 ? (
             <View style={styles.emptyReviewsCard}>
@@ -309,10 +313,11 @@ export const EmployerPublicProfileScreen: React.FC = () => {
                 color={colors.inkMuted}
                 style={{ marginBottom: 6 }}
               />
-              <Text style={styles.emptyReviewsTitle}>No reviews yet</Text>
+              <Text style={styles.emptyReviewsTitle}>{t('no_reviews_yet')}</Text>
               <Text style={styles.emptyReviewsSubtitle}>
-                Reviews from workers who have completed jobs with {employerName || 'this employer'}{' '}
-                will appear here once submitted.
+                {t('no_reviews_employer_desc', {
+                  employerName: employerName || 'Employer',
+                })}
               </Text>
             </View>
           ) : (
@@ -327,7 +332,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.reviewerName}>
-                        {rev.reviewer?.name || 'Verified Worker'}
+                        {rev.reviewer?.name || t('verified_worker')}
                       </Text>
                       <Text style={styles.reviewDate}>
                         {rev.created_at
@@ -336,7 +341,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
                               day: 'numeric',
                               year: 'numeric',
                             })
-                          : 'Completed Job'}
+                          : t('completed_job')}
                       </Text>
                     </View>
                     <View style={styles.reviewStarsBadge}>

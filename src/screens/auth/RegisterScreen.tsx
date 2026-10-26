@@ -121,7 +121,15 @@ const RegisterScreen: React.FC = () => {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: Math.max(insets.top, 12),
+          paddingBottom: Math.max(insets.bottom, 16),
+        },
+      ]}
+    >
       {/* App Bar */}
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
@@ -134,11 +142,15 @@ const RegisterScreen: React.FC = () => {
       </View>
 
       <KeyboardAwareScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) + 24 }]}
+        style={styles.flex}
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) + 64 }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         enableOnAndroid={true}
-        extraScrollHeight={20}
+        enableAutomaticScroll={true}
+        extraScrollHeight={Platform.OS === 'android' ? 140 : 64}
+        extraHeight={Platform.OS === 'android' ? 140 : 64}
+        keyboardOpeningTime={0}
       >
         {/* Progress Bar */}
         <View style={styles.progressBar}>
@@ -242,7 +254,7 @@ const RegisterScreen: React.FC = () => {
                     }}
                     secureTextEntry={!showPassword}
                     rightIcon={{
-                      name: showPassword ? 'eye-off' : 'eye',
+                      name: showPassword ? 'eye' : 'eye-off',
                       type: 'ionicon',
                       onPress: () => setShowPassword(!showPassword),
                     }}
@@ -274,7 +286,7 @@ const RegisterScreen: React.FC = () => {
                     }}
                     secureTextEntry={!showConfirmPassword}
                     rightIcon={{
-                      name: showConfirmPassword ? 'eye-off' : 'eye',
+                      name: showConfirmPassword ? 'eye' : 'eye-off',
                       type: 'ionicon',
                       onPress: () => setShowConfirmPassword(!showConfirmPassword),
                     }}
@@ -408,7 +420,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   footer: {
-    marginTop: 16,
+    marginTop: 20,
+    marginBottom: 16,
   },
 });
 

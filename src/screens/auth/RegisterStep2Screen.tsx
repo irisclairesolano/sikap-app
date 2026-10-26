@@ -4,16 +4,9 @@ import { useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Controller, useForm } from 'react-hook-form';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { authApi } from '../../api/auth';
 import { ApiClientError } from '../../api/client';
 import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
@@ -144,158 +137,167 @@ const RegisterStep2Screen: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: Math.max(insets.top, 12),
+          paddingBottom: Math.max(insets.bottom, 16),
+        },
+      ]}
     >
-      <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
-        {/* App Bar */}
-        <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
-            <Ionicons name="arrow-back" size={24} color={colors.ink} />
-          </TouchableOpacity>
-          <View style={styles.stepBadge}>
-            <Text style={styles.stepBadgeText}>2 of 4</Text>
-          </View>
-          <View style={{ width: 40 }} />
+      {/* App Bar */}
+      <View style={styles.appBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
+          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+        </TouchableOpacity>
+        <View style={styles.stepBadge}>
+          <Text style={styles.stepBadgeText}>2 of 4</Text>
+        </View>
+        <View style={{ width: 40 }} />
+      </View>
+
+      <KeyboardAwareScrollView
+        style={styles.flex}
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) + 64 }]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        enableAutomaticScroll={true}
+        extraScrollHeight={Platform.OS === 'android' ? 140 : 64}
+        extraHeight={Platform.OS === 'android' ? 140 : 64}
+        keyboardOpeningTime={0}
+      >
+        {/* Progress Bar */}
+        <View style={styles.progressBar}>
+          <View style={styles.progressActive} />
+          <View style={styles.progressActive} />
+          <View style={styles.progressInactive} />
+          <View style={styles.progressInactive} />
         </View>
 
-        <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Progress Bar */}
-          <View style={styles.progressBar}>
-            <View style={styles.progressActive} />
-            <View style={styles.progressActive} />
-            <View style={styles.progressInactive} />
-            <View style={styles.progressInactive} />
+        <Text style={styles.title}>
+          Where do{'\n'}you <Text style={styles.titleItalic}>live?</Text>
+        </Text>
+        <Text style={styles.subtitle}>We use your barangay to show you nearby jobs.</Text>
+
+        {banner ? (
+          <View style={styles.bannerError}>
+            <Text style={styles.bannerTextError}>{banner}</Text>
           </View>
+        ) : null}
 
-          <Text style={styles.title}>
-            Where do{'\n'}you <Text style={styles.titleItalic}>live?</Text>
-          </Text>
-          <Text style={styles.subtitle}>We use your barangay to show you nearby jobs.</Text>
+        <View style={styles.formCardWrapper}>
+          <View style={styles.ambientGlowSky} />
+          <View style={styles.ambientGlowPeach} />
+          <View style={styles.formCard}>
+            <View style={styles.form}>
+              <LocationPicker
+                municipalityValue={watchedMunicipality}
+                barangayValue={watchedBarangay}
+                onMunicipalityChange={(value: string) => setValue('municipality', value)}
+                onBarangayChange={(value: string) => setValue('barangay', value)}
+                municipalityError={errors.municipality?.message}
+                barangayError={errors.barangay?.message}
+              />
 
-          {banner ? (
-            <View style={styles.bannerError}>
-              <Text style={styles.bannerTextError}>{banner}</Text>
-            </View>
-          ) : null}
-
-          <View style={styles.formCardWrapper}>
-            <View style={styles.ambientGlowSky} />
-            <View style={styles.ambientGlowPeach} />
-            <View style={styles.formCard}>
-              <View style={styles.form}>
-                <LocationPicker
-                  municipalityValue={watchedMunicipality}
-                  barangayValue={watchedBarangay}
-                  onMunicipalityChange={(value: string) => setValue('municipality', value)}
-                  onBarangayChange={(value: string) => setValue('barangay', value)}
-                  municipalityError={errors.municipality?.message}
-                  barangayError={errors.barangay?.message}
-                />
-
-                <View style={{ marginTop: 8 }}>
-                  <Text
-                    style={{
-                      fontFamily: fonts.bodyBold,
-                      fontSize: 13,
-                      color: colors.inkSoft,
-                      marginBottom: 6,
+              <View style={{ marginTop: 8 }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.bodyBold,
+                    fontSize: 13,
+                    color: colors.inkSoft,
+                    marginBottom: 6,
+                  }}
+                >
+                  Date of Birth
+                </Text>
+                {Platform.OS === 'web' ? (
+                  <input
+                    type="date"
+                    value={dateOfBirth.toISOString().split('T')[0]}
+                    max={new Date().toISOString().split('T')[0]}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const d = new Date(e.target.value);
+                        setDateOfBirth(d);
+                        setBirthDateText(formatDateToMMDDYYYY(d));
+                      }
                     }}
-                  >
-                    Date of Birth
-                  </Text>
-                  {Platform.OS === 'web' ? (
-                    <input
-                      type="date"
-                      value={dateOfBirth.toISOString().split('T')[0]}
-                      max={new Date().toISOString().split('T')[0]}
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          const d = new Date(e.target.value);
-                          setDateOfBirth(d);
-                          setBirthDateText(formatDateToMMDDYYYY(d));
-                        }
-                      }}
-                      style={{
-                        borderWidth: 1.5,
-                        borderColor: 'rgba(226, 232, 240, 0.85)',
-                        borderRadius: 14,
-                        padding: 14,
-                        fontFamily: 'inherit',
-                        fontSize: 15,
-                        width: '100%',
-                        color: colors.ink,
-                        backgroundColor: 'rgba(255, 255, 255, 0.82)',
-                      }}
-                    />
-                  ) : (
-                    <>
-                      <View style={styles.dateInputContainer}>
-                        <TextInput
-                          style={styles.dateTextInput}
-                          placeholder="MM/DD/YYYY"
-                          placeholderTextColor={colors.inkMuted}
-                          value={birthDateText}
-                          onChangeText={(text) => setBirthDateText(formatBirthDateInput(text))}
-                          keyboardType="number-pad"
-                          maxLength={10}
-                        />
-                        <TouchableOpacity
-                          style={styles.calendarIconBtn}
-                          onPress={() => setShowDatePicker(true)}
-                        >
-                          <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
-                        </TouchableOpacity>
-                      </View>
-                      <Text style={styles.dateHint}>Enter your birth date (MM/DD/YYYY)</Text>
-                      {showDatePicker && (
-                        <DateTimePicker
-                          value={dateOfBirth}
-                          mode="date"
-                          display="default"
-                          maximumDate={new Date()}
-                          onValueChange={(_event, selectedDate) => {
-                            setShowDatePicker(false);
-                            if (selectedDate) {
-                              setDateOfBirth(selectedDate);
-                              setBirthDateText(formatDateToMMDDYYYY(selectedDate));
-                            }
-                          }}
-                          onDismiss={() => setShowDatePicker(false)}
-                        />
-                      )}
-                    </>
-                  )}
-                </View>
+                    style={{
+                      borderWidth: 1.5,
+                      borderColor: 'rgba(226, 232, 240, 0.85)',
+                      borderRadius: 14,
+                      padding: 14,
+                      fontFamily: 'inherit',
+                      fontSize: 15,
+                      width: '100%',
+                      color: colors.ink,
+                      backgroundColor: 'rgba(255, 255, 255, 0.82)',
+                    }}
+                  />
+                ) : (
+                  <>
+                    <View style={styles.dateInputContainer}>
+                      <TextInput
+                        style={styles.dateTextInput}
+                        placeholder="MM/DD/YYYY"
+                        placeholderTextColor={colors.inkMuted}
+                        value={birthDateText}
+                        onChangeText={(text) => setBirthDateText(formatBirthDateInput(text))}
+                        keyboardType="number-pad"
+                        maxLength={10}
+                      />
+                      <TouchableOpacity
+                        style={styles.calendarIconBtn}
+                        onPress={() => setShowDatePicker(true)}
+                      >
+                        <Ionicons name="calendar-outline" size={20} color={colors.inkMuted} />
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={styles.dateHint}>Enter your birth date (MM/DD/YYYY)</Text>
+                    {showDatePicker && (
+                      <DateTimePicker
+                        value={dateOfBirth}
+                        mode="date"
+                        display="default"
+                        maximumDate={new Date()}
+                        onValueChange={(_event, selectedDate) => {
+                          setShowDatePicker(false);
+                          if (selectedDate) {
+                            setDateOfBirth(selectedDate);
+                            setBirthDateText(formatDateToMMDDYYYY(selectedDate));
+                          }
+                        }}
+                        onDismiss={() => setShowDatePicker(false)}
+                      />
+                    )}
+                  </>
+                )}
               </View>
             </View>
           </View>
+        </View>
 
-          <View style={styles.roleCard}>
-            <Text style={styles.roleLabel}>I am a:</Text>
-            <View style={styles.roleRow}>
-              <Text style={styles.roleText}>{role === 'worker' ? 'Worker' : 'Employer'}</Text>
-              <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
-            </View>
+        <View style={styles.roleCard}>
+          <Text style={styles.roleLabel}>I am a:</Text>
+          <View style={styles.roleRow}>
+            <Text style={styles.roleText}>{role === 'worker' ? 'Worker' : 'Employer'}</Text>
+            <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
           </View>
+        </View>
 
-          <View style={styles.footer}>
-            <Button
-              label={registerMutation.isPending ? 'Creating account...' : 'Next'}
-              size="lg"
-              fullWidth
-              loading={registerMutation.isPending}
-              onPress={handleSubmit(onSubmit)}
-            />
-          </View>
-        </ScrollView>
-      </View>
-    </KeyboardAvoidingView>
+        <View style={styles.footer}>
+          <Button
+            label={registerMutation.isPending ? 'Creating account...' : 'Next'}
+            size="lg"
+            fullWidth
+            loading={registerMutation.isPending}
+            onPress={handleSubmit(onSubmit)}
+          />
+        </View>
+      </KeyboardAwareScrollView>
+    </View>
   );
 };
 
@@ -477,7 +479,8 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   footer: {
-    marginTop: 16,
+    marginTop: 20,
+    marginBottom: 16,
   },
   bannerError: {
     backgroundColor: colors.status.rejected.bg,

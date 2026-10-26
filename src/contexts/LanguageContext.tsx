@@ -8,7 +8,7 @@ export type Language = 'en' | 'tl';
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => Promise<void>;
-  t: (key: TranslationKey) => string;
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string;
 }
 
 const STORAGE_KEY = 'sikap_app_language';
@@ -18,10 +18,20 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
   tl,
 };
 
+const interpolate = (template: string, params?: Record<string, string | number>): string => {
+  if (!params) return template;
+  let result = template;
+  for (const [key, val] of Object.entries(params)) {
+    result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), String(val));
+  }
+  return result;
+};
+
 const LanguageContext = createContext<LanguageContextType>({
   language: 'en',
   setLanguage: async () => {},
-  t: (key: TranslationKey) => en[key] || (key as string),
+  t: (key: TranslationKey, params?: Record<string, string | number>) =>
+    interpolate(en[key] || (key as string), params),
 });
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -50,8 +60,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  const t = (key: TranslationKey): string => {
-    return translations[language]?.[key] || translations.en[key] || (key as string);
+  const t = (key: TranslationKey, params?: Record<string, string | number>): string => {
+    const raw = translations[language]?.[key] || translations.en[key] || (key as string);
+    return interpolate(raw, params);
   };
 
   return (

@@ -167,7 +167,7 @@ const LoginScreen: React.FC = () => {
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
                     rightIcon={{
-                      name: showPassword ? 'eye-off' : 'eye',
+                      name: showPassword ? 'eye' : 'eye-off',
                       type: 'ionicon',
                       onPress: () => setShowPassword(!showPassword),
                     }}

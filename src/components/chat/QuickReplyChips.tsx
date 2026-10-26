@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts } from '../../theme';
 import { triggerHaptic } from '../../utils/haptics';
 
+import { useLanguage } from '../../contexts/LanguageContext';
+
 interface QuickReplyChipsProps {
   userRole?: 'worker' | 'employer' | 'admin';
   onSelectChip: (text: string) => void;
@@ -11,43 +13,33 @@ interface QuickReplyChipsProps {
   onDismiss?: () => void;
 }
 
-const WORKER_QUICK_REPLIES = [
-  { label: 'Available tomorrow', text: 'I am available to start tomorrow.' },
-  { label: 'Exact location?', text: 'Where is the exact address or landmark?' },
-  {
-    label: 'Have my own tools 🔨',
-    text: 'I have my own tools and equipment for the job.',
-  },
-  { label: 'Can I call?', text: 'May I give you a call to discuss the details?' },
-  {
-    label: 'Agreed! 👍',
-    text: 'I agree with the proposed rate and schedule. Thank you!',
-  },
-];
-
-const EMPLOYER_QUICK_REPLIES = [
-  { label: 'When can you start?', text: 'When is the earliest you can start the job?' },
-  {
-    label: 'Are you nearby?',
-    text: 'Are you currently located nearby or in a neighboring barangay?',
-  },
-  { label: 'Do you have tools?', text: 'Do you have your own tools or equipment for this job?' },
-  {
-    label: 'Check the offer',
-    text: 'Please check the official hiring offer in the card above.',
-  },
-  { label: 'Thank you!', text: 'Thank you for the prompt response!' },
-];
-
 export const QuickReplyChips: React.FC<QuickReplyChipsProps> = ({
   userRole = 'worker',
   onSelectChip,
   disabled = false,
   onDismiss,
 }) => {
+  const { t } = useLanguage();
+
   if (disabled) return null;
 
-  const chips = userRole === 'employer' ? EMPLOYER_QUICK_REPLIES : WORKER_QUICK_REPLIES;
+  const workerReplies = [
+    { label: t('qr_worker_available_label'), text: t('qr_worker_available_text') },
+    { label: t('qr_worker_location_label'), text: t('qr_worker_location_text') },
+    { label: t('qr_worker_tools_label'), text: t('qr_worker_tools_text') },
+    { label: t('qr_worker_call_label'), text: t('qr_worker_call_text') },
+    { label: t('qr_worker_agreed_label'), text: t('qr_worker_agreed_text') },
+  ];
+
+  const employerReplies = [
+    { label: t('qr_employer_start_label'), text: t('qr_employer_start_text') },
+    { label: t('qr_employer_nearby_label'), text: t('qr_employer_nearby_text') },
+    { label: t('qr_employer_tools_label'), text: t('qr_employer_tools_text') },
+    { label: t('qr_employer_offer_label'), text: t('qr_employer_offer_text') },
+    { label: t('qr_employer_thanks_label'), text: t('qr_employer_thanks_text') },
+  ];
+
+  const chips = userRole === 'employer' ? employerReplies : workerReplies;
 
   const handleChipPress = (text: string) => {
     triggerHaptic('light');
@@ -59,7 +51,7 @@ export const QuickReplyChips: React.FC<QuickReplyChipsProps> = ({
       <View style={styles.labelRow}>
         <View style={styles.labelLeft}>
           <Ionicons name="flash-outline" size={13} color={colors.primary} />
-          <Text style={styles.promptLabel}>Quick replies</Text>
+          <Text style={styles.promptLabel}>{t('quick_replies')}</Text>
         </View>
         {onDismiss && (
           <TouchableOpacity

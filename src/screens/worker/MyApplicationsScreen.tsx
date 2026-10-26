@@ -238,17 +238,17 @@ export const MyApplicationsScreen: React.FC = () => {
           <View style={styles.summaryBar}>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryValue}>{counts.Active}</Text>
-              <Text style={styles.summaryLabel}>Active Hired</Text>
+              <Text style={styles.summaryLabel}>{t('active_hired')}</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryItem}>
               <Text style={styles.summaryValue}>{counts['In Review']}</Text>
-              <Text style={styles.summaryLabel}>In Review</Text>
+              <Text style={styles.summaryLabel}>{t('in_review')}</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryItem}>
               <Text style={styles.summaryValue}>{counts.History}</Text>
-              <Text style={styles.summaryLabel}>Completed</Text>
+              <Text style={styles.summaryLabel}>{t('status_completed')}</Text>
             </View>
           </View>
         )}
@@ -340,13 +340,15 @@ export const MyApplicationsScreen: React.FC = () => {
                 >
                   {filter === 'All'
                     ? t('all')
-                    : filter === 'In Review'
-                      ? t('status_under_review')
-                      : filter === 'Active'
-                        ? t('status_hired')
-                        : filter === 'History'
-                          ? t('status_completed')
-                          : filter}{' '}
+                    : filter === 'Needs Action'
+                      ? t('needs_action')
+                      : filter === 'In Review'
+                        ? t('in_review')
+                        : filter === 'Active'
+                          ? t('active_hired')
+                          : filter === 'History'
+                            ? t('history')
+                            : filter}{' '}
                   · <Text style={styles.chipCount}>{count}</Text>
                 </Text>
               </TouchableOpacity>
@@ -366,19 +368,19 @@ export const MyApplicationsScreen: React.FC = () => {
       emptyTitle = 'No matching applications';
       emptySubtitle = `No applications found matching "${searchQuery}".`;
     } else if (activeFilter === 'Needs Action') {
-      emptyTitle = 'All caught up!';
-      emptySubtitle = 'You have no pending job offers or reviews requiring your response.';
+      emptyTitle = t('all_caught_up');
+      emptySubtitle = t('no_pending_offers_reviews');
     } else if (activeFilter === 'Active') {
-      emptyTitle = 'No active jobs right now';
-      emptySubtitle = 'When an employer confirms your hire, your active jobs will appear here.';
+      emptyTitle = t('no_active_jobs_title');
+      emptySubtitle = t('no_active_jobs_desc');
       showBrowseButton = true;
     } else if (activeFilter === 'In Review') {
-      emptyTitle = 'No applications under review';
-      emptySubtitle = 'You have no applications under review right now. Browse and apply for jobs.';
+      emptyTitle = t('no_applications_under_review_title');
+      emptySubtitle = t('no_applications_under_review_desc');
       showBrowseButton = true;
     } else if (activeFilter === 'All') {
-      emptyTitle = "You haven't applied to any jobs yet";
-      emptySubtitle = 'Explore available job opportunities and apply in just a few taps.';
+      emptyTitle = t('no_applications_yet_title');
+      emptySubtitle = t('no_applications_yet_desc');
       showBrowseButton = true;
     }
 
@@ -402,7 +404,7 @@ export const MyApplicationsScreen: React.FC = () => {
 
         {showBrowseButton && (
           <Button
-            label="Browse Available Jobs"
+            label={t('browse_available_jobs')}
             variant="primary"
             size="base"
             onPress={() => (navigation as any).navigate('Find')}

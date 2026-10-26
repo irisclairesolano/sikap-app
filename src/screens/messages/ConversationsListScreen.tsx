@@ -106,7 +106,7 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
             <Ionicons name="search-outline" size={17} color={colors.inkMuted} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search by name or job..."
+              placeholder={t('search_messages_placeholder')}
               placeholderTextColor={colors.inkLight}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -157,7 +157,9 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.emptyContainer}>
           <Ionicons name="search" size={40} color={colors.inkLight} style={{ marginBottom: 12 }} />
           <Text style={styles.emptyTitle}>No results</Text>
-          <Text style={styles.emptySubtitle}>No conversations matching "{searchQuery}"</Text>
+          <Text style={styles.emptySubtitle}>
+            {t('no_conversations_matching', { searchQuery })}
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -223,7 +225,7 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                           color={colors.inkMuted}
                           style={{ marginRight: 2 }}
                         />
-                        <Text style={styles.concludedBadgeText}>Concluded</Text>
+                        <Text style={styles.concludedBadgeText}>{t('concluded')}</Text>
                       </View>
                     )}
                   </View>
@@ -237,7 +239,7 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                       />
                     )}
                     <Text style={styles.preview} numberOfLines={1}>
-                      {item.last_message_preview || 'No messages yet'}
+                      {item.last_message_preview || t('no_messages_yet')}
                     </Text>
                   </View>
                 </View>

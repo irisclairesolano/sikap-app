@@ -19,8 +19,10 @@ import Input from '../../components/common/Input';
 import { apiClient } from '../../api/client';
 import { colors, fonts } from '../../theme';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const ContactSupportScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { showAlert } = useAlert();
@@ -36,10 +38,7 @@ const ContactSupportScreen: React.FC = () => {
       });
     },
     onSuccess: () => {
-      showAlert(
-        'Message Sent',
-        'Your support ticket has been created. Our team will review your request in-app.',
-      );
+      showAlert(t('ticket_submitted_title'), t('ticket_submitted_desc'));
       navigation.goBack();
     },
     onError: (err: any) => {
@@ -77,18 +76,13 @@ const ContactSupportScreen: React.FC = () => {
               <Ionicons name="chatbubbles-outline" size={42} color={colors.white} />
             </View>
 
-            <Text style={styles.title}>
-              Contact <Text style={styles.titleItalic}>Support</Text>
-            </Text>
+            <Text style={styles.title}>{t('contact_support_title')}</Text>
 
-            <Text style={styles.body}>
-              Having trouble? Send us a message and our admin support team will review your ticket
-              directly in-app.
-            </Text>
+            <Text style={styles.body}>{t('contact_support_desc')}</Text>
 
             <View style={styles.formGroup}>
               <Input
-                placeholder="What do you need help with?"
+                placeholder={t('subject_placeholder')}
                 value={subject}
                 onChangeText={setSubject}
                 autoCapitalize="sentences"
@@ -97,7 +91,7 @@ const ContactSupportScreen: React.FC = () => {
 
             <View style={styles.formGroup}>
               <Input
-                placeholder="Describe your issue in detail..."
+                placeholder={t('issue_description_placeholder')}
                 value={message}
                 onChangeText={setMessage}
                 multiline
@@ -108,7 +102,7 @@ const ContactSupportScreen: React.FC = () => {
 
             <View style={styles.footer}>
               <Button
-                label={submitMutation.isPending ? 'Sending...' : 'Send Message'}
+                label={submitMutation.isPending ? 'Sending...' : t('submit_ticket_btn')}
                 variant="primary"
                 fullWidth
                 size="lg"

@@ -20,6 +20,8 @@ import { useSubmitReport } from '../../hooks/useReports';
 
 import { normalizeReportableType, ReportReasonType } from '../../api/reports';
 import { triggerHaptic } from '../../utils/haptics';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { TranslationKey } from '../../locales/en';
 
 // We define a generic param list for the common screen
 type ReportScreenParamList = {
@@ -34,9 +36,16 @@ type ReportScreenParamList = {
 type ReportScreenRouteProp = RouteProp<ReportScreenParamList, 'Report'>;
 type ReportScreenNavigationProp = NativeStackNavigationProp<any, 'Report'>;
 
-const REASONS = ['Inappropriate Behavior', 'Scam or Fraud', 'Harassment', 'Spam', 'Other'];
+const REASONS: { key: string; labelKey: TranslationKey }[] = [
+  { key: 'Inappropriate Behavior', labelKey: 'reason_inappropriate_behavior' },
+  { key: 'Scam or Fraud', labelKey: 'reason_scam_fraud' },
+  { key: 'Harassment', labelKey: 'reason_harassment' },
+  { key: 'Spam', labelKey: 'reason_spam' },
+  { key: 'Other', labelKey: 'reason_other_report' },
+];
 
 export const ReportScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation<ReportScreenNavigationProp>();
   const route = useRoute<ReportScreenRouteProp>();
   const rawParams = (route.params || {}) as any;
@@ -66,13 +75,13 @@ export const ReportScreen: React.FC = () => {
   const handlePickScreenshots = async () => {
     const remainingSlots = 5 - screenshots.length;
     if (remainingSlots <= 0) {
-      showAlert('Limit Reached', 'You can upload up to 5 screenshots per report.');
+      showAlert('Limit Reached', t('upload_limit_screenshots'));
       return;
     }
 
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      showAlert('Permission Required', 'Please grant photo library access to attach screenshots.');
+      showAlert('Permission Required', t('photo_library_permission_required'));
       return;
     }
 
@@ -102,7 +111,7 @@ export const ReportScreen: React.FC = () => {
     }
 
     if (!selectedReason) {
-      showAlert('Select a Reason', 'Please select a reason for reporting.');
+      showAlert('Select a Reason', t('please_select_report_reason'));
       return;
     }
 
@@ -124,17 +133,15 @@ export const ReportScreen: React.FC = () => {
       {
         onSuccess: (res: any) => {
           triggerHaptic('medium');
-          let alertTitle = 'Report Submitted';
-          let alertMsg =
-            'Thank you for keeping our community safe. We will review your report shortly.';
+          let alertTitle = t('report_submitted_title');
+          let alertMsg = t('report_submitted_desc');
 
           if (res?.message === 'This is already resolved.') {
             alertTitle = 'Notice';
             alertMsg = 'This issue has already been reviewed or resolved by moderators.';
           } else if (res?.message === 'You have already reported this item.') {
-            alertTitle = 'Report Received';
-            alertMsg =
-              'You have already submitted a report for this item. Our moderation team is actively reviewing it.';
+            alertTitle = t('report_submitted_title');
+            alertMsg = t('already_reported_item');
           }
 
           showAlert(alertTitle, alertMsg, [{ text: 'OK', onPress: () => navigation.goBack() }]);
@@ -153,41 +160,42 @@ export const ReportScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>Submit a Report</Text>
+          <Text style={styles.headerPillText}>{t('submit_a_report')}</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>What's the issue?</Text>
-        <Text style={styles.subtitle}>
-          Your report is anonymous. We review all reports to keep the community safe.
-        </Text>
+        <Text style={styles.title}>{t('whats_the_issue')}</Text>
+        <Text style={styles.subtitle}>{t('report_anonymous_notice')}</Text>
 
         <View style={styles.reasonsContainer}>
           {REASONS.map((reason) => (
             <TouchableOpacity
-              key={reason}
-              testID={`reason-chip-${reason}`}
-              style={[styles.reasonChip, selectedReason === reason && styles.reasonChipActive]}
-              onPress={() => setSelectedReason(reason)}
+              key={reason.key}
+              testID={`reason-chip-${reason.key}`}
+              style={[styles.reasonChip, selectedReason === reason.key && styles.reasonChipActive]}
+              onPress={() => setSelectedReason(reason.key)}
             >
               <Text
-                style={[styles.reasonText, selectedReason === reason && styles.reasonTextActive]}
+                style={[
+                  styles.reasonText,
+                  selectedReason === reason.key && styles.reasonTextActive,
+                ]}
               >
-                {reason}
+                {t(reason.labelKey)}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
         <View style={styles.descriptionField}>
-          <Text style={styles.label}>Please provide more details</Text>
+          <Text style={styles.label}>{t('provide_more_details')}</Text>
           <View style={styles.inputContainer}>
             <TextInput
               testID="report-description-input"
               style={styles.textInput}
-              placeholder="Describe what happened..."
+              placeholder={t('describe_what_happened')}
               placeholderTextColor={colors.inkLight}
               multiline
               value={description}
@@ -199,10 +207,10 @@ export const ReportScreen: React.FC = () => {
         {/* Screenshot Attachment Section */}
         <View style={styles.screenshotsSection}>
           <View style={styles.screenshotsHeader}>
-            <Text style={styles.label}>Attach Evidence ({screenshots.length}/5)</Text>
-            <Text style={styles.screenshotsSublabel}>
-              Screenshots help our team review and resolve faster
+            <Text style={styles.label}>
+              {t('attach_evidence')} ({screenshots.length}/5)
             </Text>
+            <Text style={styles.screenshotsSublabel}>{t('screenshots_help_review')}</Text>
           </View>
 
           <View style={styles.screenshotsGrid}>
@@ -227,7 +235,7 @@ export const ReportScreen: React.FC = () => {
                 activeOpacity={0.7}
               >
                 <Ionicons name="camera-outline" size={24} color={colors.primary} />
-                <Text style={styles.addScreenshotText}>Add Photo</Text>
+                <Text style={styles.addScreenshotText}>{t('add_photo')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -236,7 +244,7 @@ export const ReportScreen: React.FC = () => {
         <View style={styles.submitContainer}>
           <Button
             testID="submit-report-btn"
-            title="Submit report"
+            title={t('submit_report')}
             variant="danger"
             onPress={handleSubmit}
             disabled={!isFormValid || isPending}

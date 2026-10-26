@@ -12,13 +12,18 @@ import {
 import { BottomSheet } from '../common/BottomSheet';
 import { useSubmitReport } from '../../hooks/useReports';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { TranslationKey } from '../../locales/en';
 
-const REASONS = [
-  { label: 'Fake / Scam Job', value: 'fake_account' },
-  { label: 'Inappropriate Content', value: 'inappropriate_job' },
-  { label: 'Harassment', value: 'harassment' },
-  { label: 'Other', value: 'other' },
-] as const;
+const REASONS: {
+  labelKey: TranslationKey;
+  value: 'fake_account' | 'inappropriate_job' | 'harassment' | 'other';
+}[] = [
+  { labelKey: 'reason_fake_scam_job', value: 'fake_account' },
+  { labelKey: 'reason_inappropriate_content', value: 'inappropriate_job' },
+  { labelKey: 'reason_harassment', value: 'harassment' },
+  { labelKey: 'reason_other_report', value: 'other' },
+];
 
 type ReasonType = (typeof REASONS)[number]['value'];
 
@@ -35,6 +40,7 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
   jobId,
   jobTitle,
 }) => {
+  const { t } = useLanguage();
   const [selectedReason, setSelectedReason] = useState<ReasonType | null>(null);
   const [description, setDescription] = useState('');
   const { mutate: submitReport, isPending } = useSubmitReport();
@@ -42,7 +48,7 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
 
   const handleSubmit = () => {
     if (!selectedReason) {
-      showAlert('Select a Reason', 'Please select a reason for reporting this job post.');
+      showAlert('Select a Reason', t('please_select_report_reason'));
       return;
     }
     submitReport(
@@ -57,10 +63,7 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
           setSelectedReason(null);
           setDescription('');
           onClose();
-          showAlert(
-            'Report Submitted',
-            'Thank you. Our moderation team will review this post shortly.',
-          );
+          showAlert(t('report_submitted_title'), t('report_submitted_desc'));
         },
         onError: () => {
           showAlert(
@@ -76,7 +79,7 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
     <BottomSheet visible={visible} onClose={onClose} snapHeight={440}>
       <View style={styles.header}>
         <Ionicons name="flag" size={20} color="#E85D75" />
-        <Text style={styles.title}>Report Job Post</Text>
+        <Text style={styles.title}>{t('report_job_post')}</Text>
       </View>
       <Text style={styles.subtitle} numberOfLines={1}>
         {jobTitle}
@@ -101,7 +104,7 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
             <Text
               style={[styles.reasonText, selectedReason === r.value && styles.reasonTextActive]}
             >
-              {r.label}
+              {t(r.labelKey)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -109,7 +112,7 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
 
       <TextInput
         style={styles.input}
-        placeholder="Add details (optional)"
+        placeholder={t('describe_why_reporting_job')}
         placeholderTextColor="#B0A89C"
         value={description}
         onChangeText={setDescription}
@@ -127,7 +130,7 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
         {isPending ? (
           <ActivityIndicator color="#FFF" size="small" />
         ) : (
-          <Text style={styles.submitText}>Submit Report</Text>
+          <Text style={styles.submitText}>{t('submit_report')}</Text>
         )}
       </TouchableOpacity>
     </BottomSheet>

@@ -21,6 +21,7 @@ import { useCreateSupportTicket, useMySupportTickets } from '../../hooks/useSupp
 import { colors, fonts, shadows } from '../../theme';
 import { SupportTicket } from '../../types';
 import Button from '../../components/common/Button';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const formatTicketDate = (dateStr?: string | null) => {
   if (!dateStr) return '';
@@ -30,6 +31,7 @@ const formatTicketDate = (dateStr?: string | null) => {
 };
 
 export const SupportTicketsScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { showAlert } = useAlert();
@@ -56,10 +58,7 @@ export const SupportTicketsScreen: React.FC = () => {
           setMessage('');
           setActiveTab('tickets');
           setExpandedTicketId(res.ticket.id);
-          showAlert(
-            'Ticket Submitted',
-            'Your support ticket has been received. Our admin team will review it and reply directly inside the app.',
-          );
+          showAlert(t('ticket_submitted_title'), t('ticket_submitted_desc'));
         },
         onError: (err: any) => {
           showAlert(
@@ -75,7 +74,7 @@ export const SupportTicketsScreen: React.FC = () => {
     switch (status) {
       case 'resolved':
         return {
-          label: 'Resolved',
+          label: t('status_resolved'),
           bg: '#DCFCE7',
           text: '#15803D',
           border: '#86EFAC',
@@ -83,7 +82,7 @@ export const SupportTicketsScreen: React.FC = () => {
         };
       case 'processing':
         return {
-          label: 'In Review',
+          label: t('status_in_review'),
           bg: '#DBEAFE',
           text: '#1D4ED8',
           border: '#93C5FD',
@@ -92,7 +91,7 @@ export const SupportTicketsScreen: React.FC = () => {
       case 'open':
       default:
         return {
-          label: 'Open',
+          label: t('status_open'),
           bg: '#FEF3C7',
           text: '#B45309',
           border: '#FCD34D',
@@ -119,7 +118,7 @@ export const SupportTicketsScreen: React.FC = () => {
               <Ionicons name={badge.icon} size={12} color={badge.text} />
               <Text style={[styles.statusBadgeText, { color: badge.text }]}>{badge.label}</Text>
             </View>
-            <Text style={styles.ticketId}>Ticket #{item.id}</Text>
+            <Text style={styles.ticketId}>{t('ticket_number', { id: item.id })}</Text>
           </View>
           <Text style={styles.ticketDate}>{formatTicketDate(item.created_at)}</Text>
         </View>
@@ -141,24 +140,22 @@ export const SupportTicketsScreen: React.FC = () => {
             <View style={styles.replyHeader}>
               <View style={styles.adminTag}>
                 <Ionicons name="shield-checkmark" size={13} color="#0D9488" />
-                <Text style={styles.adminTagText}>SIKAP Admin Team</Text>
+                <Text style={styles.adminTagText}>{t('sikap_admin_team')}</Text>
               </View>
-              <Text style={styles.replyStatusResolved}>Response Available</Text>
+              <Text style={styles.replyStatusResolved}>{t('response_available')}</Text>
             </View>
             <Text style={styles.replyText}>{item.admin_reply}</Text>
           </View>
         ) : (
           <View style={styles.pendingReplyBox}>
             <Ionicons name="hourglass-outline" size={14} color={colors.inkMuted} />
-            <Text style={styles.pendingReplyText}>
-              In review by SIKAP admin. Responses will appear here.
-            </Text>
+            <Text style={styles.pendingReplyText}>{t('in_review_by_admin')}</Text>
           </View>
         )}
 
         <View style={styles.cardFooter}>
           <Text style={styles.expandHint}>
-            {isExpanded ? 'Tap to collapse' : 'Tap to expand full details'}
+            {isExpanded ? t('tap_to_collapse') : t('tap_to_expand')}
           </Text>
           <Ionicons
             name={isExpanded ? 'chevron-up' : 'chevron-down'}
@@ -181,7 +178,7 @@ export const SupportTicketsScreen: React.FC = () => {
         >
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.topBarTitle}>Help & Support</Text>
+        <Text style={styles.topBarTitle}>{t('help_and_support')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -198,7 +195,7 @@ export const SupportTicketsScreen: React.FC = () => {
             color={activeTab === 'tickets' ? colors.primary : colors.inkMuted}
           />
           <Text style={[styles.tabText, activeTab === 'tickets' && styles.tabTextActive]}>
-            My Tickets {tickets.length > 0 ? `(${tickets.length})` : ''}
+            {t('my_tickets')} {tickets.length > 0 ? `(${tickets.length})` : ''}
           </Text>
         </TouchableOpacity>
 
@@ -213,7 +210,7 @@ export const SupportTicketsScreen: React.FC = () => {
             color={activeTab === 'new' ? colors.primary : colors.inkMuted}
           />
           <Text style={[styles.tabText, activeTab === 'new' && styles.tabTextActive]}>
-            New Ticket
+            {t('new_ticket')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -224,7 +221,7 @@ export const SupportTicketsScreen: React.FC = () => {
           {isLoading && tickets.length === 0 ? (
             <View style={styles.centerContainer}>
               <ActivityIndicator size="large" color={colors.primary} />
-              <Text style={styles.loadingText}>Loading your support tickets...</Text>
+              <Text style={styles.loadingText}>Loading...</Text>
             </View>
           ) : (
             <FlatList
@@ -249,13 +246,10 @@ export const SupportTicketsScreen: React.FC = () => {
                   <View style={styles.emptyIconCircle}>
                     <Ionicons name="chatbubbles-outline" size={38} color={colors.primary} />
                   </View>
-                  <Text style={styles.emptyTitle}>No Support Tickets Yet</Text>
-                  <Text style={styles.emptySubtitle}>
-                    Have a question about a job post, verification, or account? Submit a ticket and
-                    our admin team will reply directly in-app.
-                  </Text>
+                  <Text style={styles.emptyTitle}>{t('no_support_tickets_yet')}</Text>
+                  <Text style={styles.emptySubtitle}>{t('support_tickets_empty_desc')}</Text>
                   <Button
-                    label="Submit a Support Ticket"
+                    label={t('submit_support_ticket')}
                     variant="primary"
                     size="base"
                     onPress={() => setActiveTab('new')}
@@ -284,26 +278,23 @@ export const SupportTicketsScreen: React.FC = () => {
                 <View>
                   <View style={styles.noticeBox}>
                     <Ionicons name="information-circle-outline" size={20} color={colors.primary} />
-                    <Text style={styles.noticeText}>
-                      Support is handled directly within SIKAP. Admin replies will be visible on the
-                      "My Tickets" tab.
-                    </Text>
+                    <Text style={styles.noticeText}>{t('support_in_app_notice')}</Text>
                   </View>
 
-                  <Text style={styles.label}>Subject</Text>
+                  <Text style={styles.label}>{t('subject')}</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="e.g. Question about job status, ID upload, or account"
+                    placeholder={t('subject_placeholder')}
                     placeholderTextColor={colors.inkMuted}
                     value={subject}
                     onChangeText={setSubject}
                     maxLength={100}
                   />
 
-                  <Text style={styles.label}>Issue Description</Text>
+                  <Text style={styles.label}>{t('issue_description')}</Text>
                   <TextInput
                     style={[styles.input, styles.textArea]}
-                    placeholder="Provide details about what you need help with..."
+                    placeholder={t('issue_description_placeholder')}
                     placeholderTextColor={colors.inkMuted}
                     value={message}
                     onChangeText={setMessage}
@@ -315,7 +306,7 @@ export const SupportTicketsScreen: React.FC = () => {
                   <Text style={styles.charCount}>{message.length}/1000 characters</Text>
 
                   <Button
-                    label="Submit Ticket"
+                    label={t('submit_ticket_btn')}
                     variant="primary"
                     size="lg"
                     fullWidth
