@@ -21,24 +21,8 @@ import { useDeleteJob } from '../../hooks/useJobs';
 import { useJob } from '../../hooks/useJob';
 import { useJobApplications } from '../../hooks/useJobApplications';
 import { useReviews } from '../../hooks/useReviews';
-import { Avatar } from '../../components/common/Avatar';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
 import { CompletedJobOverview } from '../../components/applications/CompletedJobOverview';
-
-const formatDate = (dateString?: string | null): string => {
-  if (!dateString) return '';
-  try {
-    const d = new Date(dateString);
-    if (isNaN(d.getTime())) return '';
-    return d.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  } catch {
-    return '';
-  }
-};
 
 type JobStatusScreenRouteProp = RouteProp<EmployerStackParamList, 'JobStatusManagement'>;
 type JobStatusScreenNavigationProp = NativeStackNavigationProp<
@@ -123,11 +107,6 @@ export const JobStatusManagementScreen: React.FC = () => {
     completedApps.length > 0
       ? completedApps.length
       : job?.filled_slots || job?.accepted_count || job?.slots || 1;
-  const totalPaid =
-    completedApps.reduce(
-      (acc, a) => acc + Number(a.final_agreed_price || job?.compensation || 0),
-      0,
-    ) || Number(job?.compensation || 0) * completedCount;
   const unreviewedCount = completedApps.filter(
     (a) => !reviewByAppId.has(a.id) && !a.has_reviewed && !a.user_review,
   ).length;
@@ -189,6 +168,15 @@ export const JobStatusManagementScreen: React.FC = () => {
     navigation.navigate('MarkComplete', { id, jobTitle: job?.title || 'Job' });
   };
 
+  const handleGoBack = useCallback(() => {
+    const state = navigation.getState?.();
+    if (state && typeof state.index === 'number' && state.index > 0) {
+      navigation.goBack();
+    } else {
+      (navigation as any).navigate('MyJobs', { screen: 'MyJobsList' });
+    }
+  }, [navigation]);
+
   const handleCancelJob = () => {
     showAlert(
       'Cancel Job',
@@ -202,7 +190,7 @@ export const JobStatusManagementScreen: React.FC = () => {
             deleteJob(id, {
               onSuccess: () => {
                 showAlert('Cancelled', 'Your job post has been cancelled.', [
-                  { text: 'OK', onPress: () => navigation.navigate('MyJobs') },
+                  { text: 'OK', onPress: handleGoBack },
                 ]);
               },
               onError: (err: any) => {
@@ -227,7 +215,7 @@ export const JobStatusManagementScreen: React.FC = () => {
           onPress: () => {
             deleteJob(id, {
               onSuccess: () => {
-                navigation.navigate('MyJobs');
+                handleGoBack();
               },
               onError: (err: any) => {
                 showAlert('Error', err.message || 'Could not archive job.');
@@ -254,7 +242,7 @@ export const JobStatusManagementScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.headerPill}>
@@ -292,12 +280,7 @@ export const JobStatusManagementScreen: React.FC = () => {
             {error?.message || 'This job could not be found or may have been removed.'}
           </Text>
           <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Button
-              label="Back to My Jobs"
-              variant="ghost"
-              size="base"
-              onPress={() => navigation.goBack()}
-            />
+            <Button label="Back to My Jobs" variant="ghost" size="base" onPress={handleGoBack} />
             <Button label="Retry" variant="primary" size="base" onPress={() => refetchJob()} />
           </View>
         </View>
@@ -342,7 +325,7 @@ export const JobStatusManagementScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>

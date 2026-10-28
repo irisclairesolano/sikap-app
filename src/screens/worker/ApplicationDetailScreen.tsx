@@ -53,6 +53,17 @@ const ApplicationDetailScreen: React.FC = () => {
     }, [refetch]),
   );
 
+  const handleGoBack = React.useCallback(() => {
+    const state = navigation.getState?.();
+    if (state && typeof state.index === 'number' && state.index > 0) {
+      navigation.goBack();
+    } else if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      (navigation as any).navigate('Mine', { screen: 'Applications' });
+    }
+  }, [navigation]);
+
   const status = appData?.status || route.params?.status;
   const jobTitle = appData?.job?.title || route.params?.jobTitle;
   const employerName =
@@ -266,7 +277,7 @@ const ApplicationDetailScreen: React.FC = () => {
           onPress: () => {
             withdraw(applicationId, {
               onSuccess: () => {
-                navigation.goBack();
+                handleGoBack();
               },
               onError: (err: any) => {
                 showAlert('Error', err.message || 'Could not withdraw application.');
@@ -282,7 +293,7 @@ const ApplicationDetailScreen: React.FC = () => {
     acceptOfferMutation.mutate(applicationId, {
       onSuccess: () => {
         triggerHaptic('success');
-        navigation.navigate('Success', {
+        navigation.replace('Success', {
           variant: 'milestone',
           title: "🎉 You're Hired!",
           message: `Congratulations! You accepted the job offer for "${jobTitle || 'this job'}". Coordinate details in chat with ${employerName || 'the employer'}.`,
@@ -373,7 +384,7 @@ const ApplicationDetailScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>

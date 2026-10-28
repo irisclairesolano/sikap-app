@@ -90,7 +90,14 @@ export const ApplyScreen: React.FC = () => {
 
   const handleBackToJobs = () => {
     triggerHaptic('light');
-    navigation.navigate('Home');
+    const state = navigation.getState?.();
+    if (state && typeof state.index === 'number' && state.index > 0 && navigation.popToTop) {
+      navigation.popToTop();
+    } else if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('Home');
+    }
   };
 
   const handleWithdraw = () => {
@@ -104,7 +111,7 @@ export const ApplyScreen: React.FC = () => {
             withdraw(data.application_id, {
               onSuccess: () => {
                 triggerHaptic('medium');
-                navigation.navigate('Home');
+                handleBackToJobs();
               },
               onError: (err: any) => {
                 showAlert('Error', err.message || 'Could not withdraw application.');
@@ -559,7 +566,7 @@ export const ApplyScreen: React.FC = () => {
                     size="lg"
                     fullWidth
                     onPress={() => {
-                      navigation.navigate('ApplicationDetail', {
+                      navigation.replace('ApplicationDetail', {
                         applicationId: activeApplicationId,
                         jobTitle: job.title,
                         employerName: job.employer?.name || 'Employer',
@@ -591,7 +598,7 @@ export const ApplyScreen: React.FC = () => {
   if (isAlreadySubmitted) {
     const handleGoToApplicationStatus = () => {
       if (job.application_id) {
-        navigation.navigate('ApplicationDetail', {
+        navigation.replace('ApplicationDetail', {
           applicationId: job.application_id,
           jobTitle: job.title,
           employerName: job.employer?.name || 'Employer',

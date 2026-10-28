@@ -54,7 +54,23 @@ export const SuccessScreen: React.FC = () => {
       } else if ('popToTop' in action && action.popToTop) {
         navigation.popToTop();
       } else if ('navigateTo' in action && action.navigateTo) {
-        navigation.navigate(action.navigateTo.name, action.navigateTo.params);
+        const targetName = action.navigateTo.name;
+        const targetParams = action.navigateTo.params;
+        const state = navigation.getState?.();
+        const rootRouteName = state?.routes?.[0]?.name;
+
+        if (targetName === rootRouteName && state?.routes?.length > 1 && navigation.popToTop) {
+          navigation.popToTop();
+        } else if (targetName === 'MyJobsList' || targetName === 'MyJobs') {
+          if (rootRouteName !== 'MyJobsList' && state?.routes?.length > 1 && navigation.popToTop) {
+            navigation.popToTop();
+          }
+          navigation.navigate('MyJobs', { screen: 'MyJobsList', params: targetParams });
+        } else if (typeof navigation.replace === 'function') {
+          navigation.replace(targetName, targetParams);
+        } else {
+          navigation.navigate(targetName, targetParams);
+        }
       }
     },
     [navigation],

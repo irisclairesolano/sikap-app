@@ -23,16 +23,7 @@ import {
   Manrope_700Bold,
   Manrope_800ExtraBold,
 } from '@expo-google-fonts/manrope';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-  LogBox,
-  AppState,
-  AppStateStatus,
-  Platform,
-} from 'react-native';
+import { View, ActivityIndicator, LogBox, AppState, AppStateStatus, Platform } from 'react-native';
 import { focusManager } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
@@ -138,7 +129,7 @@ async function resolveUrlFromNotificationData(data: any): Promise<string | null>
   return null;
 }
 
-const linking = {
+const linking: any = {
   prefixes: [Linking.createURL('/'), 'sikap://'],
   async getInitialURL() {
     // 1. Check if the app was launched from an explicit deep link URL
@@ -193,8 +184,10 @@ const linking = {
   config: {
     screens: {
       Worker: {
+        initialRouteName: 'Find',
         screens: {
           Find: {
+            initialRouteName: 'Home',
             screens: {
               Home: 'jobs',
               JobDetails: 'jobs/:id',
@@ -202,23 +195,27 @@ const linking = {
             },
           },
           Mine: {
+            initialRouteName: 'Applications',
             screens: {
               Applications: 'applications',
               ApplicationDetail: 'applications/:applicationId',
             },
           },
           Messages: {
+            initialRouteName: 'ConversationsList',
             screens: {
               ConversationsList: 'messages',
               Chat: 'chat/:conversationId',
             },
           },
           Notifications: {
+            initialRouteName: 'NotificationsList',
             screens: {
               NotificationsList: 'notifications',
             },
           },
           Me: {
+            initialRouteName: 'ProfileMain',
             screens: {
               ProfileMain: 'profile',
               SupportTickets: 'support',
@@ -227,8 +224,10 @@ const linking = {
         },
       },
       Employer: {
+        initialRouteName: 'Home',
         screens: {
           Home: {
+            initialRouteName: 'EmployerDashboard',
             screens: {
               EmployerDashboard: 'employer',
               JobDetails: 'employer/jobs/:id',
@@ -237,6 +236,7 @@ const linking = {
             },
           },
           MyJobs: {
+            initialRouteName: 'MyJobsList',
             screens: {
               MyJobsList: 'employer/my-jobs',
               PostJob: 'employer/post-job',
@@ -244,17 +244,20 @@ const linking = {
             },
           },
           Messages: {
+            initialRouteName: 'ConversationsList',
             screens: {
               ConversationsList: 'employer/messages',
               Chat: 'employer/chat/:conversationId',
             },
           },
           Notifications: {
+            initialRouteName: 'NotificationsList',
             screens: {
               NotificationsList: 'employer/notifications',
             },
           },
           Profile: {
+            initialRouteName: 'ProfileMain',
             screens: {
               ProfileMain: 'employer/profile',
               SupportTickets: 'employer/support',
