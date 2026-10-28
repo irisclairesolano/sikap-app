@@ -88,6 +88,7 @@ export const JobCard = React.memo(function JobCard({
     remainingSlots === 0 || job.status === 'completed' || job.status === 'closed_in_progress';
 
   const [reportSheetVisible, setReportSheetVisible] = useState(false);
+  const [bannerError, setBannerError] = useState(false);
   const { mutate: toggleReact, isPending: isReacting } = useReactToJob();
 
   // Extract banner media (if any)
@@ -124,7 +125,7 @@ export const JobCard = React.memo(function JobCard({
       {/* Card Header & Content (Clickable) */}
       <TouchableOpacity onPress={onPress} activeOpacity={0.75} style={styles.cardPressable}>
         {/* Zone 1: Media Section (Top - Conditional) */}
-        {bannerImage ? (
+        {bannerImage && !bannerError ? (
           <View style={styles.mediaContainer}>
             <Image
               source={{ uri: bannerImage }}
@@ -132,6 +133,7 @@ export const JobCard = React.memo(function JobCard({
               contentFit="cover"
               cachePolicy="memory-disk"
               transition={150}
+              onError={() => setBannerError(true)}
             />
             {Array.isArray(job.photos) && job.photos.length > 1 && (
               <View style={styles.photoCountBadge}>

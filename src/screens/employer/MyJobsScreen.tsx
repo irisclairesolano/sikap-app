@@ -66,6 +66,7 @@ export const MyJobsScreen: React.FC = () => {
   } = useArchivedJobs();
   const { mutate: restoreJob, isPending: isRestoring } = useRestoreJob();
   const { mutate: deleteJob, isPending: isDeleting } = useDeleteJob();
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   const handleArchiveJob = useCallback(
     (job: JobPost) => {
@@ -225,7 +226,7 @@ export const MyJobsScreen: React.FC = () => {
             style={styles.cardPressable}
           >
             {/* Zone 1: Media Banner (Top - Conditional) */}
-            {bannerImage ? (
+            {bannerImage && !failedImages[bannerImage] ? (
               <View style={styles.mediaContainer}>
                 <Image
                   source={{ uri: bannerImage }}
@@ -233,6 +234,12 @@ export const MyJobsScreen: React.FC = () => {
                   contentFit="cover"
                   cachePolicy="memory-disk"
                   transition={150}
+                  onError={() =>
+                    setFailedImages((prev) => ({
+                      ...prev,
+                      [bannerImage]: true,
+                    }))
+                  }
                 />
                 {Array.isArray(item.photos) && item.photos.length > 1 && (
                   <View style={styles.photoCountBadge}>

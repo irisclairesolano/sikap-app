@@ -56,7 +56,9 @@
     "expo-image-manipulator": "~57.0.16",
     "expo-image-picker": "~57.0.16",
     "expo-linking": "~57.0.9",
+    "expo-media-library": "~57.0.5",
     "expo-secure-store": "~57.0.3",
+    "expo-sharing": "~57.0.24",
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
     "expo-video": "~57.0.3",
@@ -73,6 +75,7 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "react-native-vector-icons": "10.3.0",
+    "react-native-view-shot": "5.1.0",
     "react-native-web": "^0.21.0"
   },
   "devDependencies": {

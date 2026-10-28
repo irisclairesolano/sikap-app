@@ -28,12 +28,12 @@ describe('Production APK Readiness & Configuration Tests', () => {
 
   it('handles SecureStore setItemAsync errors gracefully without crashing', async () => {
     (SecureStore.setItemAsync as jest.Mock).mockRejectedValueOnce(new Error('KeyStore Exception'));
-    await expect(storage.setItemAsync('test_key', 'test_val')).resolves.not.toThrow();
+    await expect(storage.setItemAsync('set_error_key', 'test_val')).resolves.not.toThrow();
   });
 
   it('handles SecureStore getItemAsync errors gracefully returning null', async () => {
     (SecureStore.getItemAsync as jest.Mock).mockRejectedValueOnce(new Error('KeyStore Read Error'));
-    const result = await storage.getItemAsync('test_key');
+    const result = await storage.getItemAsync('get_error_key');
     expect(result).toBeNull();
   });
 
@@ -41,6 +41,6 @@ describe('Production APK Readiness & Configuration Tests', () => {
     (SecureStore.deleteItemAsync as jest.Mock).mockRejectedValueOnce(
       new Error('KeyStore Delete Error'),
     );
-    await expect(storage.deleteItemAsync('test_key')).resolves.not.toThrow();
+    await expect(storage.deleteItemAsync('delete_error_key')).resolves.not.toThrow();
   });
 });

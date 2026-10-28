@@ -439,6 +439,11 @@ export const en = {
   qr_employer_offer_text: 'Please check the official hiring offer in the card above.',
   qr_employer_thanks_label: 'Thank you!',
   qr_employer_thanks_text: 'Thank you for the prompt response!',
+
+  // Dashboard Stats
+  active_jobs: 'Active Jobs',
+  total_hires: 'Total Hires',
+  total_paid: 'Total Paid',
 };
 
 export type TranslationKey = keyof typeof en;

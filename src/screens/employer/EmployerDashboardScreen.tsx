@@ -304,7 +304,9 @@ export const EmployerDashboardScreen: React.FC = () => {
               <View style={styles.statIconCircle}>
                 <Ionicons name="briefcase-outline" size={15} color="#E11D48" />
               </View>
-              <Text style={styles.statLabel}>Active jobs</Text>
+              <Text style={styles.statLabel} numberOfLines={2}>
+                Active jobs
+              </Text>
             </View>
             <Text style={styles.statNum}>{activeJobs.length}</Text>
           </View>
@@ -314,7 +316,9 @@ export const EmployerDashboardScreen: React.FC = () => {
               <View style={styles.statIconCircle}>
                 <Ionicons name="people-outline" size={15} color="#16A34A" />
               </View>
-              <Text style={styles.statLabel}>Total hires</Text>
+              <Text style={styles.statLabel} numberOfLines={2}>
+                Total hires
+              </Text>
             </View>
             <Text style={styles.statNum}>{totalHires}</Text>
           </View>
@@ -324,7 +328,9 @@ export const EmployerDashboardScreen: React.FC = () => {
               <View style={styles.statIconCircle}>
                 <Ionicons name="cash-outline" size={15} color="#D97706" />
               </View>
-              <Text style={styles.statLabel}>Total paid</Text>
+              <Text style={styles.statLabel} numberOfLines={2}>
+                Total paid
+              </Text>
             </View>
             <Text style={styles.statNum}>{totalPaidFormatted}</Text>
           </View>
@@ -334,7 +340,9 @@ export const EmployerDashboardScreen: React.FC = () => {
               <View style={styles.statIconCircle}>
                 <Ionicons name="star" size={15} color="#EAB308" />
               </View>
-              <Text style={styles.statLabel}>{t('reputation_score')}</Text>
+              <Text style={styles.statLabel} numberOfLines={2}>
+                {t('reputation_score')}
+              </Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
               <Text style={styles.statNum}>{reputationFormatted}</Text>
@@ -662,7 +670,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(226, 232, 240, 0.70)',
-    padding: 16,
+    padding: 14,
+    overflow: 'hidden',
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -682,6 +691,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.paper,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   statNum: {
     fontFamily: fonts.numericBold,
@@ -695,11 +705,14 @@ const styles = StyleSheet.create({
     color: colors.inkLight,
   },
   statLabel: {
+    flex: 1,
+    flexShrink: 1,
     fontFamily: fonts.bodyBold,
-    fontSize: 11,
+    fontSize: 10.5,
+    lineHeight: 14,
     color: colors.inkMuted,
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.3,
   },
   sectionHeaderTitle: {
     fontFamily: fonts.bodyBold,

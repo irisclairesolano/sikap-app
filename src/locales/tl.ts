@@ -458,4 +458,9 @@ export const tl: Record<TranslationKey, string> = {
   qr_employer_offer_text: 'Pakitingnan ang opisyal na alok sa trabaho sa card sa itaas.',
   qr_employer_thanks_label: 'Salamat!',
   qr_employer_thanks_text: 'Salamat sa mabilis mong pagsagot!',
+
+  // Dashboard Stats
+  active_jobs: 'Aktibong Trabaho',
+  total_hires: 'Kabuuang Nakuha',
+  total_paid: 'Kabuuang Naibayad',
 };

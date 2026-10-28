@@ -6,13 +6,24 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { profileApi } from '../api/profile';
 
 export const useAuthCheck = () => {
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoadingToken, setIsLoadingToken] = useState(true);
-  const [reloadToken, setReloadToken] = useState(0);
   const queryClient = useQueryClient();
+  const initialSyncToken =
+    typeof SecureStore.getItemSync === 'function' ? SecureStore.getItemSync('auth_token') : null;
+  const [token, setToken] = useState<string | null>(initialSyncToken);
+  const [isLoadingToken, setIsLoadingToken] = useState(!initialSyncToken);
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     const checkToken = async () => {
+      const syncToken =
+        typeof SecureStore.getItemSync === 'function'
+          ? SecureStore.getItemSync('auth_token')
+          : null;
+      if (syncToken) {
+        setToken(syncToken);
+        setIsLoadingToken(false);
+        return;
+      }
       if (reloadToken === 0) {
         setIsLoadingToken(true);
       }
@@ -30,13 +41,20 @@ export const useAuthCheck = () => {
   } = useQuery<User | null>({
     queryKey: ['profile'],
     queryFn: async () => {
-      const authToken = await SecureStore.getItemAsync('auth_token');
+      const authToken =
+        (typeof SecureStore.getItemSync === 'function'
+          ? SecureStore.getItemSync('auth_token')
+          : null) || (await SecureStore.getItemAsync('auth_token'));
       if (!authToken) return null;
       try {
         const response = await profileApi.getProfile();
         await SecureStore.setItemAsync('user_profile', JSON.stringify(response));
         return response;
       } catch (err) {
+        const existingInCache = queryClient.getQueryData<User | null>(['profile']);
+        if (existingInCache) {
+          return existingInCache;
+        }
         const cachedUserStr = await SecureStore.getItemAsync('user_profile');
         if (cachedUserStr) {
           try {
@@ -52,8 +70,16 @@ export const useAuthCheck = () => {
   useEffect(
     () =>
       subscribeAuthChanged(() => {
+        const syncToken =
+          typeof SecureStore.getItemSync === 'function'
+            ? SecureStore.getItemSync('auth_token')
+            : null;
+        setToken(syncToken);
+        setIsLoadingToken(false);
         setReloadToken((t) => t + 1);
-        refetch();
+        if (syncToken) {
+          refetch();
+        }
       }),
     [refetch],
   );
@@ -74,11 +100,14 @@ export const useAuthCheck = () => {
     restoreCachedUser();
   }, [queryClient, token]);
 
+  const effectiveToken =
+    token ||
+    (typeof SecureStore.getItemSync === 'function' ? SecureStore.getItemSync('auth_token') : null);
   const isVerified = user?.verification_status === 'approved';
 
   return {
-    user: token ? user : null,
-    isLoading: isLoadingToken || (!!token && !user && isLoadingProfile),
+    user: effectiveToken ? user : null,
+    isLoading: isLoadingToken || (!!effectiveToken && !user && isLoadingProfile),
     isVerified,
   };
 };
