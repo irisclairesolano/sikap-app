@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { colors, fonts } from '../theme';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { StackActions } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -106,13 +107,34 @@ export type WorkerTabParamList = {
 const Tab = createBottomTabNavigator<WorkerTabParamList>();
 const Stack = createNativeStackNavigator<WorkerStackParamList>();
 
+const popTabStackOnPress = ({ navigation, route }: { navigation: any; route: any }) => ({
+  tabPress: () => {
+    const state = navigation.getState();
+    const tabRoute = state?.routes?.find((r: any) => r.key === route.key);
+    const nestedState = tabRoute?.state;
+    if (
+      nestedState &&
+      typeof nestedState.index === 'number' &&
+      nestedState.index > 0 &&
+      nestedState.key
+    ) {
+      navigation.dispatch({
+        ...StackActions.popToTop(),
+        target: nestedState.key,
+      });
+    }
+  },
+});
+
 // Messages Stack
 const MessagesStack: React.FC = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
+  <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="ConversationsList">
     <Stack.Screen name="ConversationsList" component={ConversationsListScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
     <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
     <Stack.Screen name="AcceptHire" component={AcceptHireScreen} />
+    <Stack.Screen name="ApplicationDetail" component={ApplicationDetailScreen} />
+    <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
@@ -207,7 +229,7 @@ const FindStack: React.FC = () => {
 
 // Applications Stack
 const ApplicationsStack: React.FC = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
+  <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Applications">
     <Stack.Screen name="Applications" component={MyApplicationsScreen} />
     <Stack.Screen name="ApplicationDetail" component={ApplicationDetailScreen} />
     <Stack.Screen name="AcceptHire" component={AcceptHireScreen} />
@@ -224,7 +246,7 @@ const ApplicationsStack: React.FC = () => (
 
 // Notifications Stack
 const NotificationsStack: React.FC = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
+  <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="NotificationsList">
     <Stack.Screen name="NotificationsList" component={NotificationsScreen} />
     <Stack.Screen name="ApplicationDetail" component={ApplicationDetailScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
@@ -235,6 +257,9 @@ const NotificationsStack: React.FC = () => (
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    <Stack.Screen name="Settings" component={SettingsScreen} />
+    <Stack.Screen name="SupportTickets" component={SupportTicketsScreen} />
+    <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
     <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>
@@ -242,13 +267,14 @@ const NotificationsStack: React.FC = () => (
 
 // Profile Stack
 const ProfileStack: React.FC = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
+  <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="ProfileMain">
     <Stack.Screen name="ProfileMain" component={ProfileScreen} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="SupportTickets" component={SupportTicketsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="WorkHistory" component={WorkHistoryScreen} />
+    <Stack.Screen name="AddSkills" component={AddSkillsScreen} />
     <Stack.Screen name="AddWorkHistory" component={AddWorkHistoryScreen} />
     <Stack.Screen name="CharacterReferences" component={AddCharacterReferencesScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
@@ -261,18 +287,10 @@ const WorkerNavigator: React.FC = () => {
   const { data } = useNotifications();
   const unreadCount = data?.unread_count || 0;
   const { data: unreadMessages } = useUnreadMessageCount('worker');
-  const { data: profile } = useQuery({
-    queryKey: ['profile'],
-    queryFn: profileApi.getProfile,
-  });
-
-  const hasSkills = (profile?.worker_profile?.skills?.length || 0) > 0;
-  const hasHistory = (profile?.worker_profile?.experiences?.length || 0) > 0;
-  const hasRefs = (profile?.worker_profile?.references?.length || 0) > 0;
-  const isProfileComplete = hasSkills && hasHistory && hasRefs;
 
   return (
     <Tab.Navigator
+      backBehavior="history"
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
@@ -314,13 +332,7 @@ const WorkerNavigator: React.FC = () => {
         options={{
           tabBarLabel: t('find_jobs'),
         }}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            (navigation as any).navigate('Find', {
-              screen: 'Home',
-            });
-          },
-        })}
+        listeners={popTabStackOnPress}
       />
       <Tab.Screen
         name="Mine"
@@ -328,11 +340,7 @@ const WorkerNavigator: React.FC = () => {
         options={{
           tabBarLabel: t('my_applications'),
         }}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            (navigation as any).navigate('Mine', { screen: 'Applications' });
-          },
-        })}
+        listeners={popTabStackOnPress}
       />
       <Tab.Screen
         name="Messages"
@@ -342,11 +350,7 @@ const WorkerNavigator: React.FC = () => {
           tabBarBadge: (unreadMessages ?? 0) > 0 ? unreadMessages : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            (navigation as any).navigate('Messages', { screen: 'ConversationsList' });
-          },
-        })}
+        listeners={popTabStackOnPress}
       />
       <Tab.Screen
         name="Notifications"
@@ -356,11 +360,7 @@ const WorkerNavigator: React.FC = () => {
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: { backgroundColor: '#DC2626', color: colors.white },
         }}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            (navigation as any).navigate('Notifications', { screen: 'NotificationsList' });
-          },
-        })}
+        listeners={popTabStackOnPress}
       />
       <Tab.Screen
         name="Me"
@@ -368,11 +368,7 @@ const WorkerNavigator: React.FC = () => {
         options={{
           tabBarLabel: t('profile'),
         }}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            (navigation as any).navigate('Me', { screen: 'ProfileMain' });
-          },
-        })}
+        listeners={popTabStackOnPress}
       />
     </Tab.Navigator>
   );

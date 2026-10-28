@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -43,6 +44,12 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth();
   const currentRole = (user?.role as 'worker' | 'employer') || 'worker';
   const { data, isLoading, isError, refetch } = useConversations(currentRole);
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const isWorker = currentRole === 'worker';
   const canGoBack = navigation.canGoBack();

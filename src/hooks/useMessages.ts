@@ -2,7 +2,7 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 import { messagesApi } from '../api/messages';
 import { Message } from '../types';
 
-export function useMessages(conversationId: number) {
+export function useMessages(conversationId: number, options?: { pollingInterval?: number }) {
   return useInfiniteQuery({
     queryKey: ['messages', conversationId],
     queryFn: ({ pageParam }) =>
@@ -10,7 +10,9 @@ export function useMessages(conversationId: number) {
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     initialPageParam: undefined as string | undefined,
     enabled: Boolean(conversationId && conversationId > 0),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30,
+    refetchInterval: options?.pollingInterval ?? 3000,
+    refetchIntervalInBackground: false,
     select: (data) => {
       const allMessages = data.pages.flatMap((p) => p.data);
       const uniqueMap = new Map<number, Message>();
@@ -46,8 +48,9 @@ export function useSendMessage(conversationId: number, onErrorCallback?: (error:
       // Get current logged-in user profile from query cache
       const currentUser = queryClient.getQueryData<any>(['profile']);
 
+      const tempId = -Date.now();
       const optimisticMessage: Message = {
-        id: -Date.now(),
+        id: tempId,
         conversation_id: conversationId,
         sender_id: currentUser?.id ?? null,
         body: newBody,
@@ -92,17 +95,45 @@ export function useSendMessage(conversationId: number, onErrorCallback?: (error:
         };
       });
 
-      return { previousMessages };
+      return { previousMessages, tempId };
+    },
+    onSuccess: (savedMessage: Message, _newBody, context) => {
+      // Reconcile optimistic message directly with the server response
+      queryClient.setQueryData(['messages', conversationId], (old: any) => {
+        if (!old || !old.pages) return old;
+        const newPages = old.pages.map((page: any) => {
+          const pageData: Message[] = page.data || [];
+          return {
+            ...page,
+            data: pageData.map((m) =>
+              m.id === context?.tempId || (m.id < 0 && m.body === savedMessage.body)
+                ? savedMessage
+                : m,
+            ),
+          };
+        });
+        return { ...old, pages: newPages };
+      });
+
+      // Update conversations list preview seamlessly
+      queryClient.setQueryData(['conversations'], (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((c) =>
+          c.id === conversationId
+            ? {
+                ...c,
+                last_message_at: savedMessage.created_at,
+                last_message_preview: savedMessage.body?.slice(0, 100) || '',
+              }
+            : c,
+        );
+      });
     },
     onError: (err: any, _newBody, context) => {
       if (context?.previousMessages) {
         queryClient.setQueryData(['messages', conversationId], context.previousMessages);
       }
       onErrorCallback?.(err);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 }
@@ -117,8 +148,9 @@ export function useSendImage(conversationId: number, onErrorCallback?: (error: E
       const previousMessages = queryClient.getQueryData(['messages', conversationId]);
       const currentUser = queryClient.getQueryData<any>(['profile']);
 
+      const tempId = -Date.now();
       const optimisticMessage: Message = {
-        id: -Date.now(),
+        id: tempId,
         conversation_id: conversationId,
         sender_id: currentUser?.id ?? null,
         body: null,
@@ -163,17 +195,44 @@ export function useSendImage(conversationId: number, onErrorCallback?: (error: E
         };
       });
 
-      return { previousMessages };
+      return { previousMessages, tempId };
+    },
+    onSuccess: (savedMessage: Message, _imageUri, context) => {
+      // Reconcile optimistic image message directly with the server response
+      queryClient.setQueryData(['messages', conversationId], (old: any) => {
+        if (!old || !old.pages) return old;
+        const newPages = old.pages.map((page: any) => {
+          const pageData: Message[] = page.data || [];
+          return {
+            ...page,
+            data: pageData.map((m) =>
+              m.id === context?.tempId || (m.id < 0 && m.message_type === 'image')
+                ? savedMessage
+                : m,
+            ),
+          };
+        });
+        return { ...old, pages: newPages };
+      });
+
+      queryClient.setQueryData(['conversations'], (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((c) =>
+          c.id === conversationId
+            ? {
+                ...c,
+                last_message_at: savedMessage.created_at,
+                last_message_preview: '📷 Image',
+              }
+            : c,
+        );
+      });
     },
     onError: (err: any, _imageUri, context) => {
       if (context?.previousMessages) {
         queryClient.setQueryData(['messages', conversationId], context.previousMessages);
       }
       onErrorCallback?.(err);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 }
