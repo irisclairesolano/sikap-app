@@ -1,3 +1,35 @@
+/**
+ * ============================================================================
+ * SCREEN: Worker Application Detail & Hiring Tracker
+ *         (src/screens/worker/ApplicationDetailScreen.tsx)
+ * ============================================================================
+ *
+ * (a) Screen / Module Role in the SIKAP Mobile App:
+ *     Provides the Worker's real-time view of their job application lifecycle
+ *     and SIKAP's 4-Stage Progressive Data Disclosure (Privacy Shield) model
+ *     plus Stage 5 (Completed Job Receipt). Allows workers to withdraw pending
+ *     applications, open the negotiation chat once shortlisted, and formally
+ *     Accept or Decline an employer's locked price offer.
+ *
+ * (b) Key State & Hooks Used:
+ *     - `useApplication(applicationId)`: Fetches live application state,
+ *       agreed price, and linked conversation ID (`GET /api/v1/applications/{id}`).
+ *     - `useWithdrawApplication()`: Mutation to withdraw an application during
+ *       Stage 1 (`pending`) or Stage 2 (`shortlisted`).
+ *     - `useAcceptOffer()` / `useRejectOffer()`: Stage 3 mutations that either
+ *       lock the contract (`accepted`) or decline the employer's offer.
+ *
+ * (c) UI <-> React Query <-> Pusher WebSockets <-> Laravel REST API Data Flow:
+ *     1. `useApplication(applicationId)` hydrates the screen from React Query
+ *        (`['application', applicationId]`) and refetches on focus.
+ *     2. Real-time notifications (`notification.sent` / `message.sent` on
+ *        Pusher) invalidate application and conversation caches when the
+ *        employer shortlists the worker or sends a price offer.
+ *     3. Accepting an offer (`POST /api/v1/applications/{id}/accept-offer`)
+ *        transitions the application to Stage 4 (`accepted`), invalidates
+ *        job/application queries, and navigates to the milestone `SuccessScreen`.
+ * ============================================================================
+ */
 import React, { useState } from 'react';
 import {
   View,
@@ -359,6 +391,26 @@ const ApplicationDetailScreen: React.FC = () => {
     );
   };
 
+  // ==========================================================================
+  // 4-STAGE PROGRESSIVE DATA DISCLOSURE & HIRING PIPELINE (WORKER VIEW)
+  // ==========================================================================
+  // Maps backend `application.status` to SIKAP's progressive trust stages:
+  //   Stage 1 (Applied / `pending`):
+  //     Privacy Shield is active. Only public profile info (skills, work
+  //     history, reputation score) is visible to the employer. Phone number,
+  //     character references, and emergency contact remain locked.
+  //   Stage 2 (Shortlisted / `pending_negotiation` | `employer_requested`):
+  //     Employer has shortlisted the worker. Worker's mobile number, character
+  //     references, and in-app chat unlock so both parties can negotiate scope.
+  //   Stage 3 (Offer Received / `employer_confirmed`):
+  //     Employer has locked a formal price offer (`final_agreed_price`). Worker
+  //     can review and either Accept or Decline the offer.
+  //   Stage 4 (Hired / `accepted` | `hired`):
+  //     Worker accepted the offer. Contract price and slot are locked, and
+  //     emergency contact details are shared for worksite safety.
+  //   Stage 5 (Done / `completed`):
+  //     Job is finished; renders `CompletedJobOverview` receipt and mutual rating.
+  // ==========================================================================
   const getStage = () => {
     switch (status) {
       case 'pending':

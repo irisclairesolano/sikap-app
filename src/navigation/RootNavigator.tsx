@@ -1,3 +1,40 @@
+/**
+ * ============================================================================
+ * MODULE: RootNavigator (src/navigation/RootNavigator.tsx)
+ * ============================================================================
+ *
+ * (a) Screen / Module Role in the SIKAP Mobile App:
+ *     Acts as the top-level security gatekeeper and role-based router for the
+ *     entire mobile application. Before any Worker or Employer screen can mount,
+ *     RootNavigator evaluates authentication state, account suspension status,
+ *     6-digit email OTP verification, government ID document approval, and
+ *     role-profile onboarding completion.
+ *
+ * (b) Key State & Hooks Used:
+ *     - `useAuthCheck()`: Hydrates and validates the current user session from
+ *       Expo SecureStore and the `/profile` API endpoint.
+ *     - `usePushNotifications()`: Registers the device's Expo Push Token and
+ *       manages foreground notification listeners.
+ *     - `useRealtimeUserEvents(user?.id)`: Establishes a persistent Pusher
+ *       WebSocket subscription (`private-user.{id}`) at the root level so admin
+ *       verification approvals, chat messages, and reputation updates reflect
+ *       live without requiring an app restart.
+ *     - `activeBanner`: Local state driving the global in-app toast banner
+ *       overlay when real-time notifications arrive in the foreground.
+ *
+ * (c) UI <-> React Query <-> Pusher WebSockets <-> Laravel REST API Data Flow:
+ *     1. On app launch, `useAuthCheck()` reads the cached JWT token and fetches
+ *        the latest user profile from the Laravel REST API (`GET /api/v1/profile`).
+ *     2. Once authenticated, `usePushNotifications()` obtains an Expo Push Token
+ *        and syncs it to Laravel (`PUT /api/v1/profile` with `expo_push_token`).
+ *     3. `useRealtimeUserEvents` listens to Laravel broadcasts via Pusher. When
+ *        an administrator approves or rejects an ID on the web dashboard, the
+ *        `user.verification.updated` WebSocket event mutates the React Query
+ *        `['profile']` cache and triggers `notifyAuthChanged()`, automatically
+ *        advancing the user from `PendingVerify` into `RoleOnboarding` or their
+ *        main role navigator (`WorkerNavigator` / `EmployerNavigator`).
+ * ============================================================================
+ */
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import {
@@ -13,7 +50,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthCheck } from '../hooks/useAuthCheck';
 import { useAuth } from '../hooks/useAuth';
-import { usePushNotifications } from '../hooks/usePushNotifications';
+import {
+  usePushNotifications,
+  subscribeToInAppBanner,
+  InAppBannerPayload,
+} from '../hooks/usePushNotifications';
 import { profileApi } from '../api/profile';
 import AuthNavigator from './AuthNavigator';
 import { AuthStackParamList } from './authTypes';
@@ -32,6 +73,11 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+/**
+ * Fallback screen blocking Administrator accounts from using the mobile client.
+ * Enforces separation of concerns: Admins manage platform moderation exclusively
+ * through the SIKAP Web Admin Dashboard.
+ */
 const AdminFallback: React.FC = () => {
   const { logout } = useAuth();
   return (
@@ -356,10 +402,26 @@ const SuspendedFallback: React.FC = () => {
 const RootNavigator: React.FC = () => {
   const { user, isLoading, isVerified } = useAuthCheck();
   const { expoPushToken } = usePushNotifications();
+  const [activeBanner, setActiveBanner] = React.useState<InAppBannerPayload | null>(null);
 
   // Subscribe to real-time events at the root level for immediate cache invalidation & live approval
   const { useRealtimeUserEvents } = require('../services/realtime');
   useRealtimeUserEvents(user?.id);
+
+  React.useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const unsubscribe = subscribeToInAppBanner((payload) => {
+      setActiveBanner(payload);
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        setActiveBanner(null);
+      }, 4500);
+    });
+    return () => {
+      unsubscribe();
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
 
   React.useEffect(() => {
     if (user && expoPushToken) {
@@ -394,6 +456,17 @@ const RootNavigator: React.FC = () => {
       </View>
     );
   }
+
+  // ==========================================================================
+  // MULTI-STAGE AUTHENTICATION & IDENTITY VERIFICATION GATING PIPELINE
+  // ==========================================================================
+  // Enforces platform trust & safety before granting access to job feeds:
+  //   Stage A: Unauthenticated guests -> AuthNavigator (Login / Register)
+  //   Stage B: Role & Moderation Guards -> AdminFallback / SuspendedFallback
+  //   Stage C: 6-Digit Email OTP Verification -> OTPVerify screen
+  //   Stage D: Government ID Upload & Admin KYC Review -> IDUpload / PendingVerify
+  //   Stage E: Role Profile Onboarding -> RoleOnboardingScreen (Skills / Business info)
+  // ==========================================================================
 
   if (!user) {
     const guestRoute = getGuestInitialRoute();
@@ -457,6 +530,9 @@ const RootNavigator: React.FC = () => {
     );
   }
 
+  // 5. Role-Specific Profile Completeness Check:
+  //    Verified workers must have at least one skill tag configured, and
+  //    verified employers must have an initialized employer profile record.
   const workerSkills = user.worker_profile?.skills || (user as any).workerProfile?.skills || [];
   const hasEmployerProf =
     user.has_employer_profile || !!user.employer_profile || !!(user as any).employerProfile;
@@ -468,21 +544,93 @@ const RootNavigator: React.FC = () => {
     (user.role === 'worker' && !hasWorkerProf) || (user.role === 'employer' && !hasEmployerProf);
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {needsOnboarding ? (
-        <Stack.Screen
-          name="RoleOnboarding"
-          component={RoleOnboardingScreen}
-          initialParams={{ targetRole: user.role }}
-        />
-      ) : user.role === 'worker' ? (
-        <Stack.Screen name="Worker" component={WorkerNavigator} />
-      ) : user.role === 'employer' ? (
-        <Stack.Screen name="Employer" component={EmployerNavigator} />
-      ) : (
-        <Stack.Screen name="Auth" component={AuthNavigator} />
+    <View style={{ flex: 1 }}>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {needsOnboarding ? (
+          <Stack.Screen
+            name="RoleOnboarding"
+            component={RoleOnboardingScreen}
+            initialParams={{ targetRole: user.role }}
+          />
+        ) : user.role === 'worker' ? (
+          <Stack.Screen name="Worker" component={WorkerNavigator} />
+        ) : user.role === 'employer' ? (
+          <Stack.Screen name="Employer" component={EmployerNavigator} />
+        ) : (
+          <Stack.Screen name="Auth" component={AuthNavigator} />
+        )}
+      </Stack.Navigator>
+
+      {/* Global Foreground In-App Notification Banner Overlay */}
+
+      {activeBanner && (
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => setActiveBanner(null)}
+          style={{
+            position: 'absolute',
+            top: Platform.OS === 'ios' ? 54 : 38,
+            left: 16,
+            right: 16,
+            backgroundColor: '#FFFFFF',
+            borderRadius: 14,
+            paddingVertical: 12,
+            paddingHorizontal: 14,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+            borderWidth: 1,
+            borderColor: '#E2E8F0',
+            borderLeftWidth: 4,
+            borderLeftColor: colors.primary,
+            shadowColor: '#0F172A',
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.14,
+            shadowRadius: 12,
+            elevation: 10,
+            zIndex: 9999,
+          }}
+        >
+          <View
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: colors.peach,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Ionicons name="notifications" size={18} color={colors.primary} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text
+              numberOfLines={1}
+              style={{
+                fontFamily: fonts.bodyBold,
+                fontSize: 13,
+                color: colors.ink,
+              }}
+            >
+              {activeBanner.title}
+            </Text>
+            <Text
+              numberOfLines={2}
+              style={{
+                fontFamily: fonts.body,
+                fontSize: 12,
+                color: colors.inkMuted,
+                marginTop: 2,
+                lineHeight: 16,
+              }}
+            >
+              {activeBanner.body}
+            </Text>
+          </View>
+          <Ionicons name="close" size={18} color={colors.inkSoft} />
+        </TouchableOpacity>
       )}
-    </Stack.Navigator>
+    </View>
   );
 };
 

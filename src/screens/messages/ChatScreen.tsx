@@ -1,3 +1,42 @@
+/**
+ * ============================================================================
+ * SCREEN: Real-Time Hiring Negotiation & Chat Screen
+ *         (src/screens/messages/ChatScreen.tsx)
+ * ============================================================================
+ *
+ * (a) Screen / Module Role in the SIKAP Mobile App:
+ *     Unified real-time messaging and hiring workflow interface shared by both
+ *     Workers and Employers. Combines standard text/image chat bubbles,
+ *     contextual Quick Reply chips, and Interactive Hiring Action Cards
+ *     (`job_request`, `confirm_hire`, `accept_or_reject`, `cancel_hire`,
+ *     `worker_contact_reveal`, `employer_contact_reveal`, `mark_complete`,
+ *     `flag_offline`, `unlock_request`) directly inside the message stream.
+ *
+ * (b) Key State & Hooks Used:
+ *     - `useMessages(conversationId)`: Infinite-scroll paginated message query.
+ *     - `useSendMessage` / `useSendImage` / `useMarkRead`: Optimistic message
+ *       sending, client-side image compression (`ImageManipulator`), and read
+ *       receipt synchronization.
+ *     - `useRealtimeChat({ conversationId, currentUserId, onTyping })`:
+ *       Subscribes to `private-conversation.{id}` on Pusher for live incoming
+ *       messages, ActionCards, read receipts, and partner typing indicators.
+ *     - `deduplicateActionCardMessages(...)` & `isCardActionable(...)`:
+ *       Pure state-machine helpers that prevent stale duplicate ActionCards
+ *       and compute the pinned "Action Required" jump banner at the top of chat.
+ *
+ * (c) UI <-> React Query <-> Pusher WebSockets <-> Laravel REST API Data Flow:
+ *     1. Sending a text/image inserts an optimistic message (`id < 0`) into the
+ *        React Query `['messages', conversationId]` cache and dispatches
+ *        `POST /api/v1/conversations/{id}/messages` to Laravel.
+ *     2. Laravel persists the message and broadcasts `App\Events\MessageSent`
+ *        via Pusher. `useRealtimeChat` intercepts the event and replaces the
+ *        optimistic entry in-place with the canonical server record.
+ *     3. Executing an ActionCard transition (e.g., setting final price,
+ *        accepting offer, flagging offline completion) calls `handleActionComplete()`,
+ *        which invalidates conversation, application, job, and profile caches
+ *        so both participants' UIs update instantaneously.
+ * ============================================================================
+ */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -50,6 +89,20 @@ const EMPLOYER_OUTREACH_CARD_TYPES = [
   'flag_offline',
 ];
 
+/**
+ * ============================================================================
+ * INTERACTIVE HIRING ACTION CARD DEDUPLICATION & STATE MACHINE
+ * ============================================================================
+ * Ensures the chat timeline remains clean and unambiguous as a job progresses
+ * through multiple negotiation rounds:
+ *   1. Deduplicates raw messages by primary key (`m.id`).
+ *   2. Groups logically equivalent ActionCards (`job_proposal`, `job_completion`,
+ *      etc.) and retains only the most recent card per action group.
+ *   3. Suppresses obsolete cards (e.g., hides `cancel_hire` once an offer is
+ *      already `accepted` or `completed`, and hides employer `mark_complete`
+ *      if the worker has already triggered `flag_offline`).
+ * ============================================================================
+ */
 export function deduplicateActionCardMessages(
   messagesList: any[],
   currentUserRole?: 'worker' | 'employer',
@@ -447,6 +500,14 @@ const ChatScreen: React.FC = () => {
     }
   };
 
+  // ==========================================================================
+  // INTERACTIVE HIRING ACTION CARDS: ROLE & STAGE ELIGIBILITY GUARD
+  // ==========================================================================
+  // Evaluates whether a given `action_card` message in the stream still awaits
+  // an explicit decision from the currently logged-in participant (`worker` vs
+  // `employer`). Drives the Pinned "Action Required" Jump Banner at the top of
+  // ChatScreen so critical hiring steps never get buried under long text history.
+  // ==========================================================================
   // Check if an action card is currently actionable for the current user based on hiring pipeline rules
   const isCardActionable = (m: (typeof messages)[0]): boolean => {
     if (m.message_type !== 'action_card' || !m.card_type || m.card_resolved) return false;

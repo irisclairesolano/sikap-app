@@ -15,12 +15,15 @@ import { LoginRequest } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 import { Wordmark } from '../../components/common/Wordmark';
 import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
+import GoogleAuthButton from '../../components/common/GoogleAuthButton';
+import { useGoogleAuth } from '../../hooks/useGoogleAuth';
+import { authApi } from '../../api/auth';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const { loginMutation } = useAuth();
+  const { loginMutation, setAuthSession } = useAuth();
   const { showAlert } = useAlert();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -108,6 +111,78 @@ const LoginScreen: React.FC = () => {
     });
   };
 
+  const { promptAsync, response: googleResponse } = useGoogleAuth();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  React.useEffect(() => {
+    if (googleResponse?.type === 'success') {
+      const { id_token, access_token } = (googleResponse.params as any) || {};
+      const authCode = (googleResponse as any).authentication;
+      const idTokenToUse = id_token || authCode?.idToken;
+      const accessTokenToUse = access_token || authCode?.accessToken;
+
+      if (!idTokenToUse && !accessTokenToUse) {
+        setIsGoogleLoading(false);
+        setBanner('Failed to receive Google authentication token.');
+        return;
+      }
+
+      setIsGoogleLoading(true);
+      setBanner('');
+
+      authApi
+        .googleAuth({
+          id_token: idTokenToUse,
+          access_token: accessTokenToUse,
+        })
+        .then(async (res) => {
+          setIsGoogleLoading(false);
+          if (res.status === 'authenticated' && res.token && res.user) {
+            await setAuthSession(res.token, res.user);
+            const status = res.user.registration_status;
+            if (status === 'pending_id_upload') {
+              navigation.navigate('IDUpload', { userId: res.user.id, role: res.user.role });
+            } else if (status === 'pending_review' || status === 'rejected') {
+              navigation.navigate('PendingVerify');
+            }
+          } else if (res.status === 'needs_registration_details') {
+            // New user trying to sign in -> smoothly route to Step 2 to pick role & finish registration!
+            const gUser = res.google_user;
+            navigation.navigate('RegisterStep2', {
+              role: 'worker', // default role, user can confirm
+              name: gUser?.name || '',
+              email: gUser?.email || '',
+              phone: '',
+              id_token: idTokenToUse,
+              access_token: accessTokenToUse,
+              avatar_url: gUser?.avatar_url || undefined,
+              is_google: true,
+            });
+          }
+        })
+        .catch((err: any) => {
+          setIsGoogleLoading(false);
+          setBanner(sanitizeErrorMessage(err?.message || 'Google sign in failed.'));
+        });
+    } else if (googleResponse?.type === 'error' || googleResponse?.type === 'dismiss') {
+      setIsGoogleLoading(false);
+    }
+  }, [googleResponse]);
+
+  const handleGoogleLogin = async () => {
+    try {
+      setBanner('');
+      setIsGoogleLoading(true);
+      const res = await promptAsync();
+      if (res?.type !== 'success') {
+        setIsGoogleLoading(false);
+      }
+    } catch (err: any) {
+      setIsGoogleLoading(false);
+      setBanner(sanitizeErrorMessage(err?.message || 'Could not initiate Google sign in.'));
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -191,6 +266,18 @@ const LoginScreen: React.FC = () => {
               fullWidth
               loading={loginMutation.isPending}
               onPress={handleLogin}
+            />
+
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <GoogleAuthButton
+              onPress={handleGoogleLogin}
+              loading={isGoogleLoading}
+              title="Continue with Google"
             />
           </View>
 
@@ -320,6 +407,22 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: 18,
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 14,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
+  },
+  dividerText: {
+    paddingHorizontal: 12,
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkSoft,
   },
   createAccountContainer: {
     marginTop: 'auto',

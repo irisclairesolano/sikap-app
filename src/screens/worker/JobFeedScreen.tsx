@@ -1,3 +1,37 @@
+/**
+ * ============================================================================
+ * SCREEN: Worker Home / Job Feed Screen (src/screens/worker/JobFeedScreen.tsx)
+ *         (Mounted as the `Home` route inside `WorkerNavigator`)
+ * ============================================================================
+ *
+ * (a) Screen / Module Role in the SIKAP Mobile App:
+ *     Serves as the primary discovery hub ("Home" tab) for verified Workers in
+ *     Sorsogon. Displays open blue-collar and informal-sector job opportunities
+ *     with personalized skill-tag matching, debounced keyword search, bookmarking,
+ *     and Barangay/Municipality geographic proximity filtering.
+ *
+ * (b) Key State & Hooks Used:
+ *     - `searchInput` & `searchQuery`: Controlled input paired with a 300ms
+ *       debounce timer to prevent excessive API queries while typing.
+ *     - `activeCategory`: Tracks the selected horizontal skill/category chip
+ *       (dynamically populated from the worker's own profile skills).
+ *     - `locationFilter`: Controls hyper-local geographic scoping
+ *       (`Anywhere`, `Same Barangay`, or `Same Municipality`).
+ *     - `useJobs(filters)`: React Query hook fetching filtered job listings.
+ *     - `useSavedJobs()` / `useToggleSaveJob()`: Manages optimistic bookmarking.
+ *
+ * (c) UI <-> React Query <-> Pusher WebSockets <-> Laravel REST API Data Flow:
+ *     1. Filter Computation: Changes to `searchQuery`, `activeCategory`, or
+ *        `locationFilter` recompute the memoized `filters` object.
+ *     2. Query Cache & API Fetch: `useJobs(filters)` uses `['jobs', filters]`
+ *        as its React Query key and sends `GET /api/v1/jobs` with query params
+ *        (`search`, `category`, `skills[]`, `barangay`, `municipality`) to the
+ *        Laravel REST API.
+ *     3. Client-Side Chronological Guarantee: `jobsList` normalizes paginated
+ *        or flat API payloads and sorts by `created_at` descending so newly
+ *        published jobs always appear at the top of the feed.
+ * ============================================================================
+ */
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useMemo, useCallback } from 'react';
 import {
@@ -61,6 +95,18 @@ export const JobFeedScreen: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
+  // ==========================================================================
+  // PERSONALIZED SKILL CHIPS & BARANGAY / MUNICIPALITY PROXIMITY FILTERING
+  // ==========================================================================
+  // 1. Dynamic Skill Chips: Extracts the worker's registered skills from their
+  //    profile (`user.worker_profile.skills`). If present, the horizontal filter
+  //    bar prioritizes their actual trade skills; otherwise falls back to
+  //    standard blue-collar `CATEGORIES`.
+  // 2. Geographic Proximity Scoping: Maps the selected `locationFilter` option
+  //    directly to the worker's verified residence (`user.barangay` or
+  //    `user.municipality`), enabling hyper-local job matching that minimizes
+  //    commute costs for daily-wage workers.
+  // ==========================================================================
   const { user } = useAuthCheck();
   const workerProfile = user?.worker_profile;
   const userSkills: string[] = useMemo(() => {
@@ -101,6 +147,7 @@ export const JobFeedScreen: React.FC = () => {
   const { data: savedJobsData } = useSavedJobs();
   const { mutate: toggleSave } = useToggleSaveJob();
 
+  // Normalize paginated or flat API responses and enforce newest-first ordering
   const jobsList = useMemo(() => {
     if (!data) return [];
     let list: any[] = [];

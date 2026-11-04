@@ -17,11 +17,13 @@ import {
   calculateAge,
 } from '../../utils/dateFormat';
 import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
 import LocationPicker from '../../components/common/LocationPicker';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { useAuth } from '../../hooks/useAuth';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'RegisterStep2'>;
 type RouteProps = RouteProp<AuthStackParamList, 'RegisterStep2'>;
@@ -29,10 +31,24 @@ type RouteProps = RouteProp<AuthStackParamList, 'RegisterStep2'>;
 const RegisterStep2Screen: React.FC = () => {
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RouteProps>();
-  const { role, name, email, phone, password, password_confirmation } = route.params;
+  const {
+    role,
+    name: initialName,
+    email,
+    phone: initialPhone,
+    password,
+    password_confirmation,
+    id_token,
+    access_token,
+    is_google,
+  } = route.params;
   const insets = useSafeAreaInsets();
+  const { setAuthSession } = useAuth();
 
+  const [name, setName] = useState(initialName || '');
+  const [phone, setPhone] = useState(initialPhone || '');
   const [banner, setBanner] = useState('');
+  const [isSubmittingGoogle, setIsSubmittingGoogle] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [birthDateText, setBirthDateText] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -103,7 +119,7 @@ const RegisterStep2Screen: React.FC = () => {
     },
   });
 
-  const onSubmit = (values: any) => {
+  const onSubmit = async (values: any) => {
     setBanner('');
     if (!values.municipality || !values.barangay) {
       setBanner('Please select a municipality and barangay.');
@@ -121,13 +137,52 @@ const RegisterStep2Screen: React.FC = () => {
       return;
     }
 
+    if (is_google) {
+      if (!name.trim()) {
+        setBanner('Please enter your full name.');
+        return;
+      }
+      const phoneRegex = /^09\d{9}$/;
+      if (!phoneRegex.test(phone.trim())) {
+        setBanner('Please enter a valid 11-digit Philippine mobile number starting with 09.');
+        return;
+      }
+
+      setIsSubmittingGoogle(true);
+      try {
+        const res = await authApi.googleAuth({
+          id_token,
+          access_token,
+          role,
+          name: name.trim(),
+          phone: phone.trim(),
+          municipality: values.municipality,
+          barangay: values.barangay,
+          date_of_birth: parsed.formattedYMD,
+        });
+
+        setIsSubmittingGoogle(false);
+        if (res.status === 'authenticated' && res.token && res.user) {
+          await setAuthSession(res.token, res.user);
+          // Directly navigate to IDUpload, completely skipping OTP!
+          navigation.navigate('IDUpload', { userId: res.user.id, role: res.user.role });
+        } else {
+          setBanner(res.message || 'Google registration failed. Please try again.');
+        }
+      } catch (err: any) {
+        setIsSubmittingGoogle(false);
+        setBanner(sanitizeErrorMessage(err?.message || 'Google registration failed.'));
+      }
+      return;
+    }
+
     const payload = {
       role,
       name,
       email,
       phone,
-      password,
-      password_confirmation,
+      password: password || '',
+      password_confirmation: password_confirmation || '',
       municipality: values.municipality,
       barangay: values.barangay,
       date_of_birth: parsed.formattedYMD,
@@ -192,6 +247,25 @@ const RegisterStep2Screen: React.FC = () => {
           <View style={styles.ambientGlowPeach} />
           <View style={styles.formCard}>
             <View style={styles.form}>
+              {is_google ? (
+                <>
+                  <Input
+                    label="Full Name"
+                    value={name}
+                    onChangeText={setName}
+                    placeholder="Your legal name"
+                  />
+                  <Input
+                    label="Mobile Number"
+                    value={phone}
+                    onChangeText={setPhone}
+                    placeholder="09XXXXXXXXX"
+                    keyboardType="phone-pad"
+                    maxLength={11}
+                  />
+                </>
+              ) : null}
+
               <LocationPicker
                 municipalityValue={watchedMunicipality}
                 barangayValue={watchedBarangay}
@@ -289,10 +363,16 @@ const RegisterStep2Screen: React.FC = () => {
 
         <View style={styles.footer}>
           <Button
-            label={registerMutation.isPending ? 'Creating account...' : 'Next'}
+            label={
+              registerMutation.isPending || isSubmittingGoogle
+                ? 'Creating account...'
+                : is_google
+                  ? 'Complete Registration'
+                  : 'Next'
+            }
             size="lg"
             fullWidth
-            loading={registerMutation.isPending}
+            loading={registerMutation.isPending || isSubmittingGoogle}
             onPress={handleSubmit(onSubmit)}
           />
         </View>

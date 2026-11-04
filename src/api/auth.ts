@@ -180,4 +180,32 @@ export const authApi = {
       body: JSON.stringify({ reason: reason || 'User self-deleted account' }),
     });
   },
+
+  googleAuth: async (payload: {
+    id_token?: string;
+    access_token?: string;
+    role?: 'worker' | 'employer';
+    name?: string;
+    phone?: string;
+    barangay?: string;
+    municipality?: string;
+    date_of_birth?: string;
+  }): Promise<{
+    status: 'authenticated' | 'needs_registration_details';
+    token?: string;
+    token_type?: string;
+    user?: any;
+    google_user?: {
+      email: string;
+      name: string;
+      avatar_url: string | null;
+      google_id: string;
+    };
+    message?: string;
+  }> => {
+    return apiClient('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
 };

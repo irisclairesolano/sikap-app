@@ -1,3 +1,40 @@
+/**
+ * ============================================================================
+ * SCREEN: Employer Post & Edit Job Screen (src/screens/employer/PostJobScreen.tsx)
+ * ============================================================================
+ *
+ * (a) Screen / Module Role in the SIKAP Mobile App:
+ *     Provides the job creation and editing form for verified Employers in
+ *     Sorsogon. Supports custom & preset trade category tags (with bilingual
+ *     profanity filtering), Sorsogon Municipality/Barangay selection, flexible
+ *     pay rate bases (`per_day`, `per_hour`, `per_project`, `per_piece`), a
+ *     real-time DOLE Region V Wage Advisory & Equivalence calculator, background
+ *     photo/video media uploads with progress bars, and local draft persistence.
+ *
+ * (b) Key State & Hooks Used:
+ *     - Form State: `title`, `categories`, `municipality`, `barangay`, `pay`,
+ *       `rateUnit`, `slots`, `duration`, `durationUnit`, `scheduleDate`,
+ *       `description`, `exactLocation`, `toolsRequired`, `isUrgent`.
+ *     - `getWageEquivalentInfo()`: Computes hourly/daily wage equivalents and
+ *       flags non-blocking DOLE Region V minimum-wage advisories (~₱395/day).
+ *     - `photos` & `videoUpload`: Tracks immediate background XHR multipart
+ *       uploads (`/jobs/upload-photo`, `/jobs/upload-video`) with live progress.
+ *     - `AsyncStorage` (`DRAFT_STORAGE_KEY`): Automatically saves and restores
+ *       in-progress job drafts so employers never lose work on accidental exit.
+ *     - `useCreateJob()` / `useUpdateJob()`: React Query mutations with an
+ *       `idempotency_key` guard to prevent duplicate job submissions on slow networks.
+ *
+ * (c) UI <-> React Query <-> Pusher WebSockets <-> Laravel REST API Data Flow:
+ *     1. Selecting worksite photos or videos compresses images client-side via
+ *        `expo-image-manipulator` and immediately uploads them via XHR to
+ *        Laravel (`POST /api/v1/jobs/upload-photo`), returning remote CDN URLs.
+ *     2. Submitting the form sends `POST /api/v1/jobs` (or `PUT /api/v1/jobs/{id}`)
+ *        with the remote media URLs and a unique `idempotency_key`.
+ *     3. On success, React Query invalidates `['myJobs']` and `['jobs']`,
+ *        clears the AsyncStorage draft, and navigates to the celebratory
+ *        `SuccessScreen` while Laravel notifies matching workers in Sorsogon.
+ * ============================================================================
+ */
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -114,6 +151,19 @@ export const PostJobScreen: React.FC = () => {
   const [duration, setDuration] = useState(jobToEdit?.duration ? String(jobToEdit.duration) : '');
   const [durationUnit, setDurationUnit] = useState(jobToEdit?.duration_unit || 'Days');
 
+  // ==========================================================================
+  // DOLE REGION V WAGE ADVISORY & REAL-TIME EQUIVALENCE CALCULATOR
+  // ==========================================================================
+  // Promotes fair compensation transparency in Sorsogon / Bicol Region:
+  //   - `per_day`: Computes the 8-hour hourly equivalent (`pay / 8`) and warns
+  //     the employer if the daily rate falls below the DOLE Region V statutory
+  //     minimum wage benchmark (~₱395/day), catching common typos where an
+  //     employer enters an hourly figure while "Per Day" is selected.
+  //   - `per_hour`: Computes the 8-hour daily equivalent (`pay * 8`) and flags
+  //     rates below ₱50/hr.
+  //   - `per_project`: Estimates hourly equivalent across the specified duration
+  //     (`Hours`, `Days`, `Weeks`, `Months`) so both parties can gauge fairness.
+  // ==========================================================================
   // Wage conversion & sanity check helper
   const getWageEquivalentInfo = () => {
     if (!pay || isNaN(parsedPay) || parsedPay <= 0) return null;

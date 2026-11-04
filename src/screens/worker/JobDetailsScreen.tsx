@@ -1,3 +1,32 @@
+/**
+ * ============================================================================
+ * SCREEN: Worker Job Details Screen (src/screens/worker/JobDetailsScreen.tsx)
+ * ============================================================================
+ *
+ * (a) Screen / Module Role in the SIKAP Mobile App:
+ *     Displays the full job specification for a selected job post—including
+ *     compensation rate & basis, municipality/barangay location, remaining
+ *     worker slots, required tools, worksite photos/videos, and verified
+ *     employer credentials—while guarding the "Apply Now" CTA against closed
+ *     jobs, duplicate applications, or self-applications.
+ *
+ * (b) Key State & Hooks Used:
+ *     - `useJob(id)`: Fetches detailed job data (`GET /api/v1/jobs/{id}`) and
+ *       refreshes on screen focus via `useFocusEffect`.
+ *     - `useSavedJobs()` / `useToggleSaveJob()`: Optimistic bookmarking state.
+ *     - `reportSheetVisible` & `viewerMedia`: Local UI state controlling the
+ *       community moderation `ReportJobSheet` and fullscreen `MediaViewerModal`.
+ *
+ * (c) UI <-> React Query <-> Pusher WebSockets <-> Laravel REST API Data Flow:
+ *     1. Reads `route.params.id` and queries `['job', id]` from React Query.
+ *     2. When the worker submits an application on `ApplyScreen` or withdraws
+ *        on `ApplicationDetailScreen`, returning to this screen triggers
+ *        `useFocusEffect -> refetch()`, updating `is_applied`, `remaining_slots`,
+ *        and `application_id` directly from the Laravel backend.
+ *     3. Tapping the bookmark icon dispatches `POST /api/v1/jobs/{id}/save`
+ *        and invalidates `['saved-jobs']`.
+ * ============================================================================
+ */
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useState, useCallback } from 'react';
 import {
@@ -39,6 +68,7 @@ export const JobDetailsScreen: React.FC = () => {
 
   const { data: job, isLoading, isError, error, refetch, isFetching } = useJob(id);
 
+  // Refetch job status whenever the screen regains focus (e.g., after applying or withdrawing)
   useFocusEffect(
     useCallback(() => {
       refetch();
@@ -51,6 +81,7 @@ export const JobDetailsScreen: React.FC = () => {
     null,
   );
 
+  // Normalize worksite photo URLs across array, JSON-encoded string, or legacy single-image formats
   const parsedPhotos: string[] = React.useMemo(() => {
     if (!job) return [];
     const raw = job.photos || (job as any).worksite_photos || (job as any).images || [];
@@ -152,6 +183,13 @@ export const JobDetailsScreen: React.FC = () => {
     );
   }
 
+  // ==========================================================================
+  // SLOT AVAILABILITY & APPLICATION ELIGIBILITY DERIVATION
+  // ==========================================================================
+  // Computes real-time slot capacity (`filledSlots` / `totalSlots`) and
+  // determines whether the Bottom CTA should allow applying, link to an
+  // existing application (`ApplicationDetail`), or show a locked/filled state.
+  // ==========================================================================
   const isUrgent = !!(job?.is_urgent || job?.urgent);
   const isVerified = job.employer?.verification_badge;
 

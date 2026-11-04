@@ -1,3 +1,36 @@
+/**
+ * ============================================================================
+ * SCREEN: Employer Applicant Detail & Progressive Data Disclosure Screen
+ *         (src/screens/employer/ApplicantDetailScreen.tsx)
+ * ============================================================================
+ *
+ * (a) Screen / Module Role in the SIKAP Mobile App:
+ *     Enables Employers to evaluate a job applicant's qualifications (reputation
+ *     score, completed jobs count, employer reviews, skills, and work history)
+ *     while strictly enforcing SIKAP's 4-Stage Progressive Data Disclosure
+ *     (Privacy Shield) rules and guiding the employer from Shortlisting ->
+ *     Chat Negotiation -> Sending a Formal Offer -> Marking Job Complete.
+ *
+ * (b) Key State & Hooks Used:
+ *     - `useApplication(appId)`: Fetches the applicant's profile and current
+ *       application status from Laravel (`GET /api/v1/applications/{id}`).
+ *     - `useConversations('employer')` & `useMessages(activeConversationId)`:
+ *       Verifies whether the employer has sent at least one real chat message
+ *       (`hasRealMessageFromEmployer`) before allowing a formal price offer.
+ *     - `isReferencesLocked` & `isContactLocked`: Computed privacy gates that
+ *       hide character references and phone numbers until Stage 2+.
+ *
+ * (c) UI <-> React Query <-> Pusher WebSockets <-> Laravel REST API Data Flow:
+ *     1. Reads `applicantId` from navigation params and queries React Query
+ *        (`['application', appId]`), automatically refetching on screen focus.
+ *     2. Server-side Privacy Shield flags (`references_locked`, `contact_locked`)
+ *        and client-side stage guards ensure sensitive worker PII is never
+ *        exposed during Stage 1 (`pending`).
+ *     3. Advancing the hiring workflow (`SendRequest`, `ConfirmHire`,
+ *        `MarkComplete`) mutates backend state, broadcasts Pusher events to the
+ *        worker, and invalidates the `['application']` and `['messages']` caches.
+ * ============================================================================
+ */
 import React, { useState } from 'react';
 import {
   View,
@@ -320,6 +353,24 @@ const ApplicantDetailScreen: React.FC = () => {
     );
   }
 
+  // ==========================================================================
+  // 4-STAGE PROGRESSIVE DATA DISCLOSURE VISIBILITY RULES (EMPLOYER VIEW)
+  // ==========================================================================
+  // Protects worker privacy against data harvesting while giving employers the
+  // information they need at each step of the hiring pipeline:
+  //   - Stage 1 (`pending`): Public qualifications only (name, barangay,
+  //     reputation score, reviews, skills, work history, cover note).
+  //     `isReferencesLocked` and `isContactLocked` are TRUE (Privacy Shield).
+  //   - Stage 2 (`shortlisted` / `pending_negotiation` / `employer_requested`):
+  //     Employer shortlists the worker -> unlocks direct phone number, SMS/Call
+  //     links, in-app negotiation chat, and Character References.
+  //   - Stage 3 (`employer_confirmed`): Formal price offer sent; awaiting
+  //     worker acceptance. Note: Employer MUST send at least one real chat
+  //     message (`hasRealMessageFromEmployer`) before sending a formal offer.
+  //   - Stage 4 (`accepted`): Worker is officially hired -> Emergency Contact
+  //     name & phone number are unlocked for worksite safety.
+  //   - Stage 5 (`completed`): Renders `CompletedJobOverview` completion receipt.
+  // ==========================================================================
   const getStage = () => {
     switch (status) {
       case 'pending':

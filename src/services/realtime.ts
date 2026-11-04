@@ -1,3 +1,39 @@
+/**
+ * ============================================================================
+ * MODULE: Real-Time WebSocket Service (src/services/realtime.ts)
+ * ============================================================================
+ *
+ * (a) Screen / Module Role in the SIKAP Mobile App:
+ *     Provides singleton Pusher WebSocket connection management and React hooks
+ *     for real-time bidirectional event handling across chat conversations,
+ *     hiring workflow action cards, live identity verification approvals, and
+ *     in-app notifications.
+ *
+ * (b) Key State & Hooks Used:
+ *     - `getPusherClient()`: Lazily initializes and memoizes a single Pusher
+ *       client instance authenticated via Bearer JWT against Laravel's
+ *       `/api/v1/broadcasting/auth` endpoint.
+ *     - `useRealtimeChat({ conversationId, currentUserId, onTyping })`:
+ *       Subscribes to `private-conversation.{conversationId}` while a user is
+ *       actively viewing `ChatScreen`.
+ *     - `useRealtimeUserEvents(userId)`: Subscribes to `private-user.{userId}`
+ *       at the root navigator level for global background updates.
+ *
+ * (c) UI <-> React Query <-> Pusher WebSockets <-> Laravel REST API Data Flow:
+ *     1. Channel Authorization: When subscribing to a `private-*` channel,
+ *        Pusher invokes the custom `authorizer`, which reads `auth_token` from
+ *        SecureStore and sends `POST /api/v1/broadcasting/auth` to Laravel.
+ *     2. Direct Cache Hydration (`setQueryData`): Incoming `message.sent`
+ *        events immediately merge the new message or ActionCard into React
+ *        Query's paginated `['messages', conversationId]` cache—reconciling
+ *        optimistic UI messages (`id < 0`) in-place without waiting for a
+ *        full HTTP refetch.
+ *     3. Cache Invalidation (`invalidateQueries`): Events that affect aggregate
+ *        counts or status badges (`messages.read`, `conversation.updated`,
+ *        `notification.sent`, `user.verification.updated`) invalidate their
+ *        respective query keys and sync critical profile flags to SecureStore.
+ * ============================================================================
+ */
 import Pusher from 'pusher-js';
 import { useEffect } from 'react';
 
@@ -16,6 +52,11 @@ const PUSHER_PORT = process.env.EXPO_PUBLIC_PUSHER_PORT
 
 let pusherInstance: Pusher | null = null;
 
+/**
+ * Returns the singleton Pusher WebSocket client.
+ * Configures private channel authorization using the user's Sanctum Bearer token
+ * against the Laravel Broadcasting authentication endpoint (`/broadcasting/auth`).
+ */
 export function getPusherClient(): Pusher | null {
   if (!PUSHER_KEY) return null;
   if (!pusherInstance) {
@@ -83,6 +124,14 @@ export interface UseRealtimeChatOptions {
   onTyping?: (userName: string) => void;
 }
 
+/**
+ * Conversation-scoped real-time hook used inside `ChatScreen`.
+ * Listens on `private-conversation.{conversationId}` for:
+ *  - New chat messages and interactive hiring ActionCards (`message.sent`)
+ *  - Read receipts (`messages.read`)
+ *  - Partner typing indicators (`user.typing`)
+ *  - Conversation lock/unlock state transitions (`conversation.updated`)
+ */
 export function useRealtimeChat({
   conversationId,
   currentUserId,
@@ -264,6 +313,15 @@ export function useRealtimeChat({
   }, [conversationId, currentUserId, onTyping, queryClient]);
 }
 
+/**
+ * Global user-scoped real-time hook mounted in `RootNavigator`.
+ * Subscribes to `private-user.{userId}` so the mobile client receives live
+ * events regardless of which screen is currently active:
+ *  - Reputation & employer stat recalculations (`user.stats.updated`)
+ *  - Admin KYC / Government ID verification approvals (`user.verification.updated`)
+ *  - Background chat message alerts & unread badge increments (`message.sent`)
+ *  - System / hiring stage notifications (`notification.sent`)
+ */
 export function useRealtimeUserEvents(userId?: number) {
   const queryClient = useQueryClient();
 
@@ -354,9 +412,21 @@ export function useRealtimeUserEvents(userId?: number) {
         queryClient.invalidateQueries({ queryKey: ['conversation', data.conversation_id] });
       }
 
-      // If incoming from another user, provide a light haptic pulse
+      // If incoming from another user, provide a light haptic pulse + system/in-app notification
       if (data.sender_id && data.sender_id !== userId) {
         triggerHaptic('light');
+        try {
+          const { triggerSystemNotification } = require('../hooks/usePushNotifications');
+          const senderName = data.sender_name || data.sender?.name || 'New Message';
+          const preview =
+            data.message || data.body || (data.image_url ? 'Sent an image' : 'Sent a message');
+          triggerSystemNotification(
+            `Message from ${senderName}`,
+            String(preview),
+            { conversation_id: data.conversation_id, type: 'chat_message' },
+            `msg:${data.id || `${data.conversation_id}:${data.created_at}`}`,
+          );
+        } catch (_) {}
       }
     };
 
@@ -392,6 +462,21 @@ export function useRealtimeUserEvents(userId?: number) {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
       triggerHaptic('light');
+
+      try {
+        const { triggerSystemNotification } = require('../hooks/usePushNotifications');
+        const notif = data.notification || data;
+        let notifData = notif?.data || data?.data || {};
+        if (typeof notifData === 'string') {
+          try {
+            notifData = JSON.parse(notifData);
+          } catch (_) {}
+        }
+        const title = notifData?.title || 'SIKAP Notification';
+        const body = notifData?.message || 'You have a new notification.';
+        const notifId = notif?.id || `${title}:${body}:${Date.now()}`;
+        triggerSystemNotification(title, body, notifData, `notif:${notifId}`);
+      } catch (_) {}
     };
 
     channel.bind('notification.sent', handleNotificationSent);

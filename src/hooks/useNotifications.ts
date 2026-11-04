@@ -1,5 +1,7 @@
+import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
+import { triggerSystemNotification } from './usePushNotifications';
 
 export interface NotificationItem {
   id: string;
@@ -19,15 +21,56 @@ export interface NotificationsResponse {
   };
 }
 
+const seenNotificationIds = new Set<string>();
+let initialLoadComplete = false;
+
 export const useNotifications = () => {
-  return useQuery<NotificationsResponse, Error>({
+  const query = useQuery<NotificationsResponse, Error>({
     queryKey: ['notifications'],
     queryFn: async () => {
       const response = await apiClient<NotificationsResponse>('/notifications');
       return response;
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 5000,
+    refetchInterval: 8000,
   });
+
+  const prevDataRef = useRef<NotificationsResponse | undefined>(undefined);
+
+  useEffect(() => {
+    const items = query.data?.notifications?.data;
+    if (!items || !Array.isArray(items)) return;
+
+    if (!initialLoadComplete) {
+      items.forEach((item) => {
+        if (item?.id) seenNotificationIds.add(item.id);
+      });
+      initialLoadComplete = true;
+      prevDataRef.current = query.data;
+      return;
+    }
+
+    items.forEach((item) => {
+      if (!item?.id || seenNotificationIds.has(item.id)) return;
+      seenNotificationIds.add(item.id);
+
+      if (item.read_at === null) {
+        let parsedData = item.data;
+        if (typeof parsedData === 'string') {
+          try {
+            parsedData = JSON.parse(parsedData);
+          } catch (_) {}
+        }
+        const title = parsedData?.title || item.type?.replace('Notification', '') || 'SIKAP Update';
+        const body = parsedData?.message || 'You have a new notification.';
+        triggerSystemNotification(title, body, parsedData || {}, `notif:${item.id}`);
+      }
+    });
+
+    prevDataRef.current = query.data;
+  }, [query.data]);
+
+  return query;
 };
 
 export const useMarkNotificationAsRead = () => {
