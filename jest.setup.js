@@ -95,3 +95,17 @@ jest.mock('expo-notifications', () => ({
     DEFAULT: 3,
   },
 }));
+
+jest.mock('expo-web-browser', () => ({
+  maybeCompleteAuthSession: jest.fn(),
+  openAuthSessionAsync: jest.fn(),
+}));
+
+jest.mock('expo-auth-session/providers/google', () => ({
+  useAuthRequest: jest.fn(() => [null, null, jest.fn().mockResolvedValue({ type: 'dismiss' })]),
+}));
+
+jest.mock('expo-auth-session', () => ({
+  makeRedirectUri: jest.fn(() => 'sikap://redirect'),
+  useAuthRequest: jest.fn(() => [null, null, jest.fn().mockResolvedValue({ type: 'dismiss' })]),
+}));

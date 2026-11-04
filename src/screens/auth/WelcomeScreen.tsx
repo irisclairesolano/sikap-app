@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Modal, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/authTypes';
@@ -11,17 +11,116 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from '../../utils/storage';
 import { notifyAuthChanged } from '../../store/authEvents';
+import GoogleAuthButton from '../../components/common/GoogleAuthButton';
+import { useGoogleAuth } from '../../hooks/useGoogleAuth';
+import { authApi } from '../../api/auth';
+import { useAuth } from '../../hooks/useAuth';
+import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
 
 type WelcomeScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Welcome'>;
 
 const WelcomeScreen: React.FC = () => {
   const navigation = useNavigation<WelcomeScreenNavigationProp>();
   const queryClient = useQueryClient();
+  const { setAuthSession } = useAuth();
+
+  const { promptAsync, response: googleResponse } = useGoogleAuth();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [banner, setBanner] = useState('');
+
+  // Role Selection Modal for new Google users
+  const [roleModalVisible, setRoleModalVisible] = useState(false);
+  const [pendingGoogleData, setPendingGoogleData] = useState<{
+    googleUser: any;
+    idToken?: string;
+    accessToken?: string;
+  } | null>(null);
 
   React.useEffect(() => {
     // Proactively clear any stale user profile cache when landing on welcome
     SecureStore.deleteItemAsync('user_profile').catch(() => {});
   }, []);
+
+  React.useEffect(() => {
+    if (googleResponse?.type === 'success') {
+      const { id_token, access_token } = (googleResponse.params as any) || {};
+      const authCode = (googleResponse as any).authentication;
+      const idTokenToUse = id_token || authCode?.idToken;
+      const accessTokenToUse = access_token || authCode?.accessToken;
+
+      if (!idTokenToUse && !accessTokenToUse) {
+        setIsGoogleLoading(false);
+        setBanner('Failed to receive Google authentication credentials.');
+        return;
+      }
+
+      setIsGoogleLoading(true);
+      setBanner('');
+
+      authApi
+        .googleAuth({
+          id_token: idTokenToUse,
+          access_token: accessTokenToUse,
+        })
+        .then(async (res) => {
+          setIsGoogleLoading(false);
+          if (res.status === 'authenticated' && res.token && res.user) {
+            // Existing user -> log in immediately
+            await setAuthSession(res.token, res.user);
+            const status = res.user.registration_status;
+            if (status === 'pending_id_upload') {
+              navigation.navigate('IDUpload', { userId: res.user.id, role: res.user.role });
+            } else if (status === 'pending_review' || status === 'rejected') {
+              navigation.navigate('PendingVerify');
+            }
+          } else if (res.status === 'needs_registration_details') {
+            // New user -> prompt for role selection
+            setPendingGoogleData({
+              googleUser: res.google_user,
+              idToken: idTokenToUse,
+              accessToken: accessTokenToUse,
+            });
+            setRoleModalVisible(true);
+          }
+        })
+        .catch((err: any) => {
+          setIsGoogleLoading(false);
+          setBanner(sanitizeErrorMessage(err?.message || 'Google authentication failed.'));
+        });
+    } else if (googleResponse?.type === 'error' || googleResponse?.type === 'dismiss') {
+      setIsGoogleLoading(false);
+    }
+  }, [googleResponse]);
+
+  const handleGoogleAuth = async () => {
+    try {
+      setBanner('');
+      setIsGoogleLoading(true);
+      const res = await promptAsync();
+      if (res?.type !== 'success') {
+        setIsGoogleLoading(false);
+      }
+    } catch (err: any) {
+      setIsGoogleLoading(false);
+      setBanner(sanitizeErrorMessage(err?.message || 'Could not initiate Google sign in.'));
+    }
+  };
+
+  const handleSelectRoleForGoogle = (selectedRole: 'worker' | 'employer') => {
+    setRoleModalVisible(false);
+    if (!pendingGoogleData) return;
+
+    navigation.navigate('RegisterStep2', {
+      role: selectedRole,
+      name: pendingGoogleData.googleUser?.name || '',
+      email: pendingGoogleData.googleUser?.email || '',
+      phone: '',
+      id_token: pendingGoogleData.idToken,
+      access_token: pendingGoogleData.accessToken,
+      avatar_url: pendingGoogleData.googleUser?.avatar_url || undefined,
+      is_google: true,
+    });
+  };
 
   const navigateToRegister = (role: 'worker' | 'employer') => {
     navigation.navigate('Register', { role });
@@ -73,6 +172,12 @@ const WelcomeScreen: React.FC = () => {
         </View>
 
         <View style={styles.footer}>
+          {banner ? (
+            <View style={styles.bannerError}>
+              <Text style={styles.bannerTextError}>{banner}</Text>
+            </View>
+          ) : null}
+
           <Button
             label="I'm a Worker"
             variant="primary"
@@ -80,13 +185,25 @@ const WelcomeScreen: React.FC = () => {
             fullWidth
             onPress={() => navigateToRegister('worker')}
           />
-          <View style={{ height: 12 }} />
+          <View style={{ height: 10 }} />
           <Button
             label="I'm an Employer"
             variant="secondary"
             size="lg"
             fullWidth
             onPress={() => navigateToRegister('employer')}
+          />
+
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or continue with</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <GoogleAuthButton
+            onPress={handleGoogleAuth}
+            loading={isGoogleLoading}
+            title="Continue with Google"
           />
 
           <View style={styles.loginRow}>
@@ -97,6 +214,63 @@ const WelcomeScreen: React.FC = () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Role Selection Modal for Google Sign Up */}
+      <Modal
+        visible={roleModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setRoleModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <Ionicons name="person-circle" size={44} color={colors.primary} />
+              <Text style={styles.modalTitle}>Join SIKAP with Google</Text>
+              <Text style={styles.modalSubtitle}>Choose how you will be using your account:</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.roleChoiceCard}
+              activeOpacity={0.8}
+              onPress={() => handleSelectRoleForGoogle('worker')}
+            >
+              <View style={styles.roleChoiceIcon}>
+                <Ionicons name="hammer" size={24} color={colors.primary} />
+              </View>
+              <View style={styles.roleChoiceText}>
+                <Text style={styles.roleChoiceTitle}>I am a Worker</Text>
+                <Text style={styles.roleChoiceDesc}>
+                  Naghahanap ng trabaho o mag-alok ng serbisyo
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.inkMuted} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.roleChoiceCard, { marginTop: 10 }]}
+              activeOpacity={0.8}
+              onPress={() => handleSelectRoleForGoogle('employer')}
+            >
+              <View style={styles.roleChoiceIcon}>
+                <Ionicons name="briefcase" size={24} color={colors.primarySoft} />
+              </View>
+              <View style={styles.roleChoiceText}>
+                <Text style={styles.roleChoiceTitle}>I am an Employer</Text>
+                <Text style={styles.roleChoiceDesc}>Naghahanap ng maaasahang manggagawa</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.inkMuted} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalCancelBtn}
+              onPress={() => setRoleModalVisible(false)}
+            >
+              <Text style={styles.modalCancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -209,13 +383,29 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
   },
   footer: {
-    marginTop: 24,
+    marginTop: 20,
     paddingTop: 4,
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
+  },
+  dividerText: {
+    paddingHorizontal: 10,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkSoft,
   },
   loginRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 18,
+    marginTop: 16,
   },
   loginText: {
     fontFamily: fonts.body,
@@ -226,6 +416,101 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 14,
     color: colors.primary,
+  },
+  bannerError: {
+    backgroundColor: colors.status.rejected.bg,
+    borderColor: colors.error,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
+  },
+  bannerTextError: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.error,
+    textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 19,
+    color: colors.ink,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkSoft,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  roleChoiceCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.paper,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    padding: 14,
+    gap: 12,
+  },
+  roleChoiceIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  roleChoiceText: {
+    flex: 1,
+  },
+  roleChoiceTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
+    color: colors.ink,
+  },
+  roleChoiceDesc: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkSoft,
+    marginTop: 2,
+  },
+  modalCancelBtn: {
+    alignItems: 'center',
+    marginTop: 16,
+    paddingVertical: 8,
+  },
+  modalCancelText: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.inkMuted,
   },
 });
 
