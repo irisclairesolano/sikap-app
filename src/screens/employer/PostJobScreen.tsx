@@ -16,7 +16,7 @@
  *       `rateUnit`, `slots`, `duration`, `durationUnit`, `scheduleDate`,
  *       `description`, `exactLocation`, `toolsRequired`, `isUrgent`.
  *     - `getWageEquivalentInfo()`: Computes hourly/daily wage equivalents and
- *       flags non-blocking DOLE Region V minimum-wage advisories (~₱395/day).
+ *       flags non-blocking DOLE Region V minimum-wage advisories (₱455/day in Sorsogon).
  *     - `photos` & `videoUpload`: Tracks immediate background XHR multipart
  *       uploads (`/jobs/upload-photo`, `/jobs/upload-video`) with live progress.
  *     - `AsyncStorage` (`DRAFT_STORAGE_KEY`): Automatically saves and restores
@@ -45,6 +45,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   KeyboardAvoidingView,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -60,6 +61,8 @@ import Button from '../../components/common/Button';
 import CustomInput from '../../components/common/Input';
 import LocationPicker from '../../components/common/LocationPicker';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { TranslationKey } from '../../locales/en';
 import { useCreateJob, useUpdateJob, useEmployerJobs } from '../../hooks/useEmployerJobs';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
@@ -69,18 +72,36 @@ import { triggerHaptic } from '../../utils/haptics';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
 
 const DRAFT_STORAGE_KEY = 'sikap_post_job_draft_v1';
-const DURATION_UNITS = ['None', 'Hours', 'Days', 'Weeks', 'Months'];
-const RATE_UNITS: {
-  label: string;
-  sublabel: string;
+const DURATION_UNITS_CONFIG: { unit: string; key: TranslationKey }[] = [
+  { unit: 'None', key: 'unit_none' },
+  { unit: 'Hours', key: 'unit_hours' },
+  { unit: 'Days', key: 'unit_days' },
+  { unit: 'Weeks', key: 'unit_weeks' },
+  { unit: 'Months', key: 'unit_months' },
+];
+
+const RATE_UNITS_CONFIG: {
+  labelKey: TranslationKey;
+  sublabelKey: TranslationKey;
   value: 'per_day' | 'per_hour' | 'per_project' | 'per_piece';
   hint: string;
 }[] = [
-  { label: 'Per Day', sublabel: 'Daily', value: 'per_day', hint: '/ day' },
-  { label: 'Per Hour', sublabel: 'Hourly', value: 'per_hour', hint: '/ hr' },
-  { label: 'Fixed', sublabel: 'Project', value: 'per_project', hint: 'total' },
-  { label: 'Per Piece', sublabel: 'Piece Rate', value: 'per_piece', hint: '/ pc' },
+  { labelKey: 'rate_per_day', sublabelKey: 'sublabel_daily', value: 'per_day', hint: '/ day' },
+  { labelKey: 'rate_per_hour', sublabelKey: 'sublabel_hourly', value: 'per_hour', hint: '/ hr' },
+  {
+    labelKey: 'rate_per_project',
+    sublabelKey: 'sublabel_project',
+    value: 'per_project',
+    hint: 'total',
+  },
+  {
+    labelKey: 'rate_per_piece',
+    sublabelKey: 'sublabel_piece_rate',
+    value: 'per_piece',
+    hint: '/ pc',
+  },
 ];
+
 const DEFAULT_CATEGORIES = [
   'Construction',
   'Domestic',
@@ -89,6 +110,15 @@ const DEFAULT_CATEGORIES = [
   'Transport',
   'Craft',
 ];
+
+const CATEGORY_TRANSLATIONS: Record<string, TranslationKey> = {
+  Construction: 'cat_construction',
+  Domestic: 'cat_domestic',
+  Agriculture: 'cat_agriculture',
+  'Skilled Trade': 'cat_skilled_trade',
+  Transport: 'cat_transport',
+  Craft: 'cat_craft',
+};
 
 export const PostJobScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<EmployerStackParamList>>();
@@ -100,6 +130,7 @@ export const PostJobScreen: React.FC = () => {
   const updateJobMutation = useUpdateJob();
   const { data: myJobsData } = useEmployerJobs();
   const { showAlert } = useAlert();
+  const { t } = useLanguage();
 
   const [isPublishing, setIsPublishing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -154,16 +185,9 @@ export const PostJobScreen: React.FC = () => {
   // ==========================================================================
   // DOLE REGION V WAGE ADVISORY & REAL-TIME EQUIVALENCE CALCULATOR
   // ==========================================================================
-  // Promotes fair compensation transparency in Sorsogon / Bicol Region:
-  //   - `per_day`: Computes the 8-hour hourly equivalent (`pay / 8`) and warns
-  //     the employer if the daily rate falls below the DOLE Region V statutory
-  //     minimum wage benchmark (~₱395/day), catching common typos where an
-  //     employer enters an hourly figure while "Per Day" is selected.
-  //   - `per_hour`: Computes the 8-hour daily equivalent (`pay * 8`) and flags
-  //     rates below ₱50/hr.
-  //   - `per_project`: Estimates hourly equivalent across the specified duration
-  //     (`Hours`, `Days`, `Weeks`, `Months`) so both parties can gauge fairness.
-  // ==========================================================================
+  const DOLE_DAILY_MINIMUM = 395;
+  const DOLE_HOURLY_MINIMUM = 49.38;
+
   // Wage conversion & sanity check helper
   const getWageEquivalentInfo = () => {
     if (!pay || isNaN(parsedPay) || parsedPay <= 0) return null;
@@ -172,10 +196,15 @@ export const PostJobScreen: React.FC = () => {
       const dailyEq = parsedPay * 8;
       const isSuspectLow = parsedPay < 50;
       return {
-        equivalent: `≈ ₱${dailyEq.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} for an 8-hour workday`,
+        equivalent: t('wage_eq_daily_workday', {
+          amount: dailyEq.toLocaleString('en-US', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+          }),
+        }),
         isWarning: isSuspectLow,
-        warningText: isSuspectLow ? '⚠️ Unusually low hourly wage for Bicol/Sorsogon.' : undefined,
-        note: `Rate: ₱${parsedPay.toLocaleString()} / hr (Hourly basis)`,
+        warningText: isSuspectLow ? t('wage_warn_unusually_low_hourly') : undefined,
+        note: `Rate: ₱${parsedPay.toLocaleString()} / hr`,
       };
     }
 
@@ -183,12 +212,12 @@ export const PostJobScreen: React.FC = () => {
       const hourlyEq = parsedPay / 8;
       const isSuspectLow = parsedPay < 395;
       return {
-        equivalent: `≈ ₱${hourlyEq.toFixed(2)} / hour (based on an 8-hour workday)`,
+        equivalent: t('wage_eq_hourly_basis', { amount: hourlyEq.toFixed(2) }),
         isWarning: isSuspectLow,
         warningText: isSuspectLow
-          ? `⚠️ ₱${parsedPay.toLocaleString()} is below DOLE Region V daily minimum wage (~₱395/day). If you meant ₱${parsedPay.toLocaleString()} per hour, please tap "Per Hour" above.`
+          ? t('wage_warn_dole_below_minimum', { amount: parsedPay.toLocaleString() })
           : undefined,
-        note: `Standard daily rate`,
+        note: t('standard_daily_rate_note'),
       };
     }
 
@@ -202,30 +231,42 @@ export const PostJobScreen: React.FC = () => {
         else if (durationUnit === 'Months') totalHours = parsedDur * 160;
 
         const hourlyEq = parsedPay / totalHours;
+        const localizedUnit =
+          durationUnit === 'Hours'
+            ? t('unit_hours')
+            : durationUnit === 'Days'
+              ? t('unit_days')
+              : durationUnit === 'Weeks'
+                ? t('unit_weeks')
+                : durationUnit === 'Months'
+                  ? t('unit_months')
+                  : durationUnit;
+
         return {
-          equivalent: `≈ ₱${hourlyEq.toFixed(2)} / hour across ${parsedDur} ${durationUnit.toLowerCase()}`,
+          equivalent: t('wage_eq_project_duration', {
+            amount: hourlyEq.toFixed(2),
+            duration: parsedDur,
+            unit: localizedUnit.toLowerCase(),
+          }),
           isWarning: hourlyEq < 50,
-          warningText:
-            hourlyEq < 50
-              ? '⚠️ Estimated hourly equivalent is unusually low for this project duration.'
-              : undefined,
-          note: `Total fixed contract payout`,
+          warningText: hourlyEq < 50 ? t('wage_warn_project_unusually_low') : undefined,
+          note: t('wage_eq_fixed_payout'),
         };
       }
       return {
-        equivalent: `Total fixed compensation for the completed project.`,
+        equivalent: t('wage_eq_fixed_payout'),
         isWarning: false,
         warningText: undefined,
-        note: `Fixed / Project basis`,
+        note: t('sublabel_project'),
       };
     }
 
     if (rateUnit === 'per_piece') {
       return {
-        equivalent: `₱${parsedPay.toLocaleString()} per piece or unit produced.`,
+        equivalent: t('wage_eq_piece_payout', { amount: parsedPay.toLocaleString() }),
         isWarning: false,
         warningText: undefined,
-        note: `Piece-rate basis`,
+        note: t('sublabel_piece_rate'),
       };
     }
 
@@ -584,14 +625,14 @@ export const PostJobScreen: React.FC = () => {
     const trimmed = currentCategory.trim();
     if (trimmed) {
       if (containsProfanity(trimmed)) {
-        showAlert('Profanity detected', 'Category tags cannot contain inappropriate language.');
+        showAlert(t('alert_profanity_detected'), t('alert_profanity_desc'));
         setCurrentCategory('');
         setShowCategorySuggestions(false);
         return;
       }
       const lowerCategories = categories.map((c) => c.toLowerCase());
       if (lowerCategories.includes(trimmed.toLowerCase())) {
-        showAlert('Duplicate tag', 'This category tag has already been added.');
+        showAlert(t('alert_duplicate_tag'), t('alert_duplicate_tag_desc'));
       } else {
         setCategories([...categories, trimmed]);
       }
@@ -606,7 +647,7 @@ export const PostJobScreen: React.FC = () => {
 
   const pickPhotos = async () => {
     if (photos.length >= 5) {
-      showAlert('Limit reached', 'You can only upload up to 5 photos.');
+      showAlert(t('alert_limit_reached'), t('alert_limit_photos_desc'));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -692,29 +733,29 @@ export const PostJobScreen: React.FC = () => {
     });
 
     const missingFields = [];
-    if (!title) missingFields.push('Job Title');
-    if (finalCategories.length === 0) missingFields.push('Categories');
-    if (!barangay) missingFields.push('Barangay');
-    if (!municipality) missingFields.push('Municipality');
-    if (!pay) missingFields.push('Pay');
-    if (!rateUnit) missingFields.push('Rate Basis');
-    if (!slots) missingFields.push('Slots');
-    if (!description) missingFields.push('Description');
+    if (!title) missingFields.push(t('job_title_label').replace(' *', ''));
+    if (finalCategories.length === 0) missingFields.push(t('categories_label').replace(' *', ''));
+    if (!barangay) missingFields.push(t('barangay'));
+    if (!municipality) missingFields.push(t('municipality'));
+    if (!pay) missingFields.push(t('pay_amount_label').replace(' *', ''));
+    if (!rateUnit) missingFields.push(t('rate_basis_label').replace(' *', ''));
+    if (!slots) missingFields.push(t('slots_workers_needed_label').replace(' *', ''));
+    if (!description) missingFields.push(t('job_description_label').replace(' *', ''));
 
     if (missingFields.length > 0) {
       console.log('⚠️ Missing fields:', missingFields);
       showAlert(
-        'Missing fields',
-        `Please fill in all the required fields: ${missingFields.join(', ')}`,
+        t('alert_missing_fields'),
+        t('alert_missing_fields_desc', { fields: missingFields.join(', ') }),
       );
       return;
     }
 
     if (payInvalid || slotsInvalid) {
       const invalidFields = [];
-      if (payInvalid) invalidFields.push('Pay must be at least 1 PHP');
-      if (slotsInvalid) invalidFields.push('Slots must be at least 1');
-      showAlert('Invalid input', invalidFields.join('\n'));
+      if (payInvalid) invalidFields.push(t('err_pay_min_1'));
+      if (slotsInvalid) invalidFields.push(t('err_slots_min_1'));
+      showAlert(t('alert_missing_fields'), invalidFields.join('\n'));
       return;
     }
 
@@ -724,20 +765,14 @@ export const PostJobScreen: React.FC = () => {
       videoUpload && (videoUpload.status === 'uploading' || videoUpload.status === 'compressing');
 
     if (isUploadingPhotos || isUploadingVideo) {
-      showAlert(
-        'Upload in progress',
-        'Please wait for all media to finish uploading before publishing.',
-      );
+      showAlert(t('alert_upload_in_progress'), t('alert_upload_in_progress_desc'));
       return;
     }
 
     const hasPhotoErrors = photos.some((p) => p.status === 'error');
     const hasVideoError = videoUpload && videoUpload.status === 'error';
     if (hasPhotoErrors || hasVideoError) {
-      showAlert(
-        'Upload error',
-        'Please remove or retry any failed media uploads before publishing.',
-      );
+      showAlert(t('alert_upload_error'), t('alert_upload_error_desc'));
       return;
     }
 
@@ -785,7 +820,7 @@ export const PostJobScreen: React.FC = () => {
             idempotencyKeyRef.current = null;
             setIsPublishing(false);
             setUploadProgress(100);
-            showAlert('Job updated!', 'Your changes have been saved.', [
+            showAlert(t('alert_job_updated'), t('alert_changes_saved'), [
               { text: 'OK', onPress: () => navigation.goBack() },
             ]);
           },
@@ -807,25 +842,26 @@ export const PostJobScreen: React.FC = () => {
 
           navigation.replace('Success', {
             variant: isFirstJob ? 'milestone' : 'confirm',
-            title: isFirstJob ? 'Your first job is live!' : 'Your job is live!',
-            message: isFirstJob
-              ? 'Congratulations! This is your first job post on SIKAP. Workers will be notified and can start applying right away.'
-              : 'Workers can now see it and apply. We will notify you as soon as someone applies.',
+            title: isFirstJob ? t('success_first_job_title') : t('success_job_live_title'),
+            message: isFirstJob ? t('success_first_job_msg') : t('success_job_live_msg'),
             detail: [
-              { label: 'Job', value: title.trim() },
-              { label: 'Location', value: `${barangay}, ${municipality}` },
+              { label: t('job_title_label').replace(' *', ''), value: title.trim() },
+              { label: t('location'), value: `${barangay}, ${municipality}` },
               {
-                label: 'Pay',
+                label: t('compensation'),
                 value: `₱${parsedPay.toLocaleString()} / ${rateUnit.replace('per_', '')}`,
               },
-              { label: 'Slots', value: `${slots} worker${parseInt(slots, 10) > 1 ? 's' : ''}` },
+              {
+                label: t('slots_available'),
+                value: `${slots} worker${parseInt(slots, 10) > 1 ? 's' : ''}`,
+              },
             ],
             primaryAction: {
-              label: 'View my jobs',
+              label: t('view_my_jobs_btn'),
               navigateTo: { name: 'MyJobsList' },
             },
             secondaryAction: {
-              label: 'Post another job',
+              label: t('post_another_job_btn'),
               navigateTo: { name: 'PostJob' },
             },
           });
@@ -850,7 +886,9 @@ export const PostJobScreen: React.FC = () => {
             <Ionicons name="close" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.appBarBadge}>
-            <Text style={styles.appBarBadgeText}>{isEditMode ? 'Edit post' : 'New post'}</Text>
+            <Text style={styles.appBarBadgeText}>
+              {isEditMode ? t('edit_post_badge') : t('new_post_badge')}
+            </Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
@@ -861,23 +899,25 @@ export const PostJobScreen: React.FC = () => {
           keyboardShouldPersistTaps="handled"
         >
           <Text style={styles.title}>
-            {isEditMode ? 'Edit your' : 'Post a'}
+            {isEditMode ? t('edit_your_prefix') : t('post_a_prefix')}
             {'\n'}
-            <Text style={styles.titleAccent}>{isEditMode ? 'job post.' : 'new job.'}</Text>
+            <Text style={styles.titleAccent}>
+              {isEditMode ? t('job_post_accent') : t('new_job_accent')}
+            </Text>
           </Text>
 
           <View style={styles.formContainer}>
             <CustomInput
-              label="Job title *"
+              label={t('job_title_label')}
               value={title}
               onChangeText={setTitle}
-              placeholder="E.g. Carpenter wanted"
+              placeholder={t('job_title_placeholder')}
             />
 
             {/* Categories */}
             <View style={{ zIndex: 10 }}>
               <CustomInput
-                label="Categories *"
+                label={t('categories_label')}
                 value={currentCategory}
                 onChangeText={(text) => {
                   if (text.includes(',')) {
@@ -904,15 +944,9 @@ export const PostJobScreen: React.FC = () => {
                     setCurrentCategory('');
                     setShowCategorySuggestions(false);
                     if (profanityFound) {
-                      showAlert(
-                        'Profanity detected',
-                        'Category tags cannot contain inappropriate language.',
-                      );
+                      showAlert(t('alert_profanity_detected'), t('alert_profanity_desc'));
                     } else if (duplicateFound) {
-                      showAlert(
-                        'Duplicate tag',
-                        'One or more category tags have already been added.',
-                      );
+                      showAlert(t('alert_duplicate_tag'), t('alert_duplicate_tag_desc'));
                     }
                   } else {
                     setCurrentCategory(text);
@@ -920,7 +954,7 @@ export const PostJobScreen: React.FC = () => {
                   }
                 }}
                 onFocus={() => setShowCategorySuggestions(true)}
-                placeholder="Type tag or select suggestion..."
+                placeholder={t('categories_placeholder')}
                 icon="pricetag-outline"
                 onSubmitEditing={addCategory}
               />
@@ -946,7 +980,9 @@ export const PostJobScreen: React.FC = () => {
                             setShowCategorySuggestions(false);
                           }}
                         >
-                          <Text style={styles.dropdownItemText}>{cat}</Text>
+                          <Text style={styles.dropdownItemText}>
+                            {CATEGORY_TRANSLATIONS[cat] ? t(CATEGORY_TRANSLATIONS[cat]) : cat}
+                          </Text>
                           <Ionicons name="add-circle-outline" size={18} color={colors.primary} />
                         </TouchableOpacity>
                       ))}
@@ -963,7 +999,7 @@ export const PostJobScreen: React.FC = () => {
                                 { fontFamily: fonts.bodyBold, color: colors.primary },
                               ]}
                             >
-                              Add "{currentCategory.trim()}"
+                              {t('add_category_suggestion', { category: currentCategory.trim() })}
                             </Text>
                             <Ionicons name="add-circle" size={18} color={colors.primary} />
                           </TouchableOpacity>
@@ -980,7 +1016,9 @@ export const PostJobScreen: React.FC = () => {
                       style={styles.chip}
                       onPress={() => removeCategory(idx)}
                     >
-                      <Text style={styles.chipText}>{cat}</Text>
+                      <Text style={styles.chipText}>
+                        {CATEGORY_TRANSLATIONS[cat] ? t(CATEGORY_TRANSLATIONS[cat]) : cat}
+                      </Text>
                       <Ionicons name="close-circle" size={16} color={colors.primary} />
                     </TouchableOpacity>
                   ))}
@@ -996,17 +1034,17 @@ export const PostJobScreen: React.FC = () => {
             />
 
             <CustomInput
-              label="Exact Location"
+              label={t('exact_location_label')}
               value={exactLocation}
               onChangeText={setExactLocation}
-              placeholder="E.g. 123 Main St, near Municipal Hall / Plaza"
+              placeholder={t('exact_location_placeholder')}
               icon="map-outline"
             />
 
             {/* Pay Amount & Rate Basis Group */}
             <View style={styles.fieldBlock}>
               <CustomInput
-                label="Pay Amount (PHP) *"
+                label={t('pay_amount_label')}
                 value={pay}
                 onChangeText={handlePayChange}
                 placeholder="600"
@@ -1014,11 +1052,9 @@ export const PostJobScreen: React.FC = () => {
                 status={payInvalid ? 'invalid' : undefined}
               />
               <View style={{ marginTop: 12 }}>
-                <Text style={styles.label}>
-                  Rate Basis<Text style={{ color: colors.error }}> *</Text>
-                </Text>
+                <Text style={styles.label}>{t('rate_basis_label')}</Text>
                 <View style={styles.rateUnitSelector}>
-                  {RATE_UNITS.map((item) => {
+                  {RATE_UNITS_CONFIG.map((item) => {
                     const isSelected = rateUnit === item.value;
                     return (
                       <TouchableOpacity
@@ -1036,7 +1072,7 @@ export const PostJobScreen: React.FC = () => {
                             isSelected && styles.rateUnitBtnTextActive,
                           ]}
                         >
-                          {item.label}
+                          {t(item.labelKey)}
                         </Text>
                         <Text
                           style={[
@@ -1044,7 +1080,7 @@ export const PostJobScreen: React.FC = () => {
                             isSelected && styles.rateUnitSubtextActive,
                           ]}
                         >
-                          {item.sublabel}
+                          {t(item.sublabelKey)}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -1080,6 +1116,16 @@ export const PostJobScreen: React.FC = () => {
                     {wageInfo.note && !wageInfo.warningText && (
                       <Text style={styles.wagePreviewNote}>{wageInfo.note}</Text>
                     )}
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL('https://nwpc.dole.gov.ph/region-v/')}
+                      activeOpacity={0.7}
+                      style={styles.wageDoleLink}
+                    >
+                      <Ionicons name="information-circle-outline" size={13} color="#2563EB" />
+                      <Text style={styles.wageDoleLinkText}>
+                        DOLE Region V Sorsogon Minimum Wage: ₱455/day (Effective Apr 8, 2026)
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 )}
               </View>
@@ -1088,7 +1134,7 @@ export const PostJobScreen: React.FC = () => {
             {/* Slots Underneath Pay & Rate Basis */}
             <View style={styles.fieldBlock}>
               <CustomInput
-                label="Slots (Workers Needed) *"
+                label={t('slots_workers_needed_label')}
                 value={slots}
                 onChangeText={handleSlotsChange}
                 placeholder="2"
@@ -1100,7 +1146,7 @@ export const PostJobScreen: React.FC = () => {
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
                 <CustomInput
-                  label="Duration"
+                  label={t('duration_label')}
                   value={durationUnit === 'None' ? '' : duration}
                   onChangeText={setDuration}
                   placeholder={durationUnit === 'None' ? 'N/A' : 'E.g. 5'}
@@ -1110,16 +1156,16 @@ export const PostJobScreen: React.FC = () => {
                 />
               </View>
               <View style={{ flex: 1.4 }}>
-                <Text style={styles.label}>Duration Unit</Text>
+                <Text style={styles.label}>{t('duration_unit_label')}</Text>
                 <View style={styles.unitSelector}>
-                  {DURATION_UNITS.map((unit) => (
+                  {DURATION_UNITS_CONFIG.map((item) => (
                     <TouchableOpacity
-                      key={unit}
-                      style={[styles.unitBtn, durationUnit === unit && styles.unitBtnActive]}
+                      key={item.unit}
+                      style={[styles.unitBtn, durationUnit === item.unit && styles.unitBtnActive]}
                       onPress={() => {
                         triggerHaptic();
-                        setDurationUnit(unit);
-                        if (unit === 'None') {
+                        setDurationUnit(item.unit);
+                        if (item.unit === 'None') {
                           setDuration('');
                         }
                       }}
@@ -1127,10 +1173,10 @@ export const PostJobScreen: React.FC = () => {
                       <Text
                         style={[
                           styles.unitBtnText,
-                          durationUnit === unit && styles.unitBtnTextActive,
+                          durationUnit === item.unit && styles.unitBtnTextActive,
                         ]}
                       >
-                        {unit}
+                        {t(item.key)}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -1139,9 +1185,7 @@ export const PostJobScreen: React.FC = () => {
             </View>
 
             <View>
-              <Text style={styles.label}>
-                Schedule Date<Text style={{ color: colors.error }}> *</Text>
-              </Text>
+              <Text style={styles.label}>{t('schedule_date_label')}</Text>
               <TouchableOpacity
                 style={styles.datePickerBtn}
                 onPress={() => setShowDatePicker(true)}
@@ -1165,31 +1209,31 @@ export const PostJobScreen: React.FC = () => {
             </View>
 
             <CustomInput
-              label="Job Description *"
+              label={t('job_description_label')}
               value={description}
               onChangeText={setDescription}
-              placeholder="Describe the tasks, requirements, and expectations..."
+              placeholder={t('job_description_placeholder')}
               multiline
               allowEmoji={true}
               icon="create-outline"
             />
 
             <CustomInput
-              label="Tools Required (Optional)"
+              label={t('tools_required_label')}
               value={toolsRequired}
               onChangeText={setToolsRequired}
-              placeholder="E.g. Hammer, nails, power saw"
+              placeholder={t('tools_required_placeholder')}
               icon="hammer-outline"
             />
 
             {!isEditMode && (
               <View style={styles.mediaSection}>
-                <Text style={styles.label}>Photos & Video (Optional)</Text>
+                <Text style={styles.label}>{t('photos_video_optional')}</Text>
 
                 <View style={styles.mediaRow}>
                   <TouchableOpacity style={styles.mediaBtn} onPress={pickPhotos}>
                     <Ionicons name="image-outline" size={24} color={colors.primary} />
-                    <Text style={styles.mediaBtnText}>Add Photos</Text>
+                    <Text style={styles.mediaBtnText}>{t('add_photos_btn')}</Text>
                     <Text style={styles.mediaBtnSub}>{photos.length}/5</Text>
                   </TouchableOpacity>
 
@@ -1200,7 +1244,7 @@ export const PostJobScreen: React.FC = () => {
                   >
                     <Ionicons name="videocam-outline" size={24} color={colors.primary} />
                     <Text style={styles.mediaBtnText}>
-                      {videoUpload ? 'Change Video' : 'Add Video'}
+                      {videoUpload ? t('change_video_btn') : t('add_video_btn')}
                     </Text>
                     <Text style={styles.mediaBtnSub}>{videoUpload ? '1/1' : '0/1'}</Text>
                   </TouchableOpacity>
@@ -1211,7 +1255,9 @@ export const PostJobScreen: React.FC = () => {
                     <View style={styles.progressBarBg}>
                       <View style={[styles.progressBarFill, { width: `${overallProgress}%` }]} />
                     </View>
-                    <Text style={styles.progressText}>Uploading photos: {overallProgress}%</Text>
+                    <Text style={styles.progressText}>
+                      {t('uploading_photos_progress', { progress: overallProgress })}
+                    </Text>
                   </View>
                 )}
 
@@ -1222,7 +1268,7 @@ export const PostJobScreen: React.FC = () => {
                       color={colors.primary}
                       style={{ marginRight: 8 }}
                     />
-                    <Text style={styles.progressText}>Compressing video...</Text>
+                    <Text style={styles.progressText}>{t('compressing_video')}</Text>
                   </View>
                 )}
 
@@ -1234,7 +1280,7 @@ export const PostJobScreen: React.FC = () => {
                       />
                     </View>
                     <Text style={styles.progressText}>
-                      Uploading video: {videoUpload.progress}%
+                      {t('uploading_video_progress', { progress: videoUpload.progress })}
                     </Text>
                   </View>
                 )}
@@ -1242,7 +1288,7 @@ export const PostJobScreen: React.FC = () => {
                 {videoUpload && videoUpload.status === 'error' && (
                   <View style={styles.progressBarWrapper}>
                     <Text style={[styles.progressText, { color: colors.error }]}>
-                      Video upload failed. Remove and retry.
+                      {t('video_upload_failed')}
                     </Text>
                   </View>
                 )}
@@ -1270,7 +1316,7 @@ export const PostJobScreen: React.FC = () => {
                           <View style={styles.imgLoaderOverlay}>
                             <ActivityIndicator size="small" color={colors.white} />
                             <Text style={styles.imgLoaderText}>
-                              {p.progress >= 100 ? 'Processing' : `${p.progress}%`}
+                              {p.progress >= 100 ? t('processing_label') : `${p.progress}%`}
                             </Text>
                           </View>
                         )}
@@ -1280,7 +1326,7 @@ export const PostJobScreen: React.FC = () => {
                             onPress={() => retryUpload(p.id)}
                           >
                             <Ionicons name="refresh-circle" size={24} color={colors.white} />
-                            <Text style={styles.imgLoaderText}>Retry</Text>
+                            <Text style={styles.imgLoaderText}>{t('retry_label')}</Text>
                           </TouchableOpacity>
                         )}
                         <TouchableOpacity
@@ -1326,8 +1372,8 @@ export const PostJobScreen: React.FC = () => {
             <View style={styles.urgentCard}>
               <Ionicons name="flame" size={22} color={colors.primary} />
               <View style={styles.urgentTextContainer}>
-                <Text style={styles.urgentTitle}>Mark as urgent</Text>
-                <Text style={styles.urgentSubtitle}>Appears at the top of worker feeds</Text>
+                <Text style={styles.urgentTitle}>{t('mark_as_urgent')}</Text>
+                <Text style={styles.urgentSubtitle}>{t('urgent_desc')}</Text>
               </View>
               <Switch
                 trackColor={{ false: colors.inkFaint, true: colors.primary }}
@@ -1340,7 +1386,7 @@ export const PostJobScreen: React.FC = () => {
           </View>
 
           <Button
-            label={isEditMode ? 'Save changes' : 'Publish job'}
+            label={isEditMode ? t('save_changes_btn') : t('publish_job_btn')}
             size="lg"
             fullWidth
             loading={createJobMutation.isPending || updateJobMutation.isPending || isPublishing}
@@ -1363,7 +1409,7 @@ export const PostJobScreen: React.FC = () => {
                 textAlign: 'center',
               }}
             >
-              Please wait until all selected photos and videos are uploaded before publishing.
+              {t('wait_media_upload_desc')}
             </Text>
           )}
         </ScrollView>
@@ -1374,9 +1420,9 @@ export const PostJobScreen: React.FC = () => {
           <View style={styles.progressContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
             <Text style={styles.progressTitle}>
-              {isEditMode ? 'Updating Job Post...' : 'Publishing Job Post...'}
+              {isEditMode ? t('updating_job_modal') : t('publishing_job_modal')}
             </Text>
-            <Text style={styles.progressSubtitle}>Please wait a moment.</Text>
+            <Text style={styles.progressSubtitle}>{t('please_wait_moment')}</Text>
           </View>
         </View>
       </Modal>
@@ -1607,6 +1653,21 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.inkSoft,
     marginTop: 2,
+  },
+  wageDoleLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 6,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0, 0, 0, 0.06)',
+  },
+  wageDoleLinkText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 11,
+    color: '#2563EB',
+    textDecorationLine: 'underline',
   },
   unitSelector: {
     flexDirection: 'row',

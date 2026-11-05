@@ -444,6 +444,174 @@ export const en = {
   active_jobs: 'Active Jobs',
   total_hires: 'Total Hires',
   total_paid: 'Total Paid',
+
+  // Group 6: My Jobs Empty States
+  no_active_jobs: 'No active jobs',
+  no_active_posted_jobs_desc:
+    "You haven't posted any active jobs yet. Post a job to start finding skilled workers nearby!",
+  no_archived_jobs: 'No archived jobs',
+  no_archived_jobs_desc: "You don't have any archived job postings right now.",
+  no_past_jobs: 'No past jobs',
+  no_past_jobs_desc: "You don't have any past job postings right now.",
+
+  // Group 7: Post & Edit Job Screen
+  new_post_badge: 'New post',
+  edit_post_badge: 'Edit post',
+  post_a_new_job_title: 'Post a new job.',
+  edit_your_job_post_title: 'Edit your job post.',
+  post_a_prefix: 'Post a',
+  new_job_accent: 'new job.',
+  edit_your_prefix: 'Edit your',
+  job_post_accent: 'job post.',
+  job_title_label: 'Job title *',
+  job_title_placeholder: 'E.g. Carpenter wanted',
+  exact_location_label: 'Exact Location',
+  exact_location_placeholder: 'E.g. 123 Main St, near Municipal Hall / Plaza',
+  job_description_label: 'Job Description *',
+  job_description_placeholder: 'Describe the tasks, requirements, and expectations...',
+  tools_required_label: 'Tools Required (Optional)',
+  tools_required_placeholder: 'E.g. Hammer, nails, power saw',
+
+  // Categories & Suggestion Chips
+  categories_label: 'Categories *',
+  categories_placeholder: 'Type tag or select suggestion...',
+  add_category_suggestion: 'Add "{category}"',
+  cat_construction: 'Construction',
+  cat_domestic: 'Domestic',
+  cat_agriculture: 'Agriculture',
+  cat_skilled_trade: 'Skilled Trade',
+  cat_transport: 'Transport',
+  cat_craft: 'Craft',
+
+  // Compensation & Rate Basis
+  pay_amount_label: 'Pay Amount (PHP) *',
+  rate_basis_label: 'Rate Basis *',
+  rate_per_day: 'Per Day',
+  rate_per_hour: 'Per Hour',
+  rate_per_project: 'Fixed',
+  rate_per_piece: 'Per Piece',
+  sublabel_daily: 'Daily',
+  sublabel_hourly: 'Hourly',
+  sublabel_project: 'Project',
+  sublabel_piece_rate: 'Piece Rate',
+
+  // DOLE Region V Wage Advisory & Calculation
+  standard_daily_rate_note: 'Standard daily rate',
+  wage_eq_hourly_basis: '≈ ₱{amount} / hour (based on an 8-hour workday)',
+  wage_eq_daily_workday: '≈ ₱{amount} for an 8-hour workday',
+  wage_eq_project_duration: '≈ ₱{amount} / hour across {duration} {unit}',
+  wage_eq_fixed_payout: 'Total fixed compensation for the completed project.',
+  wage_eq_piece_payout: '₱{amount} per piece or unit produced.',
+  wage_warn_unusually_low_hourly: '⚠️ Unusually low hourly wage for Bicol/Sorsogon.',
+  wage_warn_dole_below_minimum:
+    '⚠️ ₱{amount} is below DOLE Region V daily minimum wage (~₱395/day). If you meant ₱{amount} per hour, please tap "Per Hour" above.',
+  wage_warn_project_unusually_low:
+    '⚠️ Estimated hourly equivalent is unusually low for this project duration.',
+
+  // Slots, Schedule, Duration & Media
+  slots_workers_needed_label: 'Slots (Workers Needed) *',
+  schedule_date_label: 'Schedule Date *',
+  duration_label: 'Duration',
+  duration_unit_label: 'Duration Unit',
+  unit_none: 'None',
+  unit_hours: 'Hours',
+  unit_days: 'Days',
+  unit_weeks: 'Weeks',
+  unit_months: 'Months',
+  photos_video_optional: 'Photos & Video (Optional)',
+  add_photos_btn: 'Add Photos',
+  add_video_btn: 'Add Video',
+  change_video_btn: 'Change Video',
+  uploading_photos_progress: 'Uploading photos: {progress}%',
+  uploading_video_progress: 'Uploading video: {progress}%',
+  compressing_video: 'Compressing video...',
+  video_upload_failed: 'Video upload failed. Remove and retry.',
+  processing_label: 'Processing',
+  retry_label: 'Retry',
+  mark_as_urgent: 'Mark as urgent',
+  urgent_desc: 'Appears at the top of worker feeds',
+
+  // Form Submission, Validation & Modals
+  publish_job_btn: 'Publish job',
+  save_changes_btn: 'Save changes',
+  publishing_job_modal: 'Publishing Job Post...',
+  updating_job_modal: 'Updating Job Post...',
+  saving_changes_modal: 'Saving changes...',
+  please_wait_moment: 'Please wait a moment.',
+  wait_media_upload_desc:
+    'Please wait until all selected photos and videos are uploaded before publishing.',
+  alert_profanity_detected: 'Profanity detected',
+  alert_profanity_desc: 'Category tags cannot contain inappropriate language.',
+  alert_duplicate_tag: 'Duplicate tag',
+  alert_duplicate_tag_desc: 'This category tag has already been added.',
+  alert_limit_reached: 'Limit reached',
+  alert_limit_photos_desc: 'You can only upload up to 5 photos.',
+  alert_missing_fields: 'Missing fields',
+  alert_missing_fields_desc: 'Please fill in all the required fields: {fields}',
+  err_pay_min_1: 'Pay must be at least 1 PHP',
+  err_slots_min_1: 'Slots must be at least 1',
+  alert_upload_in_progress: 'Upload in progress',
+  alert_upload_in_progress_desc: 'Please wait for all media to finish uploading before publishing.',
+  alert_upload_error: 'Upload error',
+  alert_upload_error_desc: 'Please remove or retry any failed media uploads before publishing.',
+  alert_job_updated: 'Job updated!',
+  alert_changes_saved: 'Your changes have been saved.',
+
+  // Success Screen
+  success_first_job_title: 'Your first job is live!',
+  success_job_live_title: 'Your job is live!',
+  success_first_job_msg:
+    'Congratulations! This is your first job post on SIKAP. Workers will be notified and can start applying right away.',
+  success_job_live_msg:
+    'Workers can now see it and apply. We will notify you as soon as someone applies.',
+  view_my_jobs_btn: 'View my jobs',
+  post_another_job_btn: 'Post another job',
+
+  // Group 8: Notifications Screen & Cards
+  notif_section_today: 'Today',
+  notif_section_yesterday: 'Yesterday',
+  notif_section_older: 'Older',
+  mark_all_read: 'Mark all as read',
+  marking_read: 'Marking...',
+  no_notifs_today: 'No notifications today.',
+  no_notifs_yet: 'No notifications yet.',
+  new_notif_default: 'You have a new notification.',
+  notif_new_application_title: 'New Application',
+  notif_new_application_msg: '{workerName} has applied for {jobTitle}.',
+  notif_shortlisted_title: 'Application Shortlisted',
+  notif_shortlisted_msg:
+    'SIKAP: {employerName} has shortlisted your application for [{jobTitle}]. Open the app to discuss details and negotiate terms.',
+  notif_hire_confirmed_title: 'Hire Confirmed',
+  notif_hire_confirmed_msg: 'Your hire for {jobTitle} has been confirmed. Please accept the offer.',
+  notif_offer_accepted_title: 'Offer Accepted',
+  notif_offer_accepted_msg: '{workerName} has accepted the offer for {jobTitle}.',
+  notif_rate_declined_title: 'Offer Rate Declined',
+  notif_rate_declined_msg:
+    'SIKAP: Worker {workerName} declined the proposed rate for [{jobTitle}]. You can renegotiate and send a new offer.',
+  notif_hire_cancelled_title: 'Hire Cancelled',
+  notif_hire_cancelled_msg: 'SIKAP: Your hire for [{jobTitle}] has been cancelled by the employer.',
+  notif_app_update_title: 'Application Update',
+  notif_app_declined_msg:
+    'Thank you for applying to {jobTitle}. Keep your spirits up! New opportunities in Bulan are posted every day — check them out on SIKAP.',
+  notif_rate_employer_title: 'Rate Your Employer',
+  notif_rate_employer_msg:
+    '"{jobTitle}" is marked complete! Please rate {employerName} to help the community.',
+  notif_rate_worker_title: 'Rate Your Worker',
+  notif_rate_worker_msg: '"{jobTitle}" is complete. Please submit a review for {workerName}.',
+  notif_worker_finished_title: 'Work Finished by Worker',
+  notif_worker_finished_msg:
+    '"{workerName}" flagged "{jobTitle}" as finished. Please confirm and rate the worker.',
+  notif_identity_verified_title: 'Identity Verified',
+  notif_identity_verified_msg:
+    'Your SIKAP identity documents have been approved! You now have full access to apply, post jobs, and connect with workers.',
+  notif_identity_attention_title: 'Identity Verification Needs Attention',
+  notif_identity_attention_msg:
+    'Your SIKAP identity submission could not be approved. Reason: {reason}',
+  notif_account_suspended_title: 'Account Suspended',
+  notif_account_suspended_msg:
+    'Your account has been suspended due to violations of SIKAP community standards.',
+  notif_report_action_title: 'Report Action Taken',
+  notif_report_action_msg: 'Your report has been reviewed and appropriate action has been taken.',
 };
 
 export type TranslationKey = keyof typeof en;

@@ -463,4 +463,177 @@ export const tl: Record<TranslationKey, string> = {
   active_jobs: 'Aktibong Trabaho',
   total_hires: 'Kabuuang Nakuha',
   total_paid: 'Kabuuang Naibayad',
+
+  // Group 6: My Jobs Empty States
+  no_active_jobs: 'Walang aktibong trabaho',
+  no_active_posted_jobs_desc:
+    'Wala ka pang naka-post na trabaho. Mag-post na para makahanap ng mga manggagawa sa malapit!',
+  no_archived_jobs: 'Walang naka-archive na trabaho',
+  no_archived_jobs_desc: 'Wala kang naka-archive na trabaho sa ngayon.',
+  no_past_jobs: 'Walang nakaraang trabaho',
+  no_past_jobs_desc: 'Wala ka pang mga nakaraang job post.',
+
+  // Group 7: Post & Edit Job Screen
+  new_post_badge: 'Bagong Post',
+  edit_post_badge: 'I-edit ang Post',
+  post_a_new_job_title: 'Mag-post ng bagong trabaho.',
+  edit_your_job_post_title: 'I-update ang iyong job post.',
+  post_a_prefix: 'Mag-post ng',
+  new_job_accent: 'bagong trabaho.',
+  edit_your_prefix: 'I-update ang',
+  job_post_accent: 'iyong job post.',
+  job_title_label: 'Pamagat ng Trabaho *',
+  job_title_placeholder: 'Hal. Kailangan ng karpintero',
+  exact_location_label: 'Eksaktong Lokasyon',
+  exact_location_placeholder: 'Hal. 123 Main St., malapit sa Munisipyo / Plaza',
+  job_description_label: 'Paglalarawan ng Trabaho *',
+  job_description_placeholder: 'Ilarawan ang mga gagawin, kailangan, at inaasahan sa trabaho...',
+  tools_required_label: 'Mga Kailangang Gamit (Opsyonal)',
+  tools_required_placeholder: 'Hal. Martilyo, pako, lagari',
+
+  // Categories & Suggestion Chips
+  categories_label: 'Mga Kategorya *',
+  categories_placeholder: 'Mag-type o pumili ng kategorya...',
+  add_category_suggestion: 'Idagdag ang "{category}"',
+  cat_construction: 'Konstruksyon',
+  cat_domestic: 'Gawaing Pantahanan',
+  cat_agriculture: 'Agrikultura',
+  cat_skilled_trade: 'Mga Hanapbuhay na Nangangailangan ng Kasanayan',
+  cat_transport: 'Transportasyon',
+  cat_craft: 'Paggawa ng mga Gamit',
+
+  // Compensation & Rate Basis
+  pay_amount_label: 'Halaga ng Bayad (PHP) *',
+  rate_basis_label: 'Batayan ng Bayad *',
+  rate_per_day: 'Kada Araw',
+  rate_per_hour: 'Kada Oras',
+  rate_per_project: 'Buong Proyekto',
+  rate_per_piece: 'Kada Piraso',
+  sublabel_daily: 'Kada Araw',
+  sublabel_hourly: 'Kada Oras',
+  sublabel_project: 'Proyekto',
+  sublabel_piece_rate: 'Kada Piraso',
+
+  // DOLE Region V Wage Advisory & Calculation
+  standard_daily_rate_note: 'Karaniwang sahod kada araw',
+  wage_eq_hourly_basis: '≈ ₱{amount} kada oras (batay sa 8 oras na trabaho)',
+  wage_eq_daily_workday: '≈ ₱{amount} para sa 8 oras na trabaho',
+  wage_eq_project_duration: '≈ ₱{amount} kada oras sa loob ng {duration} {unit}',
+  wage_eq_fixed_payout: 'Kabuuang bayad para sa buong proyekto.',
+  wage_eq_piece_payout: '₱{amount} kada piraso o yunit na magagawa.',
+  wage_warn_unusually_low_hourly: '⚠️ Masyadong mababa ang bayad kada oras para sa Bicol/Sorsogon.',
+  wage_warn_dole_below_minimum:
+    '⚠️ Ang ₱{amount} ay mas mababa sa minimum na sahod kada araw sa DOLE Region V (humigit-kumulang ₱395/araw). Kung ang ibig mong sabihin ay ₱{amount} kada oras, piliin ang "Kada Oras" sa itaas.',
+  wage_warn_project_unusually_low:
+    '⚠️ Masyadong mababa ang katumbas na bayad kada oras para sa tagal ng proyektong ito.',
+
+  // Slots, Schedule, Duration & Media
+  slots_workers_needed_label: 'Bilang ng Manggagawang Kailangan *',
+  schedule_date_label: 'Petsa ng Trabaho *',
+  duration_label: 'Tagal ng Trabaho',
+  duration_unit_label: 'Yunit ng Tagal',
+  unit_none: 'Wala',
+  unit_hours: 'Oras',
+  unit_days: 'Araw',
+  unit_weeks: 'Linggo',
+  unit_months: 'Buwan',
+  photos_video_optional: 'Mga Larawan at Video (Opsyonal)',
+  add_photos_btn: 'Magdagdag ng mga Larawan',
+  add_video_btn: 'Magdagdag ng Video',
+  change_video_btn: 'Palitan ang Video',
+  uploading_photos_progress: 'Ina-upload ang mga larawan: {progress}%',
+  uploading_video_progress: 'Ina-upload ang video: {progress}%',
+  compressing_video: 'Inihahanda ang video...',
+  video_upload_failed: 'Hindi na-upload ang video. Alisin ito at subukang i-upload muli.',
+  processing_label: 'Pinoproseso',
+  retry_label: 'Subukang Muli',
+  mark_as_urgent: 'Markahang Apurahan',
+  urgent_desc: 'Lalabas ang post mo sa unahan ng listahan ng mga trabaho.',
+
+  // Form Submission, Validation & Modals
+  publish_job_btn: 'I-post ang Trabaho',
+  save_changes_btn: 'I-save ang mga Pagbabago',
+  publishing_job_modal: 'Ipinapaskil ang trabaho...',
+  updating_job_modal: 'Sine-save ang mga pagbabago...',
+  saving_changes_modal: 'Sine-save ang mga pagbabago...',
+  please_wait_moment: 'Sandali lang.',
+  wait_media_upload_desc:
+    'Hintaying matapos ang pag-upload ng lahat ng napiling larawan at video bago i-post ang trabaho.',
+  alert_profanity_detected: 'May Hindi Angkop na Salita',
+  alert_profanity_desc: 'Hindi maaaring gumamit ng hindi angkop na salita sa mga kategorya.',
+  alert_duplicate_tag: 'Nadoble ang Kategorya',
+  alert_duplicate_tag_desc: 'Naidagdag na ang kategoryang ito.',
+  alert_limit_reached: 'Naabot na ang Limitasyon',
+  alert_limit_photos_desc: 'Hanggang 5 larawan lang ang puwedeng i-upload.',
+  alert_missing_fields: 'May Kulang na Impormasyon',
+  alert_missing_fields_desc: 'Punan ang lahat ng kinakailangang field: {fields}',
+  err_pay_min_1: 'Dapat hindi bababa sa ₱1 ang bayad.',
+  err_slots_min_1: 'Dapat may kahit isang manggagawa.',
+  alert_upload_in_progress: 'May Ina-upload Pa',
+  alert_upload_in_progress_desc:
+    'Hintaying matapos ang pag-upload ng lahat ng larawan at video bago i-post ang trabaho.',
+  alert_upload_error: 'Nagkaproblema sa Pag-upload',
+  alert_upload_error_desc:
+    'Alisin o subukang i-upload muli ang mga file na hindi na-upload bago magpatuloy.',
+  alert_job_updated: 'Na-update na ang Trabaho!',
+  alert_changes_saved: 'Na-save na ang mga pagbabago mo.',
+
+  // Success Screen
+  success_first_job_title: 'Live na ang una mong job post!',
+  success_job_live_title: 'Live na ang job post mo!',
+  success_first_job_msg:
+    'Congratulations! Ito ang una mong job post sa SIKAP. Aabisuhan ang mga manggagawa at puwede na silang mag-apply.',
+  success_job_live_msg:
+    'Makikita na ng mga manggagawa ang post mo at puwede na silang mag-apply. Aabisuhan ka namin kapag may nag-apply.',
+  view_my_jobs_btn: 'Tingnan ang Mga Trabaho Ko',
+  post_another_job_btn: 'Mag-post Pa ng Trabaho',
+
+  // Group 8: Notifications Screen & Cards
+  notif_section_today: 'Ngayong Araw',
+  notif_section_yesterday: 'Kahapon',
+  notif_section_older: 'Mas Nauna',
+  mark_all_read: 'Markahang Nabasa ang Lahat',
+  marking_read: 'Minamarkahang nabasa...',
+  no_notifs_today: 'Wala kang natanggap na abiso ngayong araw.',
+  no_notifs_yet: 'Wala ka pang mga abiso.',
+  new_notif_default: 'May bago kang abiso.',
+  notif_new_application_title: 'Bagong Aplikasyon',
+  notif_new_application_msg: 'Nag-apply si {workerName} sa trabahong {jobTitle}.',
+  notif_shortlisted_title: 'Napili ang Aplikasyon Mo',
+  notif_shortlisted_msg:
+    'SIKAP: Napili ng employer na si {employerName} ang aplikasyon mo para sa trabahong [{jobTitle}]. Buksan ang app para mapag-usapan ninyo ang mga detalye at kasunduan sa trabaho.',
+  notif_hire_confirmed_title: 'Kumpirmado na ang Pagkuha sa Iyo',
+  notif_hire_confirmed_msg:
+    'Kumpirmado na ang pagkuha sa iyo para sa trabahong {jobTitle}. Pakitanggap ang alok.',
+  notif_offer_accepted_title: 'Tinanggap ang Alok',
+  notif_offer_accepted_msg: 'Tinanggap ni {workerName} ang alok para sa trabahong {jobTitle}.',
+  notif_rate_declined_title: 'Tinanggihan ang Inalok na Bayad',
+  notif_rate_declined_msg:
+    'SIKAP: Hindi tinanggap ni {workerName} ang inialok na bayad para sa [{jobTitle}]. Puwede kayong mag-usap ulit tungkol sa bayad at magpadala ng bagong alok.',
+  notif_hire_cancelled_title: 'Nakansela ang Pagkuha sa Iyo',
+  notif_hire_cancelled_msg:
+    'SIKAP: Kinansela ng employer ang pagkuha sa iyo para sa trabahong [{jobTitle}].',
+  notif_app_update_title: 'Update sa Aplikasyon',
+  notif_app_declined_msg:
+    'Salamat sa pag-apply sa trabahong {jobTitle}. Huwag panghinaan ng loob! May mga bagong oportunidad sa Bulan araw-araw. Silipin ang mga ito sa SIKAP.',
+  notif_rate_employer_title: 'I-rate ang Employer Mo',
+  notif_rate_employer_msg:
+    'Tapos na ang trabahong "{jobTitle}"! Bigyan ng rating si {employerName} para makatulong sa iba pang miyembro ng komunidad.',
+  notif_rate_worker_title: 'I-rate ang Manggagawa Mo',
+  notif_rate_worker_msg:
+    'Tapos na ang trabahong "{jobTitle}". Mag-iwan ng review para kay {workerName}.',
+  notif_worker_finished_title: 'Minarkahan ng Manggagawa na Tapos na ang Trabaho',
+  notif_worker_finished_msg:
+    'Minarkahan ni {workerName} na tapos na ang trabahong "{jobTitle}". Pakikumpirma ito at bigyan ng rating ang manggagawa.',
+  notif_identity_verified_title: 'Beripikado na ang Pagkakakilanlan Mo',
+  notif_identity_verified_msg:
+    'Naaprubahan na ang mga dokumento mo sa SIKAP! Puwede ka nang mag-apply, mag-post ng trabaho, at makipag-ugnayan sa mga manggagawa.',
+  notif_identity_attention_title: 'May Kailangang Ayusin sa Beripikasyon Mo',
+  notif_identity_attention_msg:
+    'Hindi naaprubahan ang mga ipinasa mong dokumento sa SIKAP. Dahilan: {reason}',
+  notif_account_suspended_title: 'Nasuspinde ang Account Mo',
+  notif_account_suspended_msg:
+    'Nasuspinde ang account mo dahil sa paglabag sa mga alituntunin ng komunidad ng SIKAP.',
+  notif_report_action_title: 'May Aksyon Nang Ginawa sa Report Mo',
+  notif_report_action_msg: 'Nasuri na ang report mo at nagawa na ang kinakailangang aksyon.',
 };

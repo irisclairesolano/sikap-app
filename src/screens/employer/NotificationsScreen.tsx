@@ -74,10 +74,70 @@ export const NotificationsScreen: React.FC = () => {
     (n) => new Date(n.created_at).getTime() < yesterdayStart,
   );
 
+  const getLocalizedNotification = (notif: (typeof notifications)[0]) => {
+    let parsedData = notif.data;
+    if (typeof parsedData === 'string') {
+      try {
+        parsedData = JSON.parse(parsedData);
+      } catch (_) {}
+    }
+
+    const rawTitle =
+      parsedData?.title || notif.data?.title || notif.type.replace('Notification', '');
+    let title = rawTitle;
+    let message = parsedData?.message || notif.data?.message || t('new_notif_default');
+
+    if (rawTitle === 'New Application') {
+      title = t('notif_new_application_title');
+      if (parsedData?.worker_name && parsedData?.job_title) {
+        message = t('notif_new_application_msg', {
+          workerName: parsedData.worker_name,
+          jobTitle: parsedData.job_title,
+        });
+      }
+    } else if (rawTitle === 'Application Shortlisted') {
+      title = t('notif_shortlisted_title');
+    } else if (rawTitle === 'Hire Confirmed') {
+      title = t('notif_hire_confirmed_title');
+    } else if (rawTitle === 'Offer Accepted') {
+      title = t('notif_offer_accepted_title');
+      if (parsedData?.worker_name && parsedData?.job_title) {
+        message = t('notif_offer_accepted_msg', {
+          workerName: parsedData.worker_name,
+          jobTitle: parsedData.job_title,
+        });
+      }
+    } else if (rawTitle === 'Offer Rate Declined') {
+      title = t('notif_rate_declined_title');
+    } else if (rawTitle === 'Hire Cancelled') {
+      title = t('notif_hire_cancelled_title');
+    } else if (rawTitle === 'Application Update') {
+      title = t('notif_app_update_title');
+    } else if (rawTitle === 'Rate Your Employer') {
+      title = t('notif_rate_employer_title');
+    } else if (rawTitle === 'Rate Your Worker') {
+      title = t('notif_rate_worker_title');
+    } else if (rawTitle === 'Work Finished by Worker') {
+      title = t('notif_worker_finished_title');
+    } else if (rawTitle === 'Identity Verified') {
+      title = t('notif_identity_verified_title');
+      message = t('notif_identity_verified_msg');
+    } else if (rawTitle === 'Identity Verification Needs Attention') {
+      title = t('notif_identity_attention_title');
+    } else if (rawTitle === 'Account Suspended') {
+      title = t('notif_account_suspended_title');
+      message = t('notif_account_suspended_msg');
+    } else if (rawTitle === 'Report Action Taken') {
+      title = t('notif_report_action_title');
+      message = t('notif_report_action_msg');
+    }
+
+    return { title, message, parsedData };
+  };
+
   const renderNotificationItem = (notif: (typeof notifications)[0]) => {
     const isUnread = notif.read_at === null;
-    const title = notif.data?.title || notif.type.replace('Notification', '');
-    const message = notif.data?.message || 'You have a new notification.';
+    const { title, message, parsedData } = getLocalizedNotification(notif);
 
     return (
       <TouchableOpacity
@@ -87,13 +147,6 @@ export const NotificationsScreen: React.FC = () => {
         onPress={() => {
           if (isUnread) {
             markAsReadMutation.mutate(notif.id);
-          }
-
-          let parsedData = notif.data;
-          if (typeof parsedData === 'string') {
-            try {
-              parsedData = JSON.parse(parsedData);
-            } catch (_) {}
           }
 
           const appId =
@@ -270,7 +323,9 @@ export const NotificationsScreen: React.FC = () => {
       >
         {/* Today Section with Mark all as read at the same level */}
         <View style={styles.sectionHeaderRow}>
-          <Text style={[styles.eyebrow, { color: colors.primary }]}>Today</Text>
+          <Text style={[styles.eyebrow, { color: colors.primary }]}>
+            {t('notif_section_today')}
+          </Text>
           {hasUnread && (
             <TouchableOpacity
               style={styles.markAllInlineBtn}
@@ -284,7 +339,7 @@ export const NotificationsScreen: React.FC = () => {
             >
               <Ionicons name="checkmark-done-outline" size={14} color={colors.primary} />
               <Text style={styles.markAllText}>
-                {markAllAsReadMutation.isPending ? 'Marking...' : 'Mark all as read'}
+                {markAllAsReadMutation.isPending ? t('marking_read') : t('mark_all_read')}
               </Text>
             </TouchableOpacity>
           )}
@@ -293,14 +348,16 @@ export const NotificationsScreen: React.FC = () => {
         {todayNotifs.length > 0 ? (
           <View style={styles.notificationList}>{todayNotifs.map(renderNotificationItem)}</View>
         ) : (
-          <Text style={styles.emptySectionText}>No notifications today.</Text>
+          <Text style={styles.emptySectionText}>{t('no_notifs_today')}</Text>
         )}
 
         {/* Yesterday Section */}
         {yesterdayNotifs.length > 0 && (
           <>
             <View style={[styles.sectionHeaderRow, { marginTop: 22 }]}>
-              <Text style={[styles.eyebrow, { color: colors.inkSoft }]}>Yesterday</Text>
+              <Text style={[styles.eyebrow, { color: colors.inkSoft }]}>
+                {t('notif_section_yesterday')}
+              </Text>
             </View>
             <View style={styles.notificationList}>
               {yesterdayNotifs.map(renderNotificationItem)}
@@ -312,14 +369,16 @@ export const NotificationsScreen: React.FC = () => {
         {olderNotifs.length > 0 && (
           <>
             <View style={[styles.sectionHeaderRow, { marginTop: 22 }]}>
-              <Text style={[styles.eyebrow, { color: colors.inkSoft }]}>Older</Text>
+              <Text style={[styles.eyebrow, { color: colors.inkSoft }]}>
+                {t('notif_section_older')}
+              </Text>
             </View>
             <View style={styles.notificationList}>{olderNotifs.map(renderNotificationItem)}</View>
           </>
         )}
 
         {notifications.length === 0 && (
-          <Text style={styles.emptyGlobalText}>No notifications yet.</Text>
+          <Text style={styles.emptyGlobalText}>{t('no_notifs_yet')}</Text>
         )}
       </ScrollView>
     </SafeAreaView>

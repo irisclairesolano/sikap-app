@@ -7,8 +7,12 @@ import { useState } from 'react';
 WebBrowser.maybeCompleteAuthSession();
 
 // Google OAuth Client ID for SIKAP
-export const GOOGLE_WEB_CLIENT_ID =
-  '390883768070-7j54cfip77r61gajq37bmaff8nmg5isf.apps.googleusercontent.com';
+export const GOOGLE_CLIENT_ID =
+  process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ||
+  '1053304945131-4qvvftoidfuo932i9088kjk7ja46hr86.apps.googleusercontent.com';
+
+// Backward compatibility export
+export const GOOGLE_WEB_CLIENT_ID = GOOGLE_CLIENT_ID;
 
 export const useGoogleAuth = () => {
   const redirectUri = makeRedirectUri({
@@ -16,9 +20,9 @@ export const useGoogleAuth = () => {
   });
 
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: GOOGLE_WEB_CLIENT_ID,
-    webClientId: GOOGLE_WEB_CLIENT_ID,
-    androidClientId: GOOGLE_WEB_CLIENT_ID,
+    clientId: GOOGLE_CLIENT_ID,
+    webClientId: GOOGLE_CLIENT_ID,
+    androidClientId: GOOGLE_CLIENT_ID,
     scopes: ['openid', 'profile', 'email'],
     redirectUri,
   });

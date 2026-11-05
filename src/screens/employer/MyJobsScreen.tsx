@@ -507,11 +507,19 @@ export const MyJobsScreen: React.FC = () => {
           }
         >
           <Ionicons name="briefcase-outline" size={48} color={colors.inkFaint} />
-          <Text style={styles.emptyTitle}>No {activeTab.toLowerCase()} jobs</Text>
+          <Text style={styles.emptyTitle}>
+            {activeTab === 'Active'
+              ? t('no_active_jobs')
+              : activeTab === 'Archived'
+                ? t('no_archived_jobs')
+                : t('no_past_jobs')}
+          </Text>
           <Text style={styles.emptyBody}>
             {activeTab === 'Active'
-              ? "You haven't posted any active jobs yet. Post a job to start finding skilled workers nearby!"
-              : `You don't have any ${activeTab.toLowerCase()} job postings right now.`}
+              ? t('no_active_posted_jobs_desc')
+              : activeTab === 'Archived'
+                ? t('no_archived_jobs_desc')
+                : t('no_past_jobs_desc')}
           </Text>
           <Button
             title={t('post_a_job')}
