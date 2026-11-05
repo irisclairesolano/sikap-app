@@ -28,12 +28,11 @@ describe('WelcomeScreen', () => {
     jest.clearAllMocks();
   });
 
-  it('renders worker, employer, login, and Google sign-in options', async () => {
+  it('renders worker, employer, and login options', async () => {
     const { getByText } = await render(<WelcomeScreen />);
 
     expect(getByText("I'm a Worker")).toBeTruthy();
     expect(getByText("I'm an Employer")).toBeTruthy();
-    expect(getByText('Continue with Google')).toBeTruthy();
     expect(getByText('Log in')).toBeTruthy();
   });
 
