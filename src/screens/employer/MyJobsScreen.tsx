@@ -29,6 +29,7 @@ import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts } from '../../theme';
 import { JobPost } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
 
 type MyJobsNavigationProp = NativeStackNavigationProp<EmployerStackParamList, 'MyJobs'>;
 
@@ -344,107 +345,53 @@ export const MyJobsScreen: React.FC = () => {
 
           {/* Zone 3: Bottom Action Bar */}
           <View style={styles.actionBar}>
-            {item.deleted_at ? (
-              <View
-                style={[styles.actionPill, { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0' }]}
-              >
-                <Ionicons name="trash-outline" size={14} color={colors.inkSoft} />
-                <Text style={[styles.actionCountText, { color: colors.inkSoft }]}>Archived</Text>
-              </View>
-            ) : (
-              <View style={styles.actionPillsGroup}>
+            <View style={styles.actionPillsGroup}>
+              {item.deleted_at && (
                 <View
                   style={[
                     styles.actionPill,
-                    { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' },
+                    { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0' },
                   ]}
                 >
-                  <Ionicons name="people" size={14} color="#15803D" />
-                  <Text style={[styles.actionCountText, { color: '#15803D' }]}>
-                    {item.applications?.length || 0}
-                  </Text>
+                  <Ionicons name="trash-outline" size={14} color={colors.inkSoft} />
+                  <Text style={[styles.actionCountText, { color: colors.inkSoft }]}>Archived</Text>
                 </View>
+              )}
 
-                {(item.reactions_count || 0) > 0 && (
-                  <View
-                    style={[
-                      styles.actionPill,
-                      { backgroundColor: '#FFF1F2', borderColor: '#FECDD3' },
-                    ]}
-                  >
-                    <Ionicons name="heart" size={14} color="#E11D48" />
-                    <Text style={[styles.actionCountText, { color: '#E11D48' }]}>
-                      {item.reactions_count}
-                    </Text>
-                  </View>
-                )}
+              <View
+                style={[styles.actionPill, { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }]}
+              >
+                <Ionicons name="people" size={14} color="#15803D" />
+                <Text style={[styles.actionCountText, { color: '#15803D' }]}>
+                  {item.applications?.length || 0} applicants
+                </Text>
               </View>
-            )}
 
-            {item.deleted_at ? (
-              <View style={styles.actionBtnsGroup}>
-                <TouchableOpacity
-                  style={styles.iconActionBtn}
-                  activeOpacity={0.75}
-                  accessibilityLabel="Preview Job"
-                  onPress={() => navigation.navigate('JobDetails', { id: item.id })}
-                >
-                  <Ionicons name="eye-outline" size={17} color={colors.ink} />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.cardBtn, { backgroundColor: colors.primaryDark }]}
-                  activeOpacity={0.75}
-                  onPress={() => handleRestoreJob(item.id)}
-                >
-                  <Ionicons name="refresh-outline" size={13} color="#FFFFFF" />
-                  <Text style={styles.cardBtnText}>Restore</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.iconActionBtn}
-                  activeOpacity={0.75}
-                  accessibilityLabel="More Options"
-                  onPress={() => setMenuJob(item)}
-                >
-                  <Ionicons name="ellipsis-vertical" size={17} color={colors.ink} />
-                </TouchableOpacity>
+              <View
+                style={[styles.actionPill, { backgroundColor: '#FFF1F2', borderColor: '#FECDD3' }]}
+              >
+                <Ionicons name="heart" size={14} color="#E11D48" />
+                <Text style={[styles.actionCountText, { color: '#E11D48' }]}>
+                  {item.reactions_count ?? 0}
+                </Text>
               </View>
-            ) : (
-              <View style={styles.actionBtnsGroup}>
-                <TouchableOpacity
-                  style={styles.iconActionBtn}
-                  activeOpacity={0.75}
-                  accessibilityLabel="Preview Job"
-                  onPress={() => navigation.navigate('JobDetails', { id: item.id })}
-                >
-                  <Ionicons name="eye-outline" size={17} color={colors.ink} />
-                </TouchableOpacity>
+            </View>
 
-                <TouchableOpacity
-                  style={styles.cardBtn}
-                  activeOpacity={0.75}
-                  onPress={handleJobPress}
-                >
-                  <Text style={styles.cardBtnText}>{activeApp ? 'Active Stage' : 'Manage'}</Text>
-                  <Ionicons name="chevron-forward" size={13} color="#FFFFFF" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.iconActionBtn}
-                  activeOpacity={0.75}
-                  accessibilityLabel="More Options"
-                  onPress={() => setMenuJob(item)}
-                >
-                  <Ionicons name="ellipsis-vertical" size={17} color={colors.ink} />
-                </TouchableOpacity>
-              </View>
-            )}
+            <View style={styles.actionBtnsGroup}>
+              <TouchableOpacity
+                style={styles.iconActionBtn}
+                activeOpacity={0.75}
+                accessibilityLabel="More Options"
+                onPress={() => setMenuJob(item)}
+              >
+                <Ionicons name="ellipsis-vertical" size={17} color={colors.ink} />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       );
     },
-    [handleRestoreJob, navigation],
+    [failedImages, navigation],
   );
 
   return (
@@ -459,32 +406,34 @@ export const MyJobsScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tabBtn, activeTab === 'Active' && styles.tabBtnActive]}
-          onPress={() => setActiveTab('Active')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Active' && styles.tabTextActive]}>
-            Active ({jobs.filter((j) => j.status === 'open').length})
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabBtn, activeTab === 'Past' && styles.tabBtnActive]}
-          onPress={() => setActiveTab('Past')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Past' && styles.tabTextActive]}>
-            Past ({jobs.filter((j) => j.status !== 'open').length})
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabBtn, activeTab === 'Archived' && styles.tabBtnActive]}
-          onPress={() => setActiveTab('Archived')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Archived' && styles.tabTextActive]}>
-            Archived ({archivedJobs.length})
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <TutorialTarget id="employer_myjobs_tabs">
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tabBtn, activeTab === 'Active' && styles.tabBtnActive]}
+            onPress={() => setActiveTab('Active')}
+          >
+            <Text style={[styles.tabText, activeTab === 'Active' && styles.tabTextActive]}>
+              Active ({jobs.filter((j) => j.status === 'open').length})
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tabBtn, activeTab === 'Past' && styles.tabBtnActive]}
+            onPress={() => setActiveTab('Past')}
+          >
+            <Text style={[styles.tabText, activeTab === 'Past' && styles.tabTextActive]}>
+              Past ({jobs.filter((j) => j.status !== 'open').length})
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tabBtn, activeTab === 'Archived' && styles.tabBtnActive]}
+            onPress={() => setActiveTab('Archived')}
+          >
+            <Text style={[styles.tabText, activeTab === 'Archived' && styles.tabTextActive]}>
+              Archived ({archivedJobs.length})
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </TutorialTarget>
 
       {isLoading ? (
         <View style={{ padding: 20 }}>
