@@ -17,12 +17,10 @@ import {
   calculateAge,
 } from '../../utils/dateFormat';
 import Button from '../../components/common/Button';
-import Input from '../../components/common/Input';
 import LocationPicker from '../../components/common/LocationPicker';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../hooks/useAuth';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'RegisterStep2'>;
 type RouteProps = RouteProp<AuthStackParamList, 'RegisterStep2'>;
@@ -30,25 +28,10 @@ type RouteProps = RouteProp<AuthStackParamList, 'RegisterStep2'>;
 const RegisterStep2Screen: React.FC = () => {
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RouteProps>();
-  const {
-    role,
-    name: initialName,
-    email,
-    phone: initialPhone,
-    password,
-    password_confirmation,
-    id_token,
-    access_token,
-    is_google,
-  } = route.params;
+  const { role, name, email, phone, password, password_confirmation } = route.params;
   const insets = useSafeAreaInsets();
-  const { setAuthSession } = useAuth();
 
-  const [currentRole, setCurrentRole] = useState<'worker' | 'employer'>(role);
-  const [name, setName] = useState(initialName || '');
-  const [phone, setPhone] = useState(initialPhone || '');
   const [banner, setBanner] = useState('');
-  const [isSubmittingGoogle, setIsSubmittingGoogle] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [birthDateText, setBirthDateText] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -137,45 +120,6 @@ const RegisterStep2Screen: React.FC = () => {
       return;
     }
 
-    if (is_google) {
-      if (!name.trim()) {
-        setBanner('Please enter your full name.');
-        return;
-      }
-      const phoneRegex = /^09\d{9}$/;
-      if (!phoneRegex.test(phone.trim())) {
-        setBanner('Please enter a valid 11-digit Philippine mobile number starting with 09.');
-        return;
-      }
-
-      setIsSubmittingGoogle(true);
-      try {
-        const res = await authApi.googleAuth({
-          id_token,
-          access_token,
-          role: currentRole,
-          name: name.trim(),
-          phone: phone.trim(),
-          municipality: values.municipality,
-          barangay: values.barangay,
-          date_of_birth: parsed.formattedYMD,
-        });
-
-        setIsSubmittingGoogle(false);
-        if (res.status === 'authenticated' && res.token && res.user) {
-          await setAuthSession(res.token, res.user);
-          // Directly navigate to IDUpload, completely skipping OTP!
-          navigation.navigate('IDUpload', { userId: res.user.id, role: res.user.role });
-        } else {
-          setBanner(res.message || 'Google registration failed. Please try again.');
-        }
-      } catch (err: any) {
-        setIsSubmittingGoogle(false);
-        setBanner(sanitizeErrorMessage(err?.message || 'Google registration failed.'));
-      }
-      return;
-    }
-
     const payload = {
       role,
       name,
@@ -247,25 +191,6 @@ const RegisterStep2Screen: React.FC = () => {
           <View style={styles.ambientGlowPeach} />
           <View style={styles.formCard}>
             <View style={styles.form}>
-              {is_google ? (
-                <>
-                  <Input
-                    label="Full Name"
-                    value={name}
-                    onChangeText={setName}
-                    placeholder="Your legal name"
-                  />
-                  <Input
-                    label="Mobile Number"
-                    value={phone}
-                    onChangeText={setPhone}
-                    placeholder="09XXXXXXXXX"
-                    keyboardType="phone-pad"
-                    maxLength={11}
-                  />
-                </>
-              ) : null}
-
               <LocationPicker
                 municipalityValue={watchedMunicipality}
                 barangayValue={watchedBarangay}
@@ -355,73 +280,18 @@ const RegisterStep2Screen: React.FC = () => {
 
         <View style={styles.roleCard}>
           <Text style={styles.roleLabel}>I am a:</Text>
-          {is_google ? (
-            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => setCurrentRole('worker')}
-                style={[
-                  styles.roleToggleBtn,
-                  currentRole === 'worker' && styles.roleToggleBtnActive,
-                ]}
-              >
-                <Ionicons
-                  name="hammer"
-                  size={16}
-                  color={currentRole === 'worker' ? '#FFFFFF' : colors.inkSoft}
-                />
-                <Text
-                  style={[
-                    styles.roleToggleText,
-                    currentRole === 'worker' && styles.roleToggleTextActive,
-                  ]}
-                >
-                  Worker
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => setCurrentRole('employer')}
-                style={[
-                  styles.roleToggleBtn,
-                  currentRole === 'employer' && styles.roleToggleBtnActive,
-                ]}
-              >
-                <Ionicons
-                  name="briefcase"
-                  size={16}
-                  color={currentRole === 'employer' ? '#FFFFFF' : colors.inkSoft}
-                />
-                <Text
-                  style={[
-                    styles.roleToggleText,
-                    currentRole === 'employer' && styles.roleToggleTextActive,
-                  ]}
-                >
-                  Employer
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.roleRow}>
-              <Text style={styles.roleText}>{role === 'worker' ? 'Worker' : 'Employer'}</Text>
-              <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
-            </View>
-          )}
+          <View style={styles.roleRow}>
+            <Text style={styles.roleText}>{role === 'worker' ? 'Worker' : 'Employer'}</Text>
+            <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+          </View>
         </View>
 
         <View style={styles.footer}>
           <Button
-            label={
-              registerMutation.isPending || isSubmittingGoogle
-                ? 'Creating account...'
-                : is_google
-                  ? 'Complete Registration'
-                  : 'Next'
-            }
+            label={registerMutation.isPending ? 'Creating account...' : 'Next'}
             size="lg"
             fullWidth
-            loading={registerMutation.isPending || isSubmittingGoogle}
+            loading={registerMutation.isPending}
             onPress={handleSubmit(onSubmit)}
           />
         </View>

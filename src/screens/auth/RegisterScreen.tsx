@@ -10,11 +10,6 @@ import Input from '../../components/common/Input';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
-import GoogleAuthButton from '../../components/common/GoogleAuthButton';
-import { useGoogleAuth } from '../../hooks/useGoogleAuth';
-import { authApi } from '../../api/auth';
-import { useAuth } from '../../hooks/useAuth';
-import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
 type RouteProps = RouteProp<AuthStackParamList, 'Register'>;
@@ -124,81 +119,6 @@ const RegisterScreen: React.FC = () => {
     });
   };
 
-  const { setAuthSession } = useAuth();
-  const { promptAsync, response: googleResponse } = useGoogleAuth();
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [googleBanner, setGoogleBanner] = useState('');
-
-  React.useEffect(() => {
-    if (googleResponse?.type === 'success') {
-      const { id_token, access_token } = (googleResponse.params as any) || {};
-      const authCode = (googleResponse as any).authentication;
-      const idTokenToUse = id_token || authCode?.idToken;
-      const accessTokenToUse = access_token || authCode?.accessToken;
-
-      if (!idTokenToUse && !accessTokenToUse) {
-        setIsGoogleLoading(false);
-        setGoogleBanner('Failed to receive Google authentication token.');
-        return;
-      }
-
-      setIsGoogleLoading(true);
-      setGoogleBanner('');
-
-      authApi
-        .googleAuth({
-          id_token: idTokenToUse,
-          access_token: accessTokenToUse,
-        })
-        .then(async (res) => {
-          setIsGoogleLoading(false);
-          if (res.status === 'authenticated' && res.token && res.user) {
-            // User already has an account, log them straight in
-            await setAuthSession(res.token, res.user);
-            const status = res.user.registration_status;
-            if (status === 'pending_id_upload') {
-              navigation.navigate('IDUpload', { userId: res.user.id, role: res.user.role });
-            } else if (status === 'pending_review' || status === 'rejected') {
-              navigation.navigate('PendingVerify');
-            }
-          } else if (res.status === 'needs_registration_details') {
-            // New user! Forward to Step 2 with their Google credentials and pre-filled name & email
-            const gUser = res.google_user;
-            navigation.navigate('RegisterStep2', {
-              role,
-              name: gUser?.name || '',
-              email: gUser?.email || '',
-              phone: '',
-              id_token: idTokenToUse,
-              access_token: accessTokenToUse,
-              avatar_url: gUser?.avatar_url || undefined,
-              is_google: true,
-            });
-          }
-        })
-        .catch((err: any) => {
-          setIsGoogleLoading(false);
-          setGoogleBanner(sanitizeErrorMessage(err?.message || 'Google sign up failed.'));
-        });
-    } else if (googleResponse?.type === 'error' || googleResponse?.type === 'dismiss') {
-      setIsGoogleLoading(false);
-    }
-  }, [googleResponse]);
-
-  const handleGoogleSignUp = async () => {
-    try {
-      setGoogleBanner('');
-      setIsGoogleLoading(true);
-      const res = await promptAsync();
-      if (res?.type !== 'success') {
-        setIsGoogleLoading(false);
-      }
-    } catch (err: any) {
-      setIsGoogleLoading(false);
-      setGoogleBanner(sanitizeErrorMessage(err?.message || 'Could not initiate Google sign up.'));
-    }
-  };
-
   return (
     <View
       style={[
@@ -242,26 +162,6 @@ const RegisterScreen: React.FC = () => {
         <Text style={styles.title}>
           Tell us about{'\n'}your <Text style={styles.titleItalic}>identity.</Text>
         </Text>
-
-        {googleBanner ? (
-          <View style={styles.bannerError}>
-            <Text style={styles.bannerTextError}>{googleBanner}</Text>
-          </View>
-        ) : null}
-
-        {/* Quick Google Sign Up Option */}
-        <View style={{ marginBottom: 16 }}>
-          <GoogleAuthButton
-            onPress={handleGoogleSignUp}
-            loading={isGoogleLoading}
-            title="Sign up with Google"
-          />
-          <View style={styles.dividerRow}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or register with email</Text>
-            <View style={styles.dividerLine} />
-          </View>
-        </View>
 
         <View style={styles.formCardWrapper}>
           <View style={styles.ambientGlowMint} />

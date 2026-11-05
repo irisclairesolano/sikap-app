@@ -9,6 +9,11 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/logo/03_Secondary_Logov1.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F4F7FC"
+    },
     "ios": {
       "supportsTablet": true
     },

@@ -1,16 +1,17 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, Image, StyleSheet, Text, View } from 'react-native';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors } from '../../theme/colors';
 import { fonts } from '../../theme/typography';
-import { Wordmark } from '../../components/common/Wordmark';
 
 type SplashScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Splash'>;
 
 const SplashScreen: React.FC = () => {
   const navigation = useNavigation<SplashScreenNavigationProp>();
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [scaleAnim] = useState(new Animated.Value(0.92));
   const [dotAnimations] = useState([
     new Animated.Value(1),
     new Animated.Value(1),
@@ -18,6 +19,21 @@ const SplashScreen: React.FC = () => {
   ]);
 
   useEffect(() => {
+    // Smooth entry animation for the brand card
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
     // Animate loading dots
     const animateDots = () => {
       const animations = dotAnimations.map((anim, index) =>
@@ -41,25 +57,37 @@ const SplashScreen: React.FC = () => {
 
     animateDots();
 
-    // Navigate to onboarding after 1.5 seconds
+    // Navigate to onboarding after 1.8 seconds
     const timer = setTimeout(() => {
       navigation.replace('Welcome');
-    }, 1500);
+    }, 1800);
 
     return () => clearTimeout(timer);
-  }, [navigation, dotAnimations]);
+  }, [navigation, dotAnimations, fadeAnim, scaleAnim]);
 
   return (
     <View style={styles.container}>
-      {/* Logo Container */}
-      <View style={styles.logoContainer}>
+      {/* Centered Logo Card with Official Emblem & Wordmark */}
+      <Animated.View
+        style={[
+          styles.logoContainer,
+          {
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}
+      >
         <View style={styles.logoCard}>
-          <Wordmark size={64} />
-          <Text style={styles.subtitle}>Find local work.</Text>
+          <Image
+            source={require('../../../assets/logo/03_Secondary_Logov1.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+            accessibilityLabel="SIKAP Logo: Local Jobs. Trusted help."
+          />
         </View>
-      </View>
+      </Animated.View>
 
-      {/* Loading Dots */}
+      {/* Loading Indicator Dots */}
       <View style={styles.dotsContainer}>
         {dotAnimations.map((anim, index) => (
           <Animated.View
@@ -80,7 +108,7 @@ const SplashScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.peach,
+    backgroundColor: colors.paper,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -92,28 +120,26 @@ const styles = StyleSheet.create({
   },
   logoCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    paddingVertical: 32,
-    paddingHorizontal: 36,
+    borderRadius: 28,
+    paddingVertical: 24,
+    paddingHorizontal: 28,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.70)',
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 4,
   },
-  subtitle: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
-    color: colors.primaryDark,
-    marginTop: 14,
+  logoImage: {
+    width: 210,
+    height: 210,
   },
   dotsContainer: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
     position: 'absolute',
     bottom: 64,
   },
