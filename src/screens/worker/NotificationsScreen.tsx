@@ -20,6 +20,7 @@ import {
   useMarkNotificationAsRead,
   useMarkAllNotificationsAsRead,
 } from '../../hooks/useNotifications';
+import { formatLocalizedNotification } from '../../utils/notificationFormatter';
 
 type NotificationsScreenNavigationProp = NativeStackNavigationProp<
   WorkerStackParamList,
@@ -28,7 +29,7 @@ type NotificationsScreenNavigationProp = NativeStackNavigationProp<
 
 export const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation<NotificationsScreenNavigationProp>();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { data, isLoading, refetch } = useNotifications();
   const markAsReadMutation = useMarkNotificationAsRead();
   const markAllAsReadMutation = useMarkAllNotificationsAsRead();
@@ -79,56 +80,7 @@ export const NotificationsScreen: React.FC = () => {
       } catch (_) {}
     }
 
-    const rawTitle =
-      parsedData?.title || notif.data?.title || notif.type.replace('Notification', '');
-    let title = rawTitle;
-    let message = parsedData?.message || notif.data?.message || t('new_notif_default');
-
-    if (rawTitle === 'New Application') {
-      title = t('notif_new_application_title');
-      if (parsedData?.worker_name && parsedData?.job_title) {
-        message = t('notif_new_application_msg', {
-          workerName: parsedData.worker_name,
-          jobTitle: parsedData.job_title,
-        });
-      }
-    } else if (rawTitle === 'Application Shortlisted') {
-      title = t('notif_shortlisted_title');
-    } else if (rawTitle === 'Hire Confirmed') {
-      title = t('notif_hire_confirmed_title');
-    } else if (rawTitle === 'Offer Accepted') {
-      title = t('notif_offer_accepted_title');
-      if (parsedData?.worker_name && parsedData?.job_title) {
-        message = t('notif_offer_accepted_msg', {
-          workerName: parsedData.worker_name,
-          jobTitle: parsedData.job_title,
-        });
-      }
-    } else if (rawTitle === 'Offer Rate Declined') {
-      title = t('notif_rate_declined_title');
-    } else if (rawTitle === 'Hire Cancelled') {
-      title = t('notif_hire_cancelled_title');
-    } else if (rawTitle === 'Application Update') {
-      title = t('notif_app_update_title');
-    } else if (rawTitle === 'Rate Your Employer') {
-      title = t('notif_rate_employer_title');
-    } else if (rawTitle === 'Rate Your Worker') {
-      title = t('notif_rate_worker_title');
-    } else if (rawTitle === 'Work Finished by Worker') {
-      title = t('notif_worker_finished_title');
-    } else if (rawTitle === 'Identity Verified') {
-      title = t('notif_identity_verified_title');
-      message = t('notif_identity_verified_msg');
-    } else if (rawTitle === 'Identity Verification Needs Attention') {
-      title = t('notif_identity_attention_title');
-    } else if (rawTitle === 'Account Suspended') {
-      title = t('notif_account_suspended_title');
-      message = t('notif_account_suspended_msg');
-    } else if (rawTitle === 'Report Action Taken') {
-      title = t('notif_report_action_title');
-      message = t('notif_report_action_msg');
-    }
-
+    const { title, message } = formatLocalizedNotification(notif, language);
     return { title, message, parsedData };
   };
 

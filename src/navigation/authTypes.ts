@@ -7,8 +7,8 @@ export type AuthStackParamList = {
     name: string;
     email: string;
     phone: string;
-    password?: string;
-    password_confirmation?: string;
+    password: string;
+    password_confirmation: string;
   };
   Login: undefined;
   OTPVerify: { userId: number; email: string; role: 'worker' | 'employer' };

@@ -495,32 +495,6 @@ const styles = StyleSheet.create({
     color: colors.error,
     textAlign: 'left',
   },
-  roleToggleBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    backgroundColor: colors.paper,
-  },
-  roleToggleBtnActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  roleToggleText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.inkSoft,
-  },
-  roleToggleTextActive: {
-    color: '#FFFFFF',
-    fontFamily: fonts.bodyBold,
-  },
 });
 
 export default RegisterStep2Screen;

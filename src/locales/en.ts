@@ -215,6 +215,7 @@ export const en = {
   // 162-180: Common Actions, Errors & Prompts
   save: 'Save',
   cancel: 'Cancel',
+  done: 'Done',
   decline: 'Decline',
   confirm: 'Confirm',
   back: 'Back',
@@ -587,7 +588,7 @@ export const en = {
   notif_offer_accepted_msg: '{workerName} has accepted the offer for {jobTitle}.',
   notif_rate_declined_title: 'Offer Rate Declined',
   notif_rate_declined_msg:
-    'SIKAP: Worker {workerName} declined the proposed rate for [{jobTitle}]. You can renegotiate and send a new offer.',
+    'SIKAP: Worker {workerName} declined the proposed rate{priceText} for [{jobTitle}]. You can renegotiate and send a new offer.',
   notif_hire_cancelled_title: 'Hire Cancelled',
   notif_hire_cancelled_msg: 'SIKAP: Your hire for [{jobTitle}] has been cancelled by the employer.',
   notif_app_update_title: 'Application Update',
@@ -601,6 +602,38 @@ export const en = {
   notif_worker_finished_title: 'Work Finished by Worker',
   notif_worker_finished_msg:
     '"{workerName}" flagged "{jobTitle}" as finished. Please confirm and rate the worker.',
+  notif_hire_reminder_title: 'Action Required: Confirm Your Hire',
+  notif_hire_reminder_msg:
+    '{employerName} confirmed your hire for "{jobTitle}". Please confirm or decline your offer.',
+  notif_rate_employer_reminder_title: 'Reminder: Rate Your Employer',
+  notif_rate_employer_reminder_msg:
+    'Don\'t forget to rate {employerName} for "{jobTitle}". Your feedback builds a trusted community.',
+  notif_rate_employer_urgent_title: 'Urgent: 24 Hours Left to Rate Employer',
+  notif_rate_employer_urgent_msg:
+    'The 7-day rating window for "{jobTitle}" closes in 24 hours. Rate {employerName} before it expires!',
+  notif_rate_worker_reminder_title: 'Reminder: Rate Your Worker',
+  notif_rate_worker_reminder_msg:
+    'Don\'t forget to submit a review for {workerName} for "{jobTitle}".',
+  notif_rate_worker_urgent_title: 'Urgent: 24 Hours Left to Rate Worker',
+  notif_rate_worker_urgent_msg:
+    'The 7-day rating window for "{jobTitle}" closes in 24 hours. Submit your review for {workerName} before it expires!',
+  notif_verification_approved_title: 'Verification Approved',
+  notif_verification_approved_msg:
+    'SIKAP: Your {docType} and account have been approved! You can now use the platform.',
+  notif_verification_rejected_title: 'Verification Rejected',
+  notif_verification_rejected_msg:
+    'SIKAP: Your {docType} submission was rejected. Reason: {reason}',
+  notif_verification_correction_title: 'Verification Correction Needed',
+  notif_verification_correction_msg:
+    'SIKAP: Your {docType} needs correction. Please re-upload in the app.',
+  notif_mod_report_job_title: 'Moderation Report Update',
+  notif_mod_report_job_msg:
+    "The report on your job post '{jobTitle}' has been {actionLabel} by administrators.",
+  notif_mod_report_account_title: 'Moderation Report Update',
+  notif_mod_report_account_msg:
+    'The moderation inquiry regarding your account has been {actionLabel}.',
+  notif_new_message_title: 'New message from {senderName}',
+  notif_new_message_image_preview: 'Sent an image',
   notif_identity_verified_title: 'Identity Verified',
   notif_identity_verified_msg:
     'Your SIKAP identity documents have been approved! You now have full access to apply, post jobs, and connect with workers.',

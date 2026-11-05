@@ -34,6 +34,19 @@ const LanguageContext = createContext<LanguageContextType>({
     interpolate(en[key] || (key as string), params),
 });
 
+let currentActiveLanguage: Language = 'en';
+
+export const getActiveLanguage = (): Language => currentActiveLanguage;
+
+export const translateForLanguage = (
+  lang: Language,
+  key: TranslationKey,
+  params?: Record<string, string | number>,
+): string => {
+  const raw = translations[lang]?.[key] || translations.en[key] || (key as string);
+  return interpolate(raw, params);
+};
+
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>('en');
 
@@ -42,6 +55,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         const saved = await getItemAsync(STORAGE_KEY);
         if (saved === 'en' || saved === 'tl') {
+          currentActiveLanguage = saved;
           setLanguageState(saved);
         }
       } catch (e) {
@@ -52,6 +66,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   const setLanguage = async (newLang: Language) => {
+    currentActiveLanguage = newLang;
     setLanguageState(newLang);
     try {
       await setItemAsync(STORAGE_KEY, newLang);
@@ -61,8 +76,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const t = (key: TranslationKey, params?: Record<string, string | number>): string => {
-    const raw = translations[language]?.[key] || translations.en[key] || (key as string);
-    return interpolate(raw, params);
+    return translateForLanguage(language, key, params);
   };
 
   return (

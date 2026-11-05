@@ -126,6 +126,8 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
 
       if (__DEV__) {
         console.warn('🔍 API Error Details:', {
+          endpoint,
+          method: options.method || 'GET',
           status: res.status,
           statusText: res.statusText,
           body: errBody,

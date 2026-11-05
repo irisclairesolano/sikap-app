@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { triggerSystemNotification } from './usePushNotifications';
+import { formatLocalizedNotification } from '../utils/notificationFormatter';
 
 export interface NotificationItem {
   id: string;
@@ -55,15 +56,8 @@ export const useNotifications = () => {
       seenNotificationIds.add(item.id);
 
       if (item.read_at === null) {
-        let parsedData = item.data;
-        if (typeof parsedData === 'string') {
-          try {
-            parsedData = JSON.parse(parsedData);
-          } catch (_) {}
-        }
-        const title = parsedData?.title || item.type?.replace('Notification', '') || 'SIKAP Update';
-        const body = parsedData?.message || 'You have a new notification.';
-        triggerSystemNotification(title, body, parsedData || {}, `notif:${item.id}`);
+        const { title, message, parsedData } = formatLocalizedNotification(item);
+        triggerSystemNotification(title, message, parsedData || {}, `notif:${item.id}`);
       }
     });
 

@@ -375,6 +375,12 @@ export function useRealtimeUserEvents(userId?: number) {
     // 2. Handle Real-Time Verification Status Update (e.g., Admin Approval)
     const handleVerificationUpdate = async (data: any) => {
       if (!data) return;
+      // An admin decision (approve / reject / correction) supersedes the
+      // post-upload stale-response guard.
+      if (data.registration_status && data.registration_status !== 'pending_review') {
+        const { clearIdSubmitted } = await import('../store/authEvents');
+        clearIdSubmitted();
+      }
       queryClient.setQueryData(['profile'], (old: any) => {
         if (!old) return old;
         const updated = {
@@ -417,12 +423,24 @@ export function useRealtimeUserEvents(userId?: number) {
         triggerHaptic('light');
         try {
           const { triggerSystemNotification } = require('../hooks/usePushNotifications');
-          const senderName = data.sender_name || data.sender?.name || 'New Message';
+          const {
+            getActiveLanguage,
+            translateForLanguage,
+          } = require('../contexts/LanguageContext');
+          const lang = getActiveLanguage();
+          const senderName = data.sender_name || data.sender?.name || 'SIKAP';
+          const imageFallback = translateForLanguage(lang, 'notif_new_message_image_preview');
           const preview =
-            data.message || data.body || (data.image_url ? 'Sent an image' : 'Sent a message');
+            data.message || data.body || (data.image_url ? imageFallback : imageFallback);
+          const localizedTitle = translateForLanguage(lang, 'notif_new_message_title', {
+            senderName,
+          });
+          const localizedBody = translateForLanguage(lang, 'notif_new_message_msg', {
+            preview: String(preview),
+          });
           triggerSystemNotification(
-            `Message from ${senderName}`,
-            String(preview),
+            localizedTitle,
+            localizedBody,
             { conversation_id: data.conversation_id, type: 'chat_message' },
             `msg:${data.id || `${data.conversation_id}:${data.created_at}`}`,
           );
@@ -465,17 +483,11 @@ export function useRealtimeUserEvents(userId?: number) {
 
       try {
         const { triggerSystemNotification } = require('../hooks/usePushNotifications');
+        const { formatLocalizedNotification } = require('../utils/notificationFormatter');
         const notif = data.notification || data;
-        let notifData = notif?.data || data?.data || {};
-        if (typeof notifData === 'string') {
-          try {
-            notifData = JSON.parse(notifData);
-          } catch (_) {}
-        }
-        const title = notifData?.title || 'SIKAP Notification';
-        const body = notifData?.message || 'You have a new notification.';
-        const notifId = notif?.id || `${title}:${body}:${Date.now()}`;
-        triggerSystemNotification(title, body, notifData, `notif:${notifId}`);
+        const { title, message, parsedData } = formatLocalizedNotification(notif);
+        const notifId = notif?.id || `${title}:${message}:${Date.now()}`;
+        triggerSystemNotification(title, message, parsedData || {}, `notif:${notifId}`);
       } catch (_) {}
     };
 

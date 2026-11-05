@@ -321,22 +321,6 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: 18,
   },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 14,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E2E8F0',
-  },
-  dividerText: {
-    paddingHorizontal: 12,
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.inkSoft,
-  },
   createAccountContainer: {
     marginTop: 'auto',
     alignItems: 'center',

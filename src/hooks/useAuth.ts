@@ -32,14 +32,6 @@ export const useAuth = () => {
     },
   });
 
-  const setAuthSession = async (token: string, userData: User) => {
-    await SecureStore.setItemAsync('auth_token', token);
-    await SecureStore.setItemAsync('user_profile', JSON.stringify(userData));
-    setGuestInitialRoute('Login');
-    queryClient.setQueryData(['profile'], userData);
-    notifyAuthChanged();
-  };
-
   const registerMutation = useMutation({
     mutationFn: authApi.register,
     onError: (error) => {
@@ -155,7 +147,6 @@ export const useAuth = () => {
 
     // Actions
     logout,
-    setAuthSession,
 
     // Refresh profile
     refetchProfile: () => queryClient.refetchQueries({ queryKey: ['profile'] }),

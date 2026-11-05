@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as SecureStore from '../utils/storage';
-import { subscribeAuthChanged } from '../store/authEvents';
+import { subscribeAuthChanged, wasIdRecentlySubmitted } from '../store/authEvents';
 import { User } from '../types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { profileApi } from '../api/profile';
@@ -47,7 +47,25 @@ export const useAuthCheck = () => {
           : null) || (await SecureStore.getItemAsync('auth_token'));
       if (!authToken) return null;
       try {
-        const response = await profileApi.getProfile();
+        let response = await profileApi.getProfile();
+        // If the user just submitted their ID, a response still saying
+        // `pending_id_upload` is stale (read before the upload committed).
+        // Keep them on PendingVerify instead of remounting an empty IDUpload.
+        if (
+          response &&
+          wasIdRecentlySubmitted() &&
+          response.verification_status !== 'approved' &&
+          response.verification_status !== 'rejected' &&
+          response.registration_status !== 'rejected' &&
+          (response.registration_status === 'pending_id_upload' ||
+            (!response.registration_status && !response.document_url))
+        ) {
+          response = {
+            ...response,
+            registration_status: 'pending_review',
+            verification_status: 'pending',
+          };
+        }
         await SecureStore.setItemAsync('user_profile', JSON.stringify(response));
         return response;
       } catch (err) {

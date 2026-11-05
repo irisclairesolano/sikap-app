@@ -21,7 +21,7 @@ import { authApi } from '../../api/auth';
 import { ApiClientError } from '../../api/client';
 import Button from '../../components/common/Button';
 import { AuthStackParamList } from '../../navigation/authTypes';
-import { notifyAuthChanged } from '../../store/authEvents';
+import { markIdSubmitted, notifyAuthChanged } from '../../store/authEvents';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -132,6 +132,10 @@ const IDUploadScreen: React.FC = () => {
     },
     onSuccess: async () => {
       setBanner('');
+      // Mark the submission first and cancel any profile fetch that started
+      // before the upload committed, so it cannot overwrite pending_review.
+      markIdSubmitted();
+      await queryClient.cancelQueries({ queryKey: ['profile'] });
       try {
         const cachedUserStr = await SecureStore.getItemAsync('user_profile');
         let updatedProfile: any = {};

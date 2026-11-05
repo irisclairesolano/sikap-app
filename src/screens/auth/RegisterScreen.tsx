@@ -422,36 +422,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 16,
   },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 14,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E2E8F0',
-  },
-  dividerText: {
-    paddingHorizontal: 12,
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.inkSoft,
-  },
-  bannerError: {
-    backgroundColor: colors.status.rejected.bg,
-    borderColor: colors.error,
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 14,
-  },
-  bannerTextError: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.error,
-    textAlign: 'center',
-  },
 });
 
 export default RegisterScreen;

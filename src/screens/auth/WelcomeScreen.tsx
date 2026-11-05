@@ -77,7 +77,7 @@ const WelcomeScreen: React.FC = () => {
             fullWidth
             onPress={() => navigateToRegister('worker')}
           />
-          <View style={{ height: 10 }} />
+          <View style={{ height: 12 }} />
           <Button
             label="I'm an Employer"
             variant="secondary"
@@ -206,29 +206,13 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
   },
   footer: {
-    marginTop: 20,
+    marginTop: 24,
     paddingTop: 4,
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 12,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E2E8F0',
-  },
-  dividerText: {
-    paddingHorizontal: 10,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.inkSoft,
   },
   loginRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: 18,
   },
   loginText: {
     fontFamily: fonts.body,
@@ -239,101 +223,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 14,
     color: colors.primary,
-  },
-  bannerError: {
-    backgroundColor: colors.status.rejected.bg,
-    borderColor: colors.error,
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 12,
-  },
-  bannerTextError: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.error,
-    textAlign: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalCard: {
-    width: '100%',
-    maxWidth: 380,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 24,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  modalHeader: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 19,
-    color: colors.ink,
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  modalSubtitle: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.inkSoft,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  roleChoiceCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.paper,
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    borderRadius: 16,
-    padding: 14,
-    gap: 12,
-  },
-  roleChoiceIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  roleChoiceText: {
-    flex: 1,
-  },
-  roleChoiceTitle: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 15,
-    color: colors.ink,
-  },
-  roleChoiceDesc: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.inkSoft,
-    marginTop: 2,
-  },
-  modalCancelBtn: {
-    alignItems: 'center',
-    marginTop: 16,
-    paddingVertical: 8,
-  },
-  modalCancelText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.inkMuted,
   },
 });
 

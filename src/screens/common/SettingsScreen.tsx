@@ -167,66 +167,66 @@ const HELP_SECTIONS_EN: ContentSection[] = [
   },
   {
     heading: 'Getting Started & ID Verification',
-    body: '1. Register with your email, phone number, birth date (15 years old and above), municipality, and barangay.\n2. Enter the 6-digit verification code (OTP) sent to your email.\n3. Upload your verification documents:\n• Workers: Front and back of a valid ID, plus a clear selfie holding your ID.\n• Employers: Representative valid ID and a business permit or proof of household/establishment.\n\nOur admin team reviews submissions to keep the community safe.',
+    body: '1. Register with your email, phone number, birth date (18 years old and above), municipality, and barangay.\n2. Enter the 6-digit verification code (OTP) sent to your email.\n3. Upload your verification documents:\n• Workers: Front and back of a valid ID, plus a clear selfie holding your ID.\n• Employers: Representative valid ID, and optionally business documents or proof of household/establishment.\n\nOur admin team reviews submissions to keep the community safe.',
   },
   {
     heading: 'Finding & Applying for Jobs',
-    body: 'Browse local job posts in the Jobs tab. You can filter by skill category, municipality, barangay, pay rate, or urgent tags. Tap a job post to view full details and send an application with a short cover note. Track all your applications in the Applied tab.',
+    body: 'Browse local job posts in the Find tab. You can filter by job category, your barangay, your municipality, or anywhere in Sorsogon. Tap a job post to view full details and send an application.',
   },
   {
-    heading: 'Hiring Process & Privacy Stages',
-    body: 'SIKAP protects your contact details through a step-by-step hiring flow:\n\n1. Pending Application — You apply for a job. Only your basic profile, skills, barangay, and reputation score are visible.\n2. Job Request (Shortlisted) — The employer opens an in-app chat with you to discuss job scope and negotiate pay.\n3. Formal Offer (Confirmed) — The employer sets the final agreed pay rate and sends a formal job offer.\n4. Hired (Accepted) — Once you accept the offer, phone numbers and character references are unlocked so you can coordinate directly.\n5. Completed — After the work is finished, the job is marked complete and both sides can rate each other.',
+    heading: 'Hiring Process & 4-Stage Privacy',
+    body: 'SIKAP protects your contact details through a 4-stage progressive disclosure flow:\n\n1. Stage 1 (Applied / Pending) — Only your name, barangay, skills, work experience, and rating are visible to the employer.\n2. Stage 2 (Shortlisted / Job Request) — When the employer selects your application and sends a Job Request, your character references and mobile number are unlocked, and in-app chat opens to discuss pay and job details.\n3. Stage 3 (Hire Confirmed) — The employer sets the agreed pay rate and reserves a slot for you. You then decide whether to accept or decline the offer.\n4. Stage 4 (Hired / Accepted) — Once you accept the offer, your emergency contact is unlocked to the employer for your safety while working.',
   },
   {
     heading: 'In-App Messaging & Action Cards',
-    body: 'Chat becomes available once an employer sends a Job Request to an applicant. Inside the chat, you will see interactive status cards for formal job offers, hire confirmations, and job completion.',
+    body: 'You can chat directly to discuss job details once shortlisted. Interactive action cards inside the chat make it easy to complete each step of the application and hiring process.',
   },
   {
-    heading: 'Ratings & Reviews',
-    body: 'Once a job is marked Completed, both the worker and employer have 7 days to leave a 1-to-5 star rating and written review. Your overall rating uses a fair weighted average displayed on your profile.',
+    heading: 'Ratings & Reviews (7-Day Window)',
+    body: 'Once a job is marked Completed, both the worker and employer have 7 days to leave a rating and review. Your feedback helps other SIKAP users know who is reliable and trustworthy to work with.',
   },
   {
     heading: 'Switching Between Worker & Employer',
-    body: 'Need to hire someone or look for work using the same account? Go to Settings and tap "Log in as Employer" or "Log in as Worker." Worker and Employer ratings are tracked separately.',
+    body: 'If you have both a Worker and Employer account, you can switch between the two modes anytime using the switch option in Settings. Worker and Employer ratings are tracked separately.',
   },
   {
     heading: 'Reporting, Blocking & Support',
-    body: 'You can report suspicious job posts or users, or block users you no longer wish to interact with (as long as you do not have an active hired contract together). For account help, go to Settings > Support Tickets to message our admin team.',
+    body: 'If you see suspicious activity or a user violating community rules, you can report or block them. If you need help with your account, check the Support Tickets option in Settings.',
   },
 ];
 
 const HELP_SECTIONS_TL: ContentSection[] = [
   {
     heading: '👋 Welcome sa SIKAP Help Center',
-    body: 'Tinutulungan ng SIKAP na magkakilala at magkatrabaho ang mga lokal na manggagawa at employer sa lahat ng bayan at lungsod ng Sorsogon. Narito ang gabay kung paano gamitin ang app.',
+    body: 'Dito mo makikita ang mga sagot sa mga karaniwang tanong tungkol sa SIKAP. Tinutulungan ng app ang mga manggagawa at employer sa Sorsogon na makahanap ng trabaho at makahanap ng mga taong puwedeng kunin sa trabaho.',
   },
   {
-    heading: 'Pagsisimula at Pag-verify ng ID',
-    body: '1. Mag-register gamit ang iyong email, cellphone number, birthday (15 taong gulang pataas), bayan, at barangay.\n2. Ilagay ang 6-digit code (OTP) na ipapadala sa iyong email.\n3. Mag-upload ng malinaw na dokumento:\n• Para sa Worker: Harap at likod ng valid ID, at selfie habang hawak ang ID.\n• Para sa Employer: Valid ID ng kinatawan at Business Permit o patunay ng negosyo/sambahayan.\n\nSinusuri ito ng aming admin para siguradong ligtas at totoo ang mga gumagamit ng app.',
+    heading: 'Paano Magsimula at Mag-verify ng ID',
+    body: '1. Gumawa ng account gamit ang iyong email, cellphone number, birthday (dapat ay 18 taong gulang pataas), bayan, at barangay.\n2. Ilagay ang 6-digit OTP na ipapadala sa email mo.\n3. I-upload ang mga kailangang dokumento:\n• Worker: Harap at likod ng valid ID, pati selfie habang hawak mo ang iyong ID.\n• Employer: Valid ID ng kinatawan. Maaari ring mag-upload ng business documents o patunay ng sambahayan kung mayroon.',
   },
   {
-    heading: 'Paghahanap at Pag-apply sa Trabaho',
-    body: 'Maghanap ng trabaho sa Jobs tab. Puwede kang gumamit ng filter ayon sa uri ng trabaho, bayan, barangay, bayad, o kung urgent ito. Pindutin ang trabaho para makita ang buong detalye at mag-apply. Makikita mo ang status ng iyong mga inaplayan sa Applied tab.',
+    heading: 'Paano Maghanap at Mag-apply ng Trabaho',
+    body: 'Pumunta sa Find tab para maghanap ng mga available na trabaho. Puwede mong i-filter ang mga ito ayon sa uri ng trabaho, barangay mo, bayan mo, o kahit saan sa Sorsogon. Pindutin ang job post para makita ang buong detalye. Kung interesado ka, puwede ka nang mag-apply.',
   },
   {
-    heading: 'Proseso sa Pagkuha sa Trabaho',
-    body: 'Pinoprotektahan ng SIKAP ang iyong personal na impormasyon sa bawat hakbang:\n\n1. Nag-apply (Pending) — Nagpasa ka ng aplikasyon. Pangalan, barangay, skills, at rating pa lang ang makikita ng employer.\n2. Napili sa Chat (Job Request) — Binuksan ng employer ang chat para mapag-usapan ninyo ang detalye ng trabaho at bayad.\n3. Opisyal na Alok (Offer Sent) — Nagpadala na ang employer ng pinal na alok at napagkasunduang bayad.\n4. Tanggap na sa Trabaho (Hired) — Kapag tinanggap mo ang alok, makikita na ninyo ang cellphone number ng isa’t isa at ang iyong character references.\n5. Tapos na (Completed) — Kapag tapos na ang trabaho, mamarkahan na itong Completed at puwede na kayong magbigay ng rating at review.',
+    heading: 'Paano ang Proseso ng Pagkuha sa Trabaho',
+    body: '1. Stage 1 (Nag-apply): Pangalan, barangay, skills, karanasan sa trabaho, at rating mo pa lang ang makikita ng employer.\n2. Stage 2 (Napili para sa Trabaho): Kapag pinili ka ng employer at nagpadala ng Job Request, makikita na niya ang iyong character references at cellphone number. Puwede na rin kayong mag-chat para pag-usapan ang bayad at iba pang detalye.\n3. Stage 3 (Kumpirmado ang Alok): Ilalagay ng employer ang napagkasunduang bayad at irereserba ang slot para sa iyo. Ikaw naman ang magpapasya kung tatanggapin o tatanggihan mo ang alok.\n4. Stage 4 (Tanggap na sa Trabaho): Kapag tinanggap mo ang alok, makikita na ng employer ang emergency contact mo para sa kaligtasan mo habang nagtatrabaho.',
   },
   {
-    heading: 'Pag-uusap sa Chat (Messages)',
-    body: 'Makakapag-chat lamang kapag pinili (shortlisted) ng employer ang iyong aplikasyon. Sa loob ng chat, makikita rin ang mga notification card kapag may opisyal na alok sa trabaho o kapag tapos na ang gawain.',
+    heading: 'Paggamit ng Chat at Action Cards',
+    body: 'Puwede kayong mag-chat para direktang pag-usapan ang mga detalye ng trabaho. May mga action card din na magagamit para mas madali mong magawa ang mga kailangang hakbang sa application at hiring process.',
   },
   {
-    heading: 'Mga Rating at Review',
-    body: 'Pagkatapos ng trabaho, may 7 araw ang worker at employer para bigyan ng 1 hanggang 5 star rating at review ang isa’t isa. Makikita ang iyong reputasyon sa iyong profile.',
+    heading: 'Ratings at Reviews (7 Araw)',
+    body: 'Pagkatapos ng trabaho, maaari kang magbigay ng rating at review sa loob ng 7 araw. Makakatulong ang feedback mo para malaman ng ibang users kung maayos at mapagkakatiwalaan ang kanilang makakatrabaho.',
   },
   {
-    heading: 'Paglipat sa Worker o Employer Mode',
-    body: 'Kung gusto mong mag-post ng trabaho o kaya ay maghanap ng mapapasukan gamit ang parehong account, pumunta lang sa Settings at pindutin ang "Gamitin ang Employer Account" o "Gamitin ang Worker Account." Magkahiwalay ang rating mo bilang worker at bilang employer.',
+    heading: 'Paglipat sa Worker at Employer Mode',
+    body: 'Kung mayroon kang Worker at Employer account, puwede kang lumipat sa dalawang mode gamit ang switch option sa app.',
   },
   {
-    heading: 'Pag-report, Pag-block, at Tulong',
-    body: 'Puwede mong i-report ang kahina-hinalang user o job post, o i-block ang user kung wala kayong kasalukuyang kontrata sa trabaho. Kung kailangan mo ng tulong sa account, pumunta sa Settings > Mga Request sa Support.',
+    heading: 'Paano Mag-report, Mag-block, at Humingi ng Tulong',
+    body: 'Kung may makita kang kahina-hinalang activity o user na lumalabag sa mga patakaran, puwede mo silang i-report o i-block. Kung may problema ka sa paggamit ng app, tingnan ang available na support options para makahingi ng tulong.',
   },
 ];
 
@@ -236,8 +236,8 @@ const TERMS_SECTIONS_EN: ContentSection[] = [
     body: 'Last updated: November 2026\n\nBy creating an account or using SIKAP, you agree to follow these Terms of Service. Please read them carefully.',
   },
   {
-    heading: '1. Eligibility & Age Requirement',
-    body: 'To use SIKAP, you must be at least 15 years old and reside or operate within the Province of Sorsogon. In accordance with Philippine labor laws (Republic Act No. 7658), users aged 15 to 17 may only engage in non-hazardous work with appropriate parent or guardian consent.',
+    heading: '1. Eligibility & Age Requirement (18+)',
+    body: 'To register and use SIKAP, you must be at least 18 years old and reside or operate within the Province of Sorsogon.',
   },
   {
     heading: '2. About SIKAP',
@@ -245,14 +245,14 @@ const TERMS_SECTIONS_EN: ContentSection[] = [
   },
   {
     heading: '3. Account Registration & Verification',
-    body: 'You agree to provide truthful, accurate information when registering and to verify your email via OTP. To access full platform features, workers must submit a valid ID (front and back) and selfie, while employers must submit a representative ID and supporting permit/proof. Sharing accounts or using fake documents will result in permanent suspension.',
+    body: 'You agree to provide truthful, accurate information when registering and to verify your email via OTP. To access full platform features, workers must submit a valid ID (front and back) and selfie holding the ID, while employers must submit a representative valid ID and optional supporting business or household proof. Sharing accounts or using fake documents will result in permanent suspension.',
   },
   {
-    heading: '4. Community Rules & Conduct',
-    body: 'To keep SIKAP safe and respectful, you agree not to:\n• Post fake, illegal, or misleading job listings or profile information\n• Harass, abuse, or use profane language in chat, job posts, or reviews\n• Ask for application fees, deposits, or money transfers\n• Bypass the platform’s progressive contact disclosure rules\n\nSIKAP uses automated profanity filters and admin moderation. Violations may result in content removal, temporary suspension, or a permanent ban.',
+    heading: '4. Community Rules & Conduct (2-Tier Profanity & Anti-Fraud)',
+    body: 'To keep SIKAP safe and respectful, you agree not to:\n• Post fake, illegal, or misleading job listings or profile information\n• Harass, abuse, or use profane language in chat, job posts, or reviews\n• Ask for application fees, deposits, or money transfers\n• Bypass the platform’s progressive contact disclosure rules\n\nSIKAP uses automated 2-tier profanity filters and admin moderation. Violations may result in content removal, temporary suspension, or a permanent ban.',
   },
   {
-    heading: '5. Job Offers, Wage Guidance & Payments',
+    heading: '5. Job Offers, DOLE Region V Wage Guidance & Payments',
     body: 'Employers and workers agree on the scope of work and compensation before confirming a hire. While SIKAP displays Region V (Bicol) DOLE minimum wage reference guides, final pay rates are agreed upon by both users. SIKAP does not process payments or collect commissions, and is not liable for offline payment disputes.',
   },
   {
@@ -260,7 +260,7 @@ const TERMS_SECTIONS_EN: ContentSection[] = [
     body: 'Users may switch between Worker and Employer modes within the same account. However, you may not apply to your own job postings or manipulate ratings and reviews.',
   },
   {
-    heading: '7. Reviews & Reputation',
+    heading: '7. Reviews & Bayesian Reputation (7-Day Window)',
     body: 'Reviews must reflect genuine work experiences from completed jobs within the 7-day rating window. Dishonest, abusive, or retaliatory reviews may be moderated by administrators.',
   },
   {
@@ -280,47 +280,47 @@ const TERMS_SECTIONS_EN: ContentSection[] = [
 const TERMS_SECTIONS_TL: ContentSection[] = [
   {
     heading: 'Mga Tuntunin sa Paggamit',
-    body: 'Huling na-update: Nobyembre 2026\n\nSa paggawa ng account at paggamit ng SIKAP, sumasang-ayon ka na susundin ang mga tuntuning ito. Pakibasa ito nang mabuti.',
+    body: 'Huling na-update: Nobyembre 2026\n\nSa paggawa ng account at paggamit ng SIKAP, sumasang-ayon ka na susundin ang mga patakarang ito. Pakibasa ito nang mabuti.',
   },
   {
-    heading: '1. Sino ang Puwedeng Gumamit',
-    body: 'Dapat ay hindi bababa sa 15 taong gulang ka at nakatira o naghahanapbuhay sa Probinsya ng Sorsogon para magamit ang SIKAP. Ayon sa batas sa paggawa ng Pilipinas (RA 7658), ang mga edad 15 hanggang 17 ay maaari lamang pumasok sa ligtas na trabaho na may pahintulot ng magulang o guardian.',
+    heading: '1. Sino ang Puwedeng Gumamit ng SIKAP (18 Taong Gulang Pataas)',
+    body: 'Para makagawa ng account at magamit ang SIKAP, dapat ay 18 taong gulang ka pataas at nakatira o naghahanapbuhay sa Probinsya ng Sorsogon.',
   },
   {
-    heading: '2. Ano ang SIKAP',
-    body: 'Ang SIKAP ay isang app na nag-uugnay sa mga lokal na manggagawa at employer sa Sorsogon. Tinutulungan namin kayong maghanap ng trabaho, mag-usap sa chat, at mag-verify ng pagkakakilanlan, ngunit ang SIKAP ay hindi agency at hindi direktang employer.',
+    heading: '2. Tungkol sa SIKAP',
+    body: 'Ang SIKAP ay isang app na tumutulong sa mga manggagawa at employer sa Sorsogon na magkahanap ng trabaho at makakuha ng mapagkakatiwalaang gagawa. Nagbibigay ang app ng paraan para mag-post ng trabaho, mag-apply, mag-chat, at mag-verify ng ID, pero hindi agency o direktang employer ang SIKAP.',
   },
   {
     heading: '3. Paggawa ng Account at Pag-verify ng ID',
-    body: 'Sumasang-ayon kang magbigay ng totoo at tamang impormasyon sa pag-register at i-verify ang iyong email gamit ang OTP. Para magamit nang buo ang app, kailangang magpasa ng valid ID at selfie (para sa Worker) o valid ID at permit/patunay (para sa Employer). Ang paggamit ng pekeng ID o pangalan ay magreresulta sa pagka-ban ng account.',
+    body: 'Sumasang-ayon kang magbigay ng totoo at tamang impormasyon sa pag-register at i-verify ang email mo gamit ang 6-digit OTP. Para magamit nang buo ang app, kailangang mag-upload ng Worker ng harap at likod ng valid ID pati selfie habang hawak ang ID, at mag-upload naman ang Employer ng valid ID ng kinatawan (at business documents o patunay ng sambahayan kung mayroon). Ang paggamit ng pekeng ID o impormasyon ay magreresulta sa pagka-ban ng account.',
   },
   {
-    heading: '4. Tamang Asal sa Paggamit ng App',
-    body: 'Para manatiling ligtas at maayos ang komunidad ng SIKAP, bawal ang mga sumusunod:\n• Mag-post ng pekeng trabaho o maling impormasyon sa profile\n• Manloko, mang-away, o gumamit ng bastos na salita sa chat, job post, o review\n• Maningil ng placement fee o humingi ng pera bago magsimula ang trabaho\n• Pilitin ang ibang user na ibigay agad ang pribadong contact details bago magkasundo sa app\n\nMay automatic filter at admin team ang SIKAP na nagbabantay. Ang lalabag ay maaaring masuspinde o ma-ban nang permanente.',
+    heading: '4. Mga Patakaran sa Paggamit ng SIKAP',
+    body: 'Para manatiling ligtas at maayos ang paggamit ng SIKAP, bawal ang mga sumusunod:\n• Mag-post ng pekeng job post o maling impormasyon sa profile\n• Manloko, mang-away, o gumamit ng bastos na salita sa chat, job post, o review\n• Maningil ng application fee, deposit, o humingi ng pera bago magsimula ang trabaho\n• Pilitin ang ibang user na ibigay agad ang pribadong contact details nang hindi dumadaan sa tamang proseso ng app\n\nMay automatic filter sa masasama o bastos na salita at admin team ang SIKAP na nagbabantay. Ang lalabag ay puwedeng masuspinde o ma-ban nang permanente.',
   },
   {
-    heading: '5. Kasunduan sa Trabaho at Bayad',
-    body: 'Ang employer at manggagawa ang nagkakasundo sa gawain at halaga ng bayad bago magsimula ang trabaho. Nagpapakita ang SIKAP ng gabay sa minimum wage ng DOLE Region V, ngunit direktang binabayaran ng employer ang manggagawa. Hindi dumadaan sa SIKAP ang pera o sahod.',
+    heading: '5. Mga Alok sa Trabaho, Gabay sa Sahod ng DOLE Region V, at Pagbabayad',
+    body: 'Ang employer at worker ang nagkakasundo sa detalye ng trabaho at halaga ng bayad bago kumpirmahin ang pagkuha. Nagpapakita ang SIKAP ng gabay sa minimum wage mula sa DOLE Region V, pero direktang nagkakasundo at nagbabayaran ang employer at worker. Hindi dumadaan sa SIKAP ang bayad o sahod.',
   },
   {
-    heading: '6. Paggamit Bilang Worker at Employer',
-    body: 'Puwede kang lumipat sa Worker Mode at Employer Mode gamit ang iisang account. Gayunpaman, bawal mag-apply sa sarili mong job post o dayain ang mga rating at review.',
+    heading: '6. Paggamit ng Worker at Employer Mode',
+    body: 'Puwede kang lumipat sa Worker at Employer mode gamit ang switch option sa app. Gayunpaman, bawal mag-apply sa sarili mong job post o dayain ang mga rating at review.',
   },
   {
-    heading: '7. Mga Rating at Review',
-    body: 'Ang mga review ay dapat batay sa totoong karanasan sa natapos na trabaho sa loob ng 7 araw. Maaaring alisin ng admin ang mga mapanirang-puri o hindi totoong review.',
+    heading: '7. Ratings at Reviews (7 Araw)',
+    body: 'Ang mga rating at review ay dapat batay sa totoong karanasan sa natapos na trabaho at puwedeng ibigay sa loob ng 7 araw. Puwedeng alisin ng admin ang mga hindi totoo o mapanirang review.',
   },
   {
-    heading: '8. Pagbura at Pagsuspinde ng Account',
-    body: 'Puwede mong burahin ang iyong account anumang oras sa Settings basta wala kang kasalukuyang trabahong hindi pa tapos. May karapatan din ang SIKAP na isuspinde o i-ban ang mga account na lumalabag sa aming mga patakaran.',
+    heading: '8. Pag-delete at Pagsuspinde ng Account',
+    body: 'Puwede mong i-delete ang account mo sa Settings basta wala kang kasalukuyang trabahong hindi pa tapos. May karapatan din ang SIKAP na isuspinde o i-ban ang mga account na lumalabag sa mga patakaran ng app.',
   },
   {
-    heading: '9. Limitasyon ng Pananagutan',
-    body: 'Ang SIKAP ay tulay lamang sa pagitan ng employer at manggagawa. Hindi namin ginagarantiya na agad kang matatanggap sa trabaho, at hindi kami mananagot sa anumang hindi pagkakaunawaan sa labas ng app.',
+    heading: '9. Hangganan ng Pananagutan',
+    body: 'Ang SIKAP ay tulay lamang para magkausap at magkatrabaho ang employer at worker. Hindi namin ginagarantiya na agad kang matatanggap sa trabaho, at hindi kami mananagot sa anumang hindi pagkakaunawaan o pangyayari sa labas ng app.',
   },
   {
-    heading: '10. Batas na Sumasaklaw at Pakikipag-ugnayan',
-    body: 'Ang mga tuntuning ito ay nasasaklaw ng mga batas ng Republika ng Pilipinas. Kung may tanong ka, magpadala lamang ng mensahe sa Settings > Mga Request sa Support.',
+    heading: '10. Mga Batas na Sinusunod at Contact Information',
+    body: 'Ang mga patakarang ito ay sumusunod sa mga batas ng Republika ng Pilipinas. Kung may tanong o kailangan ng tulong, magpadala lang ng mensahe sa Settings > Support Tickets.',
   },
 ];
 
@@ -331,74 +331,66 @@ const PRIVACY_SECTIONS_EN: ContentSection[] = [
   },
   {
     heading: '1. Information We Collect',
-    body: 'When you use SIKAP, we collect:\n• Registration details: full name, email address, mobile number, birth date, municipality, and barangay in Sorsogon\n• Profile information: skills, work history, character references (up to 3), household/business details, and profile photo\n• Verification documents: government-issued IDs, selfies with ID, and business/household proof documents\n• App activity: job posts, applications, in-app chat messages, ratings, reviews, and support tickets\n• Device data: Expo push notification tokens for real-time updates',
+    body: 'When you use SIKAP, we collect:\n• Registration details: full name, email address, mobile number, birth date (18+), municipality, and barangay in Sorsogon\n• Profile information: skills, work experience, character references (up to 3), emergency contact, household/business details, and profile photo\n• Verification documents: valid government IDs (front and back), selfies holding the ID, and optional business or household proof documents\n• App activity: job posts, applications, in-app chat messages, ratings, reviews, and support tickets\n• Device data: Expo push notification tokens for real-time updates',
   },
   {
     heading: '2. How We Use Your Data',
-    body: 'We use your information strictly to:\n• Verify your identity and maintain a trusted local community\n• Match workers with nearby jobs in their barangay and municipality\n• Facilitate in-app messaging, job offers, and mutual ratings\n• Send important SMS, email (OTP), and push notifications about your applications or jobs\n• Generate anonymized, aggregate labor-market statistics (such as top skills and job demand per municipality)',
+    body: 'We use your information strictly to:\n• Verify your identity and maintain a trusted local community\n• Match workers with nearby jobs in their barangay, municipality, and across Sorsogon\n• Facilitate in-app chat, action cards, job offers, and ratings\n• Send important email OTPs and app notifications about your applications or jobs\n• Generate anonymized, aggregate labor-market statistics for Sorsogon',
   },
   {
-    heading: '3. Progressive Contact Disclosure (How Sharing Works)',
-    body: 'SIKAP does not expose your full personal details to everyone. Information is shared step by step:\n• Public / Pending stage: Only your name, barangay/municipality, skills, work history, and rating score are shown.\n• Shortlisted / Offer stage: You can chat securely inside the app without revealing your phone number.\n• Hired stage: Your mobile number and character references are unlocked to the matched employer/worker only after the formal job offer is accepted.\n\nWe never sell or rent your personal data to advertisers or third parties.',
+    heading: '3. 4-Stage Progressive Data Disclosure',
+    body: 'SIKAP protects your personal details by unlocking information only as your application progresses:\n• Stage 1 (Applied / Pending): Only your name, barangay, skills, work experience, and rating are visible to the employer.\n• Stage 2 (Shortlisted / Job Request): When the employer selects your application and sends a Job Request, your character references and mobile number become visible, and you can chat in the app.\n• Stage 3 (Hire Confirmed): The employer sets the agreed pay rate and reserves a slot for you while you decide whether to accept or decline the offer.\n• Stage 4 (Hired / Accepted): Once you accept the offer, your emergency contact becomes visible to the employer for your safety while working.\n\nWe never sell or rent your personal data to advertisers or third parties.',
   },
   {
-    heading: '4. Protection of ID Documents & Character References',
-    body: 'Uploaded IDs, selfies, and permits are stored in private encrypted cloud storage and are viewed only by authorized SIKAP administrators via temporary secure links. They are never shown to other users. Character reference details are also encrypted and only disclosed when a worker is officially hired.',
+    heading: '4. Protection of ID Documents & Character References (Private Bucket & Signed URLs)',
+    body: 'Uploaded IDs, selfies, and supporting documents are stored in a private cloud bucket and can only be viewed by authorized SIKAP administrators through temporary signed links. They are never shown to other users. Character references and emergency contacts are protected and only disclosed at the appropriate hiring stage.',
   },
   {
     heading: '5. Data Retention & Account Deletion',
-    body: 'We keep your data while your account remains active. If you delete your account in Settings, your profile and personal records are removed from active access, while necessary audit or moderation records are retained only as required for security and legal compliance.',
+    body: 'We keep your data while your account remains active. If you delete your account in Settings, your profile and personal information are removed from active access, while necessary security or moderation records are retained only as required by law.',
   },
   {
-    heading: '6. Security Measures',
-    body: 'We protect your account using HTTPS encryption, hashed passwords and OTPs, secure token storage on your device, and role-based access controls.',
+    heading: '6. Security Measures (HTTPS, SHA-256 OTPs, RBAC)',
+    body: 'We protect your account using HTTPS encryption, hashed passwords and SHA-256 OTP verification codes, secure token storage on your phone, and strict role-based access controls.',
   },
   {
-    heading: '7. Your Data Privacy Rights',
-    body: 'Under the Data Privacy Act of 2012 (RA 10173), you have the right to:\n• Be informed about how your data is processed\n• Access and update your profile information\n• Withdraw consent or delete your account\n• Report privacy concerns to our team via Settings > Support Tickets',
-  },
-  {
-    heading: '8. Young Workers (Ages 15–17)',
-    body: 'SIKAP permits registration only for users aged 15 and older. We do not collect data from children under 15. Users aged 15 to 17 are encouraged to review this Privacy Policy with their parent or legal guardian.',
+    heading: '7. Your Data Privacy Rights (RA 10173)',
+    body: 'Under the Data Privacy Act of 2012 (RA 10173), you have the right to:\n• Be informed about how your data is collected and used\n• Access and update your profile information\n• Withdraw consent or delete your account\n• Report privacy concerns to our team via Settings > Support Tickets',
   },
 ];
 
 const PRIVACY_SECTIONS_TL: ContentSection[] = [
   {
     heading: 'Patakaran sa Privacy',
-    body: 'Huling na-update: Nobyembre 2026\n\nPinapahalagahan ng SIKAP ang iyong privacy at pinoprotektahan ang iyong personal na impormasyon alinsunod sa Data Privacy Act of 2012 (Republic Act No. 10173).',
+    body: 'Huling na-update: Nobyembre 2026\n\nPinapahalagahan ng SIKAP ang iyong privacy at pinoprotektahan ang personal mong impormasyon alinsunod sa Data Privacy Act of 2012 (Republic Act No. 10173).',
   },
   {
-    heading: '1. Anong Impormasyon ang Kinokolekta Namin',
-    body: 'Kapag ginagamit mo ang SIKAP, kinokolekta namin ang mga sumusunod:\n• Detalye ng Account: buong pangalan, email address, cellphone number, birthday, bayan, at barangay sa Sorsogon\n• Detalye sa Profile: mga kasanayan (skills), karanasan sa trabaho, hanggang 3 character reference, detalye ng negosyo o sambahayan, at litrato sa profile\n• Dokumento sa Pag-verify: larawan ng valid ID (harap at likod), selfie na hawak ang ID, at business permit o patunay ng sambahayan\n• Aktibidad sa App: mga job post, aplikasyon, usapan sa chat, rating, review, at support ticket\n• Impormasyon ng Device: notification token para makatanggap ka ng update sa iyong cellphone',
+    heading: '1. Anong Impormasyon ang Kinukuha Namin',
+    body: 'Kapag ginagamit mo ang SIKAP, kinukuha namin ang mga sumusunod na impormasyon:\n• Detalye sa Paggawa ng Account: buong pangalan, email, cellphone number, birthday (dapat ay 18 taong gulang pataas), bayan, at barangay sa Sorsogon\n• Detalye sa Profile: skills, karanasan sa trabaho, character references, emergency contact, detalye ng negosyo o sambahayan, at profile picture\n• Dokumento sa Verification: harap at likod ng valid ID, selfie habang hawak ang ID, at business documents o patunay ng sambahayan kung mayroon\n• Activity sa App: mga job post, application, pag-uusap sa chat, rating, review, at support tickets\n• Impormasyon ng Device: notification token para makatanggap ka ng notifications sa cellphone mo',
   },
   {
-    heading: '2. Paano Namin Ginagamit ang Iyong Impormasyon',
-    body: 'Ginagamit lamang namin ang iyong datos para:\n• Masuri at ma-verify kung totoo ang iyong account\n• Maipakita ang mga trabahong malapit sa iyong barangay at bayan\n• Makapag-usap nang ligtas ang worker at employer sa loob ng app\n• Mapadalhan ka ng OTP sa email, SMS, at notification tungkol sa iyong aplikasyon o trabaho\n• Makabuo ng pangkalahatang ulat tungkol sa mga trabaho sa Sorsogon (nang hindi inilalabas ang iyong pangalan o personal na detalye)',
+    heading: '2. Paano Namin Ginagamit ang Impormasyon Mo',
+    body: 'Ginagamit lang namin ang impormasyon mo para:\n• Ma-verify ang ID at account mo para siguradong ligtas ang mga gumagamit ng SIKAP\n• Matulungan ang mga worker at employer sa Sorsogon na magkahanap ng trabaho at makakuha ng gagawa\n• Magamit mo nang maayos ang chat, action cards, pagpapadala ng alok sa trabaho, at pagbibigay ng rating at review\n• Mapadalhan ka ng 6-digit OTP sa email at notifications tungkol sa application o job post mo\n• Makagawa ng pangkalahatang datos tungkol sa mga trabaho sa Sorsogon nang hindi inilalabas ang personal mong pangalan o detalye',
   },
   {
-    heading: '3. Kailan Makikita ng Iba ang Iyong Contact Details',
-    body: 'Hindi basta-basta ipinapakita ng SIKAP ang iyong cellphone number sa publiko. Hakbang-hakbang ang pagbukas ng impormasyon:\n• Habang nag-a-apply pa lang: Pangalan, barangay/bayan, skills, karanasan sa trabaho, at rating lang ang makikita.\n• Habang nag-uusap sa Chat: Puwede kayong mag-usap sa loob ng app nang nakatago pa rin ang iyong cellphone number.\n• Kapag Tanggap na sa Trabaho (Hired): Makikita lamang ang iyong cellphone number at character references kapag tinanggap mo na ang opisyal na alok sa trabaho.\n\nHindi namin kailanman ibinebenta ang iyong personal na impormasyon sa ibang kumpanya.',
+    heading: '3. 4 na Yugto ng Pagpapakita ng Impormasyon',
+    body: 'Hindi agad ipinapakita ng SIKAP ang lahat ng personal mong impormasyon. Hakbang-hakbang itong nakikita habang umuusad ang application mo:\n• Stage 1 (Nag-apply): Pangalan, barangay, skills, karanasan sa trabaho, at rating mo pa lang ang makikita ng employer.\n• Stage 2 (Napili para sa Trabaho): Kapag pinili ka ng employer at nagpadala ng Job Request, makikita na niya ang iyong character references at cellphone number. Puwede na rin kayong mag-chat para pag-usapan ang bayad at iba pang detalye.\n• Stage 3 (Kumpirmado ang Alok): Ilalagay ng employer ang napagkasunduang bayad at irereserba ang slot para sa iyo habang nagpapasya ka kung tatanggapin o tatanggihan mo ang alok.\n• Stage 4 (Tanggap na sa Trabaho): Kapag tinanggap mo ang alok, makikita na ng employer ang emergency contact mo para sa kaligtasan mo habang nagtatrabaho.\n\nHindi namin kailanman ibinebenta ang personal mong impormasyon sa ibang tao o kumpanya.',
   },
   {
-    heading: '4. Kaligtasan ng Iyong ID at Dokumento',
-    body: 'Ang mga in-upload mong ID, selfie, at permit ay nakatago sa ligtas at pribadong storage. Tanging ang mga awtorisadong admin ng SIKAP lamang ang makakatingin nito para sa pag-verify, at hinding-hindi ito ipapakita sa mga employer o ibang user.',
+    heading: '4. Paano Namin Pinoprotektahan ang ID at Character References Mo',
+    body: 'Ang mga in-upload mong ID, selfie, at iba pang dokumento ay nakatago sa pribadong storage at tanging mga awtorisadong admin lang ng SIKAP ang puwedeng tumingin gamit ang pansamantalang secure link para sa verification. Hindi ito kailanman ipinapakita sa ibang users. Ang iyong character references at emergency contact ay protektado rin at makikita lang ng employer sa tamang stage ng pagkuha sa trabaho.',
   },
   {
-    heading: '5. Pagpapanatili at Pagbura ng Datos',
-    body: 'Pinapanatili namin ang iyong impormasyon habang aktibo ang iyong account. Kapag pinili mong burahin ang iyong account sa Settings, aalisin na sa publiko ang iyong profile at personal na detalye.',
+    heading: '5. Gaano Katagal Namin Itinatago ang Impormasyon Mo at Paano Ito Buburahin',
+    body: 'Itinatago namin ang impormasyon mo habang aktibo ang iyong account. Kapag pinili mong i-delete ang account mo sa Settings, aalisin na sa app ang iyong profile at personal na detalye, maliban sa mga tala na kailangang itabi para sa seguridad at pagsunod sa batas.',
   },
   {
-    heading: '6. Seguridad ng Iyong Account',
-    body: 'Gumagamit kami ng ligtas na koneksyon (HTTPS), naka-encrypt na password at impormasyon, at mahigpit na seguridad para maprotektahan ang iyong account.',
+    heading: '6. Paano Namin Pinoprotektahan ang Account Mo',
+    body: 'Pinoprotektahan namin ang account mo gamit ang ligtas na koneksyon (HTTPS), naka-encrypt na password at OTP, ligtas na pagtatago ng login token sa cellphone mo, at mahigpit na patakaran kung sino lang ang puwedeng makakita ng iyong impormasyon.',
   },
   {
-    heading: '7. Ang Iyong mga Karapatan',
-    body: 'Sa ilalim ng Data Privacy Act of 2012, may karapatan kang:\n• Malaman kung paano ginagamit ang iyong impormasyon\n• Tingnan at baguhin ang detalye sa iyong profile\n• I-delete ang iyong account kung ayaw mo nang gamitin ang app\n• Magtanong o mag-report tungkol sa iyong privacy sa Settings > Mga Request sa Support',
-  },
-  {
-    heading: '8. Para sa mga Edad 15–17',
-    body: 'Ang SIKAP ay para lamang sa mga edad 15 pataas at hindi kumokolekta ng datos ng mga batang wala pang 15 taong gulang. Hinihikayat ang mga edad 15 hanggang 17 na basahin ang patakarang ito kasama ang kanilang magulang o guardian.',
+    heading: '7. Mga Karapatan Mo sa Ilalim ng Data Privacy Act (RA 10173)',
+    body: 'Sa ilalim ng Data Privacy Act of 2012 (RA 10173), may karapatan kang:\n• Malaman kung paano kinukuha at ginagamit ang impormasyon mo\n• Tingnan at i-update ang mga detalye sa iyong profile\n• Bawiin ang pahintulot mo o i-delete ang iyong account\n• Magtanong o mag-report tungkol sa iyong privacy sa pamamagitan ng support options sa app',
   },
 ];
 
@@ -469,11 +461,11 @@ export const SettingsScreen: React.FC = () => {
   const isTagalog = language === 'tl';
   const deleteReasons = isTagalog ? DELETE_REASONS_TL : DELETE_REASONS_EN;
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [locationEnabled, setLocationEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [pendingLanguage, setPendingLanguage] = useState<'en' | 'tl'>('en');
   const [selectedReason, setSelectedReason] = useState<string>(deleteReasons[0]);
   const [customReasonDetails, setCustomReasonDetails] = useState('');
   const [deleteWarning, setDeleteWarning] = useState<string | null>(null);
@@ -622,7 +614,10 @@ export const SettingsScreen: React.FC = () => {
               icon="language-outline"
               title={t('language')}
               subtitle={language === 'tl' ? 'Tagalog (Filipino)' : 'English'}
-              onPress={() => setShowLanguageModal(true)}
+              onPress={() => {
+                setPendingLanguage(language);
+                setShowLanguageModal(true);
+              }}
             />
             <View style={styles.divider} />
             <SettingRow
@@ -631,14 +626,6 @@ export const SettingsScreen: React.FC = () => {
               type="toggle"
               value={notificationsEnabled}
               onToggle={setNotificationsEnabled}
-            />
-            <View style={styles.divider} />
-            <SettingRow
-              icon="location-outline"
-              title={t('location_services')}
-              type="toggle"
-              value={locationEnabled}
-              onToggle={setLocationEnabled}
             />
           </View>
         </View>
@@ -731,11 +718,12 @@ export const SettingsScreen: React.FC = () => {
         animationType="fade"
         onRequestClose={() => setShowLanguageModal(false)}
       >
-        <TouchableOpacity
-          style={cStyles.overlay}
-          activeOpacity={1}
-          onPress={() => setShowLanguageModal(false)}
-        >
+        <View style={cStyles.overlay}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setShowLanguageModal(false)}
+          />
           <View style={cStyles.sheet}>
             <View style={cStyles.handle} />
             <View style={cStyles.sheetHeader}>
@@ -743,7 +731,7 @@ export const SettingsScreen: React.FC = () => {
                 <Ionicons name="language-outline" size={22} color={colors.primary} />
               </View>
               <Text style={cStyles.sheetTitle}>
-                {language === 'tl' ? 'Pumili ng Wika' : 'Select Language'}
+                {pendingLanguage === 'tl' ? 'Pumili ng Wika' : 'Select Language'}
               </Text>
               <TouchableOpacity
                 onPress={() => setShowLanguageModal(false)}
@@ -758,26 +746,27 @@ export const SettingsScreen: React.FC = () => {
               <TouchableOpacity
                 style={[
                   styles.reasonOption,
-                  language === 'en' && {
+                  pendingLanguage === 'en' && {
                     borderColor: colors.primary,
                     backgroundColor: 'rgba(232, 116, 74, 0.08)',
                   },
                   { paddingVertical: 14 },
                 ]}
-                onPress={async () => {
-                  await setLanguage('en');
-                  setShowLanguageModal(false);
-                }}
+                onPress={() => setPendingLanguage('en')}
+                activeOpacity={0.7}
               >
                 <Ionicons
-                  name={language === 'en' ? 'radio-button-on' : 'radio-button-off'}
+                  name={pendingLanguage === 'en' ? 'radio-button-on' : 'radio-button-off'}
                   size={20}
-                  color={language === 'en' ? colors.primary : colors.inkFaint}
+                  color={pendingLanguage === 'en' ? colors.primary : colors.inkFaint}
                 />
                 <Text
                   style={[
                     styles.reasonOptionText,
-                    language === 'en' && { fontFamily: fonts.bodyBold, color: colors.primary },
+                    pendingLanguage === 'en' && {
+                      fontFamily: fonts.bodyBold,
+                      color: colors.primary,
+                    },
                   ]}
                 >
                   English
@@ -787,26 +776,27 @@ export const SettingsScreen: React.FC = () => {
               <TouchableOpacity
                 style={[
                   styles.reasonOption,
-                  language === 'tl' && {
+                  pendingLanguage === 'tl' && {
                     borderColor: colors.primary,
                     backgroundColor: 'rgba(232, 116, 74, 0.08)',
                   },
                   { paddingVertical: 14 },
                 ]}
-                onPress={async () => {
-                  await setLanguage('tl');
-                  setShowLanguageModal(false);
-                }}
+                onPress={() => setPendingLanguage('tl')}
+                activeOpacity={0.7}
               >
                 <Ionicons
-                  name={language === 'tl' ? 'radio-button-on' : 'radio-button-off'}
+                  name={pendingLanguage === 'tl' ? 'radio-button-on' : 'radio-button-off'}
                   size={20}
-                  color={language === 'tl' ? colors.primary : colors.inkFaint}
+                  color={pendingLanguage === 'tl' ? colors.primary : colors.inkFaint}
                 />
                 <Text
                   style={[
                     styles.reasonOptionText,
-                    language === 'tl' && { fontFamily: fonts.bodyBold, color: colors.primary },
+                    pendingLanguage === 'tl' && {
+                      fontFamily: fonts.bodyBold,
+                      color: colors.primary,
+                    },
                   ]}
                 >
                   Tagalog (Filipino)
@@ -814,15 +804,32 @@ export const SettingsScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-              style={cStyles.closeFullBtn}
-              onPress={() => setShowLanguageModal(false)}
-              activeOpacity={0.8}
-            >
-              <Text style={cStyles.closeFullBtnText}>{t('close')}</Text>
-            </TouchableOpacity>
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setShowLanguageModal(false)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.cancelBtnText}>{t('cancel')}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.saveBtn}
+                onPress={async () => {
+                  if (pendingLanguage !== language) {
+                    await setLanguage(pendingLanguage);
+                  }
+                  setShowLanguageModal(false);
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.saveBtnText}>
+                  {t('done') || (pendingLanguage === 'tl' ? 'Tapos na' : 'Done')}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </TouchableOpacity>
+        </View>
       </Modal>
 
       {/* Delete Account Reason Modal */}
@@ -1121,6 +1128,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   deleteConfirmBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: '#fff',
+  },
+  saveBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveBtnText: {
     fontFamily: fonts.bodyBold,
     fontSize: 13,
     color: '#fff',

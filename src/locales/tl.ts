@@ -219,6 +219,7 @@ export const tl: Record<TranslationKey, string> = {
   // 162-180: Common Actions, Errors & Prompts
   save: 'I-save',
   cancel: 'Kanselahin',
+  done: 'Tapos na',
   decline: 'Tanggihan',
   confirm: 'Kumpirmahin',
   back: 'Bumalik',
@@ -589,51 +590,82 @@ export const tl: Record<TranslationKey, string> = {
   post_another_job_btn: 'Mag-post Pa ng Trabaho',
 
   // Group 8: Notifications Screen & Cards
-  notif_section_today: 'Ngayong Araw',
+  notif_section_today: 'Ngayon',
   notif_section_yesterday: 'Kahapon',
-  notif_section_older: 'Mas Nauna',
-  mark_all_read: 'Markahang Nabasa ang Lahat',
+  notif_section_older: 'Mga Nakaraan',
+  mark_all_read: 'Markahang nabasa lahat',
   marking_read: 'Minamarkahang nabasa...',
-  no_notifs_today: 'Wala kang natanggap na abiso ngayong araw.',
-  no_notifs_yet: 'Wala ka pang mga abiso.',
-  new_notif_default: 'May bago kang abiso.',
-  notif_new_application_title: 'Bagong Aplikasyon',
+  no_notifs_today: 'Wala kang bagong abiso ngayon.',
+  no_notifs_yet: 'Wala ka pang notifications.',
+  new_notif_default: 'May bago kang notification.',
+  notif_new_application_title: 'May Nag-apply sa Job Post Mo',
   notif_new_application_msg: 'Nag-apply si {workerName} sa trabahong {jobTitle}.',
-  notif_shortlisted_title: 'Napili ang Aplikasyon Mo',
+  notif_shortlisted_title: 'Napili ang Application Mo',
   notif_shortlisted_msg:
-    'SIKAP: Napili ng employer na si {employerName} ang aplikasyon mo para sa trabahong [{jobTitle}]. Buksan ang app para mapag-usapan ninyo ang mga detalye at kasunduan sa trabaho.',
+    'Napili ng employer na si {employerName} ang application mo para sa trabahong [{jobTitle}]. Buksan ang app para mapag-usapan ninyo ang detalye at bayad sa trabaho.',
   notif_hire_confirmed_title: 'Kumpirmado na ang Pagkuha sa Iyo',
   notif_hire_confirmed_msg:
-    'Kumpirmado na ang pagkuha sa iyo para sa trabahong {jobTitle}. Pakitanggap ang alok.',
-  notif_offer_accepted_title: 'Tinanggap ang Alok',
+    'Kumpirmado na ang pagkuha sa iyo para sa trabahong {jobTitle}. Pakitingnan ang alok at piliin kung tatanggapin mo ito.',
+  notif_offer_accepted_title: 'Tinanggap ang Alok Mo',
   notif_offer_accepted_msg: 'Tinanggap ni {workerName} ang alok para sa trabahong {jobTitle}.',
-  notif_rate_declined_title: 'Tinanggihan ang Inalok na Bayad',
+  notif_rate_declined_title: 'Hindi Tinanggap ang Inalok na Bayad',
   notif_rate_declined_msg:
-    'SIKAP: Hindi tinanggap ni {workerName} ang inialok na bayad para sa [{jobTitle}]. Puwede kayong mag-usap ulit tungkol sa bayad at magpadala ng bagong alok.',
+    'Hindi tinanggap ni {workerName} ang inialok na bayad{priceText} para sa trabahong [{jobTitle}]. Puwede pa kayong mag-usap tungkol sa bayad at magpadala ng panibagong alok.',
   notif_hire_cancelled_title: 'Nakansela ang Pagkuha sa Iyo',
   notif_hire_cancelled_msg:
-    'SIKAP: Kinansela ng employer ang pagkuha sa iyo para sa trabahong [{jobTitle}].',
-  notif_app_update_title: 'Update sa Aplikasyon',
+    'Kinansela ng employer ang pagkuha sa iyo para sa trabahong [{jobTitle}].',
+  notif_app_update_title: 'Update sa Application Mo',
   notif_app_declined_msg:
-    'Salamat sa pag-apply sa trabahong {jobTitle}. Huwag panghinaan ng loob! May mga bagong oportunidad sa Bulan araw-araw. Silipin ang mga ito sa SIKAP.',
+    'Salamat sa pag-apply sa trabahong {jobTitle}. Okay lang kung hindi ka napili sa pagkakataong ito. May mga bagong trabaho sa Sorsogon araw-araw, kaya bisitahin ulit ang SIKAP para makita ang iba pang puwede mong applyan.',
   notif_rate_employer_title: 'I-rate ang Employer Mo',
   notif_rate_employer_msg:
-    'Tapos na ang trabahong "{jobTitle}"! Bigyan ng rating si {employerName} para makatulong sa iba pang miyembro ng komunidad.',
-  notif_rate_worker_title: 'I-rate ang Manggagawa Mo',
+    'Tapos na ang trabahong "{jobTitle}"! Bigyan ng rating si {employerName} para makatulong sa ibang users ng SIKAP.',
+  notif_rate_worker_title: 'I-rate ang Worker Mo',
   notif_rate_worker_msg:
     'Tapos na ang trabahong "{jobTitle}". Mag-iwan ng review para kay {workerName}.',
-  notif_worker_finished_title: 'Minarkahan ng Manggagawa na Tapos na ang Trabaho',
+  notif_worker_finished_title: 'Minarkahang Tapos na ang Trabaho',
   notif_worker_finished_msg:
-    'Minarkahan ni {workerName} na tapos na ang trabahong "{jobTitle}". Pakikumpirma ito at bigyan ng rating ang manggagawa.',
-  notif_identity_verified_title: 'Beripikado na ang Pagkakakilanlan Mo',
+    'Minarkahan ni {workerName} na tapos na ang trabahong "{jobTitle}". Pakikumpirma kung tapos na talaga ang trabaho at bigyan ng rating ang worker.',
+  notif_hire_reminder_title: 'Kailangan Mong Sagutin ang Alok sa Trabaho',
+  notif_hire_reminder_msg:
+    'Kumpirmado na ni {employerName} ang pagkuha sa iyo para sa trabahong "{jobTitle}". Pakikumpirma kung tatanggapin mo ang alok o hindi.',
+  notif_rate_employer_reminder_title: 'Paalala: I-rate ang Employer Mo',
+  notif_rate_employer_reminder_msg:
+    'Huwag kalimutang i-rate si {employerName} para sa trabahong "{jobTitle}". Makakatulong ang feedback mo sa ibang users ng SIKAP.',
+  notif_rate_employer_urgent_title: '24 Oras na Lang para I-rate ang Employer Mo',
+  notif_rate_employer_urgent_msg:
+    '24 oras na lang bago matapos ang 7 araw na palugit para i-rate ang employer mo sa trabahong "{jobTitle}". I-rate na si {employerName} habang may oras pa.',
+  notif_rate_worker_reminder_title: 'Paalala: I-rate ang Worker Mo',
+  notif_rate_worker_reminder_msg:
+    'Huwag kalimutang mag-iwan ng review para kay {workerName} sa trabahong "{jobTitle}".',
+  notif_rate_worker_urgent_title: '24 Oras na Lang para I-rate ang Worker',
+  notif_rate_worker_urgent_msg:
+    '24 oras na lang bago matapos ang 7 araw na palugit para i-rate ang worker sa trabahong "{jobTitle}". Mag-iwan na ng review para kay {workerName} habang may oras pa.',
+  notif_verification_approved_title: 'Aprubado na ang Account Mo',
+  notif_verification_approved_msg:
+    'Aprubado na ang ipinasa mong {docType} at ang account mo! Puwede mo nang gamitin ang SIKAP.',
+  notif_verification_rejected_title: 'Hindi Naaprubahan ang ID Mo',
+  notif_verification_rejected_msg:
+    'Hindi naaprubahan ang ipinasa mong {docType}. Dahilan: {reason}',
+  notif_verification_correction_title: 'May Kailangang Ayusin sa ID Mo',
+  notif_verification_correction_msg:
+    'May kailangang ayusin sa ipinasa mong {docType}. Pakitingnan ang detalye at i-upload ulit ang dokumento sa app.',
+  notif_mod_report_job_title: 'Update sa Report Mo',
+  notif_mod_report_job_msg:
+    "{actionLabel} na ng admin ang report tungkol sa job post mong '{jobTitle}'.",
+  notif_mod_report_account_title: 'Update sa Report Tungkol sa Account Mo',
+  notif_mod_report_account_msg: '{actionLabel} na ng admin ang pagsusuri tungkol sa account mo.',
+  notif_new_message_title: 'Bagong Message mula kay {senderName}',
+  notif_new_message_image_preview: 'Nagpadala ng picture',
+  notif_identity_verified_title: 'Aprubado na ang Account Mo',
   notif_identity_verified_msg:
-    'Naaprubahan na ang mga dokumento mo sa SIKAP! Puwede ka nang mag-apply, mag-post ng trabaho, at makipag-ugnayan sa mga manggagawa.',
-  notif_identity_attention_title: 'May Kailangang Ayusin sa Beripikasyon Mo',
+    'Aprubado na ang mga dokumento mo sa SIKAP! Puwede ka nang mag-apply, mag-post ng trabaho, at makipag-ugnayan sa mga manggagawa.',
+  notif_identity_attention_title: 'May Kailangang Ayusin sa ID Mo',
   notif_identity_attention_msg:
-    'Hindi naaprubahan ang mga ipinasa mong dokumento sa SIKAP. Dahilan: {reason}',
+    'Hindi naaprubahan ang ipinasa mong dokumento sa SIKAP. Dahilan: {reason}',
   notif_account_suspended_title: 'Nasuspinde ang Account Mo',
   notif_account_suspended_msg:
     'Nasuspinde ang account mo dahil sa paglabag sa mga alituntunin ng komunidad ng SIKAP.',
-  notif_report_action_title: 'May Aksyon Nang Ginawa sa Report Mo',
+  notif_report_action_title: 'Update sa Report Mo',
   notif_report_action_msg: 'Nasuri na ang report mo at nagawa na ang kinakailangang aksyon.',
 };

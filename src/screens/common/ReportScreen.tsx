@@ -86,7 +86,7 @@ export const ReportScreen: React.FC = () => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsMultipleSelection: true,
       selectionLimit: remainingSlots,
       quality: 0.8,

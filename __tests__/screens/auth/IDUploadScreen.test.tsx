@@ -30,6 +30,7 @@ jest.mock('@tanstack/react-query', () => ({
   useQueryClient: jest.fn(() => ({
     setQueryData: mockSetQueryData,
     invalidateQueries: jest.fn(),
+    cancelQueries: jest.fn().mockResolvedValue(undefined),
   })),
 }));
 
@@ -63,6 +64,7 @@ jest.mock('../../../src/utils/storage', () => ({
 
 jest.mock('../../../src/store/authEvents', () => ({
   notifyAuthChanged: jest.fn(),
+  markIdSubmitted: jest.fn(),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
