@@ -111,6 +111,7 @@ export const tl: Record<TranslationKey, string> = {
   confirm_withdraw_prompt:
     'Sigurado ka bang gusto mong bawiin ang aplikasyon mo? Hindi mo na ito maibabalik kapag itinuloy mo.',
   withdraw_application: 'Bawiin ang Aplikasyon',
+  withdraw_confirm_btn: 'Oo, Bawiin ang Aplikasyon',
   accept_offer: 'Tanggapin ang Alok',
   decline_offer: 'Tanggihan ang Alok',
 

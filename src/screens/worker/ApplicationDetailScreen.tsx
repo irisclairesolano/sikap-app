@@ -301,9 +301,9 @@ const ApplicationDetailScreen: React.FC = () => {
   const handleWithdraw = () => {
     setMenuVisible(false);
     showAlert(t('withdraw_application'), t('confirm_withdraw_prompt'), [
-      { text: t('hiring_not_yet_btn') || 'No, continue', style: 'cancel' },
+      { text: t('cancel'), style: 'cancel' },
       {
-        text: t('hiring_cancel_hire_confirm_btn') || 'Yes, withdraw',
+        text: t('withdraw_confirm_btn'),
         style: 'destructive',
         onPress: () => {
           withdraw(applicationId, {

@@ -108,6 +108,7 @@ export const en = {
   confirm_withdraw_prompt:
     'Are you sure you want to withdraw your application? This action cannot be undone.',
   withdraw_application: 'Withdraw Application',
+  withdraw_confirm_btn: 'Yes, Withdraw Application',
   accept_offer: 'Accept Offer',
   decline_offer: 'Decline Offer',
 

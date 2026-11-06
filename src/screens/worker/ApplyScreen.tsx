@@ -102,10 +102,10 @@ export const ApplyScreen: React.FC = () => {
 
   const handleWithdraw = () => {
     if (data?.application_id) {
-      showAlert(t('withdraw_application'), t('withdraw_confirm'), [
-        { text: 'No, continue', style: 'cancel' },
+      showAlert(t('withdraw_application'), t('confirm_withdraw_prompt'), [
+        { text: t('cancel'), style: 'cancel' },
         {
-          text: 'Yes, withdraw',
+          text: t('withdraw_confirm_btn'),
           style: 'destructive',
           onPress: () => {
             withdraw(data.application_id, {
