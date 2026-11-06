@@ -717,4 +717,87 @@ export const tl: Record<TranslationKey, string> = {
   tutorial_employer_step6_title: 'Profile at Mga Setting',
   tutorial_employer_step6_desc:
     'I-update ang iyong profile, tingnan ang mga review, o ulitin ang gabay na ito sa Settings.',
+
+  // 5-Stage Hiring Lifecycle & Progressive Disclosure
+  // Stage 1
+  hiring_stage1_sent_title: 'Naipadala na ang iyong application.',
+  hiring_stage1_sent_desc:
+    'Nag-apply ka sa {jobTitle}. Tinitingnan na ni {employerName} ang iyong profile.',
+  hiring_privacy_shield_on: 'Naka-on ang Privacy Shield.',
+  hiring_privacy_shield_public_only: 'Pampublikong impormasyon lang ang makikita.',
+  hiring_shortlist_action: 'Piliin',
+  hiring_shortlist_footer_hint:
+    'Kapag napili mo ang aplikante, makikita mo na ang kanyang contact details. Maaari na rin kayong mag-usap tungkol sa trabaho at mapagkasunduan ang bayad.',
+  hiring_shortlist_prompt: 'Gusto mo bang piliin si {applicantName} para sa trabahong {jobTitle}?',
+  hiring_shortlist_info:
+    'Kapag pinili mo ang aplikanteng ito, maaari na kayong mag-usap tungkol sa trabaho. Makikita mo na rin ang kanyang contact details at mga taong maaaring magbigay ng rekomendasyon tungkol sa kanya. Makakatulong ito para mas makilala mo ang aplikante bago kayo magkasundo sa trabaho.',
+  hiring_shortlist_success_msg:
+    'Napili mo na si {applicantName}! Makikita mo na ngayon ang kanyang contact details at mga taong maaaring magbigay ng rekomendasyon tungkol sa kanya.',
+
+  // Stage 2
+  hiring_stage2_wants_to_talk: 'Gustong makipag-usap sa iyo ni {employerName}.',
+  hiring_stage2_shortlisted_desc:
+    'Napili ka para sa trabahong {jobTitle}. Maaaring kontakin ka ng employer para pag-usapan ang trabaho at bayad.',
+  hiring_contact_disclosed_title:
+    'Naibahagi na sa employer ang iyong contact details at mga character reference.',
+  hiring_mobile_number_chip: 'Numero ng cellphone',
+  hiring_character_references_chip: 'Mga character reference',
+  hiring_chat_advice_footnote:
+    'Maaari kayong mag-chat para pag-usapan ang oras ng trabaho, mga kailangan, at ang bayad.',
+  hiring_chat_required_title: 'Mag-chat Muna',
+  hiring_chat_required_body:
+    'Mag-message muna sa manggagawa para mapag-usapan ninyo ang mga detalye at mapagkasunduan ang bayad bago magpadala ng alok.',
+  hiring_chat_first_btn: 'Mag-chat para Pag-usapan ang Bayad',
+  hiring_send_offer_btn: 'Ipadala ang Alok',
+
+  // Stage 3
+  hiring_confirm_hire_title: 'Kumpirmahin ang Pagkuha at Ipadala ang Alok',
+  hiring_final_agreed_price_label: 'Napagkasunduang Bayad (₱)',
+  hiring_offer_sent_title: 'Naipadala na ang alok.',
+  hiring_offer_sent_message:
+    'Naabisuhan na si {applicantName}. Aabisuhan ka namin kapag sumagot na siya.',
+  hiring_waiting_for_worker: 'Naghihintay ng sagot ng manggagawa...',
+  hiring_final_agreed_price_eyebrow: 'Napagkasunduang Bayad',
+  hiring_slot_locked_guarantee:
+    'Kumpirmado na ang trabaho! Hindi na magbabago ang napagkasunduang bayad.',
+  hiring_offer_active_status: 'Naghihintay ng sagot • Aktibo ang alok',
+  hiring_accept_offer_btn: 'Tanggapin ang Alok',
+  hiring_decline_offer_btn: 'Tanggihan ang Alok',
+
+  // Stage 4
+  hiring_stage4_milestone_title: '🎉 Tanggap ka na sa trabaho!',
+  hiring_stage4_milestone_msg:
+    'Congratulations! Tinanggap mo na ang alok para sa trabahong "{jobTitle}". Mag-chat kay {employerName} para mapag-usapan ang mga susunod na detalye.',
+  hiring_active_contract_eyebrow: 'Aktibo ang Kontrata • Kumpirmado na ang bayad.',
+  hiring_stage4_guidance:
+    'Tanggap ka na! Pumunta sa lugar ng trabaho sa napag-usapan ninyong petsa.',
+  hiring_job_in_progress_btn: 'Ginagawa na ang trabaho',
+
+  // Stage 5 & Receipt
+  hiring_mark_complete_prompt: 'Tapos na ba ang trabahong {jobTitle}?',
+  hiring_mark_complete_explainer:
+    'Kapag kinumpirma mong tapos na ang trabaho, matatapos na rin ang kasunduan para sa lahat ng manggagawang kinuha mo. Maaari ka nang magbigay ng rating at review sa mga manggagawa.',
+  hiring_mark_complete_confirm_btn: 'Oo, Tapos Na ang Trabaho',
+  hiring_not_yet_btn: 'Hindi Pa',
+  hiring_receipt_official_header: 'OPISYAL NA RESIBO NG TRABAHO – SIKAP',
+  hiring_receipt_ref_no: 'Reference No.',
+  hiring_receipt_date_completed: 'Petsa ng Pagkumpleto',
+  hiring_receipt_final_compensation: 'Napagkasunduang Bayad',
+  hiring_receipt_worker_label: 'Manggagawa',
+  hiring_receipt_employer_label: 'Employer',
+  hiring_receipt_saved_msg: 'Nasa gallery na ng cellphone mo ang kopya ng opisyal na resibo.',
+  hiring_mutual_review_prompt:
+    'Kumusta ang naging karanasan mo? Mag-iwan ng review para makatulong sa iba pang miyembro ng SIKAP.',
+
+  // Cancel Hire
+  hiring_cancel_hire_title: 'Kanselahin ang Pagkuha',
+  hiring_cancel_hire_warning:
+    'Babala: Hindi na mababawi ang pagkanselang ito. Aabisuhan ang aplikante na hindi na siya kukunin, at matatanggihan na rin ang kanyang application.',
+  hiring_cancel_hire_confirm_btn: 'Oo, Kanselahin',
+  hiring_cancel_hire_back_btn: 'Bumalik',
+
+  // Common UI & Navigation
+  chat: 'Makipag-chat',
+  open_chat: 'Buksan ang Chat',
+  application_tracking: 'Subaybayan ang Application',
 };

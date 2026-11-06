@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, shadows } from '../../theme';
 import { Avatar } from '../common/Avatar';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { Application, JobPost } from '../../types';
 
 export interface CompletedJobOverviewProps {
@@ -73,6 +74,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
 }) => {
   const navigation = useNavigation<any>();
   const { showAlert } = useAlert();
+  const { t } = useLanguage();
   const receiptRef = useRef<View>(null);
   const [isSavingReceipt, setIsSavingReceipt] = useState(false);
   const [failedPhotos, setFailedPhotos] = useState<Record<string, boolean>>({});
@@ -81,7 +83,10 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
   const worker = application?.worker || (job as any)?.applications?.[0]?.worker;
   const employer = job?.employer;
   const counterparty = viewerRole === 'employer' ? worker : employer;
-  const counterpartyLabel = viewerRole === 'employer' ? 'Hired Worker' : 'Employer';
+  const counterpartyLabel =
+    viewerRole === 'employer'
+      ? t('hiring_receipt_worker_label')
+      : t('hiring_receipt_employer_label');
 
   const refNumber =
     job?.reference_number || `SIKAP-${job?.id || application?.job_post_id || '000'}`;
@@ -112,7 +117,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
 
   const rateUnitText =
     agreedPrice != null
-      ? 'FINAL AGREED COMPENSATION'
+      ? t('hiring_receipt_final_compensation').toUpperCase()
       : job?.rate_unit
         ? `COMPENSATION (${job.rate_unit.replace(/_/g, ' ').toUpperCase()})`
         : 'TOTAL COMPENSATION';
@@ -208,10 +213,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           const permission = await MediaLibrary.requestPermissionsAsync();
           if (permission?.granted) {
             await MediaLibrary.saveToLibraryAsync(capturedUri);
-            showAlert(
-              'Receipt Saved',
-              'A photo of this official completion receipt has been saved to your phone gallery.',
-            );
+            showAlert('Receipt Saved', t('hiring_receipt_saved_msg'));
             return;
           }
         } catch (mediaErr) {
@@ -236,10 +238,10 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
       await Share.share({
         title: `SIKAP Job Completion Receipt (${refNumber})`,
         message: [
-          '=== SIKAP OFFICIAL COMPLETION RECEIPT ===',
-          `Reference No.: ${refNumber}`,
+          `=== ${t('hiring_receipt_official_header')} ===`,
+          `${t('hiring_receipt_ref_no')}: ${refNumber}`,
           `Status: COMPLETED`,
-          `Date Completed: ${formattedCompletedDate}`,
+          `${t('hiring_receipt_date_completed')}: ${formattedCompletedDate}`,
           `Job Title: ${job?.title || 'Completed Job'}`,
           `${rateUnitText}: ${displayCompensation}`,
           counterparty?.name ? `${counterpartyLabel}: ${counterparty.name}` : null,
@@ -280,7 +282,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
               <View style={styles.brandSeal}>
                 <Ionicons name="shield-checkmark" size={14} color={colors.primaryDark} />
               </View>
-              <Text style={styles.brandTitle}>SIKAP OFFICIAL RECEIPT</Text>
+              <Text style={styles.brandTitle}>{t('hiring_receipt_official_header')}</Text>
             </View>
             <Text style={styles.brandSubtitle}>
               Digital Job Completion Record • Province of Sorsogon
@@ -496,9 +498,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.ratingStatusTitle}>7-Day Rating Window Open</Text>
-                    <Text style={styles.ratingStatusSub}>
-                      Rate your experience to build trusted community reputation.
-                    </Text>
+                    <Text style={styles.ratingStatusSub}>{t('hiring_mutual_review_prompt')}</Text>
                   </View>
                 </View>
                 <TouchableOpacity style={styles.rateBtn} onPress={handleRate} activeOpacity={0.85}>

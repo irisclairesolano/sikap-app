@@ -58,6 +58,7 @@ import { messagesApi } from '../../api/messages';
 import { useAlert } from '../../contexts/AlertContext';
 import { useConversations } from '../../hooks/useConversations';
 import { useMessages } from '../../hooks/useMessages';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type ApplicantDetailScreenRouteProp = RouteProp<EmployerStackParamList, 'ApplicantDetail'>;
 type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -66,6 +67,7 @@ type ApplicantDetailScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 const ApplicantDetailScreen: React.FC = () => {
+  const { t } = useLanguage();
   const route = useRoute<ApplicantDetailScreenRouteProp>();
   const navigation = useNavigation<ApplicantDetailScreenNavigationProp>();
   const { showAlert } = useAlert();
@@ -438,14 +440,10 @@ const ApplicantDetailScreen: React.FC = () => {
 
   const navigateToConfirmHire = () => {
     if (!hasRealMessageFromEmployer) {
-      showAlert(
-        'Chat Required',
-        'Please message the worker in chat to discuss and agree on terms before sending an offer.',
-        [
-          { text: 'Go to Chat', onPress: handleOpenChat },
-          { text: 'Cancel', style: 'cancel' },
-        ],
-      );
+      showAlert(t('hiring_chat_required_title'), t('hiring_chat_required_body'), [
+        { text: t('chat'), onPress: handleOpenChat },
+        { text: 'Cancel', style: 'cancel' },
+      ]);
       return;
     }
 
@@ -1314,7 +1312,7 @@ const ApplicantDetailScreen: React.FC = () => {
           {status === 'pending' && (
             <View style={{ gap: 6 }}>
               <Button
-                label="Shortlist"
+                label={t('hiring_shortlist_action')}
                 variant="primary"
                 size="lg"
                 fullWidth
@@ -1329,8 +1327,7 @@ const ApplicantDetailScreen: React.FC = () => {
                   marginTop: 2,
                 }}
               >
-                Shortlisting allows you to view contact info, negotiate details, and confirm the
-                hire.
+                {t('hiring_shortlist_footer_hint')}
               </Text>
             </View>
           )}
@@ -1338,7 +1335,7 @@ const ApplicantDetailScreen: React.FC = () => {
             <View style={{ gap: 6 }}>
               {hasRealMessageFromEmployer ? (
                 <Button
-                  label="Send Offer"
+                  label={t('hiring_send_offer_btn')}
                   variant="primary"
                   size="lg"
                   fullWidth
@@ -1346,7 +1343,7 @@ const ApplicantDetailScreen: React.FC = () => {
                 />
               ) : (
                 <Button
-                  label="Chat to Agree on Price"
+                  label={t('hiring_chat_first_btn')}
                   variant="primary"
                   size="lg"
                   fullWidth
@@ -1354,7 +1351,7 @@ const ApplicantDetailScreen: React.FC = () => {
                 />
               )}
               <Button
-                label="Cancel"
+                label={t('cancel') || 'Cancel'}
                 variant="ghost"
                 size="base"
                 fullWidth
@@ -1371,14 +1368,14 @@ const ApplicantDetailScreen: React.FC = () => {
               >
                 {hasRealMessageFromEmployer
                   ? 'Send a formal price offer. The worker must accept before the hire is confirmed.'
-                  : 'Send a message in chat to discuss details and agree on price before making an offer.'}
+                  : t('hiring_chat_required_body')}
               </Text>
             </View>
           )}
           {status === 'employer_confirmed' && (
             <View style={{ gap: 6 }}>
               <Button
-                label="Waiting for worker..."
+                label={t('hiring_waiting_for_worker')}
                 variant="outline"
                 size="lg"
                 fullWidth
@@ -1389,7 +1386,7 @@ const ApplicantDetailScreen: React.FC = () => {
           {status === 'accepted' && (
             <View style={{ gap: 12 }}>
               <Button
-                label="Mark Complete"
+                label={t('mark_as_completed')}
                 variant="primary"
                 size="lg"
                 fullWidth

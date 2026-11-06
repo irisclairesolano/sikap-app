@@ -8,6 +8,7 @@ import { colors, fonts } from '../../theme';
 import Button from '../../components/common/Button';
 import { useCancelHire } from '../../hooks/useJobApplications';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type CancelHireScreenRouteProp = RouteProp<EmployerStackParamList, 'CancelHire'>;
 type CancelHireScreenNavigationProp = NativeStackNavigationProp<
@@ -16,6 +17,7 @@ type CancelHireScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 const CancelHireScreen: React.FC = () => {
+  const { t } = useLanguage();
   const route = useRoute<CancelHireScreenRouteProp>();
   const navigation = useNavigation<CancelHireScreenNavigationProp>();
   const { id, applicantName, jobTitle } = route.params;
@@ -27,7 +29,7 @@ const CancelHireScreen: React.FC = () => {
     cancelHireMutation.mutate(id, {
       onSuccess: () => {
         showAlert(
-          'Hire Cancelled',
+          t('hiring_cancel_hire_title'),
           `You have successfully cancelled the hire for ${applicantName}.`,
           [{ text: 'OK', onPress: () => navigation.goBack() }],
         );
@@ -41,7 +43,7 @@ const CancelHireScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Cancel Hire</Text>
+        <Text style={styles.headerTitle}>{t('hiring_cancel_hire_title')}</Text>
       </View>
       <View style={styles.content}>
         <Text style={styles.prompt}>
@@ -50,21 +52,18 @@ const CancelHireScreen: React.FC = () => {
           <Text style={styles.bold}>{jobTitle}</Text> position?
         </Text>
         <View style={styles.warningBox}>
-          <Text style={styles.warningText}>
-            Warning: This action cannot be undone. The applicant will be notified that the hire has
-            been cancelled, and this application will be rejected.
-          </Text>
+          <Text style={styles.warningText}>{t('hiring_cancel_hire_warning')}</Text>
         </View>
 
         <Button
-          label="Yes, Cancel Hire"
+          label={t('hiring_cancel_hire_confirm_btn')}
           onPress={handleCancelHire}
           loading={cancelHireMutation.isPending}
           variant="primary"
           style={styles.actionBtn}
         />
         <Button
-          label="Go Back"
+          label={t('hiring_cancel_hire_back_btn')}
           variant="outline"
           onPress={() => navigation.goBack()}
           disabled={cancelHireMutation.isPending}

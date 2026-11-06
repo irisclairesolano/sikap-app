@@ -10,6 +10,7 @@ import { useMarkJobComplete } from '../../hooks/useJobs';
 import { useAlert } from '../../contexts/AlertContext';
 
 import { useEmployerJobs } from '../../hooks/useEmployerJobs';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type MarkCompleteScreenRouteProp = RouteProp<EmployerStackParamList, 'MarkComplete'>;
 type MarkCompleteScreenNavigationProp = NativeStackNavigationProp<
@@ -18,6 +19,7 @@ type MarkCompleteScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 const MarkCompleteScreen: React.FC = () => {
+  const { t } = useLanguage();
   const route = useRoute<MarkCompleteScreenRouteProp>();
   const navigation = useNavigation<MarkCompleteScreenNavigationProp>();
   const { id, jobTitle, workerName } = route.params;
@@ -67,28 +69,25 @@ const MarkCompleteScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Complete Job</Text>
+        <Text style={styles.headerTitle}>{t('mark_as_completed')}</Text>
       </View>
       <View style={styles.content}>
         <Text style={styles.prompt}>
-          Are you ready to mark <Text style={styles.bold}>{jobTitle}</Text> as completed?
+          {t('hiring_mark_complete_prompt', { jobTitle: jobTitle || 'this job' })}
         </Text>
         <View style={styles.infoBox}>
-          <Text style={styles.infoText}>
-            Marking this job as complete will finalize the contract for all hired workers. You will
-            be prompted to leave a rating and review for the workers who completed the task.
-          </Text>
+          <Text style={styles.infoText}>{t('hiring_mark_complete_explainer')}</Text>
         </View>
 
         <Button
-          label="Mark as Completed"
+          label={t('hiring_mark_complete_confirm_btn')}
           onPress={handleMarkComplete}
           loading={markCompleteMutation.isPending}
           variant="primary"
           style={styles.actionBtn}
         />
         <Button
-          label="Not Yet"
+          label={t('hiring_not_yet_btn')}
           variant="outline"
           onPress={() => navigation.goBack()}
           disabled={markCompleteMutation.isPending}

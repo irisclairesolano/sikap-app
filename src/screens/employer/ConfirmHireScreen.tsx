@@ -21,6 +21,7 @@ import { useAlert } from '../../contexts/AlertContext';
 import { useConversations } from '../../hooks/useConversations';
 import { useMessages } from '../../hooks/useMessages';
 import { triggerHaptic } from '../../utils/haptics';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type ConfirmHireScreenRouteProp = RouteProp<EmployerStackParamList, 'ConfirmHire'>;
 type ConfirmHireScreenNavigationProp = NativeStackNavigationProp<
@@ -29,6 +30,7 @@ type ConfirmHireScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 const ConfirmHireScreen: React.FC = () => {
+  const { t } = useLanguage();
   const route = useRoute<ConfirmHireScreenRouteProp>();
   const navigation = useNavigation<ConfirmHireScreenNavigationProp>();
   const {
@@ -65,27 +67,23 @@ const ConfirmHireScreen: React.FC = () => {
     if (confirmHireMutation.isPending || isNaN(numPrice) || numPrice <= 0) return;
 
     if (!hasRealMessageFromEmployer) {
-      showAlert(
-        'Chat Required',
-        'Please message the worker in chat to discuss and agree on terms before confirming the hire.',
-        [
-          {
-            text: 'Go to Chat',
-            onPress: () => {
-              if (activeConversationId) {
-                navigation.navigate('Chat' as any, {
-                  conversationId: activeConversationId,
-                  jobTitle,
-                  otherUserName: applicantName,
-                });
-              } else {
-                navigation.goBack();
-              }
-            },
+      showAlert(t('hiring_chat_required_title'), t('hiring_chat_required_body'), [
+        {
+          text: t('chat'),
+          onPress: () => {
+            if (activeConversationId) {
+              navigation.navigate('Chat' as any, {
+                conversationId: activeConversationId,
+                jobTitle,
+                otherUserName: applicantName,
+              });
+            } else {
+              navigation.goBack();
+            }
           },
-          { text: 'Cancel', style: 'cancel' },
-        ],
-      );
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]);
       return;
     }
 
@@ -97,12 +95,15 @@ const ConfirmHireScreen: React.FC = () => {
           const convId = data?.conversation_id || conversationId;
           navigation.replace('Success', {
             variant: 'confirm',
-            title: 'Offer sent',
-            message: `We told ${applicantName}. You will get a notification when they answer.`,
+            title: t('hiring_offer_sent_title'),
+            message: t('hiring_offer_sent_message', { applicantName }),
             detail: [
               { label: 'Worker', value: applicantName },
               { label: 'Job', value: jobTitle },
-              { label: 'Agreed Price', value: `₱${numPrice.toLocaleString()}` },
+              {
+                label: t('hiring_final_agreed_price_eyebrow'),
+                value: `₱${numPrice.toLocaleString()}`,
+              },
             ],
             primaryAction: {
               label: 'Back to applicants',

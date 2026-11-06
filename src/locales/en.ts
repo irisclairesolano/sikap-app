@@ -694,6 +694,87 @@ export const en = {
   tutorial_employer_step6_title: 'Profile & Settings',
   tutorial_employer_step6_desc:
     'Manage your employer profile, check worker reviews, or replay this tutorial anytime in Settings.',
+
+  // 5-Stage Hiring Lifecycle & Progressive Disclosure
+  // Stage 1
+  hiring_stage1_sent_title: 'Application sent.',
+  hiring_stage1_sent_desc: 'You applied for {jobTitle}. {employerName} is reviewing your profile.',
+  hiring_privacy_shield_on: 'Privacy Shield Active',
+  hiring_privacy_shield_public_only: 'Only public info is visible',
+  hiring_shortlist_action: 'Shortlist',
+  hiring_shortlist_footer_hint:
+    'Shortlisting allows you to view contact info, negotiate details, and confirm the hire.',
+  hiring_shortlist_prompt:
+    'Are you sure you want to shortlist {applicantName} for the position of {jobTitle}?',
+  hiring_shortlist_info:
+    "Shortlisting moves this applicant to the negotiation stage. The applicant's contact details and character references will be unlocked so you can verify their background and chat to agree on terms before confirming the hire.",
+  hiring_shortlist_success_msg:
+    'You have shortlisted {applicantName}. Their contact details and character references are now visible to you.',
+
+  // Stage 2
+  hiring_stage2_wants_to_talk: '{employerName} wants to talk.',
+  hiring_stage2_shortlisted_desc:
+    "You've been shortlisted for {jobTitle}. They may reach out to discuss the work and price.",
+  hiring_contact_disclosed_title: 'Contact & references shared with employer',
+  hiring_mobile_number_chip: 'Mobile number',
+  hiring_character_references_chip: 'Character references',
+  hiring_chat_advice_footnote:
+    'You can message each other in chat to discuss work schedule, requirements, and agree on a price.',
+  hiring_chat_required_title: 'Chat Required',
+  hiring_chat_required_body:
+    'Please message the worker in chat to discuss and agree on terms before sending an offer.',
+  hiring_chat_first_btn: 'Chat to Agree on Price',
+  hiring_send_offer_btn: 'Send Offer',
+
+  // Stage 3
+  hiring_confirm_hire_title: 'Confirm Hire & Send Offer',
+  hiring_final_agreed_price_label: 'Final Agreed Price (₱)',
+  hiring_offer_sent_title: 'Offer sent',
+  hiring_offer_sent_message:
+    'We told {applicantName}. You will get a notification when they answer.',
+  hiring_waiting_for_worker: 'Waiting for worker...',
+  hiring_final_agreed_price_eyebrow: 'Final agreed price',
+  hiring_slot_locked_guarantee: 'Slot locked. No price surprises, no ghosting.',
+  hiring_offer_active_status: 'Awaiting response • Offer active',
+  hiring_accept_offer_btn: 'Accept Offer',
+  hiring_decline_offer_btn: 'Decline Offer',
+
+  // Stage 4
+  hiring_stage4_milestone_title: "🎉 You're Hired!",
+  hiring_stage4_milestone_msg:
+    'Congratulations! You accepted the job offer for "{jobTitle}". Coordinate details in chat with {employerName}.',
+  hiring_active_contract_eyebrow: 'Active Contract • Agreed price locked.',
+  hiring_stage4_guidance: 'You are hired! Proceed to the job location on the agreed date.',
+  hiring_job_in_progress_btn: 'Job is in progress',
+
+  // Stage 5 & Receipt
+  hiring_mark_complete_prompt: 'Are you ready to mark {jobTitle} as completed?',
+  hiring_mark_complete_explainer:
+    'Marking this job as complete will finalize the contract for all hired workers. You will be prompted to leave a rating and review for the workers who completed the task.',
+  hiring_mark_complete_confirm_btn: 'Mark as Completed',
+  hiring_not_yet_btn: 'Not Yet',
+  hiring_receipt_official_header: 'SIKAP OFFICIAL COMPLETION RECEIPT',
+  hiring_receipt_ref_no: 'Reference No.',
+  hiring_receipt_date_completed: 'Date Completed',
+  hiring_receipt_final_compensation: 'Final Agreed Compensation',
+  hiring_receipt_worker_label: 'Hired Worker',
+  hiring_receipt_employer_label: 'Employer',
+  hiring_receipt_saved_msg:
+    'A photo of this official completion receipt has been saved to your phone gallery.',
+  hiring_mutual_review_prompt:
+    'How was your experience? Leave a review to help build trust for other members of SIKAP.',
+
+  // Cancel Hire
+  hiring_cancel_hire_title: 'Cancel Hire',
+  hiring_cancel_hire_warning:
+    'Warning: This action cannot be undone. The applicant will be notified that the hire has been cancelled, and this application will be rejected.',
+  hiring_cancel_hire_confirm_btn: 'Yes, Cancel Hire',
+  hiring_cancel_hire_back_btn: 'Go Back',
+
+  // Common UI & Navigation
+  chat: 'Chat',
+  open_chat: 'Open Chat',
+  application_tracking: 'Application Tracking',
 };
 
 export type TranslationKey = keyof typeof en;

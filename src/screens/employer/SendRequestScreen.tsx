@@ -8,6 +8,7 @@ import { colors, fonts } from '../../theme';
 import Button from '../../components/common/Button';
 import { useJobRequest } from '../../hooks/useJobApplications';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type SendRequestScreenRouteProp = RouteProp<EmployerStackParamList, 'SendRequest'>;
 type SendRequestScreenNavigationProp = NativeStackNavigationProp<
@@ -16,6 +17,7 @@ type SendRequestScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 const SendRequestScreen: React.FC = () => {
+  const { t } = useLanguage();
   const route = useRoute<SendRequestScreenRouteProp>();
   const navigation = useNavigation<SendRequestScreenNavigationProp>();
   const { id, applicantName, jobTitle } = route.params;
@@ -27,8 +29,8 @@ const SendRequestScreen: React.FC = () => {
     jobRequestMutation.mutate(id, {
       onSuccess: () => {
         showAlert(
-          'Applicant Shortlisted!',
-          `You have shortlisted ${applicantName}. Their contact details and character references are now visible to you.`,
+          t('hiring_shortlist_action'),
+          t('hiring_shortlist_success_msg', { applicantName }),
           [{ text: 'OK', onPress: () => navigation.goBack() }],
         );
       },
@@ -49,28 +51,26 @@ const SendRequestScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Shortlist Applicant</Text>
+        <Text style={styles.headerTitle}>{t('hiring_shortlist_action')}</Text>
       </View>
       <View style={styles.content}>
         <Text style={styles.prompt}>
-          Are you sure you want to shortlist <Text style={styles.bold}>{applicantName}</Text> for
-          the position of <Text style={styles.bold}>{jobTitle}</Text>?
+          {t('hiring_shortlist_prompt', {
+            applicantName: applicantName || 'the applicant',
+            jobTitle: jobTitle || 'this job',
+          })}
         </Text>
-        <Text style={styles.info}>
-          Shortlisting moves this applicant to the negotiation stage. The applicant's contact
-          details and character references will be unlocked so you can verify their background and
-          chat to agree on terms before confirming the hire.
-        </Text>
+        <Text style={styles.info}>{t('hiring_shortlist_info')}</Text>
 
         <Button
-          label="Shortlist Applicant"
+          label={t('hiring_shortlist_action')}
           onPress={handleSendRequest}
           loading={jobRequestMutation.isPending}
           variant="primary"
           style={styles.actionBtn}
         />
         <Button
-          label="Cancel"
+          label={t('cancel') || 'Cancel'}
           variant="outline"
           onPress={() => navigation.goBack()}
           disabled={jobRequestMutation.isPending}

@@ -54,6 +54,7 @@ import { useAcceptOffer, useRejectOffer, useWithdrawApplication } from '../../ho
 import { useApplication } from '../../hooks/useJobApplications';
 import { messagesApi } from '../../api/messages';
 import { triggerHaptic } from '../../utils/haptics';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type ApplicationDetailScreenRouteProp = RouteProp<WorkerStackParamList, 'ApplicationDetail'>;
 type ApplicationDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -62,6 +63,7 @@ type ApplicationDetailScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 const ApplicationDetailScreen: React.FC = () => {
+  const { t } = useLanguage();
   const route = useRoute<ApplicationDetailScreenRouteProp>();
   const navigation = useNavigation<ApplicationDetailScreenNavigationProp>();
 
@@ -298,27 +300,23 @@ const ApplicationDetailScreen: React.FC = () => {
 
   const handleWithdraw = () => {
     setMenuVisible(false);
-    showAlert(
-      'Withdraw Application',
-      'Are you sure you want to withdraw? The employer will be notified, and this action cannot be undone.',
-      [
-        { text: 'No, continue', style: 'cancel' },
-        {
-          text: 'Yes, withdraw',
-          style: 'destructive',
-          onPress: () => {
-            withdraw(applicationId, {
-              onSuccess: () => {
-                handleGoBack();
-              },
-              onError: (err: any) => {
-                showAlert('Error', err.message || 'Could not withdraw application.');
-              },
-            });
-          },
+    showAlert(t('withdraw_application'), t('confirm_withdraw_prompt'), [
+      { text: t('hiring_not_yet_btn') || 'No, continue', style: 'cancel' },
+      {
+        text: t('hiring_cancel_hire_confirm_btn') || 'Yes, withdraw',
+        style: 'destructive',
+        onPress: () => {
+          withdraw(applicationId, {
+            onSuccess: () => {
+              handleGoBack();
+            },
+            onError: (err: any) => {
+              showAlert('Error', err.message || 'Could not withdraw application.');
+            },
+          });
         },
-      ],
-    );
+      },
+    ]);
   };
 
   const handleAcceptOffer = () => {
@@ -327,12 +325,17 @@ const ApplicationDetailScreen: React.FC = () => {
         triggerHaptic('success');
         navigation.replace('Success', {
           variant: 'milestone',
-          title: "🎉 You're Hired!",
-          message: `Congratulations! You accepted the job offer for "${jobTitle || 'this job'}". Coordinate details in chat with ${employerName || 'the employer'}.`,
+          title: t('hiring_stage4_milestone_title'),
+          message: t('hiring_stage4_milestone_msg', {
+            jobTitle: jobTitle || 'this job',
+            employerName: employerName || 'the employer',
+          }),
           detail: [
             { label: 'Job', value: jobTitle || 'Job' },
             { label: 'Employer', value: employerName || 'Employer' },
-            ...(compensation ? [{ label: 'Agreed Price', value: `₱${compensation}` }] : []),
+            ...(compensation
+              ? [{ label: t('hiring_final_agreed_price_eyebrow'), value: `₱${compensation}` }]
+              : []),
           ],
           primaryAction: {
             label: 'Open chat',
@@ -364,20 +367,21 @@ const ApplicationDetailScreen: React.FC = () => {
 
   const handleRejectOffer = () => {
     showAlert(
-      'Decline Offer',
+      t('hiring_decline_offer_btn'),
       `Are you sure you want to decline the offer for "${jobTitle || 'this job'}"?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Yes, Decline',
+          text: t('hiring_decline_offer_btn'),
           style: 'destructive',
           onPress: () => {
             rejectOfferMutation.mutate(applicationId, {
               onSuccess: () => {
                 triggerHaptic('medium');
                 showAlert(
-                  'Offer Declined',
-                  `You have declined the offer for "${jobTitle || 'this job'}".`,
+                  t('hiring_decline_offer_btn'),
+                  t('declined_offer_notice') ||
+                    `You have declined the offer for "${jobTitle || 'this job'}".`,
                 );
                 refetch();
               },
@@ -442,16 +446,16 @@ const ApplicationDetailScreen: React.FC = () => {
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>
             {status === 'withdrawn'
-              ? 'Withdrawn'
+              ? t('status_withdrawn')
               : stage === 1
-                ? 'Application Tracking'
+                ? t('application_tracking')
                 : stage === 2
-                  ? 'Shortlisted'
+                  ? t('status_shortlisted')
                   : stage === 3
-                    ? 'Offer Received'
+                    ? t('status_job_offer_received')
                     : stage === 4
-                      ? 'Hired'
-                      : 'Completed'}
+                      ? t('status_hired')
+                      : t('status_completed')}
           </Text>
         </View>
         {status !== 'withdrawn' ? (
@@ -479,7 +483,9 @@ const ApplicationDetailScreen: React.FC = () => {
           <View style={styles.withdrawnNotice}>
             <Ionicons name="information-circle" size={20} color={colors.warning} />
             <Text style={styles.withdrawnNoticeText}>
-              You have withdrawn your application for this job.
+              {t('confirm_withdraw_prompt')
+                ? 'You have withdrawn your application for this job.'
+                : 'You have withdrawn your application for this job.'}
             </Text>
           </View>
         )}
@@ -608,10 +614,12 @@ const ApplicationDetailScreen: React.FC = () => {
         {/* STAGE 1: PENDING */}
         {stage === 1 && (
           <View>
-            <Text style={styles.pageTitle}>Application sent.</Text>
+            <Text style={styles.pageTitle}>{t('hiring_stage1_sent_title')}</Text>
             <Text style={styles.lede}>
-              You applied for <Text style={styles.ledeHighlight}>{jobTitle}</Text>.{' '}
-              {employerName || 'The employer'} is reviewing your profile.
+              {t('hiring_stage1_sent_desc', {
+                jobTitle: jobTitle || 'this job',
+                employerName: employerName || 'The employer',
+              })}
             </Text>
 
             <View style={[styles.shieldCard, { marginTop: 24 }]}>
@@ -621,9 +629,9 @@ const ApplicationDetailScreen: React.FC = () => {
                 </View>
                 <View>
                   <Text style={[styles.shieldSub, { color: colors.skyDeep }]}>
-                    Privacy Shield Active
+                    {t('hiring_privacy_shield_on')}
                   </Text>
-                  <Text style={styles.shieldTitle}>Only public info is visible</Text>
+                  <Text style={styles.shieldTitle}>{t('hiring_privacy_shield_public_only')}</Text>
                 </View>
               </View>
             </View>
@@ -634,35 +642,33 @@ const ApplicationDetailScreen: React.FC = () => {
         {stage === 2 && (
           <View>
             <Text style={styles.pageTitle}>
-              {employerName}
-              {'\n'}
-              <Text style={styles.titleItalic}>wants to talk.</Text>
+              {t('hiring_stage2_wants_to_talk', { employerName })}
             </Text>
             <Text style={styles.lede}>
-              You've been shortlisted for <Text style={styles.ledeHighlight}>{jobTitle}</Text>. They
-              may reach out to discuss the work and price.
+              {t('hiring_stage2_shortlisted_desc', { jobTitle: jobTitle || 'this job' })}
             </Text>
 
             <View style={styles.minimalistSharedBox}>
               <View style={styles.minimalistSharedHeader}>
                 <Ionicons name="eye-outline" size={16} color={colors.primary} />
                 <Text style={styles.minimalistSharedTitle}>
-                  Contact & references shared with employer
+                  {t('hiring_contact_disclosed_title')}
                 </Text>
               </View>
               <View style={styles.minimalistChipsRow}>
                 <View style={styles.minimalistChip}>
                   <Ionicons name="call-outline" size={13} color={colors.primaryDark} />
-                  <Text style={styles.minimalistChipText}>Mobile number</Text>
+                  <Text style={styles.minimalistChipText}>{t('hiring_mobile_number_chip')}</Text>
                 </View>
                 <View style={styles.minimalistChip}>
                   <Ionicons name="people-outline" size={13} color={colors.primaryDark} />
-                  <Text style={styles.minimalistChipText}>Character references</Text>
+                  <Text style={styles.minimalistChipText}>
+                    {t('hiring_character_references_chip')}
+                  </Text>
                 </View>
               </View>
               <Text style={styles.minimalistSharedFootnote}>
-                You can message each other in chat to discuss work schedule, requirements, and agree
-                on a price.
+                {t('hiring_chat_advice_footnote')}
               </Text>
             </View>
           </View>
@@ -679,7 +685,9 @@ const ApplicationDetailScreen: React.FC = () => {
                   alignItems: 'flex-start',
                 }}
               >
-                <Text style={[styles.priceEyebrow, { color: '#854D0E' }]}>Final agreed price</Text>
+                <Text style={[styles.priceEyebrow, { color: '#854D0E' }]}>
+                  {t('hiring_final_agreed_price_eyebrow')}
+                </Text>
                 <View style={styles.lockBadge}>
                   <Ionicons name="lock-closed" size={16} color={colors.primary} />
                 </View>
@@ -702,10 +710,7 @@ const ApplicationDetailScreen: React.FC = () => {
 
             <View style={[styles.mintNotice, styles.mintNoticeEmerald]}>
               <Ionicons name="checkmark-circle" size={20} color="#15803D" />
-              <Text style={styles.mintNoticeText}>
-                <Text style={{ fontWeight: '700', color: '#14532D' }}>Slot locked. </Text>
-                No price surprises, no ghosting.
-              </Text>
+              <Text style={styles.mintNoticeText}>{t('hiring_slot_locked_guarantee')}</Text>
             </View>
 
             <View style={styles.employerContactCard}>
@@ -714,7 +719,7 @@ const ApplicationDetailScreen: React.FC = () => {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.employerNameCard}>{employerName || 'Employer'}</Text>
-                <Text style={styles.employerSubCard}>Awaiting response • Offer active</Text>
+                <Text style={styles.employerSubCard}>{t('hiring_offer_active_status')}</Text>
               </View>
               <Ionicons name="call-outline" size={22} color={colors.primary} />
             </View>
@@ -725,7 +730,9 @@ const ApplicationDetailScreen: React.FC = () => {
         {stage === 4 && (
           <View>
             <View style={[styles.priceCard, styles.priceCardMint]}>
-              <Text style={[styles.priceEyebrow, { color: '#166534' }]}>Active Contract</Text>
+              <Text style={[styles.priceEyebrow, { color: '#166534' }]}>
+                {t('hiring_active_contract_eyebrow')}
+              </Text>
               <Text style={styles.priceNum}>
                 ₱{compensation ? Number(compensation).toLocaleString() : '0'}
               </Text>
@@ -734,10 +741,7 @@ const ApplicationDetailScreen: React.FC = () => {
 
             <View style={[styles.mintNotice, styles.mintNoticeEmerald]}>
               <Ionicons name="briefcase" size={20} color="#15803D" />
-              <Text style={styles.mintNoticeText}>
-                <Text style={{ fontWeight: '700', color: '#14532D' }}>You are hired! </Text>
-                Proceed to the job location on the agreed date.
-              </Text>
+              <Text style={styles.mintNoticeText}>{t('hiring_stage4_guidance')}</Text>
             </View>
           </View>
         )}
@@ -747,7 +751,7 @@ const ApplicationDetailScreen: React.FC = () => {
       <View style={styles.footer}>
         {stage === 1 && status !== 'withdrawn' && (
           <Button
-            label={isWithdrawing ? 'Withdrawing...' : 'Withdraw application'}
+            label={isWithdrawing ? 'Withdrawing...' : t('withdraw_application')}
             variant="ghost"
             size="lg"
             fullWidth
@@ -758,14 +762,14 @@ const ApplicationDetailScreen: React.FC = () => {
         {stage === 2 && status !== 'withdrawn' && (
           <>
             <Button
-              label="Open Chat"
+              label={t('open_chat')}
               variant="primary"
               size="lg"
               fullWidth
               onPress={handleOpenChat}
             />
             <Button
-              label={isWithdrawing ? 'Withdrawing...' : 'Withdraw application'}
+              label={isWithdrawing ? 'Withdrawing...' : t('withdraw_application')}
               variant="ghost"
               size="base"
               fullWidth
@@ -777,7 +781,7 @@ const ApplicationDetailScreen: React.FC = () => {
         {stage === 3 && (
           <>
             <Button
-              label="Accept Offer"
+              label={t('hiring_accept_offer_btn')}
               variant="primary"
               size="lg"
               fullWidth
@@ -786,7 +790,7 @@ const ApplicationDetailScreen: React.FC = () => {
               onPress={handleAcceptOffer}
             />
             <Button
-              label="Decline Offer"
+              label={t('hiring_decline_offer_btn')}
               variant="outline"
               size="lg"
               fullWidth
@@ -795,7 +799,7 @@ const ApplicationDetailScreen: React.FC = () => {
               onPress={handleRejectOffer}
             />
             <Button
-              label="Open Chat"
+              label={t('open_chat')}
               variant="ghost"
               size="base"
               fullWidth
@@ -806,18 +810,24 @@ const ApplicationDetailScreen: React.FC = () => {
         {stage === 4 && (
           <>
             <Button
-              label="Open Chat"
+              label={t('open_chat')}
               variant="primary"
               size="lg"
               fullWidth
               onPress={handleOpenChat}
             />
-            <Button label="Job is in progress" variant="ghost" size="base" fullWidth disabled />
+            <Button
+              label={t('hiring_job_in_progress_btn')}
+              variant="ghost"
+              size="base"
+              fullWidth
+              disabled
+            />
           </>
         )}
         {stage === 5 && (
           <Button
-            label="Open Chat"
+            label={t('open_chat')}
             variant="outline"
             size="lg"
             fullWidth
@@ -826,7 +836,7 @@ const ApplicationDetailScreen: React.FC = () => {
         )}
         {status === 'rejected' && (
           <Button
-            label="Open Chat"
+            label={t('open_chat')}
             variant="outline"
             size="lg"
             fullWidth
@@ -844,7 +854,7 @@ const ApplicationDetailScreen: React.FC = () => {
             <TouchableOpacity style={styles.menuOption} onPress={handleWithdraw}>
               <Ionicons name="close-circle-outline" size={20} color={colors.error} />
               <Text style={[styles.menuOptionText, { color: colors.error }]}>
-                Withdraw Application
+                {t('withdraw_application')}
               </Text>
             </TouchableOpacity>
           </View>
