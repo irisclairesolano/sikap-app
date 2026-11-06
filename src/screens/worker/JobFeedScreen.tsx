@@ -368,19 +368,22 @@ export const JobFeedScreen: React.FC = () => {
               icon="briefcase-outline"
               title={t('no_jobs_found')}
               subtitle={
-                searchQuery || activeCategory !== 'All' || locationFilter !== 'Anywhere'
-                  ? `No jobs found for "${searchQuery || activeCategory}". Try resetting your filters.`
-                  : 'No available jobs at the moment. Pull down to refresh or check back later.'
+                activeCategory !== 'All'
+                  ? searchQuery
+                    ? `No jobs found for "${searchQuery}" in ${activeCategory}.`
+                    : `No jobs found for "${activeCategory}".`
+                  : searchQuery || locationFilter !== 'Anywhere'
+                    ? `No jobs found for "${searchQuery}". Try resetting your filters.`
+                    : 'No available jobs at the moment. Pull down to refresh or check back later.'
               }
               actionLabel={
-                searchQuery || activeCategory !== 'All' || locationFilter !== 'Anywhere'
+                activeCategory === 'All' && (searchQuery || locationFilter !== 'Anywhere')
                   ? t('reset_filters')
                   : undefined
               }
               onAction={
-                searchQuery || activeCategory !== 'All' || locationFilter !== 'Anywhere'
+                activeCategory === 'All' && (searchQuery || locationFilter !== 'Anywhere')
                   ? () => {
-                      setActiveCategory('All');
                       setLocationFilter('Anywhere');
                       setSearchInput('');
                       setSearchQuery('');
