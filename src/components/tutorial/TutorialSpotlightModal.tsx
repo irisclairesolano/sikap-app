@@ -18,7 +18,7 @@ import { colors, fonts, shadows } from '../../theme';
 const SPOTLIGHT_PADDING = 8;
 const SPOTLIGHT_RADIUS = 16;
 const MIN_SCREEN_MARGIN = 16;
-const ESTIMATED_TOOLTIP_HEIGHT = 200;
+const ESTIMATED_TOOLTIP_HEIGHT = 140;
 
 export const TutorialSpotlightModal: React.FC = () => {
   const { t } = useLanguage();
@@ -93,7 +93,7 @@ export const TutorialSpotlightModal: React.FC = () => {
       };
     }
 
-    const gap = 14;
+    const gap = 12;
     const spaceBelow = windowHeight - safeBottom - cutout.bottom - gap;
     const spaceAbove = cutout.top - safeTop - gap;
 
@@ -234,7 +234,7 @@ export const TutorialSpotlightModal: React.FC = () => {
           )}
 
           <View style={styles.card}>
-            {/* Header Row: Icon + Step Counter Pill + Skip */}
+            {/* Row 1: Header Row (Leading Icon + Title Inline | Close/Skip Button) */}
             <View style={styles.cardHeader}>
               <View style={styles.headerLeft}>
                 <View style={styles.iconCircle}>
@@ -243,64 +243,60 @@ export const TutorialSpotlightModal: React.FC = () => {
                   ) : (
                     <Ionicons
                       name={(currentStep.icon as any) || 'sparkles-outline'}
-                      size={18}
+                      size={16}
                       color={colors.primary}
                     />
                   )}
                 </View>
-                <View style={styles.stepPill}>
-                  <Text style={styles.stepPillText} testID="tutorial-step-counter">
-                    {t('tutorial_step_of', {
-                      current: currentStepIndex + 1,
-                      total: totalSteps,
-                    })}
-                  </Text>
-                </View>
+                <Text
+                  style={styles.title}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  testID="tutorial-step-title"
+                >
+                  {t(currentStep.titleKey)}
+                </Text>
               </View>
 
               <TouchableOpacity
                 onPress={skipTutorial}
                 activeOpacity={0.7}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                style={styles.skipBtn}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                style={styles.closeBtn}
                 testID="tutorial-skip-btn"
+                accessibilityLabel={t('tutorial_skip')}
+                accessibilityRole="button"
               >
-                <Text style={styles.skipBtnText}>{t('tutorial_skip')}</Text>
+                <Ionicons name="close" size={18} color={colors.inkMuted} />
               </TouchableOpacity>
             </View>
 
-            {/* Step Title & Concise Explanation */}
-            <Text style={styles.title} testID="tutorial-step-title">
-              {t(currentStep.titleKey)}
-            </Text>
+            {/* Row 2: Body Row (Compact description) */}
             <Text style={styles.description} testID="tutorial-step-desc">
               {t(currentStep.descKey)}
             </Text>
 
-            {/* Footer Controls: Progress Dots + Previous / Next */}
+            {/* Row 3: Footer Row (Step counter on Left | Back link + Next button on Right) */}
             <View style={styles.footer}>
-              <View style={styles.dotsRow}>
-                {steps.map((s, idx) => {
-                  const active = idx === currentStepIndex;
-                  return (
-                    <View
-                      key={s.id}
-                      style={[styles.dot, active ? styles.dotActive : styles.dotInactive]}
-                    />
-                  );
+              <Text style={styles.stepIndicator} testID="tutorial-step-counter">
+                {t('tutorial_step_of', {
+                  current: currentStepIndex + 1,
+                  total: totalSteps,
                 })}
-              </View>
+              </Text>
 
-              <View style={styles.navBtnsRow}>
+              <View style={styles.navControls}>
                 {!isFirstStep && (
                   <TouchableOpacity
                     onPress={prevStep}
-                    activeOpacity={0.75}
-                    style={styles.prevBtn}
+                    activeOpacity={0.65}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    style={styles.prevLink}
                     testID="tutorial-prev-btn"
+                    accessibilityRole="button"
                   >
-                    <Ionicons name="chevron-back" size={15} color={colors.ink} />
-                    <Text style={styles.prevBtnText}>{t('tutorial_prev')}</Text>
+                    <Ionicons name="chevron-back" size={14} color={colors.inkSoft} />
+                    <Text style={styles.prevLinkText}>{t('tutorial_prev')}</Text>
                   </TouchableOpacity>
                 )}
 
@@ -309,13 +305,14 @@ export const TutorialSpotlightModal: React.FC = () => {
                   activeOpacity={0.85}
                   style={styles.nextBtn}
                   testID="tutorial-next-btn"
+                  accessibilityRole="button"
                 >
                   <Text style={styles.nextBtnText}>
                     {isLastStep ? t('tutorial_done') : t('tutorial_next')}
                   </Text>
                   <Ionicons
                     name={isLastStep ? 'checkmark-circle-outline' : 'chevron-forward'}
-                    size={16}
+                    size={14}
                     color={colors.white}
                   />
                 </TouchableOpacity>
@@ -365,10 +362,10 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.paperBright,
-    borderRadius: 20,
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    paddingBottom: 16,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 12,
     borderWidth: 1,
     borderColor: colors.inkFaint,
     ...shadows.base,
@@ -377,120 +374,94 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 8,
+    gap: 8,
   },
   headerLeft: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
   iconCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: colors.primaryTint,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepPill: {
-    backgroundColor: colors.paper,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.inkFaint,
-  },
-  stepPillText: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 11,
-    color: colors.inkSoft,
-  },
-  skipBtn: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  skipBtnText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
-    color: colors.inkMuted,
-  },
   title: {
+    flex: 1,
     fontFamily: fonts.display,
-    fontSize: 18,
+    fontSize: 15,
     color: colors.ink,
-    marginBottom: 6,
+    letterSpacing: -0.2,
+  },
+  closeBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.paper,
   },
   description: {
     fontFamily: fonts.body,
-    fontSize: 13.5,
-    lineHeight: 19,
+    fontSize: 13,
+    lineHeight: 18,
     color: colors.inkSoft,
-    marginBottom: 16,
+    marginBottom: 10,
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 8,
+    paddingTop: 4,
   },
-  dotsRow: {
+  stepIndicator: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 11.5,
+    color: colors.inkMuted,
+    letterSpacing: 0.2,
+  },
+  navControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 10,
   },
-  dot: {
-    height: 6,
-    borderRadius: 3,
-  },
-  dotActive: {
-    width: 18,
-    backgroundColor: colors.primary,
-  },
-  dotInactive: {
-    width: 6,
-    backgroundColor: colors.inkFaint,
-  },
-  navBtnsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  prevBtn: {
+  prevLink: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    backgroundColor: colors.paper,
-    borderWidth: 1,
-    borderColor: colors.inkFaint,
+    paddingVertical: 6,
+    paddingHorizontal: 4,
   },
-  prevBtnText: {
+  prevLinkText: {
     fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
-    color: colors.ink,
+    fontSize: 12.5,
+    color: colors.inkSoft,
   },
   nextBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingVertical: 9,
-    paddingHorizontal: 14,
-    borderRadius: 12,
+    paddingVertical: 7,
+    paddingHorizontal: 13,
+    borderRadius: 10,
     backgroundColor: colors.primary,
   },
   nextBtnText: {
     fontFamily: fonts.bodyBold,
-    fontSize: 13,
+    fontSize: 12.5,
     color: colors.white,
   },
   arrowUp: {
     width: 0,
     height: 0,
-    borderLeftWidth: 9,
-    borderRightWidth: 9,
-    borderBottomWidth: 9,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderBottomWidth: 8,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderBottomColor: colors.paperBright,
@@ -500,9 +471,9 @@ const styles = StyleSheet.create({
   arrowDown: {
     width: 0,
     height: 0,
-    borderLeftWidth: 9,
-    borderRightWidth: 9,
-    borderTopWidth: 9,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 8,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderTopColor: colors.paperBright,
