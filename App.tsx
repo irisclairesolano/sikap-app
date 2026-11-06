@@ -9,6 +9,11 @@ import RootNavigator from './src/navigation/RootNavigator';
 import { LanguageProvider } from './src/contexts/LanguageContext';
 import { AlertProvider } from './src/contexts/AlertContext';
 import { ToastProvider } from './src/contexts/ToastContext';
+import {
+  OnboardingTutorialProvider,
+  type TutorialRoute,
+} from './src/contexts/OnboardingTutorialContext';
+import { TutorialSpotlightModal } from './src/components/tutorial/TutorialSpotlightModal';
 import { useFonts } from 'expo-font';
 import * as Linking from 'expo-linking';
 import {
@@ -32,6 +37,10 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import { OfflineNotice } from './src/components/common/OfflineNotice';
 import ErrorBoundary from './src/components/common/ErrorBoundary';
 import { getItemAsync } from './src/utils/storage';
+import { initWebA11yFix, blurActiveElementOnWeb } from './src/utils/webA11yFix';
+
+// Proactively eliminate "Blocked aria-hidden on an element because its descendant retained focus" on web
+initWebA11yFix();
 
 function onAppStateChange(status: AppStateStatus) {
   if (Platform.OS !== 'web') {
@@ -295,6 +304,20 @@ export default function App() {
     return () => subscription.remove();
   }, []);
 
+  const handleTutorialNavigate = React.useCallback((route: TutorialRoute) => {
+    if (!navigationRef.isReady()) return;
+    if (route.screen) {
+      navigationRef.navigate(route.root, {
+        screen: route.tab,
+        params: { screen: route.screen },
+      });
+    } else {
+      navigationRef.navigate(route.root, {
+        screen: route.tab,
+      });
+    }
+  }, []);
+
   if (!fontsLoaded && !fontError) {
     return (
       <View
@@ -317,12 +340,19 @@ export default function App() {
           <LanguageProvider>
             <AlertProvider>
               <ToastProvider>
-                <ErrorBoundary>
-                  <NavigationContainer ref={navigationRef} linking={linking}>
-                    <RootNavigator />
-                  </NavigationContainer>
-                  <OfflineNotice />
-                </ErrorBoundary>
+                <OnboardingTutorialProvider onNavigate={handleTutorialNavigate}>
+                  <ErrorBoundary>
+                    <NavigationContainer
+                      ref={navigationRef}
+                      linking={linking}
+                      onStateChange={blurActiveElementOnWeb}
+                    >
+                      <RootNavigator />
+                    </NavigationContainer>
+                    <TutorialSpotlightModal />
+                    <OfflineNotice />
+                  </ErrorBoundary>
+                </OnboardingTutorialProvider>
                 <StatusBar style="auto" />
               </ToastProvider>
             </AlertProvider>

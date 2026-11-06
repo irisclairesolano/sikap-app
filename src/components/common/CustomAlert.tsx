@@ -4,6 +4,7 @@ import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import Button from './Button';
 import { sanitizeErrorMessage, sanitizeErrorTitle } from '../../utils/errorSanitizer';
+import { blurActiveElementOnWeb } from '../../utils/webA11yFix';
 
 export interface AlertButton {
   text: string;
@@ -93,6 +94,7 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
                 }
                 style={styles.button}
                 onPress={() => {
+                  blurActiveElementOnWeb();
                   btn.onPress?.();
                   if (!btn.onPress) {
                     onRequestClose?.();

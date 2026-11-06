@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
 
 interface Props {
   navigation: any;
@@ -84,7 +85,7 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        {renderHeader()}
+        <TutorialTarget id="shared_messages_overview">{renderHeader()}</TutorialTarget>
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -95,7 +96,7 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
   if (isError) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        {renderHeader()}
+        <TutorialTarget id="shared_messages_overview">{renderHeader()}</TutorialTarget>
         <View style={styles.centerContainer}>
           <Text style={styles.errorText}>Couldn't load conversations. Pull to refresh.</Text>
         </View>
@@ -105,31 +106,35 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      {renderHeader()}
+      <TutorialTarget id="shared_messages_overview">
+        <View>
+          {renderHeader()}
 
-      {conversations.length > 0 && (
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <Ionicons name="search-outline" size={17} color={colors.inkMuted} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={t('search_messages_placeholder')}
-              placeholderTextColor={colors.inkLight}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              returnKeyType="search"
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity
-                onPress={() => setSearchQuery('')}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Ionicons name="close-circle" size={17} color={colors.inkMuted} />
-              </TouchableOpacity>
-            )}
-          </View>
+          {conversations.length > 0 && (
+            <View style={styles.searchContainer}>
+              <View style={styles.searchBar}>
+                <Ionicons name="search-outline" size={17} color={colors.inkMuted} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder={t('search_messages_placeholder')}
+                  placeholderTextColor={colors.inkLight}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  returnKeyType="search"
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => setSearchQuery('')}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Ionicons name="close-circle" size={17} color={colors.inkMuted} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
         </View>
-      )}
+      </TutorialTarget>
 
       {conversations.length === 0 ? (
         <View style={styles.emptyContainer}>

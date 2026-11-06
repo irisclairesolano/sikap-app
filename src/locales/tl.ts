@@ -668,4 +668,53 @@ export const tl: Record<TranslationKey, string> = {
     'Nasuspinde ang account mo dahil sa paglabag sa mga alituntunin ng komunidad ng SIKAP.',
   notif_report_action_title: 'Update sa Report Mo',
   notif_report_action_msg: 'Nasuri na ang report mo at nagawa na ang kinakailangang aksyon.',
+
+  // Group 9: Onboarding Tutorial
+  tutorial_next: 'Susunod',
+  tutorial_prev: 'Nakaraan',
+  tutorial_skip: 'Laktawan',
+  tutorial_done: 'Simulan Na!',
+  tutorial_step_of: 'Hakbang {current} ng {total}',
+  replay_tutorial: 'Ulitin ang Gabay sa App',
+  replay_tutorial_subtitle: 'Balikan kung paano gamitin ang SIKAP',
+
+  // Worker Tutorial Steps
+  tutorial_worker_step1_title: 'Maghanap ng Trabaho',
+  tutorial_worker_step1_desc:
+    'Maghanap ayon sa kasanayan o i-filter ang mga trabaho sa sarili mong barangay at bayan.',
+  tutorial_worker_step2_title: 'Itugma sa Iyong Kasanayan',
+  tutorial_worker_step2_desc:
+    'Pindutin ang mga skill tag para sa akmang trabaho, o i-bookmark ang trabahong nagustuhan mo.',
+  tutorial_worker_step3_title: 'Subaybayan ang Aplikasyon',
+  tutorial_worker_step3_desc:
+    'Tingnan dito ang status ng iyong mga inaplayan mula sa pagsusuri hanggang matanggap.',
+  tutorial_worker_step4_title: 'Chat at Alok sa Trabaho',
+  tutorial_worker_step4_desc:
+    'Kapag napili ng employer, dito kayo mag-uusap sa bayad at tatanggap ng opisyal na alok.',
+  tutorial_worker_step5_title: 'Mga Agarang Abiso',
+  tutorial_worker_step5_desc:
+    'Makatanggap agad ng abiso kapag may job request, alok sa trabaho, o bagong review.',
+  tutorial_worker_step6_title: 'Profile at Mga Setting',
+  tutorial_worker_step6_desc:
+    'I-update ang iyong skills at karanasan, tingnan ang rating mo, o lumipat sa Employer Mode.',
+
+  // Employer Tutorial Steps
+  tutorial_employer_step1_title: 'Buod ng Pag-hire',
+  tutorial_employer_step1_desc:
+    'Tingnan agad ang iyong aktibong trabaho, kabuuang na-hire, nabayaran, at rating.',
+  tutorial_employer_step2_title: 'Mag-post ng Trabaho',
+  tutorial_employer_step2_desc:
+    'Pindutin ito para gumawa ng job post na may malinaw na bayad at bilang ng kailangang worker.',
+  tutorial_employer_step3_title: 'Mga Kailangang Aksyunan',
+  tutorial_employer_step3_desc:
+    'Suriin agad ang mga bagong aplikante, kumpirmahin ang natapos na gawain, at mag-rate ng worker.',
+  tutorial_employer_step4_title: 'Pamahalaan ang Mga Trabaho',
+  tutorial_employer_step4_desc:
+    'Tingnan ang iyong Active, Past, at Archived job posts at suriin ang mga nag-apply.',
+  tutorial_employer_step5_title: 'Makipag-usap sa Chat',
+  tutorial_employer_step5_desc:
+    'Magpadala ng Job Request, magkasundo sa bayad, at mag-hire gamit ang Action Cards sa chat.',
+  tutorial_employer_step6_title: 'Profile at Mga Setting',
+  tutorial_employer_step6_desc:
+    'I-update ang iyong profile, tingnan ang mga review, o ulitin ang gabay na ito sa Settings.',
 };

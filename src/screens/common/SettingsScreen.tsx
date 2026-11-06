@@ -19,6 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import { useAlert } from '../../contexts/AlertContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useOnboardingTutorial } from '../../contexts/OnboardingTutorialContext';
 import { useAuth } from '../../hooks/useAuth';
 import { notifyAuthChanged } from '../../store/authEvents';
 import { colors, fonts, shadows } from '../../theme';
@@ -474,6 +475,17 @@ export const SettingsScreen: React.FC = () => {
   const [showPrivacy, setShowPrivacy] = useState(false);
 
   const { user, userRole, switchRole } = useAuth();
+  const { startTutorial } = useOnboardingTutorial();
+
+  const handleReplayTutorial = () => {
+    const activeRole = userRole === 'employer' ? 'employer' : 'worker';
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    }
+    setTimeout(() => {
+      startTutorial(activeRole, { isReplay: true, userId: user?.id });
+    }, 80);
+  };
 
   const handleLogout = () => {
     showAlert(t('log_out'), t('confirm_logout_msg'), [
@@ -633,6 +645,13 @@ export const SettingsScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('support')}</Text>
           <View style={styles.sectionCard}>
+            <SettingRow
+              icon="compass-outline"
+              title={t('replay_tutorial')}
+              subtitle={t('replay_tutorial_subtitle')}
+              onPress={handleReplayTutorial}
+            />
+            <View style={styles.divider} />
             <SettingRow
               icon="help-circle-outline"
               title={t('help_center')}

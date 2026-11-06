@@ -12,6 +12,20 @@ export const jobsApi = {
     });
   },
 
+  uploadPhoto: async (formData: FormData): Promise<{ url: string }> => {
+    return apiClient<{ url: string }>('/jobs/upload-photo', {
+      method: 'POST',
+      body: formData,
+    });
+  },
+
+  uploadVideo: async (formData: FormData): Promise<{ url: string }> => {
+    return apiClient<{ url: string }>('/jobs/upload-video', {
+      method: 'POST',
+      body: formData,
+    });
+  },
+
   updateJob: async (id: number, payload: Partial<JobPost>) => {
     return apiClient<{ message: string; job: JobPost }>(`/jobs/${id}`, {
       method: 'PATCH',

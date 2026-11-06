@@ -21,6 +21,7 @@ import {
   useMarkAllNotificationsAsRead,
 } from '../../hooks/useNotifications';
 import { formatLocalizedNotification } from '../../utils/notificationFormatter';
+import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
 
 type NotificationsScreenNavigationProp = NativeStackNavigationProp<
   WorkerStackParamList,
@@ -50,8 +51,21 @@ export const NotificationsScreen: React.FC = () => {
 
   if (isLoading && !data) {
     return (
-      <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <SafeAreaView style={styles.safeArea}>
+        <TutorialTarget id="worker_notifications_overview">
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+              <Ionicons name="arrow-back" size={24} color={colors.ink} />
+            </TouchableOpacity>
+            <View style={styles.headerPill}>
+              <Text style={styles.headerPillText}>{t('notifications')}</Text>
+            </View>
+            <View style={{ width: 40 }} />
+          </View>
+        </TutorialTarget>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
       </SafeAreaView>
     );
   }
@@ -255,33 +269,45 @@ export const NotificationsScreen: React.FC = () => {
         }
       >
         {/* Today Section with Mark all as read at the same level */}
-        <View style={styles.sectionHeaderRow}>
-          <Text style={[styles.eyebrow, { color: colors.primary }]}>
-            {t('notif_section_today')}
-          </Text>
-          {hasUnread && (
-            <TouchableOpacity
-              style={styles.markAllInlineBtn}
-              onPress={() => {
-                if (hasUnread && !markAllAsReadMutation.isPending) {
-                  markAllAsReadMutation.mutate();
-                }
-              }}
-              disabled={markAllAsReadMutation.isPending}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Ionicons name="checkmark-done-outline" size={14} color={colors.primary} />
-              <Text style={styles.markAllText}>
-                {markAllAsReadMutation.isPending ? t('marking_read') : t('mark_all_read')}
+        <TutorialTarget id="worker_notifications_overview">
+          <View>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={[styles.eyebrow, { color: colors.primary }]}>
+                {t('notif_section_today')}
               </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+              {hasUnread && (
+                <TouchableOpacity
+                  style={styles.markAllInlineBtn}
+                  onPress={() => {
+                    if (hasUnread && !markAllAsReadMutation.isPending) {
+                      markAllAsReadMutation.mutate();
+                    }
+                  }}
+                  disabled={markAllAsReadMutation.isPending}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="checkmark-done-outline" size={14} color={colors.primary} />
+                  <Text style={styles.markAllText}>
+                    {markAllAsReadMutation.isPending ? t('marking_read') : t('mark_all_read')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
-        {todayNotifs.length > 0 ? (
-          <View style={styles.notificationList}>{todayNotifs.map(renderNotificationItem)}</View>
-        ) : (
-          <Text style={styles.emptySectionText}>{t('no_notifs_today')}</Text>
+            {todayNotifs.length > 0 ? (
+              <View style={styles.notificationList}>
+                {todayNotifs.slice(0, 1).map(renderNotificationItem)}
+              </View>
+            ) : (
+              <Text style={styles.emptySectionText}>{t('no_notifs_today')}</Text>
+            )}
+          </View>
+        </TutorialTarget>
+
+        {todayNotifs.length > 1 && (
+          <View style={[styles.notificationList, { marginTop: 12 }]}>
+            {todayNotifs.slice(1).map(renderNotificationItem)}
+          </View>
         )}
 
         {/* Yesterday Section */}

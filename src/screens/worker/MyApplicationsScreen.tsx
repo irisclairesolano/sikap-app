@@ -22,6 +22,7 @@ import Button from '../../components/common/Button';
 import { Application } from '../../types';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
 
 type FilterType = 'All' | 'Needs Action' | 'Active' | 'In Review' | 'History';
 const FILTERS: FilterType[] = ['All', 'Needs Action', 'Active', 'In Review', 'History'];
@@ -195,167 +196,171 @@ export const MyApplicationsScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.headerBody}>
-        {/* Urgent Action Banner (when offers are waiting or ratings pending) */}
-        {offersWaitingCount > 0 ? (
-          <TouchableOpacity
-            style={styles.urgentBanner}
-            activeOpacity={0.85}
-            onPress={() => setActiveFilter('Needs Action')}
-          >
-            <View style={styles.urgentIconBox}>
-              <Ionicons name="flash" size={20} color={colors.white} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.urgentTitle}>
-                {offersWaitingCount === 1
-                  ? `1 ${t('status_job_offer')}!`
-                  : `${offersWaitingCount} ${t('status_job_offer')}!`}
-              </Text>
-              <Text style={styles.urgentSubtitle}>{t('employer_sent_offer_notice')}</Text>
-            </View>
-            <View style={styles.urgentBadge}>
-              <Text style={styles.urgentBadgeText}>{t('review_offer')}</Text>
-            </View>
-          </TouchableOpacity>
-        ) : unratedCompletedCount > 0 && activeFilter !== 'Needs Action' ? (
-          <TouchableOpacity
-            style={styles.completedNoticeBanner}
-            activeOpacity={0.85}
-            onPress={() => setActiveFilter('Needs Action')}
-          >
-            <View style={styles.completedNoticeIconBox}>
-              <Ionicons name="ribbon-outline" size={18} color="#0369A1" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.completedNoticeTitle}>{t('status_completed')}</Text>
-              <Text style={styles.completedNoticeSubtitle}>{t('job_marked_completed_notice')}</Text>
-            </View>
-            <Text style={styles.completedNoticeLink}>{t('rate_review_partner')} →</Text>
-          </TouchableOpacity>
-        ) : (
-          /* Quick Summary Glance Bar */
-          <View style={styles.summaryBar}>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{counts.Active}</Text>
-              <Text style={styles.summaryLabel}>{t('active_hired')}</Text>
-            </View>
-            <View style={styles.summaryDivider} />
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{counts['In Review']}</Text>
-              <Text style={styles.summaryLabel}>{t('in_review')}</Text>
-            </View>
-            <View style={styles.summaryDivider} />
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{counts.History}</Text>
-              <Text style={styles.summaryLabel}>{t('status_completed')}</Text>
-            </View>
-          </View>
-        )}
-
-        {/* Search & Sort Row */}
-        <View style={styles.searchRow}>
-          <View style={styles.searchBar}>
-            <Ionicons
-              name="search-outline"
-              size={18}
-              color={colors.inkMuted}
-              style={styles.searchIcon}
-            />
-            <TextInput
-              placeholder="Search job, employer, location..."
-              placeholderTextColor={colors.inkLight}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              style={styles.searchInput}
-              autoCapitalize="none"
-              clearButtonMode="while-editing"
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity
-                onPress={() => setSearchQuery('')}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Ionicons name="close-circle" size={18} color={colors.inkMuted} />
-              </TouchableOpacity>
-            )}
-          </View>
-          <TouchableOpacity
-            style={styles.sortButton}
-            onPress={() => {
-              setSortOrder((prev) => {
-                if (prev === 'desc') return 'pay';
-                if (prev === 'pay') return 'asc';
-                return 'desc';
-              });
-            }}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name={
-                sortOrder === 'desc'
-                  ? 'arrow-down-outline'
-                  : sortOrder === 'pay'
-                    ? 'cash-outline'
-                    : 'arrow-up-outline'
-              }
-              size={16}
-              color={colors.ink}
-            />
-            <Text style={styles.sortButtonText}>
-              {sortOrder === 'desc' ? 'Newest' : sortOrder === 'pay' ? 'Pay' : 'Oldest'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Filter Tabs / Buckets */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterContainer}
-        >
-          {FILTERS.map((filter) => {
-            const count = counts[filter];
-            const isSelected = activeFilter === filter;
-            const isNeedsAction = filter === 'Needs Action' && count > 0;
-
-            return (
-              <TouchableOpacity
-                key={filter}
-                style={[
-                  styles.chip,
-                  isSelected && styles.chipActive,
-                  isNeedsAction && !isSelected && styles.chipNeedsAction,
-                ]}
-                onPress={() => setActiveFilter(filter)}
-                activeOpacity={0.7}
-              >
-                {isNeedsAction && <View style={styles.redDot} />}
-                <Text
-                  style={[
-                    styles.chipText,
-                    isSelected && styles.chipTextActive,
-                    isNeedsAction && !isSelected && styles.chipTextNeedsAction,
-                  ]}
-                >
-                  {filter === 'All'
-                    ? t('all')
-                    : filter === 'Needs Action'
-                      ? t('needs_action')
-                      : filter === 'In Review'
-                        ? t('in_review')
-                        : filter === 'Active'
-                          ? t('active_hired')
-                          : filter === 'History'
-                            ? t('history')
-                            : filter}{' '}
-                  · <Text style={styles.chipCount}>{count}</Text>
+      <TutorialTarget id="worker_applications_overview">
+        <View style={styles.headerBody}>
+          {/* Urgent Action Banner (when offers are waiting or ratings pending) */}
+          {offersWaitingCount > 0 ? (
+            <TouchableOpacity
+              style={styles.urgentBanner}
+              activeOpacity={0.85}
+              onPress={() => setActiveFilter('Needs Action')}
+            >
+              <View style={styles.urgentIconBox}>
+                <Ionicons name="flash" size={20} color={colors.white} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.urgentTitle}>
+                  {offersWaitingCount === 1
+                    ? `1 ${t('status_job_offer')}!`
+                    : `${offersWaitingCount} ${t('status_job_offer')}!`}
                 </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+                <Text style={styles.urgentSubtitle}>{t('employer_sent_offer_notice')}</Text>
+              </View>
+              <View style={styles.urgentBadge}>
+                <Text style={styles.urgentBadgeText}>{t('review_offer')}</Text>
+              </View>
+            </TouchableOpacity>
+          ) : unratedCompletedCount > 0 && activeFilter !== 'Needs Action' ? (
+            <TouchableOpacity
+              style={styles.completedNoticeBanner}
+              activeOpacity={0.85}
+              onPress={() => setActiveFilter('Needs Action')}
+            >
+              <View style={styles.completedNoticeIconBox}>
+                <Ionicons name="ribbon-outline" size={18} color="#0369A1" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.completedNoticeTitle}>{t('status_completed')}</Text>
+                <Text style={styles.completedNoticeSubtitle}>
+                  {t('job_marked_completed_notice')}
+                </Text>
+              </View>
+              <Text style={styles.completedNoticeLink}>{t('rate_review_partner')} →</Text>
+            </TouchableOpacity>
+          ) : (
+            /* Quick Summary Glance Bar */
+            <View style={styles.summaryBar}>
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryValue}>{counts.Active}</Text>
+                <Text style={styles.summaryLabel}>{t('active_hired')}</Text>
+              </View>
+              <View style={styles.summaryDivider} />
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryValue}>{counts['In Review']}</Text>
+                <Text style={styles.summaryLabel}>{t('in_review')}</Text>
+              </View>
+              <View style={styles.summaryDivider} />
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryValue}>{counts.History}</Text>
+                <Text style={styles.summaryLabel}>{t('status_completed')}</Text>
+              </View>
+            </View>
+          )}
+
+          {/* Search & Sort Row */}
+          <View style={styles.searchRow}>
+            <View style={styles.searchBar}>
+              <Ionicons
+                name="search-outline"
+                size={18}
+                color={colors.inkMuted}
+                style={styles.searchIcon}
+              />
+              <TextInput
+                placeholder="Search job, employer, location..."
+                placeholderTextColor={colors.inkLight}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                style={styles.searchInput}
+                autoCapitalize="none"
+                clearButtonMode="while-editing"
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSearchQuery('')}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="close-circle" size={18} color={colors.inkMuted} />
+                </TouchableOpacity>
+              )}
+            </View>
+            <TouchableOpacity
+              style={styles.sortButton}
+              onPress={() => {
+                setSortOrder((prev) => {
+                  if (prev === 'desc') return 'pay';
+                  if (prev === 'pay') return 'asc';
+                  return 'desc';
+                });
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={
+                  sortOrder === 'desc'
+                    ? 'arrow-down-outline'
+                    : sortOrder === 'pay'
+                      ? 'cash-outline'
+                      : 'arrow-up-outline'
+                }
+                size={16}
+                color={colors.ink}
+              />
+              <Text style={styles.sortButtonText}>
+                {sortOrder === 'desc' ? 'Newest' : sortOrder === 'pay' ? 'Pay' : 'Oldest'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Filter Tabs / Buckets */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterContainer}
+          >
+            {FILTERS.map((filter) => {
+              const count = counts[filter];
+              const isSelected = activeFilter === filter;
+              const isNeedsAction = filter === 'Needs Action' && count > 0;
+
+              return (
+                <TouchableOpacity
+                  key={filter}
+                  style={[
+                    styles.chip,
+                    isSelected && styles.chipActive,
+                    isNeedsAction && !isSelected && styles.chipNeedsAction,
+                  ]}
+                  onPress={() => setActiveFilter(filter)}
+                  activeOpacity={0.7}
+                >
+                  {isNeedsAction && <View style={styles.redDot} />}
+                  <Text
+                    style={[
+                      styles.chipText,
+                      isSelected && styles.chipTextActive,
+                      isNeedsAction && !isSelected && styles.chipTextNeedsAction,
+                    ]}
+                  >
+                    {filter === 'All'
+                      ? t('all')
+                      : filter === 'Needs Action'
+                        ? t('needs_action')
+                        : filter === 'In Review'
+                          ? t('in_review')
+                          : filter === 'Active'
+                            ? t('active_hired')
+                            : filter === 'History'
+                              ? t('history')
+                              : filter}{' '}
+                    · <Text style={styles.chipCount}>{count}</Text>
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      </TutorialTarget>
     </View>
   );
 

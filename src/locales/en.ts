@@ -645,6 +645,55 @@ export const en = {
     'Your account has been suspended due to violations of SIKAP community standards.',
   notif_report_action_title: 'Report Action Taken',
   notif_report_action_msg: 'Your report has been reviewed and appropriate action has been taken.',
+
+  // Group 9: Onboarding Tutorial
+  tutorial_next: 'Next',
+  tutorial_prev: 'Previous',
+  tutorial_skip: 'Skip',
+  tutorial_done: 'Got It!',
+  tutorial_step_of: 'Step {current} of {total}',
+  replay_tutorial: 'Replay App Tutorial',
+  replay_tutorial_subtitle: 'Take a quick guided tour of SIKAP',
+
+  // Worker Tutorial Steps
+  tutorial_worker_step1_title: 'Find Nearby Jobs',
+  tutorial_worker_step1_desc:
+    'Search by skill or filter jobs within your own barangay and municipality in Sorsogon.',
+  tutorial_worker_step2_title: 'Match Your Skills & Save',
+  tutorial_worker_step2_desc:
+    'Tap skill chips to see matching jobs, or tap the bookmark icon to save posts for later.',
+  tutorial_worker_step3_title: 'Track Your Applications',
+  tutorial_worker_step3_desc:
+    'Check the status of every job you applied to—from Under Review to Hired and Completed.',
+  tutorial_worker_step4_title: 'Chat & Job Offers',
+  tutorial_worker_step4_desc:
+    'Once shortlisted, chat with employers here to agree on pay and accept formal job offers.',
+  tutorial_worker_step5_title: 'Real-Time Alerts',
+  tutorial_worker_step5_desc:
+    'Receive instant updates when an employer shortlists you, sends an offer, or leaves a rating.',
+  tutorial_worker_step6_title: 'Your Profile & Settings',
+  tutorial_worker_step6_desc:
+    'Update your skills and work history, view your rating, or switch to Employer Mode in Settings.',
+
+  // Employer Tutorial Steps
+  tutorial_employer_step1_title: 'Your Hiring Overview',
+  tutorial_employer_step1_desc:
+    'See your active jobs, total hires, amount paid, and employer rating at a glance.',
+  tutorial_employer_step2_title: 'Post a Job',
+  tutorial_employer_step2_desc:
+    'Tap here to post a local job with clear pay rates (daily, hourly, project, or per piece) and slots.',
+  tutorial_employer_step3_title: 'Action Required Queue',
+  tutorial_employer_step3_desc:
+    'Quickly review new applicants, confirm completed work, or rate workers from this list.',
+  tutorial_employer_step4_title: 'Manage Your Job Posts',
+  tutorial_employer_step4_desc:
+    'Switch between Active, Past, and Archived jobs to inspect applicants and open slots.',
+  tutorial_employer_step5_title: 'Negotiate & Hire in Chat',
+  tutorial_employer_step5_desc:
+    'Send Job Requests, lock agreed pay rates, and confirm finished work using chat Action Cards.',
+  tutorial_employer_step6_title: 'Profile & Settings',
+  tutorial_employer_step6_desc:
+    'Manage your employer profile, check worker reviews, or replay this tutorial anytime in Settings.',
 };
 
 export type TranslationKey = keyof typeof en;

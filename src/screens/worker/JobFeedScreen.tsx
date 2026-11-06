@@ -59,6 +59,8 @@ import { EmptyState } from '../../components/common/EmptyState';
 import { useAuthCheck } from '../../hooks/useAuthCheck';
 import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
+import { useTriggerInitialTutorial } from '../../hooks/useTriggerInitialTutorial';
 
 import { TranslationKey } from '../../locales/en';
 
@@ -146,6 +148,12 @@ export const JobFeedScreen: React.FC = () => {
   const { data, isLoading, isError, error, refetch, isFetching } = useJobs(filters);
   const { data: savedJobsData } = useSavedJobs();
   const { mutate: toggleSave } = useToggleSaveJob();
+
+  useTriggerInitialTutorial({
+    user,
+    role: 'worker',
+    isScreenReady: !isLoading,
+  });
 
   // Normalize paginated or flat API responses and enforce newest-first ordering
   const jobsList = useMemo(() => {
@@ -242,68 +250,77 @@ export const JobFeedScreen: React.FC = () => {
           </View>
         </View>
 
-        <View style={styles.searchRow}>
-          <View style={styles.searchContainer}>
-            {isLoading ? (
-              <ActivityIndicator
-                size="small"
-                color={colors.primary}
-                style={[styles.searchIcon, { marginRight: 8 }]}
+        <TutorialTarget id="worker_search_filter">
+          <View style={styles.searchRow}>
+            <View style={styles.searchContainer}>
+              {isLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={colors.primary}
+                  style={[styles.searchIcon, { marginRight: 8 }]}
+                />
+              ) : (
+                <Ionicons
+                  name="search"
+                  size={20}
+                  color={colors.inkMuted}
+                  style={styles.searchIcon}
+                />
+              )}
+              <TextInput
+                style={styles.searchInput}
+                placeholder={t('search_jobs_placeholder')}
+                placeholderTextColor={colors.inkMuted}
+                value={searchInput}
+                onChangeText={setSearchInput}
+                onSubmitEditing={() => setSearchQuery(searchInput)}
+                returnKeyType="search"
               />
-            ) : (
-              <Ionicons name="search" size={20} color={colors.inkMuted} style={styles.searchIcon} />
-            )}
-            <TextInput
-              style={styles.searchInput}
-              placeholder={t('search_jobs_placeholder')}
-              placeholderTextColor={colors.inkMuted}
-              value={searchInput}
-              onChangeText={setSearchInput}
-              onSubmitEditing={() => setSearchQuery(searchInput)}
-              returnKeyType="search"
-            />
-            {searchInput.length > 0 && (
-              <TouchableOpacity
-                onPress={() => {
-                  setSearchInput('');
-                  setSearchQuery('');
-                }}
-              >
-                <Ionicons name="close-circle" size={18} color={colors.inkMuted} />
-              </TouchableOpacity>
-            )}
+              {searchInput.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSearchInput('');
+                    setSearchQuery('');
+                  }}
+                >
+                  <Ionicons name="close-circle" size={18} color={colors.inkMuted} />
+                </TouchableOpacity>
+              )}
+            </View>
+            <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModalVisible(true)}>
+              <Ionicons name="options-outline" size={24} color={colors.ink} />
+              {locationFilter !== 'Anywhere' && <View style={styles.filterActiveDot} />}
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModalVisible(true)}>
-            <Ionicons name="options-outline" size={24} color={colors.ink} />
-            {locationFilter !== 'Anywhere' && <View style={styles.filterActiveDot} />}
-          </TouchableOpacity>
-        </View>
+        </TutorialTarget>
 
         <Text style={styles.headline}>
           <Text style={styles.count}>{jobsList.length}</Text> {t('jobs_nearby')}
         </Text>
 
-        <View style={styles.filterContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterScroll}
-          >
-            {feedCategories.map((category) => (
-              <TouchableOpacity
-                key={category}
-                style={[styles.chip, activeCategory === category && styles.chipActive]}
-                onPress={() => setActiveCategory(category)}
-              >
-                <Text
-                  style={[styles.chipText, activeCategory === category && styles.chipTextActive]}
+        <TutorialTarget id="worker_skill_chips">
+          <View style={styles.filterContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filterScroll}
+            >
+              {feedCategories.map((category) => (
+                <TouchableOpacity
+                  key={category}
+                  style={[styles.chip, activeCategory === category && styles.chipActive]}
+                  onPress={() => setActiveCategory(category)}
                 >
-                  {category === 'All' ? t('all') : category}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+                  <Text
+                    style={[styles.chipText, activeCategory === category && styles.chipTextActive]}
+                  >
+                    {category === 'All' ? t('all') : category}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TutorialTarget>
       </View>
     ),
     [

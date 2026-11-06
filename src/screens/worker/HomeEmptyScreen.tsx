@@ -10,6 +10,8 @@ import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { useAuth } from '../../hooks/useAuth';
 import { profileApi } from '../../api/profile';
+import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
+import { useTriggerInitialTutorial } from '../../hooks/useTriggerInitialTutorial';
 
 export const HomeEmptyScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
@@ -38,6 +40,12 @@ export const HomeEmptyScreen: React.FC = () => {
     (workerProfile?.references?.length || 0) > 0 ||
     ((workerProfile as any)?.character_references?.length || 0) > 0;
   const isComplete = hasSkills && hasHistory && hasRefs;
+
+  useTriggerInitialTutorial({
+    user: profile || user,
+    role: 'worker',
+    isScreenReady: !isComplete,
+  });
 
   let progressCount = 1; // Account verified
   if (hasSkills) progressCount++;
@@ -93,124 +101,128 @@ export const HomeEmptyScreen: React.FC = () => {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Progress Card */}
-        <View style={styles.progressCard}>
-          <Text style={styles.welcomeText}>WELCOME TO SIKAP</Text>
-          <Text style={styles.progressHeadline}>
-            Your profile is{'\n'}
-            <Text style={styles.progressAccent}>{progressPercent}% complete.</Text>
-          </Text>
-          <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
+        <TutorialTarget id="worker_setup_progress">
+          <View style={styles.progressCard}>
+            <Text style={styles.welcomeText}>WELCOME TO SIKAP</Text>
+            <Text style={styles.progressHeadline}>
+              Your profile is{'\n'}
+              <Text style={styles.progressAccent}>{progressPercent}% complete.</Text>
+            </Text>
+            <View style={styles.progressBarBg}>
+              <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
+            </View>
           </View>
-        </View>
+        </TutorialTarget>
 
         <Text style={styles.sectionTitle}>Finish setting up</Text>
 
-        <View style={styles.tasksContainer}>
-          {/* Account Verified */}
-          <View style={styles.taskCard}>
-            <View style={[styles.taskIconBox, { backgroundColor: colors.mint }]}>
-              <Ionicons name="checkmark" size={16} color={colors.mintDeep} />
+        <TutorialTarget id="worker_setup_tasks">
+          <View style={styles.tasksContainer}>
+            {/* Account Verified */}
+            <View style={styles.taskCard}>
+              <View style={[styles.taskIconBox, { backgroundColor: colors.mint }]}>
+                <Ionicons name="checkmark" size={16} color={colors.mintDeep} />
+              </View>
+              <View style={styles.taskTextContainer}>
+                <Text style={styles.taskTitle}>Account verified</Text>
+                <Text style={styles.taskSubtitle}>Just now</Text>
+              </View>
             </View>
-            <View style={styles.taskTextContainer}>
-              <Text style={styles.taskTitle}>Account verified</Text>
-              <Text style={styles.taskSubtitle}>Just now</Text>
-            </View>
+
+            {/* Add Skills */}
+            <TouchableOpacity
+              style={[styles.taskCard, !hasSkills && styles.activeTaskCard]}
+              onPress={() => navigation.navigate('AddSkills')}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[
+                  styles.taskIconBox,
+                  { backgroundColor: hasSkills ? colors.mint : colors.peach },
+                ]}
+              >
+                <Ionicons
+                  name={hasSkills ? 'checkmark' : 'construct'}
+                  size={16}
+                  color={hasSkills ? colors.mintDeep : colors.primary}
+                />
+              </View>
+              <View style={styles.taskTextContainer}>
+                <Text style={styles.taskTitle}>Add your skills</Text>
+                <Text style={styles.taskSubtitle}>
+                  {hasSkills ? 'Completed' : 'Tell employers what you do'}
+                </Text>
+              </View>
+              <Ionicons
+                name={hasSkills ? 'pencil' : 'chevron-forward'}
+                size={18}
+                color={hasSkills ? colors.inkLight : colors.primary}
+              />
+            </TouchableOpacity>
+
+            {/* Add Work History */}
+            <TouchableOpacity
+              style={[styles.taskCard, !hasHistory && hasSkills && styles.activeTaskCard]}
+              onPress={() => navigation.navigate('AddWorkHistory')}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[
+                  styles.taskIconBox,
+                  { backgroundColor: hasHistory ? colors.mint : colors.paperCream },
+                ]}
+              >
+                <Ionicons
+                  name={hasHistory ? 'checkmark' : 'briefcase-outline'}
+                  size={16}
+                  color={hasHistory ? colors.mintDeep : colors.inkMuted}
+                />
+              </View>
+              <View style={styles.taskTextContainer}>
+                <Text style={styles.taskTitle}>Add work history</Text>
+                <Text style={styles.taskSubtitle}>
+                  {hasHistory ? 'Completed' : 'Optional but recommended'}
+                </Text>
+              </View>
+              <Ionicons
+                name={hasHistory ? 'pencil' : 'chevron-forward'}
+                size={18}
+                color={colors.inkLight}
+              />
+            </TouchableOpacity>
+
+            {/* Add Character References */}
+            <TouchableOpacity
+              style={[styles.taskCard, !hasRefs && hasHistory && styles.activeTaskCard]}
+              onPress={() => navigation.navigate('AddCharacterReferences')}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[
+                  styles.taskIconBox,
+                  { backgroundColor: hasRefs ? colors.mint : colors.paperCream },
+                ]}
+              >
+                <Ionicons
+                  name={hasRefs ? 'checkmark' : 'people-outline'}
+                  size={16}
+                  color={hasRefs ? colors.mintDeep : colors.inkMuted}
+                />
+              </View>
+              <View style={styles.taskTextContainer}>
+                <Text style={styles.taskTitle}>Add character references</Text>
+                <Text style={styles.taskSubtitle}>
+                  {hasRefs ? 'Completed' : 'Up to 3 people who can vouch'}
+                </Text>
+              </View>
+              <Ionicons
+                name={hasRefs ? 'pencil' : 'chevron-forward'}
+                size={18}
+                color={colors.inkLight}
+              />
+            </TouchableOpacity>
           </View>
-
-          {/* Add Skills */}
-          <TouchableOpacity
-            style={[styles.taskCard, !hasSkills && styles.activeTaskCard]}
-            onPress={() => navigation.navigate('AddSkills')}
-            activeOpacity={0.7}
-          >
-            <View
-              style={[
-                styles.taskIconBox,
-                { backgroundColor: hasSkills ? colors.mint : colors.peach },
-              ]}
-            >
-              <Ionicons
-                name={hasSkills ? 'checkmark' : 'construct'}
-                size={16}
-                color={hasSkills ? colors.mintDeep : colors.primary}
-              />
-            </View>
-            <View style={styles.taskTextContainer}>
-              <Text style={styles.taskTitle}>Add your skills</Text>
-              <Text style={styles.taskSubtitle}>
-                {hasSkills ? 'Completed' : 'Tell employers what you do'}
-              </Text>
-            </View>
-            <Ionicons
-              name={hasSkills ? 'pencil' : 'chevron-forward'}
-              size={18}
-              color={hasSkills ? colors.inkLight : colors.primary}
-            />
-          </TouchableOpacity>
-
-          {/* Add Work History */}
-          <TouchableOpacity
-            style={[styles.taskCard, !hasHistory && hasSkills && styles.activeTaskCard]}
-            onPress={() => navigation.navigate('AddWorkHistory')}
-            activeOpacity={0.7}
-          >
-            <View
-              style={[
-                styles.taskIconBox,
-                { backgroundColor: hasHistory ? colors.mint : colors.paperCream },
-              ]}
-            >
-              <Ionicons
-                name={hasHistory ? 'checkmark' : 'briefcase-outline'}
-                size={16}
-                color={hasHistory ? colors.mintDeep : colors.inkMuted}
-              />
-            </View>
-            <View style={styles.taskTextContainer}>
-              <Text style={styles.taskTitle}>Add work history</Text>
-              <Text style={styles.taskSubtitle}>
-                {hasHistory ? 'Completed' : 'Optional but recommended'}
-              </Text>
-            </View>
-            <Ionicons
-              name={hasHistory ? 'pencil' : 'chevron-forward'}
-              size={18}
-              color={colors.inkLight}
-            />
-          </TouchableOpacity>
-
-          {/* Add Character References */}
-          <TouchableOpacity
-            style={[styles.taskCard, !hasRefs && hasHistory && styles.activeTaskCard]}
-            onPress={() => navigation.navigate('AddCharacterReferences')}
-            activeOpacity={0.7}
-          >
-            <View
-              style={[
-                styles.taskIconBox,
-                { backgroundColor: hasRefs ? colors.mint : colors.paperCream },
-              ]}
-            >
-              <Ionicons
-                name={hasRefs ? 'checkmark' : 'people-outline'}
-                size={16}
-                color={hasRefs ? colors.mintDeep : colors.inkMuted}
-              />
-            </View>
-            <View style={styles.taskTextContainer}>
-              <Text style={styles.taskTitle}>Add character references</Text>
-              <Text style={styles.taskSubtitle}>
-                {hasRefs ? 'Completed' : 'Up to 3 people who can vouch'}
-              </Text>
-            </View>
-            <Ionicons
-              name={hasRefs ? 'pencil' : 'chevron-forward'}
-              size={18}
-              color={colors.inkLight}
-            />
-          </TouchableOpacity>
-        </View>
+        </TutorialTarget>
 
         {/* Temporary jump to JobFeed */}
         <TouchableOpacity

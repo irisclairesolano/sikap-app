@@ -128,14 +128,15 @@ const IDUploadScreen: React.FC = () => {
         }
       }
 
-      await authApi.uploadId(form);
+      return await authApi.uploadId(form);
     },
-    onSuccess: async () => {
+    onSuccess: async (res) => {
       setBanner('');
       // Mark the submission first and cancel any profile fetch that started
       // before the upload committed, so it cannot overwrite pending_review.
       markIdSubmitted();
       await queryClient.cancelQueries({ queryKey: ['profile'] });
+      const serverUser = res?.user && typeof res.user === 'object' ? res.user : {};
       try {
         const cachedUserStr = await SecureStore.getItemAsync('user_profile');
         let updatedProfile: any = {};
@@ -146,12 +147,13 @@ const IDUploadScreen: React.FC = () => {
         }
         updatedProfile = {
           ...updatedProfile,
-          id: userId,
-          role: userRole,
+          ...serverUser,
+          id: serverUser.id ?? updatedProfile.id ?? userId,
+          role: serverUser.role ?? updatedProfile.role ?? userRole,
           registration_status: 'pending_review',
           verification_status: 'pending',
           rejection_reason: null,
-          document_url: 'uploaded',
+          document_url: serverUser.document_url || updatedProfile.document_url || 'uploaded',
         };
         await SecureStore.setItemAsync('user_profile', JSON.stringify(updatedProfile));
       } catch (e) {
@@ -159,26 +161,17 @@ const IDUploadScreen: React.FC = () => {
       }
 
       queryClient.setQueryData(['profile'], (old: any) => {
-        if (!old) {
-          return {
-            id: userId,
-            role: userRole,
-            registration_status: 'pending_review',
-            verification_status: 'pending',
-            rejection_reason: null,
-            document_url: 'uploaded',
-          };
-        }
+        const base = old || { id: userId, role: userRole };
         return {
-          ...old,
+          ...base,
+          ...serverUser,
           registration_status: 'pending_review',
           verification_status: 'pending',
           rejection_reason: null,
-          document_url: 'uploaded',
+          document_url: serverUser.document_url || base.document_url || 'uploaded',
         };
       });
 
-      await queryClient.invalidateQueries({ queryKey: ['profile'] });
       notifyAuthChanged();
 
       try {

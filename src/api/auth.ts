@@ -96,12 +96,17 @@ export const authApi = {
     }
   },
 
-  uploadId: async (idPhoto: FormData): Promise<void> => {
+  uploadId: async (
+    idPhoto: FormData,
+  ): Promise<{ message?: string; registration_status?: string; user?: any }> => {
     try {
-      await apiClient('/auth/upload-id', {
-        method: 'POST',
-        body: idPhoto,
-      });
+      return await apiClient<{ message?: string; registration_status?: string; user?: any }>(
+        '/auth/upload-id',
+        {
+          method: 'POST',
+          body: idPhoto,
+        },
+      );
     } catch (error) {
       if (__DEV__) console.warn('API Upload ID Error:', error);
       throw error;

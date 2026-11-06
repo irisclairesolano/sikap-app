@@ -64,9 +64,11 @@ import { useAlert } from '../../contexts/AlertContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { TranslationKey } from '../../locales/en';
 import { useCreateJob, useUpdateJob, useEmployerJobs } from '../../hooks/useEmployerJobs';
+import { jobsApi } from '../../api/jobs';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import * as SecureStore from '../../utils/storage';
+import { appendFileToFormData } from '../../utils/formData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { triggerHaptic } from '../../utils/haptics';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
@@ -463,50 +465,22 @@ export const PostJobScreen: React.FC = () => {
       const compressedUri = await compressVideo(localUri);
       setVideoUpload((prev) => (prev ? { ...prev, status: 'uploading' } : null));
 
-      const token = await SecureStore.getItemAsync('auth_token');
       const formData = new FormData();
-      formData.append('video', {
-        uri: compressedUri,
-        name: fileName || 'video.mp4',
-        type: mimeType || 'video/mp4',
-      } as any);
+      await appendFileToFormData(
+        formData,
+        'video',
+        compressedUri,
+        fileName || 'video.mp4',
+        mimeType || 'video/mp4',
+      );
 
-      const apiUrl =
-        process.env.EXPO_PUBLIC_API_URL || 'https://sikap-backend-singapore.onrender.com/api/v1';
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', `${apiUrl}/jobs/upload-video`);
-      xhr.setRequestHeader('Accept', 'application/json');
-      if (token) {
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-      }
-
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const progress = Math.min(
-            100,
-            Math.max(0, Math.round((event.loaded / event.total) * 100)),
-          );
-          setVideoUpload((prev) => (prev ? { ...prev, progress } : null));
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          const res = JSON.parse(xhr.responseText);
-          setVideoUpload((prev) =>
-            prev ? { ...prev, status: 'success', remoteUrl: res.url, progress: 100 } : null,
-          );
-        } else {
-          setVideoUpload((prev) => (prev ? { ...prev, status: 'error', progress: 0 } : null));
-        }
-      };
-
-      xhr.onerror = () => {
-        setVideoUpload((prev) => (prev ? { ...prev, status: 'error', progress: 0 } : null));
-      };
-
-      xhr.send(formData);
-    } catch {
+      // Attempt upload via jobsApi / apiClient (with auth and multipart headers configured)
+      const res = await jobsApi.uploadVideo(formData);
+      setVideoUpload((prev) =>
+        prev ? { ...prev, status: 'success', remoteUrl: res.url, progress: 100 } : null,
+      );
+    } catch (err) {
+      console.error('Job video upload error:', err);
       setVideoUpload((prev) => (prev ? { ...prev, status: 'error', progress: 0 } : null));
     }
   };
@@ -528,57 +502,24 @@ export const PostJobScreen: React.FC = () => {
         return;
       }
 
-      const token = await SecureStore.getItemAsync('auth_token');
-
       const formData = new FormData();
-      formData.append('photo', {
-        uri: compressedUri,
-        name: `photo_${photoId}.jpg`,
-        type: 'image/jpeg',
-      } as any);
+      await appendFileToFormData(
+        formData,
+        'photo',
+        compressedUri,
+        `photo_${photoId}.jpg`,
+        'image/jpeg',
+      );
 
-      const apiUrl =
-        process.env.EXPO_PUBLIC_API_URL || 'https://sikap-backend-singapore.onrender.com/api/v1';
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', `${apiUrl}/jobs/upload-photo`);
-      xhr.setRequestHeader('Accept', 'application/json');
-      if (token) {
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-      }
-
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const progress = Math.min(
-            100,
-            Math.max(0, Math.round((event.loaded / event.total) * 100)),
-          );
-          setPhotos((prev) => prev.map((p) => (p.id === photoId ? { ...p, progress } : p)));
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          const res = JSON.parse(xhr.responseText);
-          setPhotos((prev) =>
-            prev.map((p) =>
-              p.id === photoId ? { ...p, status: 'success', remoteUrl: res.url, progress: 100 } : p,
-            ),
-          );
-        } else {
-          setPhotos((prev) =>
-            prev.map((p) => (p.id === photoId ? { ...p, status: 'error', progress: 0 } : p)),
-          );
-        }
-      };
-
-      xhr.onerror = () => {
-        setPhotos((prev) =>
-          prev.map((p) => (p.id === photoId ? { ...p, status: 'error', progress: 0 } : p)),
-        );
-      };
-
-      xhr.send(formData);
-    } catch {
+      // Try uploading via jobsApi / apiClient
+      const res = await jobsApi.uploadPhoto(formData);
+      setPhotos((prev) =>
+        prev.map((p) =>
+          p.id === photoId ? { ...p, status: 'success', remoteUrl: res.url, progress: 100 } : p,
+        ),
+      );
+    } catch (err) {
+      console.error(`Job photo upload error (photo ${photoId}):`, err);
       setPhotos((prev) =>
         prev.map((p) => (p.id === photoId ? { ...p, status: 'error', progress: 0 } : p)),
       );

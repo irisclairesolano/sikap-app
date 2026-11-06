@@ -27,6 +27,8 @@ import { JobPost } from '../../types';
 import { DashboardSkeleton } from '../../components/common/SkeletonLoader';
 import { RefreshableContainer } from '../../components/common/RefreshableContainer';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
+import { useTriggerInitialTutorial } from '../../hooks/useTriggerInitialTutorial';
 
 export const EmployerDashboardScreen: React.FC = () => {
   const { t } = useLanguage();
@@ -43,6 +45,12 @@ export const EmployerDashboardScreen: React.FC = () => {
   } = useEmployerStats();
   const [actionPage, setActionPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
+
+  useTriggerInitialTutorial({
+    user,
+    role: 'employer',
+    isScreenReady: !(loading && !jobsResponse),
+  });
 
   useFocusEffect(
     React.useCallback(() => {
@@ -298,165 +306,248 @@ export const EmployerDashboardScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Stats Grid - Clean Card */}
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <View style={styles.statTopRow}>
-              <View style={styles.statIconCircle}>
-                <Ionicons name="briefcase-outline" size={15} color="#E11D48" />
+        <TutorialTarget id="employer_stats_grid">
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <View style={styles.statTopRow}>
+                <View style={styles.statIconCircle}>
+                  <Ionicons name="briefcase-outline" size={15} color="#E11D48" />
+                </View>
+                <Text style={styles.statLabel} numberOfLines={2}>
+                  Active jobs
+                </Text>
               </View>
-              <Text style={styles.statLabel} numberOfLines={2}>
-                Active jobs
-              </Text>
+              <Text style={styles.statNum}>{activeJobs.length}</Text>
             </View>
-            <Text style={styles.statNum}>{activeJobs.length}</Text>
-          </View>
 
-          <View style={styles.statCard}>
-            <View style={styles.statTopRow}>
-              <View style={styles.statIconCircle}>
-                <Ionicons name="people-outline" size={15} color="#16A34A" />
+            <View style={styles.statCard}>
+              <View style={styles.statTopRow}>
+                <View style={styles.statIconCircle}>
+                  <Ionicons name="people-outline" size={15} color="#16A34A" />
+                </View>
+                <Text style={styles.statLabel} numberOfLines={2}>
+                  Total hires
+                </Text>
               </View>
-              <Text style={styles.statLabel} numberOfLines={2}>
-                Total hires
-              </Text>
+              <Text style={styles.statNum}>{totalHires}</Text>
             </View>
-            <Text style={styles.statNum}>{totalHires}</Text>
-          </View>
 
-          <View style={styles.statCard}>
-            <View style={styles.statTopRow}>
-              <View style={styles.statIconCircle}>
-                <Ionicons name="cash-outline" size={15} color="#D97706" />
+            <View style={styles.statCard}>
+              <View style={styles.statTopRow}>
+                <View style={styles.statIconCircle}>
+                  <Ionicons name="cash-outline" size={15} color="#D97706" />
+                </View>
+                <Text style={styles.statLabel} numberOfLines={2}>
+                  Total paid
+                </Text>
               </View>
-              <Text style={styles.statLabel} numberOfLines={2}>
-                Total paid
-              </Text>
+              <Text style={styles.statNum}>{totalPaidFormatted}</Text>
             </View>
-            <Text style={styles.statNum}>{totalPaidFormatted}</Text>
-          </View>
 
-          <View style={styles.statCard}>
-            <View style={styles.statTopRow}>
-              <View style={styles.statIconCircle}>
-                <Ionicons name="star" size={15} color="#EAB308" />
+            <View style={styles.statCard}>
+              <View style={styles.statTopRow}>
+                <View style={styles.statIconCircle}>
+                  <Ionicons name="star" size={15} color="#EAB308" />
+                </View>
+                <Text style={styles.statLabel} numberOfLines={2}>
+                  {t('reputation_score')}
+                </Text>
               </View>
-              <Text style={styles.statLabel} numberOfLines={2}>
-                {t('reputation_score')}
-              </Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
-              <Text style={styles.statNum}>{reputationFormatted}</Text>
-              {ratingsCount > 0 && <Text style={styles.statMaxScore}>/5.0</Text>}
+              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
+                <Text style={styles.statNum}>{reputationFormatted}</Text>
+                {ratingsCount > 0 && <Text style={styles.statMaxScore}>/5.0</Text>}
+              </View>
             </View>
           </View>
-        </View>
+        </TutorialTarget>
 
-        <Button
-          label={t('post_a_job')}
-          size="lg"
-          fullWidth
-          onPress={() => navigation.navigate('PostJob')}
-          style={{ marginTop: 24 }}
-        />
+        <TutorialTarget id="employer_post_job_btn">
+          <Button
+            label={t('post_a_job')}
+            size="lg"
+            fullWidth
+            onPress={() => navigation.navigate('PostJob')}
+            style={{ marginTop: 24 }}
+          />
+        </TutorialTarget>
 
         {/* Action Required Section */}
-        <View style={styles.actionHeader}>
-          <Text style={styles.sectionHeaderTitle}>Action required</Text>
-          {pendingCount > 0 && (
-            <View style={styles.badgeCount}>
-              <Text style={styles.badgeCountText}>{pendingCount}</Text>
-            </View>
-          )}
-        </View>
-
-        <View style={styles.listContainer}>
-          {sortedActions.length === 0 ? (
-            <View style={[styles.actionCard, { borderColor: colors.inkFaint }]}>
-              <View style={[styles.actionIconBox, { backgroundColor: colors.paperBright }]}>
-                <Ionicons name="checkmark-circle-outline" size={24} color={colors.mintDeep} />
-              </View>
-              <View style={styles.jobDetails}>
-                <Text style={styles.jobTitle}>All caught up!</Text>
-                <Text style={styles.jobSubtitle}>No pending actions required right now</Text>
-              </View>
-            </View>
-          ) : (
-            paginatedActions.map((action) => (
-              <TouchableOpacity
-                key={action.id}
-                style={[
-                  styles.actionCard,
-                  {
-                    borderColor: action.borderColor,
-                    backgroundColor: action.isDone ? '#ECEAE2' : colors.paperBright,
-                    opacity: action.isDone ? 0.75 : 1,
-                  },
-                ]}
-                activeOpacity={action.isDone ? 1 : 0.7}
-                disabled={action.isDone}
-                onPress={() => {
-                  if (action.isDone) return;
-                  if (action.app.status === 'completed') {
-                    navigation.navigate('RateWorker', {
-                      id: action.app.id,
-                      workerName: action.app.worker?.name || 'Worker',
-                      jobTitle: action.job.title || 'Job',
-                    });
-                  } else {
-                    navigateToApplicantDetail(action.app, action.job.title);
-                  }
-                }}
-              >
-                <View
-                  style={[
-                    styles.actionIconBox,
-                    {
-                      backgroundColor: action.isDone ? '#DEDCD2' : action.badgeBg,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={action.iconName}
-                    size={22}
-                    color={action.isDone ? colors.inkSoft : action.badgeColor}
-                  />
+        <TutorialTarget id="employer_action_required">
+          <View>
+            <View style={styles.actionHeader}>
+              <Text style={styles.sectionHeaderTitle}>Action required</Text>
+              {pendingCount > 0 && (
+                <View style={styles.badgeCount}>
+                  <Text style={styles.badgeCountText}>{pendingCount}</Text>
                 </View>
-                <View style={styles.jobDetails}>
-                  <Text
-                    style={[
-                      styles.jobTitle,
-                      { color: action.isDone ? colors.inkSoft : colors.ink },
-                    ]}
-                  >
-                    {action.title}
-                  </Text>
-                  <Text style={styles.jobSubtitle} numberOfLines={1}>
-                    {action.description}
-                  </Text>
-                  <View style={{ marginTop: 4, alignSelf: 'flex-start' }}>
-                    <View
-                      style={[
-                        styles.stageBadgeContainer,
-                        { backgroundColor: action.isDone ? '#DEDCD2' : action.badgeBg },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.stageBadgeText,
-                          { color: action.isDone ? colors.inkSoft : action.badgeColor },
-                        ]}
-                      >
-                        {action.stageBadge}
-                      </Text>
-                    </View>
+              )}
+            </View>
+
+            <View style={styles.listContainer}>
+              {sortedActions.length === 0 ? (
+                <View style={[styles.actionCard, { borderColor: colors.inkFaint }]}>
+                  <View style={[styles.actionIconBox, { backgroundColor: colors.paperBright }]}>
+                    <Ionicons name="checkmark-circle-outline" size={24} color={colors.mintDeep} />
+                  </View>
+                  <View style={styles.jobDetails}>
+                    <Text style={styles.jobTitle}>All caught up!</Text>
+                    <Text style={styles.jobSubtitle}>No pending actions required right now</Text>
                   </View>
                 </View>
-                {!action.isDone && (
-                  <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
-                )}
-              </TouchableOpacity>
-            ))
-          )}
+              ) : (
+                paginatedActions.slice(0, 1).map((action) => (
+                  <TouchableOpacity
+                    key={action.id}
+                    style={[
+                      styles.actionCard,
+                      {
+                        borderColor: action.borderColor,
+                        backgroundColor: action.isDone ? '#ECEAE2' : colors.paperBright,
+                        opacity: action.isDone ? 0.75 : 1,
+                      },
+                    ]}
+                    activeOpacity={action.isDone ? 1 : 0.7}
+                    disabled={action.isDone}
+                    onPress={() => {
+                      if (action.isDone) return;
+                      if (action.app.status === 'completed') {
+                        navigation.navigate('RateWorker', {
+                          id: action.app.id,
+                          workerName: action.app.worker?.name || 'Worker',
+                          jobTitle: action.job.title || 'Job',
+                        });
+                      } else {
+                        navigateToApplicantDetail(action.app, action.job.title);
+                      }
+                    }}
+                  >
+                    <View
+                      style={[
+                        styles.actionIconBox,
+                        {
+                          backgroundColor: action.isDone ? '#DEDCD2' : action.badgeBg,
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name={action.iconName}
+                        size={22}
+                        color={action.isDone ? colors.inkSoft : action.badgeColor}
+                      />
+                    </View>
+                    <View style={styles.jobDetails}>
+                      <Text
+                        style={[
+                          styles.jobTitle,
+                          { color: action.isDone ? colors.inkSoft : colors.ink },
+                        ]}
+                      >
+                        {action.title}
+                      </Text>
+                      <Text style={styles.jobSubtitle} numberOfLines={1}>
+                        {action.description}
+                      </Text>
+                      <View style={{ marginTop: 4, alignSelf: 'flex-start' }}>
+                        <View
+                          style={[
+                            styles.stageBadgeContainer,
+                            { backgroundColor: action.isDone ? '#DEDCD2' : action.badgeBg },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.stageBadgeText,
+                              { color: action.isDone ? colors.inkSoft : action.badgeColor },
+                            ]}
+                          >
+                            {action.stageBadge}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                    {!action.isDone && (
+                      <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
+                    )}
+                  </TouchableOpacity>
+                ))
+              )}
+            </View>
+          </View>
+        </TutorialTarget>
+
+        <View style={[styles.listContainer, paginatedActions.length > 1 && { marginTop: 12 }]}>
+          {paginatedActions.slice(1).map((action) => (
+            <TouchableOpacity
+              key={action.id}
+              style={[
+                styles.actionCard,
+                {
+                  borderColor: action.borderColor,
+                  backgroundColor: action.isDone ? '#ECEAE2' : colors.paperBright,
+                  opacity: action.isDone ? 0.75 : 1,
+                },
+              ]}
+              activeOpacity={action.isDone ? 1 : 0.7}
+              disabled={action.isDone}
+              onPress={() => {
+                if (action.isDone) return;
+                if (action.app.status === 'completed') {
+                  navigation.navigate('RateWorker', {
+                    id: action.app.id,
+                    workerName: action.app.worker?.name || 'Worker',
+                    jobTitle: action.job.title || 'Job',
+                  });
+                } else {
+                  navigateToApplicantDetail(action.app, action.job.title);
+                }
+              }}
+            >
+              <View
+                style={[
+                  styles.actionIconBox,
+                  {
+                    backgroundColor: action.isDone ? '#DEDCD2' : action.badgeBg,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name={action.iconName}
+                  size={22}
+                  color={action.isDone ? colors.inkSoft : action.badgeColor}
+                />
+              </View>
+              <View style={styles.jobDetails}>
+                <Text
+                  style={[styles.jobTitle, { color: action.isDone ? colors.inkSoft : colors.ink }]}
+                >
+                  {action.title}
+                </Text>
+                <Text style={styles.jobSubtitle} numberOfLines={1}>
+                  {action.description}
+                </Text>
+                <View style={{ marginTop: 4, alignSelf: 'flex-start' }}>
+                  <View
+                    style={[
+                      styles.stageBadgeContainer,
+                      { backgroundColor: action.isDone ? '#DEDCD2' : action.badgeBg },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.stageBadgeText,
+                        { color: action.isDone ? colors.inkSoft : action.badgeColor },
+                      ]}
+                    >
+                      {action.stageBadge}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+              {!action.isDone && (
+                <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
+              )}
+            </TouchableOpacity>
+          ))}
 
           {/* Pagination Controls */}
           {totalActionPages > 1 && (

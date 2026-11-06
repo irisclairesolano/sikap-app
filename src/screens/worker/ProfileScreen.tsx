@@ -13,6 +13,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useReviews } from '../../hooks/useReviews';
 import { Skill, WorkerExperience } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
 type ProfileScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'ProfileMain'>;
 
 export const ProfileScreen: React.FC = () => {
@@ -171,72 +172,76 @@ export const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
         )}
 
-        {/* Profile Header */}
-        <TouchableOpacity
-          style={styles.profileHeader}
-          onPress={() => navigation.navigate('EditProfile')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.avatarContainer}>
-            {getAvatarUrl() ? (
-              <Image
-                cachePolicy="memory-disk"
-                priority="high"
-                transition={150}
-                source={{ uri: getAvatarUrl()! }}
-                style={styles.avatarImage}
-              />
-            ) : (
-              <Text style={styles.avatarText}>{worker.name.charAt(0)}</Text>
-            )}
-          </View>
-          <View style={styles.profileInfo}>
-            <View style={styles.nameRow}>
-              <Text style={styles.nameText}>{worker.name}</Text>
-              {worker.verified && (
-                <Ionicons name="checkmark-circle" size={18} color={colors.mintDeep} />
-              )}
-            </View>
-            <Text style={styles.locationText}>
-              <Ionicons name="location" size={11} color={colors.primary} /> {worker.location}
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Reputation Card - Clean Card */}
-        <View style={styles.reputationCard}>
-          <View style={styles.reputationHeaderRow}>
-            <View style={styles.reputationBadge}>
-              <Ionicons name="shield-checkmark" size={13} color="#0284C7" />
-            </View>
-            <Text style={styles.reputationEyebrow}>{t('reputation_score')}</Text>
-          </View>
-          <View style={styles.reputationRow}>
-            <Text style={styles.reputationScore}>
-              {worker.ratings > 0 ? formatScore(worker.reputation) : 'N/A'}
-            </Text>
-            <View style={styles.reputationStars}>
-              {worker.ratings > 0 ? (
-                <View style={styles.starsRow}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Ionicons
-                      key={star}
-                      name="star"
-                      size={14}
-                      color={star <= Math.round(worker.reputation) ? colors.gold : '#E2E8F0'}
-                    />
-                  ))}
+        <TutorialTarget id="worker_profile_overview">
+          <View>
+            {/* Profile Header */}
+            <TouchableOpacity
+              style={styles.profileHeader}
+              onPress={() => navigation.navigate('EditProfile')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.avatarContainer}>
+                {getAvatarUrl() ? (
+                  <Image
+                    cachePolicy="memory-disk"
+                    priority="high"
+                    transition={150}
+                    source={{ uri: getAvatarUrl()! }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <Text style={styles.avatarText}>{worker.name.charAt(0)}</Text>
+                )}
+              </View>
+              <View style={styles.profileInfo}>
+                <View style={styles.nameRow}>
+                  <Text style={styles.nameText}>{worker.name}</Text>
+                  {worker.verified && (
+                    <Ionicons name="checkmark-circle" size={18} color={colors.mintDeep} />
+                  )}
                 </View>
-              ) : null}
-              <Text style={styles.reputationCount}>
-                {worker.ratings > 0
-                  ? `${worker.ratings} ${t('reviews_ratings')}`
-                  : 'No ratings yet'}
-              </Text>
+                <Text style={styles.locationText}>
+                  <Ionicons name="location" size={11} color={colors.primary} /> {worker.location}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Reputation Card - Clean Card */}
+            <View style={styles.reputationCard}>
+              <View style={styles.reputationHeaderRow}>
+                <View style={styles.reputationBadge}>
+                  <Ionicons name="shield-checkmark" size={13} color="#0284C7" />
+                </View>
+                <Text style={styles.reputationEyebrow}>{t('reputation_score')}</Text>
+              </View>
+              <View style={styles.reputationRow}>
+                <Text style={styles.reputationScore}>
+                  {worker.ratings > 0 ? formatScore(worker.reputation) : 'N/A'}
+                </Text>
+                <View style={styles.reputationStars}>
+                  {worker.ratings > 0 ? (
+                    <View style={styles.starsRow}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Ionicons
+                          key={star}
+                          name="star"
+                          size={14}
+                          color={star <= Math.round(worker.reputation) ? colors.gold : '#E2E8F0'}
+                        />
+                      ))}
+                    </View>
+                  ) : null}
+                  <Text style={styles.reputationCount}>
+                    {worker.ratings > 0
+                      ? `${worker.ratings} ${t('reviews_ratings')}`
+                      : 'No ratings yet'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.reputationTagline}>Your score travels with you.</Text>
             </View>
           </View>
-          <Text style={styles.reputationTagline}>Your score travels with you.</Text>
-        </View>
+        </TutorialTarget>
 
         {/* Stats Grid - Clean Card */}
         <View style={styles.statsGrid}>

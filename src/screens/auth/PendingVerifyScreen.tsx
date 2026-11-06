@@ -7,7 +7,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import Button from '../../components/common/Button';
 import { AuthStackParamList } from '../../navigation/authTypes';
-import { notifyAuthChanged, setGuestInitialRoute } from '../../store/authEvents';
+import {
+  clearIdSubmitted,
+  notifyAuthChanged,
+  setGuestInitialRoute,
+  wasIdRecentlySubmitted,
+} from '../../store/authEvents';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthCheck } from '../../hooks/useAuthCheck';
@@ -31,6 +36,30 @@ const PendingVerifyScreen: React.FC = () => {
   const isRejected =
     user?.registration_status === 'rejected' || user?.verification_status === 'rejected';
 
+  const normalizeFetchedUser = (freshUser: any) => {
+    if (!freshUser) return freshUser;
+    if (
+      freshUser.verification_status === 'approved' ||
+      freshUser.verification_status === 'rejected' ||
+      freshUser.registration_status === 'rejected'
+    ) {
+      clearIdSubmitted();
+      return freshUser;
+    }
+    if (
+      wasIdRecentlySubmitted() &&
+      (freshUser.registration_status === 'pending_id_upload' ||
+        (!freshUser.registration_status && !freshUser.document_url))
+    ) {
+      return {
+        ...freshUser,
+        registration_status: 'pending_review',
+        verification_status: 'pending',
+      };
+    }
+    return freshUser;
+  };
+
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
@@ -48,7 +77,8 @@ const PendingVerifyScreen: React.FC = () => {
     if (isRejected) return;
     const interval = setInterval(async () => {
       try {
-        const freshUser = await profileApi.getProfile();
+        const rawUser = await profileApi.getProfile();
+        const freshUser = normalizeFetchedUser(rawUser);
         if (freshUser) {
           const currentRegStatus = user?.registration_status;
           const currentVerStatus = user?.verification_status;
@@ -70,7 +100,8 @@ const PendingVerifyScreen: React.FC = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      const freshUser = await profileApi.getProfile();
+      const rawUser = await profileApi.getProfile();
+      const freshUser = normalizeFetchedUser(rawUser);
       if (freshUser) {
         await SecureStore.setItemAsync('user_profile', JSON.stringify(freshUser));
         queryClient.setQueryData(['profile'], freshUser);
@@ -88,6 +119,7 @@ const PendingVerifyScreen: React.FC = () => {
     if (isSigningOut) return;
     setIsSigningOut(true);
     try {
+      clearIdSubmitted();
       setGuestInitialRoute('Login');
       await SecureStore.deleteItemAsync('auth_token').catch(() => {});
       await SecureStore.deleteItemAsync('user_profile').catch(() => {});

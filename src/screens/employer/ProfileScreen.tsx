@@ -16,6 +16,7 @@ import { useEmployerJobs } from '../../hooks/useEmployerJobs';
 import { useEmployerStats } from '../../hooks/useEmployerStats';
 import { useReviews } from '../../hooks/useReviews';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
 
 type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
   EmployerStackParamList,
@@ -157,85 +158,89 @@ export const ProfileScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
-          <TouchableOpacity
-            style={styles.avatarContainer}
-            activeOpacity={0.75}
-            onPress={() => navigation.navigate('EditProfile')}
-            accessibilityRole="button"
-            accessibilityLabel="Edit profile picture"
-          >
-            {getAvatarUrl() ? (
-              <Image
-                source={{ uri: getAvatarUrl()! }}
-                style={styles.avatarImage}
-                contentFit="cover"
-              />
-            ) : (
-              <Text style={styles.avatarText}>
-                {(employer.name || 'E').charAt(0).toUpperCase()}
-              </Text>
-            )}
-          </TouchableOpacity>
-          <View style={styles.profileInfo}>
-            <View style={styles.nameRow}>
-              <Text style={styles.nameText}>{employer.name}</Text>
-              {employer.verified && (
-                <Ionicons name="checkmark-circle" size={16} color={colors.mintDeep} />
-              )}
+        <TutorialTarget id="employer_profile_overview">
+          <View>
+            {/* Profile Header */}
+            <View style={styles.profileHeader}>
+              <TouchableOpacity
+                style={styles.avatarContainer}
+                activeOpacity={0.75}
+                onPress={() => navigation.navigate('EditProfile')}
+                accessibilityRole="button"
+                accessibilityLabel="Edit profile picture"
+              >
+                {getAvatarUrl() ? (
+                  <Image
+                    source={{ uri: getAvatarUrl()! }}
+                    style={styles.avatarImage}
+                    contentFit="cover"
+                  />
+                ) : (
+                  <Text style={styles.avatarText}>
+                    {(employer.name || 'E').charAt(0).toUpperCase()}
+                  </Text>
+                )}
+              </TouchableOpacity>
+              <View style={styles.profileInfo}>
+                <View style={styles.nameRow}>
+                  <Text style={styles.nameText}>{employer.name}</Text>
+                  {employer.verified && (
+                    <Ionicons name="checkmark-circle" size={16} color={colors.mintDeep} />
+                  )}
+                </View>
+                <Text style={styles.locationText}>{employer.location}</Text>
+                {employer.verified && (
+                  <View style={styles.verifiedBadge}>
+                    <Text style={styles.verifiedBadgeText}>Verified Employer</Text>
+                  </View>
+                )}
+              </View>
             </View>
-            <Text style={styles.locationText}>{employer.location}</Text>
-            {employer.verified && (
-              <View style={styles.verifiedBadge}>
-                <Text style={styles.verifiedBadgeText}>Verified Employer</Text>
+
+            {/* Bio Section */}
+            {!!employer.bio && (
+              <View style={styles.bioCard}>
+                <Text style={styles.bioTitle}>About</Text>
+                <Text style={styles.bioText}>{employer.bio}</Text>
               </View>
             )}
-          </View>
-        </View>
 
-        {/* Bio Section */}
-        {!!employer.bio && (
-          <View style={styles.bioCard}>
-            <Text style={styles.bioTitle}>About</Text>
-            <Text style={styles.bioText}>{employer.bio}</Text>
-          </View>
-        )}
-
-        {/* Reputation Card - Clean Card */}
-        <View style={styles.reputationCard}>
-          <View style={styles.reputationHeaderRow}>
-            <View style={styles.reputationBadge}>
-              <Ionicons name="shield-checkmark" size={13} color="#0284C7" />
-            </View>
-            <Text style={styles.reputationEyebrow}>{t('reputation_score')}</Text>
-          </View>
-          <View style={styles.reputationRow}>
-            <Text style={styles.reputationScore}>
-              {employer.ratings > 0 ? employer.reputationFormatted : 'N/A'}
-            </Text>
-            <View style={styles.reputationStars}>
-              {employer.ratings > 0 ? (
-                <View style={styles.starsRow}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Ionicons
-                      key={star}
-                      name="star"
-                      size={14}
-                      color={star <= Math.round(employer.reputation) ? colors.gold : '#E2E8F0'}
-                    />
-                  ))}
+            {/* Reputation Card - Clean Card */}
+            <View style={styles.reputationCard}>
+              <View style={styles.reputationHeaderRow}>
+                <View style={styles.reputationBadge}>
+                  <Ionicons name="shield-checkmark" size={13} color="#0284C7" />
                 </View>
-              ) : null}
-              <Text style={styles.reputationCount}>
-                {employer.ratings > 0
-                  ? `${employer.ratings} verified rating${employer.ratings > 1 ? 's' : ''}`
-                  : 'No ratings yet'}
-              </Text>
+                <Text style={styles.reputationEyebrow}>{t('reputation_score')}</Text>
+              </View>
+              <View style={styles.reputationRow}>
+                <Text style={styles.reputationScore}>
+                  {employer.ratings > 0 ? employer.reputationFormatted : 'N/A'}
+                </Text>
+                <View style={styles.reputationStars}>
+                  {employer.ratings > 0 ? (
+                    <View style={styles.starsRow}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Ionicons
+                          key={star}
+                          name="star"
+                          size={14}
+                          color={star <= Math.round(employer.reputation) ? colors.gold : '#E2E8F0'}
+                        />
+                      ))}
+                    </View>
+                  ) : null}
+                  <Text style={styles.reputationCount}>
+                    {employer.ratings > 0
+                      ? `${employer.ratings} verified rating${employer.ratings > 1 ? 's' : ''}`
+                      : 'No ratings yet'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.reputationTagline}>Your score travels with you.</Text>
             </View>
           </View>
-          <Text style={styles.reputationTagline}>Your score travels with you.</Text>
-        </View>
+        </TutorialTarget>
 
         {/* Stats Grid - Clean Card */}
         <View style={styles.statsGrid}>

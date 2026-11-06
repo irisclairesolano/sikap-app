@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { blurActiveElementOnWeb } from '../../utils/webA11yFix';
 
 interface BottomSheetProps {
   visible: boolean;
@@ -24,6 +25,11 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   children,
   snapHeight = 380,
 }) => {
+  const handleClose = () => {
+    blurActiveElementOnWeb();
+    onClose();
+  };
+
   const insets = useSafeAreaInsets();
   const bottomInset = Math.max(insets.bottom, 20);
   const translateY = useRef(new Animated.Value(snapHeight + bottomInset)).current;
@@ -38,6 +44,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         useNativeDriver: true,
       }).start();
     } else {
+      blurActiveElementOnWeb();
       Animated.timing(translateY, {
         toValue: snapHeight + bottomInset,
         duration: 250,
@@ -52,9 +59,9 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       transparent
       animationType="none"
       statusBarTranslucent
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
-      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
+      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={handleClose} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.avoidView}
