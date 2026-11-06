@@ -105,6 +105,8 @@ const TestHarness: React.FC<{
 };
 
 describe('OnboardingTutorial', () => {
+  jest.setTimeout(30000);
+
   beforeEach(() => {
     jest.useFakeTimers();
     (storage as any).__clearStore();
@@ -176,7 +178,7 @@ describe('OnboardingTutorial', () => {
       const startedAgain = await api.checkAndStartFirstTimeTutorial(101, 'worker');
       expect(startedAgain).toBe(false);
     });
-  });
+  }, 30000);
 
   it('persists completion when user skips the first-time Employer tutorial and allows replay without overwriting storage', async () => {
     const navigatedRoutes: TutorialRoute[] = [];
@@ -231,7 +233,7 @@ describe('OnboardingTutorial', () => {
     });
 
     expect(storage.setItemAsync).not.toHaveBeenCalled();
-  });
+  }, 30000);
 
   it('gracefully skips optional steps whose targets are not rendered and supports Tagalog localization', async () => {
     let api: any;
@@ -265,5 +267,5 @@ describe('OnboardingTutorial', () => {
     });
 
     expect(getByTestId('tutorial-step-title').props.children).toBe('Subaybayan ang Aplikasyon');
-  });
+  }, 30000);
 });

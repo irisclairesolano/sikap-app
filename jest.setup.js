@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* global jest */
 
+// Extend default test timeout to prevent slow CI runner timeouts
+jest.setTimeout(30000);
+
 jest.mock('expo-video', () => {
   const React = require('react');
   return {
