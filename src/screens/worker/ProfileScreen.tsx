@@ -265,7 +265,7 @@ export const ProfileScreen: React.FC = () => {
         {/* About Me */}
         {worker.bio ? (
           <View style={styles.skillsSection}>
-            <Text style={styles.sectionEyebrow}>About Me</Text>
+            <Text style={[styles.sectionEyebrow, { marginBottom: 10 }]}>About Me</Text>
             <Text
               style={{
                 fontFamily: fonts.body,
@@ -284,8 +284,13 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.skillsSection}>
           <View style={styles.reviewHeader}>
             <Text style={styles.sectionEyebrow}>{t('work_experience')}</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('AddWorkHistory' as any)}>
-              <Text style={styles.viewAllText}>+ Add</Text>
+            <TouchableOpacity
+              style={styles.addHeaderBtn}
+              onPress={() => navigation.navigate('AddWorkHistory' as any)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="add" size={14} color={colors.primary} />
+              <Text style={styles.viewAllText}>Add</Text>
             </TouchableOpacity>
           </View>
           <View style={{ marginTop: 10, gap: 12 }}>
@@ -332,8 +337,13 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.skillsSection}>
           <View style={styles.reviewHeader}>
             <Text style={styles.sectionEyebrow}>{t('skills')}</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('AddSkills' as any)}>
-              <Text style={styles.viewAllText}>+ Add</Text>
+            <TouchableOpacity
+              style={styles.addHeaderBtn}
+              onPress={() => navigation.navigate('AddSkills' as any)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="add" size={14} color={colors.primary} />
+              <Text style={styles.viewAllText}>Add</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.skillsList}>
@@ -399,8 +409,13 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.reviewSection}>
           <View style={styles.reviewHeader}>
             <Text style={styles.sectionEyebrow}>{t('character_references')}</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('CharacterReferences' as any)}>
-              <Text style={styles.viewAllText}>+ Add</Text>
+            <TouchableOpacity
+              style={styles.addHeaderBtn}
+              onPress={() => navigation.navigate('CharacterReferences' as any)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="add" size={14} color={colors.primary} />
+              <Text style={styles.viewAllText}>Add</Text>
             </TouchableOpacity>
           </View>
           <View style={{ marginTop: 10, gap: 12 }}>
@@ -443,7 +458,11 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.reviewSection}>
             <View style={styles.reviewHeader}>
               <Text style={styles.sectionEyebrow}>Recent review</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Reviews')}>
+              <TouchableOpacity
+                style={styles.viewAllBtn}
+                onPress={() => navigation.navigate('Reviews')}
+                activeOpacity={0.7}
+              >
                 <Text style={styles.viewAllText}>View all →</Text>
               </TouchableOpacity>
             </View>
@@ -636,12 +655,13 @@ const styles = StyleSheet.create({
   },
   skillsSection: { marginBottom: 16 },
   sectionEyebrow: {
+    flex: 1,
     fontFamily: fonts.bodyBold,
     fontSize: 12,
     color: colors.inkSoft,
     textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 10,
+    letterSpacing: 0.8,
+    marginRight: 6,
   },
   skillsList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
@@ -659,8 +679,29 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
   },
-  reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  viewAllText: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.primary },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+    gap: 8,
+  },
+  addHeaderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(232, 116, 74, 0.08)',
+    flexShrink: 0,
+  },
+  viewAllBtn: {
+    flexShrink: 0,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+  },
+  viewAllText: { fontFamily: fonts.bodyBold, fontSize: 12, color: colors.primary },
   reviewNameRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   reviewerName: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink },
   starsRowSmall: { flexDirection: 'row', gap: 1 },
