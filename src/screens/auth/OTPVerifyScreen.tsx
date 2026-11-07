@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   footer: {
-    marginTop: 32,
+    marginTop: 18,
   },
   buttonSpacing: {
     height: 12,

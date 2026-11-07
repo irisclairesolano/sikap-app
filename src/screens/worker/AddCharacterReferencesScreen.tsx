@@ -323,7 +323,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
           )}
         </ScrollView>
 
-        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom + 12, 16) }]}>
+        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
           <Button
             label={t('char_ref_btn_done')}
             size="lg"
@@ -637,10 +637,11 @@ const styles = StyleSheet.create({
     color: '#0369A1',
   },
   bottomBar: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 16,
-    backgroundColor: colors.paper,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    backgroundColor: colors.paperBright,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
   },
   formSectionHeader: {
     fontFamily: fonts.bodyBold,

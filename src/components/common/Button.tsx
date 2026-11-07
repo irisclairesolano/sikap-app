@@ -17,7 +17,7 @@ export interface ButtonProps extends TouchableOpacityProps {
   label?: string;
   title?: string;
   variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost' | 'soft';
-  size?: 'base' | 'lg';
+  size?: 'sm' | 'base' | 'lg';
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
@@ -70,9 +70,9 @@ const Button: React.FC<ButtonProps> = ({
 
   const shadowStyle: ViewStyle | undefined =
     variant === 'primary' && !disabled
-      ? shadows.color
+      ? styles.primaryShadow
       : variant === 'secondary' && !disabled
-        ? shadows.sm
+        ? styles.secondaryShadow
         : undefined;
 
   const lastPressTime = React.useRef(0);
@@ -91,6 +91,7 @@ const Button: React.FC<ButtonProps> = ({
     <TouchableOpacity
       style={[
         styles.base,
+        size === 'sm' && styles.sm,
         size === 'lg' && styles.lg,
         variantStyle,
         shadowStyle,
@@ -126,7 +127,14 @@ const Button: React.FC<ButtonProps> = ({
               style={{ marginRight: 8 }}
             />
           )}
-          <Text style={[styles.label, size === 'lg' && styles.labelLg, labelStyle]}>
+          <Text
+            style={[
+              styles.label,
+              size === 'sm' && styles.labelSm,
+              size === 'lg' && styles.labelLg,
+              labelStyle,
+            ]}
+          >
             {displayLabel}
           </Text>
           {icon && iconPosition === 'right' && (
@@ -145,7 +153,8 @@ const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: 12,
+    height: 48,
+    minHeight: 48,
     paddingHorizontal: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -160,11 +169,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexShrink: 1,
   },
+  sm: {
+    height: 38,
+    minHeight: 38,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
   lg: {
-    paddingVertical: 14,
+    height: 50,
+    minHeight: 50,
+    maxHeight: 52,
     paddingHorizontal: 20,
+    borderRadius: 12,
   },
   fullWidth: {
+    width: '100%',
     alignSelf: 'stretch',
   },
   disabled: {
@@ -174,14 +193,23 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderColor: colors.primaryDark,
   },
+  primaryShadow: {
+    shadowColor: '#0D1B3D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   secondaryBg: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(226, 232, 240, 0.80)',
+  },
+  secondaryShadow: {
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
-    shadowRadius: 6,
+    shadowRadius: 3,
     elevation: 1,
   },
   outlineBg: {
@@ -191,7 +219,6 @@ const styles = StyleSheet.create({
   },
   ghostBg: {
     backgroundColor: 'transparent',
-    paddingVertical: 8,
     borderWidth: 0,
   },
   dangerBg: {
@@ -204,12 +231,16 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: fonts.bodyBold,
-    fontSize: 15,
+    fontSize: 14.5,
     textAlign: 'center',
     flexShrink: 1,
   },
+  labelSm: {
+    fontSize: 13,
+    textAlign: 'center',
+  },
   labelLg: {
-    fontSize: 16,
+    fontSize: 15,
     textAlign: 'center',
   },
   labelOnPrimary: {

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
+  Easing,
   Modal,
   StyleSheet,
   Text,
@@ -22,6 +23,16 @@ const ESTIMATED_TOOLTIP_HEIGHT = 140;
 const BACKDROP_OVERLAY_COLOR = 'rgba(15, 23, 42, 0.6)';
 const MASK_BORDER_WIDTH = 2500;
 
+interface CutoutRect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  right: number;
+  bottom: number;
+  centerX: number;
+}
+
 export const TutorialSpotlightModal: React.FC = () => {
   const { t } = useLanguage();
   const insets = useSafeAreaInsets();
@@ -39,15 +50,22 @@ export const TutorialSpotlightModal: React.FC = () => {
   } = useOnboardingTutorial();
 
   const [measuredTooltipHeight, setMeasuredTooltipHeight] = useState(ESTIMATED_TOOLTIP_HEIGHT);
+  const hasInitializedRef = useRef(false);
+  const prevStepIndexRef = useRef<number>(currentStepIndex);
 
   const totalSteps = steps.length;
   const isFirstStep = currentStepIndex === 0;
   const isLastStep = currentStepIndex === totalSteps - 1;
 
-  // Compute clamped spotlight cutout rectangle
-  const cutout = useMemo(() => {
-    if (isTransitioning) return null;
+  // Reset initialization tracking when tutorial closes
+  useEffect(() => {
+    if (!isActive) {
+      hasInitializedRef.current = false;
+    }
+  }, [isActive]);
 
+  // Compute clamped spotlight cutout rectangle
+  const cutout = useMemo<CutoutRect | null>(() => {
     if (targetRect && targetRect.width > 0 && targetRect.height > 0) {
       const left = Math.max(8, targetRect.x - SPOTLIGHT_PADDING);
       const right = Math.min(windowWidth - 8, targetRect.x + targetRect.width + SPOTLIGHT_PADDING);
@@ -80,58 +98,7 @@ export const TutorialSpotlightModal: React.FC = () => {
     }
 
     return null;
-  }, [isTransitioning, targetRect, insets.top, insets.bottom, windowWidth, windowHeight]);
-
-  // Animated values for smooth gliding spotlight cutout and boundary
-  const animLeft = useRef(new Animated.Value(cutout?.left ?? windowWidth / 2)).current;
-  const animTop = useRef(new Animated.Value(cutout?.top ?? windowHeight / 2)).current;
-  const animWidth = useRef(new Animated.Value(cutout?.width ?? 0)).current;
-  const animHeight = useRef(new Animated.Value(cutout?.height ?? 0)).current;
-  const animOpacity = useRef(new Animated.Value(cutout ? 1 : 0)).current;
-
-  // Smooth animate cutout bounds when target transitions or shifts
-  useEffect(() => {
-    if (!cutout) {
-      Animated.timing(animOpacity, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: false,
-      }).start();
-      return;
-    }
-
-    Animated.parallel([
-      Animated.timing(animOpacity, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-      Animated.spring(animLeft, {
-        toValue: cutout.left,
-        friction: 9,
-        tension: 65,
-        useNativeDriver: false,
-      }),
-      Animated.spring(animTop, {
-        toValue: cutout.top,
-        friction: 9,
-        tension: 65,
-        useNativeDriver: false,
-      }),
-      Animated.spring(animWidth, {
-        toValue: cutout.width,
-        friction: 9,
-        tension: 65,
-        useNativeDriver: false,
-      }),
-      Animated.spring(animHeight, {
-        toValue: cutout.height,
-        friction: 9,
-        tension: 65,
-        useNativeDriver: false,
-      }),
-    ]).start();
-  }, [cutout, animLeft, animTop, animWidth, animHeight, animOpacity]);
+  }, [targetRect, insets.top, insets.bottom, windowWidth, windowHeight]);
 
   // Compute adaptive tooltip position (above vs below spotlight, or centered if no cutout)
   const tooltipLayout = useMemo(() => {
@@ -156,7 +123,7 @@ export const TutorialSpotlightModal: React.FC = () => {
     const spaceAbove = cutout.top - safeTop - gap;
 
     const placeBelow = spaceBelow >= cardHeight || spaceBelow >= spaceAbove;
-    let rawTop = placeBelow ? cutout.bottom + gap : cutout.top - gap - cardHeight;
+    const rawTop = placeBelow ? cutout.bottom + gap : cutout.top - gap - cardHeight;
 
     // Strictly clamp within safe screen bounds for small screens
     const minTop = safeTop;
@@ -173,6 +140,136 @@ export const TutorialSpotlightModal: React.FC = () => {
       arrowLeft,
     };
   }, [cutout, insets.top, insets.bottom, measuredTooltipHeight, windowHeight, windowWidth]);
+
+  // Animated values for smooth gliding spotlight cutout, boundary, tooltip, and pointer caret
+  const animLeft = useRef(new Animated.Value(cutout?.left ?? windowWidth / 2)).current;
+  const animTop = useRef(new Animated.Value(cutout?.top ?? windowHeight / 2)).current;
+  const animWidth = useRef(new Animated.Value(cutout?.width ?? 0)).current;
+  const animHeight = useRef(new Animated.Value(cutout?.height ?? 0)).current;
+  const animOpacity = useRef(new Animated.Value(cutout ? 1 : 0)).current;
+  const animTooltipTop = useRef(new Animated.Value(tooltipLayout.top)).current;
+  const animArrowLeft = useRef(new Animated.Value(tooltipLayout.arrowLeft)).current;
+  const animCardOpacity = useRef(new Animated.Value(1)).current;
+  const animCardTranslateY = useRef(new Animated.Value(0)).current;
+
+  // Smoothly crossfade/slide card content when changing steps
+  useEffect(() => {
+    if (!isActive) return;
+    if (prevStepIndexRef.current !== currentStepIndex) {
+      const dir = currentStepIndex > prevStepIndexRef.current ? 1 : -1;
+      prevStepIndexRef.current = currentStepIndex;
+      animCardOpacity.setValue(0.68);
+      animCardTranslateY.setValue(dir * 6);
+      Animated.parallel([
+        Animated.timing(animCardOpacity, {
+          toValue: 1,
+          duration: 190,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }),
+        Animated.timing(animCardTranslateY, {
+          toValue: 0,
+          duration: 210,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }),
+      ]).start();
+    }
+  }, [isActive, currentStepIndex, animCardOpacity, animCardTranslateY]);
+
+  // Smooth animate cutout bounds, tooltip position, and caret position in lockstep
+  useEffect(() => {
+    if (!cutout) {
+      Animated.parallel([
+        Animated.timing(animOpacity, {
+          toValue: 0,
+          duration: 160,
+          useNativeDriver: false,
+        }),
+        Animated.spring(animTooltipTop, {
+          toValue: tooltipLayout.top,
+          friction: 9,
+          tension: 70,
+          useNativeDriver: false,
+        }),
+      ]).start();
+      return;
+    }
+
+    if (!hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      animLeft.setValue(cutout.left);
+      animTop.setValue(cutout.top);
+      animWidth.setValue(cutout.width);
+      animHeight.setValue(cutout.height);
+      animTooltipTop.setValue(tooltipLayout.top);
+      animArrowLeft.setValue(tooltipLayout.arrowLeft);
+      animOpacity.setValue(0);
+      Animated.timing(animOpacity, {
+        toValue: 1,
+        duration: 200,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }).start();
+      return;
+    }
+
+    Animated.parallel([
+      Animated.timing(animOpacity, {
+        toValue: isTransitioning ? 0.85 : 1,
+        duration: 160,
+        useNativeDriver: false,
+      }),
+      Animated.spring(animLeft, {
+        toValue: cutout.left,
+        friction: 9,
+        tension: 70,
+        useNativeDriver: false,
+      }),
+      Animated.spring(animTop, {
+        toValue: cutout.top,
+        friction: 9,
+        tension: 70,
+        useNativeDriver: false,
+      }),
+      Animated.spring(animWidth, {
+        toValue: cutout.width,
+        friction: 9,
+        tension: 70,
+        useNativeDriver: false,
+      }),
+      Animated.spring(animHeight, {
+        toValue: cutout.height,
+        friction: 9,
+        tension: 70,
+        useNativeDriver: false,
+      }),
+      Animated.spring(animTooltipTop, {
+        toValue: tooltipLayout.top,
+        friction: 9,
+        tension: 70,
+        useNativeDriver: false,
+      }),
+      Animated.spring(animArrowLeft, {
+        toValue: tooltipLayout.arrowLeft,
+        friction: 9,
+        tension: 70,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  }, [
+    cutout,
+    isTransitioning,
+    tooltipLayout.top,
+    tooltipLayout.arrowLeft,
+    animLeft,
+    animTop,
+    animWidth,
+    animHeight,
+    animOpacity,
+    animTooltipTop,
+    animArrowLeft,
+  ]);
 
   if (!isActive || !currentStep) {
     return null;
@@ -243,7 +340,7 @@ export const TutorialSpotlightModal: React.FC = () => {
         )}
 
         {/* Tooltip Card */}
-        <View
+        <Animated.View
           onLayout={(e) => {
             const h = e.nativeEvent.layout.height;
             if (h > 40 && Math.abs(h - measuredTooltipHeight) > 4) {
@@ -253,15 +350,17 @@ export const TutorialSpotlightModal: React.FC = () => {
           style={[
             styles.tooltipWrapper,
             {
-              top: tooltipLayout.top,
+              top: animTooltipTop,
               width: cardWidth,
               left: (windowWidth - cardWidth) / 2,
+              opacity: animCardOpacity,
+              transform: [{ translateY: animCardTranslateY }],
             },
           ]}
         >
           {/* Top Pointer Caret (when tooltip is below target) */}
           {cutout && tooltipLayout.placement === 'below' && (
-            <View style={[styles.arrowUp, { left: tooltipLayout.arrowLeft }]} />
+            <Animated.View style={[styles.arrowUp, { left: animArrowLeft }]} />
           )}
 
           <View style={styles.card}>
@@ -269,7 +368,7 @@ export const TutorialSpotlightModal: React.FC = () => {
             <View style={styles.cardHeader}>
               <View style={styles.headerLeft}>
                 <View style={styles.iconCircle}>
-                  {isTransitioning ? (
+                  {isTransitioning && !cutout ? (
                     <ActivityIndicator size="small" color={colors.primary} />
                   ) : (
                     <Ionicons
@@ -353,9 +452,9 @@ export const TutorialSpotlightModal: React.FC = () => {
 
           {/* Bottom Pointer Caret (when tooltip is above target) */}
           {cutout && tooltipLayout.placement === 'above' && (
-            <View style={[styles.arrowDown, { left: tooltipLayout.arrowLeft }]} />
+            <Animated.View style={[styles.arrowDown, { left: animArrowLeft }]} />
           )}
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );

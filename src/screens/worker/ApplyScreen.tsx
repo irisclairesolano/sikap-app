@@ -765,7 +765,8 @@ export const ApplyScreen: React.FC = () => {
           </View>
         </ScrollView>
 
-        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+        {/* Bottom Docked CTA Footer */}
+        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
           <Button
             label={isFilled ? t('closed') : t('submit_application')}
             size="lg"
@@ -913,16 +914,12 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingTop: 10,
     backgroundColor: colors.paperBright,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 8,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
   },
 
   // SUCCESS STATE STYLES

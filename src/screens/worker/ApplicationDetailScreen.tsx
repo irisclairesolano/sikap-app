@@ -1139,11 +1139,11 @@ const styles = StyleSheet.create({
   employerSubCard: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, marginTop: 2 },
   footer: {
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: colors.paper,
+    paddingTop: 10,
+    backgroundColor: colors.paperBright,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
-    gap: 10,
+    gap: 8,
   },
   modalOverlay: {
     flex: 1,

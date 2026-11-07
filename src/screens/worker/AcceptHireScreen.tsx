@@ -89,7 +89,7 @@ const AcceptHireScreen: React.FC = () => {
   const isPending = acceptOfferMutation.isPending || rejectOfferMutation.isPending;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />

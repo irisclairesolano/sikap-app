@@ -625,7 +625,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
           }}
         />
 
-        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
           {showForm ? (
             <View style={{ flexDirection: 'row', gap: 12 }}>
               {experiences.length > 0 && (
@@ -948,7 +948,7 @@ const styles = StyleSheet.create({
   bottomBar: {
     paddingHorizontal: 20,
     paddingTop: 10,
-    backgroundColor: colors.paper,
+    backgroundColor: colors.paperBright,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
   },

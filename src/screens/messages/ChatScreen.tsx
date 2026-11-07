@@ -52,7 +52,7 @@ import {
   Pressable,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -195,6 +195,7 @@ type ChatScreenParams = {
 };
 
 const ChatScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const { showAlert } = useAlert();
   const { t } = useLanguage();
   const route = useRoute();
@@ -1163,7 +1164,7 @@ const ChatScreen: React.FC = () => {
                 />
               )}
               <TypingIndicator visible={Boolean(typingUser)} userName={typingUser || undefined} />
-              <View style={styles.inputContainer}>
+              <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 10) }]}>
                 <TouchableOpacity
                   onPress={handlePickImage}
                   style={styles.iconBtn}

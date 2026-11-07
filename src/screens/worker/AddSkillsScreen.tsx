@@ -283,7 +283,7 @@ export const AddSkillsScreen: React.FC = () => {
         </View>
       </ScrollView>
 
-      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 14) }]}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         {saveError ? (
           <Text
             style={{
@@ -432,16 +432,10 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 14,
+    paddingTop: 10,
     backgroundColor: colors.paperBright,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 4,
   },
   customInputRow: {
     flexDirection: 'row',

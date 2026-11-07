@@ -1723,9 +1723,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 8,
-    backgroundColor: colors.paper,
+    paddingTop: 10,
+    backgroundColor: colors.paperBright,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
   },

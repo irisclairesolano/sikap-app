@@ -49,7 +49,7 @@ const SendRequestScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>{t('hiring_shortlist_action')}</Text>
       </View>

@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { Animated, Image, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors } from '../../theme/colors';
 import { fonts } from '../../theme/typography';
@@ -66,7 +67,7 @@ const SplashScreen: React.FC = () => {
   }, [navigation, dotAnimations, fadeAnim, scaleAnim]);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Centered Logo Card with Official Emblem & Wordmark */}
       <Animated.View
         style={[
@@ -101,7 +102,7 @@ const SplashScreen: React.FC = () => {
           />
         ))}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

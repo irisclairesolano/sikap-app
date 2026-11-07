@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   BackHandler,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
@@ -32,6 +32,7 @@ export const RoleOnboardingScreen: React.FC = () => {
   const { onboardRole, isOnboardingRole, user, switchRole } = useAuth();
   const { showAlert } = useAlert();
   const { t } = useLanguage();
+  const insets = useSafeAreaInsets();
 
   const [isCancelling, setIsCancelling] = useState(false);
   const [isSkipping, setIsSkipping] = useState(false);
@@ -481,7 +482,7 @@ export const RoleOnboardingScreen: React.FC = () => {
         )}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <Button
           label={t('onboarding_complete_setup_btn')}
           onPress={handleComplete}
@@ -624,11 +625,11 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
-    backgroundColor: colors.paper,
+    paddingTop: 10,
+    backgroundColor: colors.paperBright,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
+    gap: 8,
   },
   sectionHeader: {
     fontFamily: fonts.bodyBold,
