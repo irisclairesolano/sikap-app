@@ -40,6 +40,7 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Pressable,
   ScrollView,
   TextInput,
   Modal,
@@ -401,12 +402,31 @@ export const JobFeedScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       />
 
-      <Modal visible={isFilterModalVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 20) + 16 }]}>
-            <Text style={styles.modalTitle}>
-              {t('filter')} - {t('location')}
-            </Text>
+      <Modal
+        visible={isFilterModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFilterModalVisible(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setFilterModalVisible(false)}>
+          <Pressable
+            style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 20) + 16 }]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.modalHandle} />
+            <View style={styles.modalHeaderRow}>
+              <Text style={styles.modalTitle}>
+                {t('filter')} - {t('location')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setFilterModalVisible(false)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                style={styles.modalHeaderCloseBtn}
+                accessibilityLabel="Close filter"
+              >
+                <Ionicons name="close" size={20} color={colors.inkSoft} />
+              </TouchableOpacity>
+            </View>
             {LOCATIONS.map((loc) => (
               <TouchableOpacity
                 key={loc.key}
@@ -431,12 +451,13 @@ export const JobFeedScreen: React.FC = () => {
             ))}
             <TouchableOpacity
               style={styles.modalCloseBtn}
+              activeOpacity={0.8}
               onPress={() => setFilterModalVisible(false)}
             >
               <Text style={styles.modalCloseText}>{t('close')}</Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
     </SafeAreaView>
   );
@@ -601,11 +622,32 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.inkFaint,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  modalHeaderCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   modalTitle: {
     fontFamily: fonts.display,
     fontSize: 18,
     color: colors.ink,
-    marginBottom: 16,
   },
   modalOption: {
     flexDirection: 'row',
@@ -625,17 +667,18 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   modalCloseBtn: {
-    marginTop: 24,
+    marginTop: 20,
     alignItems: 'center',
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    backgroundColor: '#F1F5F9',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.70)',
+    borderColor: '#E2E8F0',
   },
   modalCloseText: {
     fontFamily: fonts.bodyBold,
-    fontSize: 15,
+    fontSize: 14,
     color: colors.ink,
   },
   chip: {
