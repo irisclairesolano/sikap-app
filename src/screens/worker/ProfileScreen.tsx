@@ -163,10 +163,8 @@ export const ProfileScreen: React.FC = () => {
               <Ionicons name="alert-circle" size={24} color={colors.primaryDark} />
             </View>
             <View style={styles.setupBannerText}>
-              <Text style={styles.setupBannerTitle}>Finish setting up</Text>
-              <Text style={styles.setupBannerSubtitle}>
-                Your profile is missing some details. Tap to complete it.
-              </Text>
+              <Text style={styles.setupBannerTitle}>{t('profile_finish_setup')}</Text>
+              <Text style={styles.setupBannerSubtitle}>{t('profile_missing_details_sub')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.primaryDark} />
           </TouchableOpacity>
@@ -234,11 +232,11 @@ export const ProfileScreen: React.FC = () => {
                   <Text style={styles.reputationCount}>
                     {worker.ratings > 0
                       ? `${worker.ratings} ${t('reviews_ratings')}`
-                      : 'No ratings yet'}
+                      : t('profile_no_ratings_yet')}
                   </Text>
                 </View>
               </View>
-              <Text style={styles.reputationTagline}>Your score travels with you.</Text>
+              <Text style={styles.reputationTagline}>{t('profile_score_travels_short')}</Text>
             </View>
           </View>
         </TutorialTarget>
@@ -265,7 +263,9 @@ export const ProfileScreen: React.FC = () => {
         {/* About Me */}
         {worker.bio ? (
           <View style={styles.skillsSection}>
-            <Text style={[styles.sectionEyebrow, { marginBottom: 10 }]}>About Me</Text>
+            <Text style={[styles.sectionEyebrow, { marginBottom: 10 }]}>
+              {t('profile_about_me_title')}
+            </Text>
             <Text
               style={{
                 fontFamily: fonts.body,
@@ -290,13 +290,13 @@ export const ProfileScreen: React.FC = () => {
               activeOpacity={0.7}
             >
               <Ionicons name="add" size={14} color={colors.primary} />
-              <Text style={styles.viewAllText}>Add</Text>
+              <Text style={styles.viewAllText}>{t('profile_add_btn')}</Text>
             </TouchableOpacity>
           </View>
           <View style={{ marginTop: 10, gap: 12 }}>
             {!worker.experiences || worker.experiences.length === 0 ? (
               <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
-                No work history added yet.
+                {t('profile_no_work_history')}
               </Text>
             ) : (
               worker.experiences.map((exp) => (
@@ -343,13 +343,13 @@ export const ProfileScreen: React.FC = () => {
               activeOpacity={0.7}
             >
               <Ionicons name="add" size={14} color={colors.primary} />
-              <Text style={styles.viewAllText}>Add</Text>
+              <Text style={styles.viewAllText}>{t('profile_add_btn')}</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.skillsList}>
             {worker.skills.length === 0 ? (
               <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
-                No skills added yet.
+                {t('profile_no_skills_added')}
               </Text>
             ) : (
               worker.skills.map((skill: any, index: number) => {
@@ -415,13 +415,13 @@ export const ProfileScreen: React.FC = () => {
               activeOpacity={0.7}
             >
               <Ionicons name="add" size={14} color={colors.primary} />
-              <Text style={styles.viewAllText}>Add</Text>
+              <Text style={styles.viewAllText}>{t('profile_add_btn')}</Text>
             </TouchableOpacity>
           </View>
           <View style={{ marginTop: 10, gap: 12 }}>
             {!user.worker_profile?.references || user.worker_profile.references.length === 0 ? (
               <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
-                No references added yet.
+                {t('profile_no_references_added')}
               </Text>
             ) : (
               user.worker_profile.references.map((ref) => (
@@ -457,13 +457,13 @@ export const ProfileScreen: React.FC = () => {
         {worker.recentReview && (
           <View style={styles.reviewSection}>
             <View style={styles.reviewHeader}>
-              <Text style={styles.sectionEyebrow}>Recent review</Text>
+              <Text style={styles.sectionEyebrow}>{t('profile_recent_review')}</Text>
               <TouchableOpacity
                 style={styles.viewAllBtn}
                 onPress={() => navigation.navigate('Reviews')}
                 activeOpacity={0.7}
               >
-                <Text style={styles.viewAllText}>View all →</Text>
+                <Text style={styles.viewAllText}>{t('profile_view_all_arrow')}</Text>
               </TouchableOpacity>
             </View>
             <View style={{ marginTop: 10 }}>
@@ -496,7 +496,7 @@ export const ProfileScreen: React.FC = () => {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.supportTitle}>{t('need_help_or_support')}</Text>
-            <Text style={styles.supportSubtitle}>Submit and track tickets directly in-app</Text>
+            <Text style={styles.supportSubtitle}>{t('profile_help_support_sub')}</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />
         </TouchableOpacity>

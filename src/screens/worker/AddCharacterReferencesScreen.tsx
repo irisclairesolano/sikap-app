@@ -21,12 +21,14 @@ import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import Button from '../../components/common/Button';
 import CustomInput from '../../components/common/Input';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { profileApi } from '../../api/profile';
 
 // Colors for avatars
 const AVATAR_COLORS = [colors.sky, colors.butter, colors.mint];
 
 export const AddCharacterReferencesScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const queryClient = useQueryClient();
 
@@ -79,10 +81,10 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     }
     const sanitized = normalizeDigits(value);
     if (!sanitized.startsWith('09')) {
-      return 'Phone number must start with 09';
+      return t('char_ref_err_phone_prefix');
     }
     if (sanitized.length !== 11) {
-      return 'Phone number must be exactly 11 digits';
+      return t('char_ref_err_phone_digits');
     }
 
     // Check against own user account phone
@@ -95,7 +97,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
           : rawUserPhone;
 
     if (userPhoneNorm && sanitized === userPhoneNorm) {
-      return 'Cannot be your own phone number';
+      return t('char_ref_err_phone_own');
     }
 
     // Check against existing references in list
@@ -110,7 +112,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     });
 
     if (isDuplicate) {
-      return 'This phone number is already used for another reference.';
+      return t('char_ref_err_phone_duplicate');
     }
 
     return undefined;
@@ -158,7 +160,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
       const serverMsg =
         err?.errors?.phone?.[0] ||
         err?.message ||
-        (typeof err === 'string' ? err : 'Failed to save reference');
+        (typeof err === 'string' ? err : t('char_ref_err_save_failed'));
       setPhoneError(serverMsg.includes('phone') ? serverMsg : undefined);
       showAlert('Error', serverMsg);
     },
@@ -172,7 +174,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     },
     onError: (err) => {
       console.error('Failed to delete reference', err);
-      showAlert('Error', 'Failed to delete reference');
+      showAlert('Error', t('char_ref_err_delete_failed'));
     },
   });
 
@@ -197,10 +199,10 @@ export const AddCharacterReferencesScreen: React.FC = () => {
   };
 
   const handleDeletePress = (id: number) => {
-    showAlert('Delete Reference', 'Are you sure you want to delete this character reference?', [
-      { text: 'Cancel', style: 'cancel' },
+    showAlert(t('char_ref_delete_title'), t('char_ref_delete_msg'), [
+      { text: t('char_ref_btn_cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('char_ref_btn_delete'),
         style: 'destructive',
         onPress: () => deleteMutation.mutate(id),
       },
@@ -233,7 +235,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.appBarBadge}>
-            <Text style={styles.appBarBadgeText}>References</Text>
+            <Text style={styles.appBarBadgeText}>{t('char_ref_badge')}</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
@@ -243,13 +245,8 @@ export const AddCharacterReferencesScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.title}>
-            Three people{'\n'}who can <Text style={styles.titleAccent}>vouch.</Text>
-          </Text>
-          <Text style={styles.subtitleTagalog}>
-            Add up to 3 people who can vouch for your work ethic and character (former employers,
-            mentors, or colleagues).
-          </Text>
+          <Text style={styles.title}>{t('char_ref_title')}</Text>
+          <Text style={styles.subtitleTagalog}>{t('char_ref_subtitle')}</Text>
 
           <View style={styles.infoBanner}>
             <Ionicons
@@ -260,9 +257,9 @@ export const AddCharacterReferencesScreen: React.FC = () => {
             />
             <Text style={styles.infoText}>
               <Text style={{ fontFamily: fonts.bodyBold, color: colors.ink }}>
-                Reference contacts stay hidden
+                {t('char_ref_privacy_title')}
               </Text>{' '}
-              until an employer formally shortlists you. (Safe and confidential).
+              {t('char_ref_privacy_desc')}
             </Text>
           </View>
 
@@ -276,13 +273,13 @@ export const AddCharacterReferencesScreen: React.FC = () => {
               <View style={styles.addIconCircle}>
                 <Ionicons name="add" size={22} color={colors.white} />
               </View>
-              <Text style={styles.addTitle}>Add another reference</Text>
+              <Text style={styles.addTitle}>{t('char_ref_add_another_btn')}</Text>
               <Text style={styles.addSubtitle}>
                 {3 - references.length === 3
-                  ? 'Three slots remaining'
+                  ? t('char_ref_slots_three')
                   : 3 - references.length === 2
-                    ? 'Two slots remaining'
-                    : 'One slot remaining'}
+                    ? t('char_ref_slots_two')
+                    : t('char_ref_slots_one')}
               </Text>
             </TouchableOpacity>
           )}
@@ -290,7 +287,9 @@ export const AddCharacterReferencesScreen: React.FC = () => {
           {/* References List is shown below the add card */}
           {references.length > 0 && (
             <>
-              <Text style={styles.sectionHeader}>References · {references.length} of 3</Text>
+              <Text style={styles.sectionHeader}>
+                {t('char_ref_list_header').replace('{count}', String(references.length))}
+              </Text>
 
               <View style={styles.listContainer}>
                 {references.map((ref, index) => (
@@ -329,7 +328,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
 
         <View style={styles.bottomBar}>
           <Button
-            label="Done"
+            label={t('char_ref_btn_done')}
             size="lg"
             variant="soft"
             fullWidth
@@ -359,7 +358,9 @@ export const AddCharacterReferencesScreen: React.FC = () => {
 
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalHeaderTitle}>
-                    {editingReferenceId !== null ? 'Edit Reference' : 'Add Reference'}
+                    {editingReferenceId !== null
+                      ? t('char_ref_modal_title_edit')
+                      : t('char_ref_modal_title_add')}
                   </Text>
                   <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
                     <Ionicons name="close" size={22} color={colors.inkSoft} />
@@ -372,30 +373,30 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                 >
                   <View style={{ gap: 16, paddingBottom: 24 }}>
                     <CustomInput
-                      label="Full Name"
+                      label={t('char_ref_name_label')}
                       value={name}
                       onChangeText={handleNameChange}
-                      placeholder="E.g. Juan Reyes"
+                      placeholder={t('char_ref_name_placeholder')}
                       icon="person-outline"
                       error={nameError}
                       status={nameError ? 'invalid' : null}
                     />
                     <CustomInput
-                      label="Relationship"
+                      label={t('char_ref_relationship_label')}
                       value={relationship}
                       onChangeText={handleRelationshipChange}
-                      placeholder="E.g. Former employer"
+                      placeholder={t('char_ref_relationship_placeholder')}
                       icon="people-outline"
                       error={relationshipError}
                       status={relationshipError ? 'invalid' : null}
                     />
                     <CustomInput
-                      label="Phone Number"
+                      label={t('char_ref_phone_label')}
                       value={phone}
                       onChangeText={handlePhoneChange}
                       error={phoneError}
                       status={phoneError ? 'invalid' : null}
-                      placeholder="E.g. 09123456789"
+                      placeholder={t('char_ref_phone_placeholder')}
                       icon="call-outline"
                       keyboardType="phone-pad"
                     />
@@ -405,17 +406,15 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                 <View style={styles.modalFooter}>
                   {editingReferenceId !== null ? (
                     <Button
-                      label="Delete"
+                      label={t('char_ref_btn_delete')}
                       size="lg"
                       variant="outline"
                       onPress={() => handleDeletePress(editingReferenceId)}
                       style={{ flex: 1, borderColor: colors.error }}
-                      // textStyle will automatically be red since we pass outline, but we can override if needed.
-                      // Outline with error border is clear enough
                     />
                   ) : (
                     <Button
-                      label="Cancel"
+                      label={t('char_ref_btn_cancel')}
                       size="lg"
                       variant="outline"
                       onPress={handleCancel}
@@ -425,10 +424,10 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                   <Button
                     label={
                       saveMutation.isPending
-                        ? 'Saving...'
+                        ? t('char_ref_btn_saving')
                         : editingReferenceId !== null
-                          ? 'Save changes'
-                          : 'Save reference'
+                          ? t('char_ref_btn_save_changes')
+                          : t('char_ref_btn_save_ref')
                     }
                     size="lg"
                     style={{ flex: 2 }}
@@ -436,14 +435,14 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                     onPress={() => {
                       const errors: Record<string, string> = {};
                       if (!name.trim()) {
-                        errors.name = 'Full name is required';
+                        errors.name = t('char_ref_err_name_req');
                       }
                       if (!relationship.trim()) {
-                        errors.relationship = 'Relationship is required';
+                        errors.relationship = t('char_ref_err_relationship_req');
                       }
                       const phError = validatePhone(phone, editingReferenceId);
                       if (!phone.trim()) {
-                        errors.phone = 'Phone number is required';
+                        errors.phone = t('char_ref_err_phone_req');
                       } else if (phError) {
                         errors.phone = phError;
                       }

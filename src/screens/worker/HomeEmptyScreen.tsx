@@ -12,10 +12,12 @@ import { useAuth } from '../../hooks/useAuth';
 import { profileApi } from '../../api/profile';
 import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
 import { useTriggerInitialTutorial } from '../../hooks/useTriggerInitialTutorial';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const HomeEmptyScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const isFocused = useIsFocused();
 
   const { data: profile } = useQuery({
@@ -87,7 +89,7 @@ export const HomeEmptyScreen: React.FC = () => {
               )}
             </View>
             <View>
-              <Text style={styles.greetingSmall}>Hi,</Text>
+              <Text style={styles.greetingSmall}>{t('home_empty_greeting_hi')}</Text>
               <Text style={styles.greetingName}>
                 {user?.name ? user.name.split(' ')[0] : 'Worker'}
               </Text>
@@ -103,10 +105,13 @@ export const HomeEmptyScreen: React.FC = () => {
         {/* Progress Card */}
         <TutorialTarget id="worker_setup_progress">
           <View style={styles.progressCard}>
-            <Text style={styles.welcomeText}>WELCOME TO SIKAP</Text>
+            <Text style={styles.welcomeText}>{t('home_empty_welcome_upper')}</Text>
             <Text style={styles.progressHeadline}>
-              Your profile is{'\n'}
-              <Text style={styles.progressAccent}>{progressPercent}% complete.</Text>
+              {t('home_empty_profile_is')}
+              {'\n'}
+              <Text style={styles.progressAccent}>
+                {t('home_empty_percent_complete', { percent: progressPercent })}
+              </Text>
             </Text>
             <View style={styles.progressBarBg}>
               <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
@@ -114,7 +119,7 @@ export const HomeEmptyScreen: React.FC = () => {
           </View>
         </TutorialTarget>
 
-        <Text style={styles.sectionTitle}>Finish setting up</Text>
+        <Text style={styles.sectionTitle}>{t('profile_finish_setup')}</Text>
 
         <TutorialTarget id="worker_setup_tasks">
           <View style={styles.tasksContainer}>
@@ -124,8 +129,8 @@ export const HomeEmptyScreen: React.FC = () => {
                 <Ionicons name="checkmark" size={16} color={colors.mintDeep} />
               </View>
               <View style={styles.taskTextContainer}>
-                <Text style={styles.taskTitle}>Account verified</Text>
-                <Text style={styles.taskSubtitle}>Just now</Text>
+                <Text style={styles.taskTitle}>{t('home_empty_account_verified')}</Text>
+                <Text style={styles.taskSubtitle}>{t('home_empty_just_now')}</Text>
               </View>
             </View>
 
@@ -148,9 +153,9 @@ export const HomeEmptyScreen: React.FC = () => {
                 />
               </View>
               <View style={styles.taskTextContainer}>
-                <Text style={styles.taskTitle}>Add your skills</Text>
+                <Text style={styles.taskTitle}>{t('home_empty_Step_1_title')}</Text>
                 <Text style={styles.taskSubtitle}>
-                  {hasSkills ? 'Completed' : 'Tell employers what you do'}
+                  {hasSkills ? t('my_apps_stage_completed') : t('home_empty_tell_employers')}
                 </Text>
               </View>
               <Ionicons
@@ -179,9 +184,9 @@ export const HomeEmptyScreen: React.FC = () => {
                 />
               </View>
               <View style={styles.taskTextContainer}>
-                <Text style={styles.taskTitle}>Add work history</Text>
+                <Text style={styles.taskTitle}>{t('home_empty_add_work_history')}</Text>
                 <Text style={styles.taskSubtitle}>
-                  {hasHistory ? 'Completed' : 'Optional but recommended'}
+                  {hasHistory ? t('my_apps_stage_completed') : t('home_empty_optional_recommended')}
                 </Text>
               </View>
               <Ionicons
@@ -210,9 +215,9 @@ export const HomeEmptyScreen: React.FC = () => {
                 />
               </View>
               <View style={styles.taskTextContainer}>
-                <Text style={styles.taskTitle}>Add character references</Text>
+                <Text style={styles.taskTitle}>{t('home_empty_add_char_refs')}</Text>
                 <Text style={styles.taskSubtitle}>
-                  {hasRefs ? 'Completed' : 'Up to 3 people who can vouch'}
+                  {hasRefs ? t('my_apps_stage_completed') : t('home_empty_up_to_3_vouch')}
                 </Text>
               </View>
               <Ionicons
@@ -229,7 +234,9 @@ export const HomeEmptyScreen: React.FC = () => {
           style={{ marginTop: 24, alignSelf: 'center' }}
           onPress={() => navigation.replace('Home')}
         >
-          <Text style={{ fontFamily: fonts.bodyBold, color: colors.primary }}>Skip to Jobs</Text>
+          <Text style={{ fontFamily: fonts.bodyBold, color: colors.primary }}>
+            {t('home_empty_skip_to_jobs')}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

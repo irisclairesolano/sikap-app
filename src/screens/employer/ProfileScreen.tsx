@@ -191,7 +191,7 @@ export const ProfileScreen: React.FC = () => {
                 <Text style={styles.locationText}>{employer.location}</Text>
                 {employer.verified && (
                   <View style={styles.verifiedBadge}>
-                    <Text style={styles.verifiedBadgeText}>Verified Employer</Text>
+                    <Text style={styles.verifiedBadgeText}>{t('profile_verified_employer')}</Text>
                   </View>
                 )}
               </View>
@@ -200,7 +200,7 @@ export const ProfileScreen: React.FC = () => {
             {/* Bio Section */}
             {!!employer.bio && (
               <View style={styles.bioCard}>
-                <Text style={styles.bioTitle}>About</Text>
+                <Text style={styles.bioTitle}>{t('profile_about_title')}</Text>
                 <Text style={styles.bioText}>{employer.bio}</Text>
               </View>
             )}
@@ -232,12 +232,12 @@ export const ProfileScreen: React.FC = () => {
                   ) : null}
                   <Text style={styles.reputationCount}>
                     {employer.ratings > 0
-                      ? `${employer.ratings} verified rating${employer.ratings > 1 ? 's' : ''}`
-                      : 'No ratings yet'}
+                      ? `${employer.ratings} ${t('reviews_ratings')}`
+                      : t('profile_no_ratings_yet')}
                   </Text>
                 </View>
               </View>
-              <Text style={styles.reputationTagline}>Your score travels with you.</Text>
+              <Text style={styles.reputationTagline}>{t('profile_score_travels_short')}</Text>
             </View>
           </View>
         </TutorialTarget>
@@ -249,7 +249,7 @@ export const ProfileScreen: React.FC = () => {
               <Ionicons name="briefcase-outline" size={16} color="#E11D48" />
             </View>
             <Text style={styles.statValue}>{employer.activeJobs}</Text>
-            <Text style={styles.statLabel}>Active jobs</Text>
+            <Text style={styles.statLabel}>{t('active_jobs')}</Text>
           </View>
 
           <View style={styles.statBox}>
@@ -257,7 +257,7 @@ export const ProfileScreen: React.FC = () => {
               <Ionicons name="people-outline" size={16} color="#16A34A" />
             </View>
             <Text style={styles.statValue}>{employer.hired}</Text>
-            <Text style={styles.statLabel}>Hires</Text>
+            <Text style={styles.statLabel}>{t('profile_hires_label')}</Text>
           </View>
 
           <View style={styles.statBox}>
@@ -265,7 +265,7 @@ export const ProfileScreen: React.FC = () => {
               <Ionicons name="cash-outline" size={16} color="#D97706" />
             </View>
             <Text style={styles.statValue}>{employer.totalPaid}</Text>
-            <Text style={styles.statLabel}>Total paid</Text>
+            <Text style={styles.statLabel}>{t('total_paid')}</Text>
           </View>
         </View>
 
@@ -273,9 +273,9 @@ export const ProfileScreen: React.FC = () => {
         {employer.recentReview && (
           <View style={styles.reviewSection}>
             <View style={styles.reviewHeader}>
-              <Text style={styles.sectionEyebrow}>Recent review</Text>
+              <Text style={styles.sectionEyebrow}>{t('profile_recent_review')}</Text>
               <TouchableOpacity onPress={() => navigation.navigate('Reviews')}>
-                <Text style={styles.viewAllText}>View all →</Text>
+                <Text style={styles.viewAllText}>{t('profile_view_all_arrow')}</Text>
               </TouchableOpacity>
             </View>
             <View style={{ marginTop: 10 }}>
@@ -312,7 +312,7 @@ export const ProfileScreen: React.FC = () => {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.supportTitle}>{t('need_help_or_support')}</Text>
-            <Text style={styles.supportSubtitle}>Submit and track tickets directly in-app</Text>
+            <Text style={styles.supportSubtitle}>{t('profile_help_support_sub')}</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />
         </TouchableOpacity>

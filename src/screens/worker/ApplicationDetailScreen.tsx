@@ -300,10 +300,10 @@ const ApplicationDetailScreen: React.FC = () => {
 
   const handleWithdraw = () => {
     setMenuVisible(false);
-    showAlert(t('withdraw_application'), t('confirm_withdraw_prompt'), [
-      { text: t('cancel'), style: 'cancel' },
+    showAlert(t('alert_withdraw_title'), t('alert_withdraw_msg'), [
+      { text: t('alert_withdraw_btn_cancel'), style: 'cancel' },
       {
-        text: t('withdraw_confirm_btn'),
+        text: t('alert_withdraw_btn_confirm'),
         style: 'destructive',
         onPress: () => {
           withdraw(applicationId, {
@@ -311,7 +311,7 @@ const ApplicationDetailScreen: React.FC = () => {
               handleGoBack();
             },
             onError: (err: any) => {
-              showAlert('Error', err.message || 'Could not withdraw application.');
+              showAlert(t('error_title'), err.message || t('alert_withdraw_err_msg'));
             },
           });
         },
@@ -367,26 +367,28 @@ const ApplicationDetailScreen: React.FC = () => {
 
   const handleRejectOffer = () => {
     showAlert(
-      t('hiring_decline_offer_btn'),
-      `Are you sure you want to decline the offer for "${jobTitle || 'this job'}"?`,
+      t('alert_decline_offer_title'),
+      t('alert_decline_offer_msg').replace('{jobTitle}', jobTitle || 'this job'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('alert_decline_offer_btn_cancel'), style: 'cancel' },
         {
-          text: t('hiring_decline_offer_btn'),
+          text: t('alert_decline_offer_btn_confirm'),
           style: 'destructive',
           onPress: () => {
             rejectOfferMutation.mutate(applicationId, {
               onSuccess: () => {
                 triggerHaptic('medium');
                 showAlert(
-                  t('hiring_decline_offer_btn'),
-                  t('declined_offer_notice') ||
-                    `You have declined the offer for "${jobTitle || 'this job'}".`,
+                  t('alert_decline_offer_title'),
+                  t('alert_decline_offer_success_msg').replace(
+                    '{jobTitle}',
+                    jobTitle || 'this job',
+                  ),
                 );
                 refetch();
               },
               onError: (err: any) => {
-                showAlert('Error', err.message || 'Failed to decline offer.');
+                showAlert(t('error_title'), err.message || t('alert_decline_offer_err_msg'));
               },
             });
           },

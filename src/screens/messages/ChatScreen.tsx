@@ -336,21 +336,27 @@ const ChatScreen: React.FC = () => {
     if (!otherUserId) return;
     const targetName = otherUserName || conversation?.other_user?.name || 'this user';
     showAlert(
-      'Block User',
-      `Are you sure you want to block ${targetName}? They will no longer be able to message you, send job offers, or view your listings.`,
+      t('alert_block_user_title'),
+      t('alert_block_user_msg').replace('{name}', targetName),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('alert_block_user_btn_cancel'), style: 'cancel' },
         {
-          text: 'Block',
+          text: t('alert_block_user_btn_confirm'),
           style: 'destructive',
           onPress: () => {
             blockUserMutation.mutate(otherUserId, {
               onSuccess: () => {
-                showAlert('User Blocked', `${targetName} has been blocked.`);
+                showAlert(
+                  t('alert_block_user_success_title'),
+                  t('alert_block_user_success_msg').replace('{name}', targetName),
+                );
                 refetch();
               },
               onError: (err: any) => {
-                showAlert('Block Failed', err.message || 'Could not block this user.');
+                showAlert(
+                  t('alert_block_user_err_title'),
+                  err.message || t('alert_block_user_err_msg'),
+                );
               },
             });
           },
@@ -363,23 +369,33 @@ const ChatScreen: React.FC = () => {
     setShowOptionsMenu(false);
     if (!otherUserId) return;
     const targetName = otherUserName || conversation?.other_user?.name || 'this user';
-    showAlert('Unblock User', `Are you sure you want to unblock ${targetName}?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Unblock',
-        onPress: () => {
-          unblockUserMutation.mutate(otherUserId, {
-            onSuccess: () => {
-              showAlert('User Unblocked', `${targetName} has been unblocked.`);
-              refetch();
-            },
-            onError: (err: any) => {
-              showAlert('Unblock Failed', err.message || 'Could not unblock this user.');
-            },
-          });
+    showAlert(
+      t('alert_unblock_user_title'),
+      t('alert_unblock_user_msg').replace('{name}', targetName),
+      [
+        { text: t('alert_unblock_user_btn_cancel'), style: 'cancel' },
+        {
+          text: t('alert_unblock_user_btn_confirm'),
+          onPress: () => {
+            unblockUserMutation.mutate(otherUserId, {
+              onSuccess: () => {
+                showAlert(
+                  t('alert_unblock_user_success_title'),
+                  t('alert_unblock_user_success_msg').replace('{name}', targetName),
+                );
+                refetch();
+              },
+              onError: (err: any) => {
+                showAlert(
+                  t('alert_unblock_user_err_title'),
+                  err.message || t('alert_unblock_user_err_msg'),
+                );
+              },
+            });
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const handleReportUser = () => {
@@ -457,7 +473,7 @@ const ChatScreen: React.FC = () => {
         ) {
           setInputError(err.message || 'Message contains prohibited language.');
         } else {
-          showAlert('Failed to Send', err.message || 'Could not send message. Please try again.');
+          showAlert(t('alert_chat_send_err_title'), err.message || t('alert_chat_send_err_msg'));
         }
       },
       onSuccess: () => {

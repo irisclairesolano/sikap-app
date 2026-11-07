@@ -67,9 +67,9 @@ const ConfirmHireScreen: React.FC = () => {
     if (confirmHireMutation.isPending || isNaN(numPrice) || numPrice <= 0) return;
 
     if (!hasRealMessageFromEmployer) {
-      showAlert(t('hiring_chat_required_title'), t('hiring_chat_required_body'), [
+      showAlert(t('alert_chat_required_title'), t('alert_chat_required_msg'), [
         {
-          text: t('chat'),
+          text: t('alert_chat_required_btn_chat'),
           onPress: () => {
             if (activeConversationId) {
               navigation.navigate('Chat' as any, {
@@ -82,7 +82,7 @@ const ConfirmHireScreen: React.FC = () => {
             }
           },
         },
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('alert_chat_required_btn_cancel'), style: 'cancel' },
       ]);
       return;
     }

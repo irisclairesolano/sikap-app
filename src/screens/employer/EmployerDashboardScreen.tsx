@@ -106,9 +106,11 @@ export const EmployerDashboardScreen: React.FC = () => {
 
       switch (app.status as string) {
         case 'pending':
-          title = `Review application`;
-          description = `${app.worker?.name || 'Worker'} applied for ${job.title}`;
-          stageBadge = 'Stage 1 · Review';
+          title = t('employer_dash_action_review_title');
+          description = t('employer_dash_action_review_desc')
+            .replace('{name}', app.worker?.name || 'Worker')
+            .replace('{job}', job.title);
+          stageBadge = t('employer_dash_stage_1');
           badgeBg = colors.urgentSoft;
           badgeColor = colors.urgent;
           iconName = 'people-outline';
@@ -116,18 +118,22 @@ export const EmployerDashboardScreen: React.FC = () => {
           break;
         case 'employer_requested':
         case 'pending_negotiation':
-          title = `Confirm terms & hire`;
-          description = `Shortlisted ${app.worker?.name || 'Worker'} for ${job.title}`;
-          stageBadge = 'Stage 2 · Negotiation';
+          title = t('employer_dash_action_negotiate_title');
+          description = t('employer_dash_action_negotiate_desc')
+            .replace('{name}', app.worker?.name || 'Worker')
+            .replace('{job}', job.title);
+          stageBadge = t('employer_dash_stage_2');
           badgeBg = colors.peach;
           badgeColor = colors.primaryDark;
           iconName = 'chatbubbles-outline';
           borderColor = colors.peach;
           break;
         case 'employer_confirmed':
-          title = `Offer awaiting response`;
-          description = `Offer sent to ${app.worker?.name || 'Worker'} for ${job.title}`;
-          stageBadge = 'Stage 3 · Offer Sent';
+          title = t('employer_dash_action_offer_title');
+          description = t('employer_dash_action_offer_desc')
+            .replace('{name}', app.worker?.name || 'Worker')
+            .replace('{job}', job.title);
+          stageBadge = t('employer_dash_stage_3');
           badgeBg = colors.butter;
           badgeColor = colors.ink;
           iconName = 'time-outline';
@@ -135,9 +141,11 @@ export const EmployerDashboardScreen: React.FC = () => {
           break;
         case 'accepted':
         case 'hired':
-          title = `Job in progress`;
-          description = `${app.worker?.name || 'Worker'} is working on ${job.title}`;
-          stageBadge = 'Stage 4 · In Progress';
+          title = t('employer_dash_action_progress_title');
+          description = t('employer_dash_action_progress_desc')
+            .replace('{name}', app.worker?.name || 'Worker')
+            .replace('{job}', job.title);
+          stageBadge = t('employer_dash_stage_4');
           badgeBg = colors.mint;
           badgeColor = colors.mintDeep;
           iconName = 'construct-outline';
@@ -145,17 +153,25 @@ export const EmployerDashboardScreen: React.FC = () => {
           break;
         case 'completed':
           if (!hasReviewed && !isRatingWindowClosed) {
-            title = `Rate & review worker`;
-            description = `Completed job with ${app.worker?.name || 'Worker'} on ${job.title}`;
-            stageBadge = 'Action · Rate Worker';
+            title = t('employer_dash_action_rate_title');
+            description = t('employer_dash_action_rate_desc')
+              .replace('{name}', app.worker?.name || 'Worker')
+              .replace('{job}', job.title);
+            stageBadge = t('employer_dash_stage_rate');
             badgeBg = colors.gold + '25';
             badgeColor = colors.ink;
             iconName = 'star-outline';
             borderColor = colors.gold + '60';
           } else {
-            title = hasReviewed ? `Worker rated` : `Job completed`;
-            description = `Completed job with ${app.worker?.name || 'Worker'} on ${job.title}`;
-            stageBadge = hasReviewed ? 'Done · Rated' : 'Done';
+            title = hasReviewed
+              ? t('employer_dash_action_rated_title')
+              : t('employer_dash_action_completed_title');
+            description = t('employer_dash_action_rate_desc')
+              .replace('{name}', app.worker?.name || 'Worker')
+              .replace('{job}', job.title);
+            stageBadge = hasReviewed
+              ? t('employer_dash_stage_rated')
+              : t('employer_dash_stage_done');
             badgeBg = '#E0DED4';
             badgeColor = colors.inkSoft;
             iconName = hasReviewed ? 'checkmark-circle-outline' : 'time-outline';
@@ -284,7 +300,7 @@ export const EmployerDashboardScreen: React.FC = () => {
             activeOpacity={0.75}
             onPress={() => (navigation as any).navigate('EditProfile')}
           >
-            <Text style={styles.greetingSmall}>Hi,</Text>
+            <Text style={styles.greetingSmall}>{t('employer_dash_greeting')}</Text>
             <Text style={styles.greetingName}>
               {user?.name ? user.name.split(' ')[0] : 'Employer'}
             </Text>
@@ -314,7 +330,7 @@ export const EmployerDashboardScreen: React.FC = () => {
                   <Ionicons name="briefcase-outline" size={15} color="#E11D48" />
                 </View>
                 <Text style={styles.statLabel} numberOfLines={2}>
-                  Active jobs
+                  {t('employer_dash_stat_active_jobs')}
                 </Text>
               </View>
               <Text style={styles.statNum}>{activeJobs.length}</Text>
@@ -326,7 +342,7 @@ export const EmployerDashboardScreen: React.FC = () => {
                   <Ionicons name="people-outline" size={15} color="#16A34A" />
                 </View>
                 <Text style={styles.statLabel} numberOfLines={2}>
-                  Total hires
+                  {t('employer_dash_stat_total_hires')}
                 </Text>
               </View>
               <Text style={styles.statNum}>{totalHires}</Text>
@@ -338,7 +354,7 @@ export const EmployerDashboardScreen: React.FC = () => {
                   <Ionicons name="cash-outline" size={15} color="#D97706" />
                 </View>
                 <Text style={styles.statLabel} numberOfLines={2}>
-                  Total paid
+                  {t('employer_dash_stat_total_paid')}
                 </Text>
               </View>
               <Text style={styles.statNum}>{totalPaidFormatted}</Text>
@@ -350,7 +366,7 @@ export const EmployerDashboardScreen: React.FC = () => {
                   <Ionicons name="star" size={15} color="#EAB308" />
                 </View>
                 <Text style={styles.statLabel} numberOfLines={2}>
-                  {t('reputation_score')}
+                  {t('employer_dash_stat_reputation')}
                 </Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
@@ -363,7 +379,7 @@ export const EmployerDashboardScreen: React.FC = () => {
 
         <TutorialTarget id="employer_post_job_btn">
           <Button
-            label={t('post_a_job')}
+            label={t('employer_dash_post_job_btn')}
             size="lg"
             fullWidth
             onPress={() => navigation.navigate('PostJob')}
@@ -375,7 +391,7 @@ export const EmployerDashboardScreen: React.FC = () => {
         <TutorialTarget id="employer_action_required">
           <View>
             <View style={styles.actionHeader}>
-              <Text style={styles.sectionHeaderTitle}>Action required</Text>
+              <Text style={styles.sectionHeaderTitle}>{t('employer_dash_action_header')}</Text>
               {pendingCount > 0 && (
                 <View style={styles.badgeCount}>
                   <Text style={styles.badgeCountText}>{pendingCount}</Text>
@@ -390,8 +406,8 @@ export const EmployerDashboardScreen: React.FC = () => {
                     <Ionicons name="checkmark-circle-outline" size={24} color={colors.mintDeep} />
                   </View>
                   <View style={styles.jobDetails}>
-                    <Text style={styles.jobTitle}>All caught up!</Text>
-                    <Text style={styles.jobSubtitle}>No pending actions required right now</Text>
+                    <Text style={styles.jobTitle}>{t('employer_dash_all_caught_up_title')}</Text>
+                    <Text style={styles.jobSubtitle}>{t('employer_dash_all_caught_up_desc')}</Text>
                   </View>
                 </View>
               ) : (
@@ -563,12 +579,14 @@ export const EmployerDashboardScreen: React.FC = () => {
                   color={actionPage === 1 ? colors.inkFaint : colors.ink}
                 />
                 <Text style={[styles.pageBtnText, actionPage === 1 && styles.pageBtnTextDisabled]}>
-                  Previous
+                  {t('employer_dash_pagination_prev')}
                 </Text>
               </TouchableOpacity>
 
               <Text style={styles.pageIndicator}>
-                Page {actionPage} of {totalActionPages}
+                {t('employer_dash_pagination_page')
+                  .replace('{page}', String(actionPage))
+                  .replace('{total}', String(totalActionPages))}
               </Text>
 
               <TouchableOpacity
@@ -582,7 +600,7 @@ export const EmployerDashboardScreen: React.FC = () => {
                     actionPage === totalActionPages && styles.pageBtnTextDisabled,
                   ]}
                 >
-                  Next
+                  {t('employer_dash_pagination_next')}
                 </Text>
                 <Ionicons
                   name="chevron-forward"
@@ -596,7 +614,7 @@ export const EmployerDashboardScreen: React.FC = () => {
 
         {/* Real Dynamic Recent Applicants */}
         <Text style={[styles.sectionHeaderTitle, { marginTop: 32, marginBottom: 12 }]}>
-          Recent applicants
+          {t('employer_dash_recent_applicants_header')}
         </Text>
 
         <View style={styles.listContainer}>
@@ -609,10 +627,8 @@ export const EmployerDashboardScreen: React.FC = () => {
                 style={{ marginRight: 12 }}
               />
               <View style={styles.jobDetails}>
-                <Text style={styles.jobTitle}>No applicants yet</Text>
-                <Text style={styles.jobSubtitle}>
-                  Applicants will appear here when workers apply
-                </Text>
+                <Text style={styles.jobTitle}>{t('employer_dash_no_applicants_title')}</Text>
+                <Text style={styles.jobSubtitle}>{t('employer_dash_no_applicants_desc')}</Text>
               </View>
             </View>
           ) : (
@@ -630,7 +646,9 @@ export const EmployerDashboardScreen: React.FC = () => {
                 </View>
                 <View style={styles.jobDetails}>
                   <Text style={styles.jobTitle}>{app.worker?.name || 'Worker Applicant'}</Text>
-                  <Text style={styles.jobSubtitle}>Applied for {(app as any).jobTitle}</Text>
+                  <Text style={styles.jobSubtitle}>
+                    {t('employer_dash_applied_for').replace('{job}', (app as any).jobTitle || '')}
+                  </Text>
                   <View style={styles.ratingRow}>
                     {app.worker?.reputation_score !== undefined &&
                     app.worker?.reputation_score !== null ? (
@@ -642,7 +660,7 @@ export const EmployerDashboardScreen: React.FC = () => {
                       </>
                     ) : (
                       <Text style={styles.ratingText}>
-                        No ratings yet • {getFriendlyStatusLabel(app)}
+                        {t('employer_dash_no_ratings_yet')} • {getFriendlyStatusLabel(app)}
                       </Text>
                     )}
                   </View>

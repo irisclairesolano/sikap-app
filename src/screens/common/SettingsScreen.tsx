@@ -473,13 +473,17 @@ export const SettingsScreen: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
-  const [pendingLanguage, setPendingLanguage] = useState<'en' | 'tl'>('en');
+  const [pendingLanguage, setPendingLanguage] = useState<'en' | 'tl'>(language);
   const [selectedReason, setSelectedReason] = useState<string>(deleteReasons[0]);
   const [customReasonDetails, setCustomReasonDetails] = useState('');
   const [deleteWarning, setDeleteWarning] = useState<string | null>(null);
   const [showHelp, setShowHelp] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+
+  React.useEffect(() => {
+    setPendingLanguage(language);
+  }, [language]);
 
   const { user, userRole, switchRole } = useAuth();
   const { startTutorial } = useOnboardingTutorial();
@@ -842,9 +846,7 @@ export const SettingsScreen: React.FC = () => {
               <TouchableOpacity
                 style={styles.saveBtn}
                 onPress={async () => {
-                  if (pendingLanguage !== language) {
-                    await setLanguage(pendingLanguage);
-                  }
+                  await setLanguage(pendingLanguage);
                   setShowLanguageModal(false);
                 }}
                 activeOpacity={0.8}

@@ -23,6 +23,7 @@ import { useJobApplications } from '../../hooks/useJobApplications';
 import { useReviews } from '../../hooks/useReviews';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
 import { CompletedJobOverview } from '../../components/applications/CompletedJobOverview';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type JobStatusScreenRouteProp = RouteProp<EmployerStackParamList, 'JobStatusManagement'>;
 type JobStatusScreenNavigationProp = NativeStackNavigationProp<
@@ -31,6 +32,7 @@ type JobStatusScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 export const JobStatusManagementScreen: React.FC = () => {
+  const { t } = useLanguage();
   const route = useRoute<JobStatusScreenRouteProp>();
   const navigation = useNavigation<JobStatusScreenNavigationProp>();
   const { id } = route.params;
@@ -178,39 +180,35 @@ export const JobStatusManagementScreen: React.FC = () => {
   }, [navigation]);
 
   const handleCancelJob = () => {
-    showAlert(
-      'Cancel Job',
-      'Are you sure you want to cancel this job? This will notify any applied or hired workers.',
-      [
-        { text: 'No', style: 'cancel' },
-        {
-          text: 'Yes, Cancel',
-          style: 'destructive',
-          onPress: () => {
-            deleteJob(id, {
-              onSuccess: () => {
-                showAlert('Cancelled', 'Your job post has been cancelled.', [
-                  { text: 'OK', onPress: handleGoBack },
-                ]);
-              },
-              onError: (err: any) => {
-                showAlert('Error', err.message || 'Could not cancel job.');
-              },
-            });
-          },
+    showAlert(t('alert_cancel_job_title'), t('alert_cancel_job_msg'), [
+      { text: t('alert_cancel_job_btn_no'), style: 'cancel' },
+      {
+        text: t('alert_cancel_job_btn_yes'),
+        style: 'destructive',
+        onPress: () => {
+          deleteJob(id, {
+            onSuccess: () => {
+              showAlert(t('alert_cancel_job_success_title'), t('alert_cancel_job_success_msg'), [
+                { text: 'OK', onPress: handleGoBack },
+              ]);
+            },
+            onError: (err: any) => {
+              showAlert(t('error_title'), err.message || t('alert_archive_error_msg'));
+            },
+          });
         },
-      ],
-    );
+      },
+    ]);
   };
 
   const handleDeleteJob = () => {
     showAlert(
-      'Archive Post',
-      'Are you sure you want to archive this post? It will no longer show up in your post history.',
+      t('alert_archive_job_title'),
+      t('alert_archive_job_msg').replace('{jobTitle}', job?.title || ''),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('alert_archive_job_btn_cancel'), style: 'cancel' },
         {
-          text: 'Archive',
+          text: t('alert_archive_job_btn_confirm'),
           style: 'destructive',
           onPress: () => {
             deleteJob(id, {
@@ -218,7 +216,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                 handleGoBack();
               },
               onError: (err: any) => {
-                showAlert('Error', err.message || 'Could not archive job.');
+                showAlert(t('error_title'), err.message || t('alert_archive_error_msg'));
               },
             });
           },

@@ -44,7 +44,7 @@ const formatCompensation = (amount: number | string | undefined | null): string 
 };
 
 export const MyJobsScreen: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigation = useNavigation<MyJobsNavigationProp>();
   const route = useRoute<any>();
   const [activeTab, setActiveTab] = useState<'Active' | 'Past' | 'Archived'>('Active');
@@ -72,20 +72,20 @@ export const MyJobsScreen: React.FC = () => {
   const handleArchiveJob = useCallback(
     (job: JobPost) => {
       showAlert(
-        'Archive Job Post',
-        `Are you sure you want to archive "${job.title}"? You can restore it later from the Archived tab.`,
+        t('alert_archive_job_title'),
+        t('alert_archive_job_msg').replace('{jobTitle}', job.title || ''),
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('alert_archive_job_btn_cancel'), style: 'cancel' },
           {
-            text: 'Archive',
+            text: t('alert_archive_job_btn_confirm'),
             style: 'destructive',
             onPress: () => {
               deleteJob(job.id, {
                 onSuccess: () => {
-                  showAlert('Archived', 'Job post moved to archive.');
+                  showAlert(t('alert_archive_success_title'), t('alert_archive_success_msg'));
                 },
                 onError: (err: any) => {
-                  showAlert('Error', err.message || 'Could not archive job.');
+                  showAlert(t('error_title'), err.message || t('alert_archive_error_msg'));
                 },
               });
             },
@@ -93,21 +93,21 @@ export const MyJobsScreen: React.FC = () => {
         ],
       );
     },
-    [deleteJob, showAlert],
+    [deleteJob, showAlert, t],
   );
 
   const handleRestoreJob = useCallback(
     (jobId: number) => {
       restoreJob(jobId, {
         onSuccess: () => {
-          showAlert('Success', 'Job post restored successfully.');
+          showAlert(t('alert_restore_job_success_title'), t('alert_restore_job_success_msg'));
         },
         onError: (err: any) => {
-          showAlert('Error', err.message || 'Failed to restore job.');
+          showAlert(t('error_title'), err.message || t('alert_restore_job_error_msg'));
         },
       });
     },
-    [restoreJob, showAlert],
+    [restoreJob, showAlert, t],
   );
 
   const jobs = jobsResponse?.data || [];
@@ -354,7 +354,9 @@ export const MyJobsScreen: React.FC = () => {
                   ]}
                 >
                   <Ionicons name="trash-outline" size={14} color={colors.inkSoft} />
-                  <Text style={[styles.actionCountText, { color: colors.inkSoft }]}>Archived</Text>
+                  <Text style={[styles.actionCountText, { color: colors.inkSoft }]}>
+                    {t('my_jobs_tab_archived')}
+                  </Text>
                 </View>
               )}
 
@@ -363,7 +365,7 @@ export const MyJobsScreen: React.FC = () => {
               >
                 <Ionicons name="people" size={14} color="#15803D" />
                 <Text style={[styles.actionCountText, { color: '#15803D' }]}>
-                  {item.applications?.length || 0} applicants
+                  {item.applications?.length || 0} {t('applicants')}
                 </Text>
               </View>
 
@@ -391,7 +393,7 @@ export const MyJobsScreen: React.FC = () => {
         </View>
       );
     },
-    [failedImages, navigation],
+    [failedImages, navigation, t],
   );
 
   return (
@@ -413,7 +415,7 @@ export const MyJobsScreen: React.FC = () => {
             onPress={() => setActiveTab('Active')}
           >
             <Text style={[styles.tabText, activeTab === 'Active' && styles.tabTextActive]}>
-              Active ({jobs.filter((j) => j.status === 'open').length})
+              {t('my_jobs_tab_active')} ({jobs.filter((j) => j.status === 'open').length})
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -421,7 +423,7 @@ export const MyJobsScreen: React.FC = () => {
             onPress={() => setActiveTab('Past')}
           >
             <Text style={[styles.tabText, activeTab === 'Past' && styles.tabTextActive]}>
-              Past ({jobs.filter((j) => j.status !== 'open').length})
+              {t('my_jobs_tab_past')} ({jobs.filter((j) => j.status !== 'open').length})
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -429,7 +431,7 @@ export const MyJobsScreen: React.FC = () => {
             onPress={() => setActiveTab('Archived')}
           >
             <Text style={[styles.tabText, activeTab === 'Archived' && styles.tabTextActive]}>
-              Archived ({archivedJobs.length})
+              {t('my_jobs_tab_archived')} ({archivedJobs.length})
             </Text>
           </TouchableOpacity>
         </View>
@@ -486,6 +488,7 @@ export const MyJobsScreen: React.FC = () => {
       ) : (
         <FlatList
           data={filteredJobs}
+          extraData={language}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderJobCard}
           initialNumToRender={10}

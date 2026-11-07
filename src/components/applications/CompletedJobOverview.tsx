@@ -84,9 +84,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
   const employer = job?.employer;
   const counterparty = viewerRole === 'employer' ? worker : employer;
   const counterpartyLabel =
-    viewerRole === 'employer'
-      ? t('hiring_receipt_worker_label')
-      : t('hiring_receipt_employer_label');
+    viewerRole === 'employer' ? t('receipt_worker_label') : t('receipt_employer_label');
 
   const refNumber =
     job?.reference_number || `SIKAP-${job?.id || application?.job_post_id || '000'}`;
@@ -117,10 +115,10 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
 
   const rateUnitText =
     agreedPrice != null
-      ? t('hiring_receipt_final_compensation').toUpperCase()
+      ? t('receipt_final_compensation')
       : job?.rate_unit
-        ? `COMPENSATION (${job.rate_unit.replace(/_/g, ' ').toUpperCase()})`
-        : 'TOTAL COMPENSATION';
+        ? `${t('receipt_total_compensation')} (${job.rate_unit.replace(/_/g, ' ').toUpperCase()})`
+        : t('receipt_total_compensation');
 
   const rawPhotos = Array.isArray(job?.photos) ? job.photos : [];
   const validPhotos = rawPhotos.filter(
@@ -214,7 +212,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           const permission = await MediaLibrary.requestPermissionsAsync(true, ['photo']);
           if (permission?.granted) {
             await MediaLibrary.saveToLibraryAsync(capturedUri);
-            showAlert('Receipt Saved', t('hiring_receipt_saved_msg'));
+            showAlert(t('receipt_saved_alert_title'), t('receipt_saved_alert_msg'));
             return;
           }
         } catch (mediaErr) {
@@ -239,10 +237,10 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
       await Share.share({
         title: `SIKAP Job Completion Receipt (${refNumber})`,
         message: [
-          `=== ${t('hiring_receipt_official_header')} ===`,
-          `${t('hiring_receipt_ref_no')}: ${refNumber}`,
-          `Status: COMPLETED`,
-          `${t('hiring_receipt_date_completed')}: ${formattedCompletedDate}`,
+          `=== ${t('receipt_official_header')} ===`,
+          `${t('receipt_ref_label')}: ${refNumber}`,
+          `Status: ${t('receipt_status_completed')}`,
+          `Date: ${formattedCompletedDate}`,
           `Job Title: ${job?.title || 'Completed Job'}`,
           `${rateUnitText}: ${displayCompensation}`,
           counterparty?.name ? `${counterpartyLabel}: ${counterparty.name}` : null,
@@ -254,7 +252,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
       });
     } catch (err) {
       console.warn('Failed to save or share receipt:', err);
-      showAlert('Unable to Save Receipt', 'Please try again.');
+      showAlert(t('receipt_err_save_title'), t('receipt_err_save_msg'));
     } finally {
       setIsSavingReceipt(false);
     }
@@ -283,22 +281,20 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
               <View style={styles.brandSeal}>
                 <Ionicons name="shield-checkmark" size={14} color={colors.primaryDark} />
               </View>
-              <Text style={styles.brandTitle}>{t('hiring_receipt_official_header')}</Text>
+              <Text style={styles.brandTitle}>{t('receipt_official_header')}</Text>
             </View>
-            <Text style={styles.brandSubtitle}>
-              Digital Job Completion Record • Province of Sorsogon
-            </Text>
+            <Text style={styles.brandSubtitle}>{t('receipt_official_subtitle')}</Text>
 
             <View style={styles.headerMetaRow}>
               <View style={styles.refPill}>
-                <Text style={styles.refPillLabel}>REF #</Text>
+                <Text style={styles.refPillLabel}>{t('receipt_ref_label')}</Text>
                 <Text style={styles.refPillValue} numberOfLines={1} ellipsizeMode="middle">
                   {refNumber}
                 </Text>
               </View>
               <View style={styles.completedStamp}>
                 <Ionicons name="checkmark-circle" size={14} color="#15803D" />
-                <Text style={styles.completedStampText}>COMPLETED</Text>
+                <Text style={styles.completedStampText}>{t('receipt_status_completed')}</Text>
               </View>
             </View>
           </View>
@@ -362,7 +358,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
                         <Text style={styles.partyScoreText}>{counterpartyScore}</Text>
                       </View>
                     ) : (
-                      <Text style={styles.partyNoRatingText}>Verified SIKAP Member</Text>
+                      <Text style={styles.partyNoRatingText}>{t('receipt_verified_member')}</Text>
                     )}
                     {counterpartyLocation ? (
                       <Text style={styles.partyLocationText} numberOfLines={1}>
@@ -380,31 +376,31 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
 
           {/* LEVEL 4: ITEMIZED RECEIPT LEDGER */}
           <View style={styles.ledgerSection}>
-            <Text style={styles.sectionEyebrow}>JOB DETAILS & SUMMARY</Text>
+            <Text style={styles.sectionEyebrow}>{t('receipt_ledger_header')}</Text>
 
             <View style={styles.ledgerTable}>
               <View style={styles.ledgerRow}>
-                <Text style={styles.ledgerLabel}>Location</Text>
+                <Text style={styles.ledgerLabel}>{t('receipt_ledger_location')}</Text>
                 <Text style={styles.ledgerValue}>{locationText}</Text>
               </View>
 
               {job?.schedule_date ? (
                 <View style={styles.ledgerRow}>
-                  <Text style={styles.ledgerLabel}>Scheduled Date</Text>
+                  <Text style={styles.ledgerLabel}>{t('receipt_ledger_scheduled_date')}</Text>
                   <Text style={styles.ledgerValue}>{formatDate(job.schedule_date)}</Text>
                 </View>
               ) : null}
 
               {categories.length > 0 && (
                 <View style={styles.ledgerRow}>
-                  <Text style={styles.ledgerLabel}>Trade Category</Text>
+                  <Text style={styles.ledgerLabel}>{t('receipt_ledger_category')}</Text>
                   <Text style={styles.ledgerValue}>{categories.join(', ')}</Text>
                 </View>
               )}
 
               {job?.description ? (
                 <View style={[styles.ledgerRow, styles.ledgerRowVertical]}>
-                  <Text style={styles.ledgerLabel}>Work Scope / Notes</Text>
+                  <Text style={styles.ledgerLabel}>{t('receipt_ledger_work_scope')}</Text>
                   <Text style={styles.ledgerDescription} numberOfLines={3}>
                     {job.description}
                   </Text>
@@ -416,7 +412,9 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           {/* WORK PHOTOS (IF AVAILABLE & NOT REVOKED) */}
           {validPhotos.length > 0 && (
             <View style={styles.photosSection}>
-              <Text style={styles.sectionEyebrow}>ATTACHED WORK PHOTOS ({validPhotos.length})</Text>
+              <Text style={styles.sectionEyebrow}>
+                {t('receipt_attached_photos').replace('{count}', String(validPhotos.length))}
+              </Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -457,7 +455,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
                 </View>
                 <View style={{ flex: 1 }}>
                   <View style={styles.ratingTitleRow}>
-                    <Text style={styles.ratingStatusTitle}>Feedback Submitted</Text>
+                    <Text style={styles.ratingStatusTitle}>{t('receipt_feedback_submitted')}</Text>
                     {userReview?.overall_rating ? (
                       <View style={styles.ratingStarsBadge}>
                         <Ionicons name="star" size={11} color="#B45309" />
@@ -470,9 +468,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
                   {userReview?.comment ? (
                     <Text style={styles.ratingComment}>"{userReview.comment}"</Text>
                   ) : (
-                    <Text style={styles.ratingStatusSub}>
-                      Thank you for rating this completed job on SIKAP.
-                    </Text>
+                    <Text style={styles.ratingStatusSub}>{t('receipt_feedback_thank_you')}</Text>
                   )}
                 </View>
               </View>
@@ -482,10 +478,8 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
                   <Ionicons name="time-outline" size={16} color={colors.inkSoft} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.ratingStatusTitle}>7-Day Rating Window Closed</Text>
-                  <Text style={styles.ratingStatusSub}>
-                    The feedback period for this completed job has ended.
-                  </Text>
+                  <Text style={styles.ratingStatusTitle}>{t('receipt_window_closed_title')}</Text>
+                  <Text style={styles.ratingStatusSub}>{t('receipt_window_closed_desc')}</Text>
                 </View>
               </View>
             ) : (
@@ -500,14 +494,16 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
                     <Ionicons name="star-outline" size={16} color="#B45309" />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.ratingStatusTitle}>7-Day Rating Window Open</Text>
-                    <Text style={styles.ratingStatusSub}>{t('hiring_mutual_review_prompt')}</Text>
+                    <Text style={styles.ratingStatusTitle}>{t('receipt_window_open_title')}</Text>
+                    <Text style={styles.ratingStatusSub}>{t('receipt_window_open_desc')}</Text>
                   </View>
                 </View>
                 <TouchableOpacity style={styles.rateBtn} onPress={handleRate} activeOpacity={0.85}>
                   <Ionicons name="star" size={15} color={colors.white} />
                   <Text style={styles.rateBtnText}>
-                    {viewerRole === 'employer' ? 'Rate Worker' : 'Rate Employer'}
+                    {viewerRole === 'employer'
+                      ? t('receipt_rate_worker_btn')
+                      : t('receipt_rate_employer_btn')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -531,9 +527,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
               ))}
             </View>
             <Text style={styles.barcodeCodeText}>{refNumber}</Text>
-            <Text style={styles.receiptFooterNote}>
-              Verified Digital Receipt • SIKAP Sorsogon Portal
-            </Text>
+            <Text style={styles.receiptFooterNote}>{t('receipt_footer_verified')}</Text>
           </View>
         </View>
 
@@ -558,7 +552,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           ) : (
             <>
               <Ionicons name="download-outline" size={17} color={colors.white} />
-              <Text style={styles.downloadReceiptText}>Download Receipt Photo</Text>
+              <Text style={styles.downloadReceiptText}>{t('receipt_btn_download')}</Text>
             </>
           )}
         </TouchableOpacity>
@@ -566,7 +560,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
         {onOpenChat && (
           <TouchableOpacity style={styles.chatHistoryBtn} onPress={onOpenChat} activeOpacity={0.78}>
             <Ionicons name="chatbubbles-outline" size={16} color={colors.primaryDark} />
-            <Text style={styles.chatHistoryText}>View Chat History</Text>
+            <Text style={styles.chatHistoryText}>{t('receipt_btn_chat_history')}</Text>
           </TouchableOpacity>
         )}
       </View>

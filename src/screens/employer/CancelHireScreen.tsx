@@ -29,13 +29,13 @@ const CancelHireScreen: React.FC = () => {
     cancelHireMutation.mutate(id, {
       onSuccess: () => {
         showAlert(
-          t('hiring_cancel_hire_title'),
-          `You have successfully cancelled the hire for ${applicantName}.`,
+          t('alert_cancel_hire_title'),
+          t('alert_cancel_hire_success_msg').replace('{name}', applicantName || ''),
           [{ text: 'OK', onPress: () => navigation.goBack() }],
         );
       },
       onError: (err: any) => {
-        showAlert('Error', err.message || 'Failed to cancel hire.');
+        showAlert(t('error_title'), err.message || t('alert_cancel_hire_err_msg'));
       },
     });
   };

@@ -81,8 +81,8 @@ export const EditProfileScreen: React.FC = () => {
       if (!pick.canceled && pick.assets) {
         if (pick.assets.length > remainingSlots) {
           showAlert(
-            'Too Many Files',
-            `You can only add ${remainingSlots} more document(s) (maximum 3 total).`,
+            t('alert_docs_limit_title'),
+            t('alert_docs_limit_msg').replace('{remaining}', String(remainingSlots)),
           );
           return;
         }
@@ -198,7 +198,7 @@ export const EditProfileScreen: React.FC = () => {
         }
 
         if (calculateAge(parsed.date) < 15) {
-          showAlert('Invalid Age', 'You must be at least 15 years old.');
+          showAlert(t('alert_profile_invalid_age_title'), t('alert_profile_invalid_age_msg'));
           return;
         }
 
@@ -309,7 +309,7 @@ export const EditProfileScreen: React.FC = () => {
       }
       await refetchProfile();
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      showAlert('Profile Saved', 'Your changes have been saved successfully.', [
+      showAlert(t('alert_profile_saved_title'), t('alert_profile_saved_msg'), [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (err: any) {
