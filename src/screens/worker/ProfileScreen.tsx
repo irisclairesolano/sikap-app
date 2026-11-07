@@ -260,7 +260,14 @@ export const ProfileScreen: React.FC = () => {
               <Ionicons name="checkmark-done-outline" size={16} color="#16A34A" />
             </View>
             <Text style={styles.statValue}>{worker.jobsDone}</Text>
-            <Text style={styles.statLabel}>{t('completed_jobs')}</Text>
+            <Text
+              style={styles.statLabel}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {t('completed_jobs')}
+            </Text>
           </View>
 
           <View style={styles.statBox}>
@@ -268,14 +275,26 @@ export const ProfileScreen: React.FC = () => {
               <Ionicons name="calendar-outline" size={16} color="#0284C7" />
             </View>
             <Text style={styles.statValue}>{worker.memberSince}</Text>
-            <Text style={styles.statLabel}>{t('member_since')}</Text>
+            <Text
+              style={styles.statLabel}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {t('member_since')}
+            </Text>
           </View>
         </View>
 
         {/* About Me */}
         {worker.bio ? (
           <View style={styles.skillsSection}>
-            <Text style={[styles.sectionEyebrow, { marginBottom: 10 }]}>
+            <Text
+              style={[styles.sectionEyebrow, { marginBottom: 10 }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
               {t('profile_about_me_title')}
             </Text>
             <Text
@@ -295,7 +314,14 @@ export const ProfileScreen: React.FC = () => {
         {/* Work History */}
         <View style={styles.skillsSection}>
           <View style={styles.reviewHeader}>
-            <Text style={styles.sectionEyebrow}>{t('work_experience')}</Text>
+            <Text
+              style={styles.sectionEyebrow}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
+              {t('work_experience')}
+            </Text>
             <TouchableOpacity
               style={styles.addHeaderBtn}
               onPress={() => navigation.navigate('AddWorkHistory' as any)}
@@ -348,7 +374,14 @@ export const ProfileScreen: React.FC = () => {
         {/* Skills */}
         <View style={styles.skillsSection}>
           <View style={styles.reviewHeader}>
-            <Text style={styles.sectionEyebrow}>{t('skills')}</Text>
+            <Text
+              style={styles.sectionEyebrow}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
+              {t('skills')}
+            </Text>
             <TouchableOpacity
               style={styles.addHeaderBtn}
               onPress={() => navigation.navigate('AddSkills' as any)}
@@ -420,7 +453,14 @@ export const ProfileScreen: React.FC = () => {
         {/* Character References */}
         <View style={styles.reviewSection}>
           <View style={styles.reviewHeader}>
-            <Text style={styles.sectionEyebrow}>{t('character_references')}</Text>
+            <Text
+              style={styles.sectionEyebrow}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
+              {t('character_references')}
+            </Text>
             <TouchableOpacity
               style={styles.addHeaderBtn}
               onPress={() => navigation.navigate('CharacterReferences' as any)}
@@ -469,7 +509,14 @@ export const ProfileScreen: React.FC = () => {
         {worker.recentReview && (
           <View style={styles.reviewSection}>
             <View style={styles.reviewHeader}>
-              <Text style={styles.sectionEyebrow}>{t('profile_recent_review')}</Text>
+              <Text
+                style={styles.sectionEyebrow}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}
+              >
+                {t('profile_recent_review')}
+              </Text>
               <TouchableOpacity
                 style={styles.viewAllBtn}
                 onPress={() => navigation.navigate('Reviews')}

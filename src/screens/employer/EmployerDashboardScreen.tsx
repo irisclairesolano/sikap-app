@@ -329,7 +329,12 @@ export const EmployerDashboardScreen: React.FC = () => {
                 <View style={styles.statIconCircle}>
                   <Ionicons name="briefcase-outline" size={15} color="#E11D48" />
                 </View>
-                <Text style={styles.statLabel} numberOfLines={2}>
+                <Text
+                  style={styles.statLabel}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.85}
+                >
                   {t('employer_dash_stat_active_jobs')}
                 </Text>
               </View>
@@ -341,7 +346,12 @@ export const EmployerDashboardScreen: React.FC = () => {
                 <View style={styles.statIconCircle}>
                   <Ionicons name="people-outline" size={15} color="#16A34A" />
                 </View>
-                <Text style={styles.statLabel} numberOfLines={2}>
+                <Text
+                  style={styles.statLabel}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.85}
+                >
                   {t('employer_dash_stat_total_hires')}
                 </Text>
               </View>
@@ -353,7 +363,12 @@ export const EmployerDashboardScreen: React.FC = () => {
                 <View style={styles.statIconCircle}>
                   <Ionicons name="cash-outline" size={15} color="#D97706" />
                 </View>
-                <Text style={styles.statLabel} numberOfLines={2}>
+                <Text
+                  style={styles.statLabel}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.85}
+                >
                   {t('employer_dash_stat_total_paid')}
                 </Text>
               </View>
@@ -365,7 +380,12 @@ export const EmployerDashboardScreen: React.FC = () => {
                 <View style={styles.statIconCircle}>
                   <Ionicons name="star" size={15} color="#EAB308" />
                 </View>
-                <Text style={styles.statLabel} numberOfLines={2}>
+                <Text
+                  style={styles.statLabel}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.85}
+                >
                   {t('employer_dash_stat_reputation')}
                 </Text>
               </View>
@@ -390,7 +410,14 @@ export const EmployerDashboardScreen: React.FC = () => {
         <TutorialTarget id="employer_action_required" style={{ marginTop: 24 }}>
           <View>
             <View style={[styles.actionHeader, { marginTop: 0 }]}>
-              <Text style={styles.sectionHeaderTitle}>{t('employer_dash_action_header')}</Text>
+              <Text
+                style={[styles.sectionHeaderTitle, { flex: 1, marginRight: 8 }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}
+              >
+                {t('employer_dash_action_header')}
+              </Text>
               {pendingCount > 0 && (
                 <View style={styles.badgeCount}>
                   <Text style={styles.badgeCountText}>{pendingCount}</Text>
@@ -774,6 +801,8 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '48.5%',
+    minHeight: 92,
+    justifyContent: 'space-between',
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,

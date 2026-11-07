@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { TranslationKey } from '../locales/en';
 import { getItemAsync, getItemSync, setItemAsync } from '../utils/storage';
+import { useLanguage } from './LanguageContext';
 
 export type TutorialRole = 'worker' | 'employer';
 
@@ -219,6 +220,7 @@ interface ProviderProps {
 }
 
 export const OnboardingTutorialProvider: React.FC<ProviderProps> = ({ children, onNavigate }) => {
+  const { language } = useLanguage();
   const [isActive, setIsActive] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isReplay, setIsReplay] = useState(false);
@@ -307,6 +309,15 @@ export const OnboardingTutorialProvider: React.FC<ProviderProps> = ({ children, 
       updateTargetRectIfChanged(rect);
     }
   }, [currentStep, measureStepTarget, updateTargetRectIfChanged]);
+
+  // Re-measure active spotlight target when language switches
+  useEffect(() => {
+    if (!isActive || !currentStep) return;
+    const timer = setTimeout(() => {
+      refreshCurrentTarget();
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [language, isActive, currentStep, refreshCurrentTarget]);
 
   // Handle actual screen navigation and target measurement whenever currentStep changes
   useEffect(() => {

@@ -271,6 +271,10 @@ const EmployerNavigator: React.FC = () => {
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.inkSoft,
+        tabBarAllowFontScaling: false,
+        tabBarLabelStyle: {
+          fontSize: 11,
+        },
         headerShown: false,
         tabBarStyle: {
           backgroundColor: 'rgba(255, 255, 255, 0.92)',

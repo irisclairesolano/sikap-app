@@ -71,7 +71,7 @@ export const tl: Record<TranslationKey, string> = {
   compensation: 'Bayad',
   per_day: 'kada araw',
   per_hour: 'kada oras',
-  fixed_per_project: 'takdang bayad / kada proyekto',
+  fixed_per_project: 'kada proyekto',
   slots_available: 'Bukas Pang Puwesto',
   filled_slots: 'Napunan nang Puwesto',
   location: 'Lokasyon',
@@ -464,8 +464,8 @@ export const tl: Record<TranslationKey, string> = {
 
   // Dashboard Stats
   active_jobs: 'Aktibong Trabaho',
-  total_hires: 'Kabuuang Nakuha',
-  total_paid: 'Kabuuang Naibayad',
+  total_hires: 'Kabuuang Hire',
+  total_paid: 'Kabuuang Bayad',
 
   // Group 6: My Jobs Empty States
   no_active_jobs: 'Walang aktibong trabaho',
@@ -501,9 +501,9 @@ export const tl: Record<TranslationKey, string> = {
   cat_construction: 'Konstruksyon',
   cat_domestic: 'Gawaing Pantahanan',
   cat_agriculture: 'Agrikultura',
-  cat_skilled_trade: 'Mga Hanapbuhay na Nangangailangan ng Kasanayan',
+  cat_skilled_trade: 'Skilled Trade',
   cat_transport: 'Transportasyon',
-  cat_craft: 'Paggawa ng mga Gamit',
+  cat_craft: 'Gawang-Kamay',
 
   // Compensation & Rate Basis
   pay_amount_label: 'Halaga ng Bayad (PHP) *',
@@ -950,17 +950,17 @@ export const tl: Record<TranslationKey, string> = {
 
   // Employer Dashboard (EmployerDashboardScreen)
   employer_dash_greeting: 'Kumusta,',
-  employer_dash_stat_active_jobs: 'Mga Aktibong Job Post',
-  employer_dash_stat_total_hires: 'Kabuuang Kinuha',
-  employer_dash_stat_total_paid: 'Kabuuang Naibayad',
+  employer_dash_stat_active_jobs: 'Aktibong Trabaho',
+  employer_dash_stat_total_hires: 'Kabuuang Hire',
+  employer_dash_stat_total_paid: 'Kabuuang Bayad',
   employer_dash_stat_reputation: 'Reputation Score',
   employer_dash_post_job_btn: 'Mag-post ng Trabaho',
-  employer_dash_action_header: 'Mga Kailangan Mong Asikasuhin',
+  employer_dash_action_header: 'Kailangang Asikasuhin',
   employer_dash_all_caught_up_title: 'Wala Ka Nang Kailangang Asikasuhin!',
   employer_dash_all_caught_up_desc: 'Wala ka pang kailangang gawin sa ngayon.',
   employer_dash_action_review_title: 'Suriin ang Application',
   employer_dash_action_review_desc: 'Nag-apply si {name} sa job post mong {job}',
-  employer_dash_action_negotiate_title: 'Pag-usapan ang Kasunduan at Kumpirmahin ang Pagkuha',
+  employer_dash_action_negotiate_title: 'Pag-usapan ang Bayad at Kunin',
   employer_dash_action_negotiate_desc: 'Na-shortlist mo si {name} para sa {job}',
   employer_dash_action_offer_title: 'Naghihintay ng Sagot sa Alok',
   employer_dash_action_offer_desc: 'Nagpadala ka ng alok kay {name} para sa {job}',
@@ -1195,7 +1195,7 @@ export const tl: Record<TranslationKey, string> = {
     'Dala mo ang iyong score. Tapusin ang mga trabaho para mapataas ang iyong reputasyon.',
   profile_recent_review: 'Pinakabagong review',
   profile_view_all_arrow: 'Tingnan lahat →',
-  profile_add_btn: 'Magdagdag',
+  profile_add_btn: 'Idagdag',
   profile_no_work_history: 'Wala pang nailagay na karanasan sa trabaho.',
   profile_no_skills_added: 'Wala pang nailagay na kasanayan.',
   profile_no_references_added: 'Wala pang nailagay na reference.',
@@ -1204,7 +1204,7 @@ export const tl: Record<TranslationKey, string> = {
 
   my_jobs_tab_active: 'Aktibo',
   my_jobs_tab_past: 'Nakaraan',
-  my_jobs_tab_archived: 'Naka-archive',
+  my_jobs_tab_archived: 'Archive',
   my_jobs_no_past_title: 'Walang nakaraang trabaho',
   my_jobs_no_archived_title: 'Walang naka-archive na trabaho',
   my_jobs_no_past_sub: 'Lalabas dito ang mga natapos o isinarang trabaho.',
@@ -1215,7 +1215,7 @@ export const tl: Record<TranslationKey, string> = {
   my_apps_sort_pay: 'Sahod',
   my_apps_sort_oldest: 'Pinakauna',
   my_apps_stage_applied: 'Nag-apply',
-  my_apps_stage_shortlisted: 'Napili sa Shortlist',
+  my_apps_stage_shortlisted: 'Shortlisted',
   my_apps_stage_hired: 'Tinanggap',
   my_apps_stage_Offer_Received: 'May Alok na Trabaho',
   my_apps_stage_completed: 'Tapos Na',

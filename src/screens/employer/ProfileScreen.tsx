@@ -258,7 +258,14 @@ export const ProfileScreen: React.FC = () => {
               <Ionicons name="briefcase-outline" size={16} color="#E11D48" />
             </View>
             <Text style={styles.statValue}>{employer.activeJobs}</Text>
-            <Text style={styles.statLabel}>{t('active_jobs')}</Text>
+            <Text
+              style={styles.statLabel}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {t('active_jobs')}
+            </Text>
           </View>
 
           <View style={styles.statBox}>
@@ -266,7 +273,14 @@ export const ProfileScreen: React.FC = () => {
               <Ionicons name="people-outline" size={16} color="#16A34A" />
             </View>
             <Text style={styles.statValue}>{employer.hired}</Text>
-            <Text style={styles.statLabel}>{t('profile_hires_label')}</Text>
+            <Text
+              style={styles.statLabel}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {t('profile_hires_label')}
+            </Text>
           </View>
 
           <View style={styles.statBox}>
@@ -274,7 +288,14 @@ export const ProfileScreen: React.FC = () => {
               <Ionicons name="cash-outline" size={16} color="#D97706" />
             </View>
             <Text style={styles.statValue}>{employer.totalPaid}</Text>
-            <Text style={styles.statLabel}>{t('total_paid')}</Text>
+            <Text
+              style={styles.statLabel}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {t('total_paid')}
+            </Text>
           </View>
         </View>
 
@@ -282,7 +303,14 @@ export const ProfileScreen: React.FC = () => {
         {employer.recentReview && (
           <View style={styles.reviewSection}>
             <View style={styles.reviewHeader}>
-              <Text style={styles.sectionEyebrow}>{t('profile_recent_review')}</Text>
+              <Text
+                style={styles.sectionEyebrow}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}
+              >
+                {t('profile_recent_review')}
+              </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Reviews')}>
                 <Text style={styles.viewAllText}>{t('profile_view_all_arrow')}</Text>
               </TouchableOpacity>

@@ -69,7 +69,7 @@ export const en = {
   compensation: 'Compensation',
   per_day: 'per day',
   per_hour: 'per hour',
-  fixed_per_project: 'fixed / per project',
+  fixed_per_project: 'per project',
   slots_available: 'Slots Available',
   filled_slots: 'Filled Slots',
   location: 'Location',

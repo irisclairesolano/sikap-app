@@ -298,7 +298,7 @@ export const JobCard = React.memo(function JobCard({
             </View>
 
             <View style={[styles.categoryPill, { backgroundColor: catStyles.bg }]}>
-              <Text style={[styles.categoryPillText, { color: catStyles.color }]}>
+              <Text style={[styles.categoryPillText, { color: catStyles.color }]} numberOfLines={1}>
                 {primaryCategory}
               </Text>
             </View>
@@ -559,11 +559,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
     marginTop: 10,
   },
   rateContainer: {
     flexDirection: 'row',
     alignItems: 'baseline',
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   currencySymbol: {
     fontFamily: fonts.numericBold,
@@ -586,6 +590,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
+    flexShrink: 0,
+    alignSelf: 'center',
   },
   categoryPillText: {
     fontFamily: fonts.bodyBold,

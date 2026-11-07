@@ -242,17 +242,38 @@ export const MyApplicationsScreen: React.FC = () => {
             <View style={styles.summaryBar}>
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryValue}>{counts.Active}</Text>
-                <Text style={styles.summaryLabel}>{t('active_hired')}</Text>
+                <Text
+                  style={styles.summaryLabel}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                >
+                  {t('active_hired')}
+                </Text>
               </View>
               <View style={styles.summaryDivider} />
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryValue}>{counts['In Review']}</Text>
-                <Text style={styles.summaryLabel}>{t('in_review')}</Text>
+                <Text
+                  style={styles.summaryLabel}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                >
+                  {t('in_review')}
+                </Text>
               </View>
               <View style={styles.summaryDivider} />
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryValue}>{counts.History}</Text>
-                <Text style={styles.summaryLabel}>{t('status_completed')}</Text>
+                <Text
+                  style={styles.summaryLabel}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                >
+                  {t('status_completed')}
+                </Text>
               </View>
             </View>
           )}
@@ -308,7 +329,12 @@ export const MyApplicationsScreen: React.FC = () => {
                 size={16}
                 color={colors.ink}
               />
-              <Text style={styles.sortButtonText}>
+              <Text
+                style={styles.sortButtonText}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}
+              >
                 {sortOrder === 'desc'
                   ? t('my_apps_sort_newest')
                   : sortOrder === 'pay'

@@ -340,7 +340,10 @@ export const MyJobsScreen: React.FC = () => {
                 </View>
 
                 <View style={[styles.categoryPill, { backgroundColor: catStyles.bg }]}>
-                  <Text style={[styles.categoryPillText, { color: catStyles.color }]}>
+                  <Text
+                    style={[styles.categoryPillText, { color: catStyles.color }]}
+                    numberOfLines={1}
+                  >
                     {primaryCategory}
                   </Text>
                 </View>
@@ -419,7 +422,12 @@ export const MyJobsScreen: React.FC = () => {
             style={[styles.tabBtn, activeTab === 'Active' && styles.tabBtnActive]}
             onPress={() => setActiveTab('Active')}
           >
-            <Text style={[styles.tabText, activeTab === 'Active' && styles.tabTextActive]}>
+            <Text
+              style={[styles.tabText, activeTab === 'Active' && styles.tabTextActive]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
               {t('my_jobs_tab_active')} ({jobs.filter((j) => j.status === 'open').length})
             </Text>
           </TouchableOpacity>
@@ -427,7 +435,12 @@ export const MyJobsScreen: React.FC = () => {
             style={[styles.tabBtn, activeTab === 'Past' && styles.tabBtnActive]}
             onPress={() => setActiveTab('Past')}
           >
-            <Text style={[styles.tabText, activeTab === 'Past' && styles.tabTextActive]}>
+            <Text
+              style={[styles.tabText, activeTab === 'Past' && styles.tabTextActive]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
               {t('my_jobs_tab_past')} ({jobs.filter((j) => j.status !== 'open').length})
             </Text>
           </TouchableOpacity>
@@ -435,7 +448,12 @@ export const MyJobsScreen: React.FC = () => {
             style={[styles.tabBtn, activeTab === 'Archived' && styles.tabBtnActive]}
             onPress={() => setActiveTab('Archived')}
           >
-            <Text style={[styles.tabText, activeTab === 'Archived' && styles.tabTextActive]}>
+            <Text
+              style={[styles.tabText, activeTab === 'Archived' && styles.tabTextActive]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
               {t('my_jobs_tab_archived')} ({archivedJobs.length})
             </Text>
           </TouchableOpacity>
@@ -909,11 +927,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
     marginTop: 10,
   },
   rateContainer: {
     flexDirection: 'row',
     alignItems: 'baseline',
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   currencySymbol: {
     fontFamily: fonts.numericBold,
@@ -936,6 +958,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
+    flexShrink: 0,
+    alignSelf: 'center',
   },
   categoryPillText: {
     fontFamily: fonts.bodyBold,
