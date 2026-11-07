@@ -2,9 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
-  Easing,
   Modal,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -21,7 +19,7 @@ const SPOTLIGHT_PADDING = 12;
 const SPOTLIGHT_RADIUS = 18;
 const MIN_SCREEN_MARGIN = 16;
 const ESTIMATED_TOOLTIP_HEIGHT = 140;
-const BACKDROP_OVERLAY_COLOR = 'rgba(6, 12, 27, 0.72)';
+const BACKDROP_OVERLAY_COLOR = 'rgba(15, 23, 42, 0.6)';
 const MASK_BORDER_WIDTH = 2500;
 
 export const TutorialSpotlightModal: React.FC = () => {
@@ -79,58 +77,12 @@ export const TutorialSpotlightModal: React.FC = () => {
     return null;
   }, [isTransitioning, targetRect, insets.top, windowWidth, windowHeight]);
 
-  // Animated values for smooth gliding spotlight & gentle pulsing highlight ring
+  // Animated values for smooth gliding spotlight cutout and boundary
   const animLeft = useRef(new Animated.Value(cutout?.left ?? windowWidth / 2)).current;
   const animTop = useRef(new Animated.Value(cutout?.top ?? windowHeight / 2)).current;
   const animWidth = useRef(new Animated.Value(cutout?.width ?? 0)).current;
   const animHeight = useRef(new Animated.Value(cutout?.height ?? 0)).current;
   const animOpacity = useRef(new Animated.Value(cutout ? 1 : 0)).current;
-  const pulseScale = useRef(new Animated.Value(1)).current;
-  const pulseOpacity = useRef(new Animated.Value(0.85)).current;
-
-  // Gentle pulsing animation on the spotlight ring
-  useEffect(() => {
-    if (!isActive || !cutout) return;
-
-    const pulseAnim = Animated.loop(
-      Animated.sequence([
-        Animated.parallel([
-          Animated.timing(pulseScale, {
-            toValue: 1.04,
-            duration: 1200,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: false,
-          }),
-          Animated.timing(pulseOpacity, {
-            toValue: 0.45,
-            duration: 1200,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: false,
-          }),
-        ]),
-        Animated.parallel([
-          Animated.timing(pulseScale, {
-            toValue: 1,
-            duration: 1200,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: false,
-          }),
-          Animated.timing(pulseOpacity, {
-            toValue: 0.85,
-            duration: 1200,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: false,
-          }),
-        ]),
-      ]),
-    );
-
-    pulseAnim.start();
-
-    return () => {
-      pulseAnim.stop();
-    };
-  }, [isActive, cutout, pulseScale, pulseOpacity]);
 
   // Smooth animate cutout bounds when target transitions or shifts
   useEffect(() => {
@@ -251,23 +203,7 @@ export const TutorialSpotlightModal: React.FC = () => {
               />
             </View>
 
-            {/* Glowing Accent Outer Pulse Ring */}
-            <Animated.View
-              pointerEvents="none"
-              style={[
-                styles.spotlightGlowRing,
-                {
-                  left: Animated.subtract(animLeft, 4),
-                  top: Animated.subtract(animTop, 4),
-                  width: Animated.add(animWidth, 8),
-                  height: Animated.add(animHeight, 8),
-                  opacity: pulseOpacity,
-                  transform: [{ scale: pulseScale }],
-                },
-              ]}
-            />
-
-            {/* Crisp Inner Highlight Ring */}
+            {/* Clean 2px Solid Spotlight Boundary (No Pseudo-Glass, No Multi-Layered Glow/Shadow) */}
             <Animated.View
               pointerEvents="none"
               testID="tutorial-spotlight-ring"
@@ -442,30 +378,12 @@ const styles = StyleSheet.create({
   fallbackBackdrop: {
     backgroundColor: BACKDROP_OVERLAY_COLOR,
   },
-  spotlightGlowRing: {
-    position: 'absolute',
-    borderRadius: SPOTLIGHT_RADIUS + 4,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    backgroundColor: 'transparent',
-  },
   spotlightRing: {
     position: 'absolute',
     borderRadius: SPOTLIGHT_RADIUS,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: colors.primary,
     backgroundColor: 'transparent',
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.primary,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.5,
-        shadowRadius: 10,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
   },
   touchBlocker: {
     position: 'absolute',
