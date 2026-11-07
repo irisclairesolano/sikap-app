@@ -15,7 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '../../api/auth';
 import { useAlert } from '../../contexts/AlertContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -48,40 +48,45 @@ const ContentModal = ({
   title: string;
   sections: ContentSection[];
   closeLabel?: string;
-}) => (
-  <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-    <View style={cStyles.overlay}>
-      <View style={cStyles.sheet}>
-        {/* Drag handle */}
-        <View style={cStyles.handle} />
+}) => {
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'android' ? 28 : 16);
 
-        {/* Header */}
-        <View style={cStyles.sheetHeader}>
-          <View style={[cStyles.iconCircle, { backgroundColor: iconBg }]}>
-            <Ionicons name={icon as any} size={22} color={iconColor} />
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={cStyles.overlay}>
+        <View style={[cStyles.sheet, { paddingBottom: bottomInset + 20 }]}>
+          {/* Drag handle */}
+          <View style={cStyles.handle} />
+
+          {/* Header */}
+          <View style={cStyles.sheetHeader}>
+            <View style={[cStyles.iconCircle, { backgroundColor: iconBg }]}>
+              <Ionicons name={icon as any} size={22} color={iconColor} />
+            </View>
+            <Text style={cStyles.sheetTitle}>{title}</Text>
+            <TouchableOpacity onPress={onClose} style={cStyles.closeBtn} activeOpacity={0.7}>
+              <Ionicons name="close" size={22} color={colors.inkSoft} />
+            </TouchableOpacity>
           </View>
-          <Text style={cStyles.sheetTitle}>{title}</Text>
-          <TouchableOpacity onPress={onClose} style={cStyles.closeBtn} activeOpacity={0.7}>
-            <Ionicons name="close" size={22} color={colors.inkSoft} />
+
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={cStyles.body}>
+            {sections.map((s, i) => (
+              <View key={i} style={{ marginBottom: 18 }}>
+                {s.heading ? <Text style={cStyles.heading}>{s.heading}</Text> : null}
+                <Text style={cStyles.bodyText}>{s.body}</Text>
+              </View>
+            ))}
+          </ScrollView>
+
+          <TouchableOpacity style={cStyles.closeFullBtn} onPress={onClose} activeOpacity={0.8}>
+            <Text style={cStyles.closeFullBtnText}>{closeLabel}</Text>
           </TouchableOpacity>
         </View>
-
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={cStyles.body}>
-          {sections.map((s, i) => (
-            <View key={i} style={{ marginBottom: 18 }}>
-              {s.heading ? <Text style={cStyles.heading}>{s.heading}</Text> : null}
-              <Text style={cStyles.bodyText}>{s.body}</Text>
-            </View>
-          ))}
-        </ScrollView>
-
-        <TouchableOpacity style={cStyles.closeFullBtn} onPress={onClose} activeOpacity={0.8}>
-          <Text style={cStyles.closeFullBtnText}>{closeLabel}</Text>
-        </TouchableOpacity>
       </View>
-    </View>
-  </Modal>
-);
+    </Modal>
+  );
+};
 
 const cStyles = StyleSheet.create({
   overlay: {
@@ -456,6 +461,8 @@ const SettingRow = ({
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'android' ? 28 : 16);
   const { showAlert } = useAlert();
   const { language, setLanguage, t } = useLanguage();
 
@@ -743,7 +750,7 @@ export const SettingsScreen: React.FC = () => {
             activeOpacity={1}
             onPress={() => setShowLanguageModal(false)}
           />
-          <View style={cStyles.sheet}>
+          <View style={[cStyles.sheet, { paddingBottom: bottomInset + 20 }]}>
             <View style={cStyles.handle} />
             <View style={cStyles.sheetHeader}>
               <View style={[cStyles.iconCircle, { backgroundColor: colors.peach }]}>
@@ -1121,7 +1128,7 @@ const styles = StyleSheet.create({
   modalActions: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 8,
+    marginTop: 12,
   },
   cancelBtn: {
     flex: 1,

@@ -801,4 +801,39 @@ export const tl: Record<TranslationKey, string> = {
   chat: 'Makipag-chat',
   open_chat: 'Buksan ang Chat',
   application_tracking: 'Subaybayan ang Application',
+
+  // Profile Onboarding (RoleOnboardingScreen)
+  onboarding_header_pill: 'Malapit na!',
+  onboarding_worker_title: 'Mga Kaya Mong Gawin',
+  onboarding_worker_subtitle:
+    'Anong mga trabaho ang kaya mong gawin? Piliin ang mga skills na alam mo at may karanasan ka.',
+  onboarding_employer_title: 'Pag-verify ng Account',
+  onboarding_employer_subtitle:
+    'Mag-upload ng dokumento ng negosyo para ma-verify namin ang iyong employer account.',
+  onboarding_custom_skill_header: 'Magdagdag ng Ibang Skill',
+  onboarding_custom_skill_placeholder: 'Hal. Pag-uukit ng kahoy, Hilot',
+  onboarding_add_skill_btn: '+ Idagdag',
+  onboarding_skill_required_title: 'Pumili Muna',
+  onboarding_skill_required_msg: 'Pumili muna ng kahit isang skill bago magpatuloy.',
+  onboarding_upload_doc_title: 'Mag-upload ng Dokumento ng Negosyo (Optional)',
+  onboarding_upload_doc_subtitle: 'DTI / SEC / TIN documents (Hanggang 3 files, PDF o larawan)',
+  onboarding_docs_selected: '✓ {count} file ang napili',
+  onboarding_tap_to_change_docs: 'I-tap para magpalit o magdagdag ng files.',
+  onboarding_too_many_files_title: 'Sobra ang Files',
+  onboarding_too_many_files_msg: 'Hanggang 3 documents lang ang puwede mong i-upload.',
+  onboarding_file_too_large_title: 'Masyadong Malaki ang File',
+  onboarding_file_too_large_msg: 'May file na lampas sa 5MB limit.',
+  onboarding_complete_setup_btn: 'Tapos na',
+  onboarding_skip_for_now_btn: 'Skip Muna',
+  onboarding_saving_skills_loading: 'Sine-save ang mga skills mo...',
+  onboarding_uploading_docs_loading: 'Ina-upload ang mga documents mo...',
+  onboarding_completing_loading: 'Inaayos na ang account mo...',
+  onboarding_cancel_setup_title: 'Itigil ang Setup?',
+  onboarding_cancel_setup_msg:
+    'Sigurado ka bang gusto mong itigil ang setup? Babalik sa {previousRole} Mode ang account mo.',
+  onboarding_yes_switch_back_btn: 'Oo, Bumalik',
+  onboarding_skip_doc_upload_title: 'Skip Muna ang Pag-upload?',
+  onboarding_skip_doc_upload_msg:
+    'Puwede ka namang mag-upload ng business documents sa profile mo kahit kailan. Kahit i-skip mo ito, puwede ka pa ring mag-post ng trabaho at gumamit ng account mo.',
+  onboarding_skip_and_continue_btn: 'Skip at Magpatuloy',
 };

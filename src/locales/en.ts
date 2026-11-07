@@ -776,6 +776,40 @@ export const en = {
   chat: 'Chat',
   open_chat: 'Open Chat',
   application_tracking: 'Application Tracking',
+
+  // Profile Onboarding (RoleOnboardingScreen)
+  onboarding_header_pill: 'Almost There',
+  onboarding_worker_title: 'Your Skills',
+  onboarding_worker_subtitle: 'What are you good at? Select the skills that match your expertise.',
+  onboarding_employer_title: 'Employer Verification',
+  onboarding_employer_subtitle:
+    'Please provide your business documents so we can verify your employer status.',
+  onboarding_custom_skill_header: 'Type a custom skill',
+  onboarding_custom_skill_placeholder: 'e.g. Wood Carving, Hilot Massage',
+  onboarding_add_skill_btn: '+ Add',
+  onboarding_skill_required_title: 'Required',
+  onboarding_skill_required_msg: 'Please select at least one skill.',
+  onboarding_upload_doc_title: 'Upload Business Document (Optional)',
+  onboarding_upload_doc_subtitle: 'DTI / SEC / TIN Document (Max 3 files, PDF/Image)',
+  onboarding_docs_selected: '✓ {count} Document(s) Selected',
+  onboarding_tap_to_change_docs: 'Tap card to change or add more documents',
+  onboarding_too_many_files_title: 'Too Many Files',
+  onboarding_too_many_files_msg: 'You can only upload up to 3 business documents.',
+  onboarding_file_too_large_title: 'File Too Large',
+  onboarding_file_too_large_msg: 'One or more files exceed the 5MB limit.',
+  onboarding_complete_setup_btn: 'Complete Setup',
+  onboarding_skip_for_now_btn: 'Skip for now',
+  onboarding_saving_skills_loading: 'Saving your skills & completing setup...',
+  onboarding_uploading_docs_loading: 'Uploading documents & completing setup...',
+  onboarding_completing_loading: 'Completing setup...',
+  onboarding_cancel_setup_title: 'Cancel Setup?',
+  onboarding_cancel_setup_msg:
+    'Are you sure you want to cancel setup? This will switch your role back to {previousRole} Mode.',
+  onboarding_yes_switch_back_btn: 'Yes, Switch Back',
+  onboarding_skip_doc_upload_title: 'Skip Document Upload?',
+  onboarding_skip_doc_upload_msg:
+    'You can upload business documents anytime in your profile. Skipping this will not affect your ability to post jobs or use your account.',
+  onboarding_skip_and_continue_btn: 'Skip and Continue',
 };
 
 export type TranslationKey = keyof typeof en;
