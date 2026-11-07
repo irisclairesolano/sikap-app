@@ -377,20 +377,19 @@ export const EmployerDashboardScreen: React.FC = () => {
           </View>
         </TutorialTarget>
 
-        <TutorialTarget id="employer_post_job_btn">
+        <TutorialTarget id="employer_post_job_btn" style={{ marginTop: 20 }}>
           <Button
             label={t('employer_dash_post_job_btn')}
             size="lg"
             fullWidth
             onPress={() => navigation.navigate('PostJob')}
-            style={{ marginTop: 24 }}
           />
         </TutorialTarget>
 
         {/* Action Required Section */}
-        <TutorialTarget id="employer_action_required">
+        <TutorialTarget id="employer_action_required" style={{ marginTop: 24 }}>
           <View>
-            <View style={styles.actionHeader}>
+            <View style={[styles.actionHeader, { marginTop: 0 }]}>
               <Text style={styles.sectionHeaderTitle}>{t('employer_dash_action_header')}</Text>
               {pendingCount > 0 && (
                 <View style={styles.badgeCount}>

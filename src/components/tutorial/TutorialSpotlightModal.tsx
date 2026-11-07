@@ -15,8 +15,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useOnboardingTutorial } from '../../contexts/OnboardingTutorialContext';
 import { colors, fonts, shadows } from '../../theme';
 
-const SPOTLIGHT_PADDING = 12;
-const SPOTLIGHT_RADIUS = 18;
+const SPOTLIGHT_PADDING = 8;
+const SPOTLIGHT_RADIUS = 16;
 const MIN_SCREEN_MARGIN = 16;
 const ESTIMATED_TOOLTIP_HEIGHT = 140;
 const BACKDROP_OVERLAY_COLOR = 'rgba(15, 23, 42, 0.6)';
@@ -50,32 +50,37 @@ export const TutorialSpotlightModal: React.FC = () => {
 
     if (targetRect && targetRect.width > 0 && targetRect.height > 0) {
       const left = Math.max(8, targetRect.x - SPOTLIGHT_PADDING);
-      const top = Math.max(insets.top + 4, targetRect.y - SPOTLIGHT_PADDING);
       const right = Math.min(windowWidth - 8, targetRect.x + targetRect.width + SPOTLIGHT_PADDING);
+      const width = Math.max(0, right - left);
+
+      const safeTopBound = Math.max(insets.top, 8);
+      const safeBottomBound = Math.max(insets.bottom, 8);
+      const top = Math.max(safeTopBound, targetRect.y - SPOTLIGHT_PADDING);
       const bottom = Math.min(
-        windowHeight - 8,
+        windowHeight - safeBottomBound,
         targetRect.y + targetRect.height + SPOTLIGHT_PADDING,
       );
-      const width = Math.max(0, right - left);
-      const height = Math.max(0, bottom - top);
+      const rawHeight = Math.max(0, bottom - top);
 
-      // Avoid full-screen cutout if a container spans nearly the entire screen height
-      const maxSpotHeight = Math.min(height, windowHeight * 0.44);
-      if (width > 20 && maxSpotHeight > 20) {
+      // Safe maximum height so spotlight never overflows the visible screen viewport
+      const maxAllowedHeight = Math.max(80, windowHeight - insets.top - insets.bottom - 150);
+      const height = Math.min(rawHeight, maxAllowedHeight);
+
+      if (width > 20 && height > 20) {
         return {
           left,
           top,
           width,
-          height: maxSpotHeight,
-          right,
-          bottom: top + maxSpotHeight,
+          height,
+          right: left + width,
+          bottom: top + height,
           centerX: left + width / 2,
         };
       }
     }
 
     return null;
-  }, [isTransitioning, targetRect, insets.top, windowWidth, windowHeight]);
+  }, [isTransitioning, targetRect, insets.top, insets.bottom, windowWidth, windowHeight]);
 
   // Animated values for smooth gliding spotlight cutout and boundary
   const animLeft = useRef(new Animated.Value(cutout?.left ?? windowWidth / 2)).current;
