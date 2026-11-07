@@ -68,7 +68,7 @@ const SplashScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Centered Logo Card with Official Emblem & Wordmark */}
+      {/* Centered Brand Emblem & Wordmark */}
       <Animated.View
         style={[
           styles.logoContainer,
@@ -78,14 +78,12 @@ const SplashScreen: React.FC = () => {
           },
         ]}
       >
-        <View style={styles.logoCard}>
-          <Image
-            source={require('../../../assets/logo/03_Secondary_Logov1.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-            accessibilityLabel="SIKAP Logo: Local Jobs. Trusted help."
-          />
-        </View>
+        <Image
+          source={require('../../../assets/logo/03_Secondary_Logov1.png')}
+          style={styles.logoImage}
+          resizeMode="contain"
+          accessibilityLabel="SIKAP Logo: Local Jobs. Trusted help."
+        />
       </Animated.View>
 
       {/* Loading Indicator Dots */}
@@ -119,24 +117,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
-  logoCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 28,
-    paddingVertical: 24,
-    paddingHorizontal: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.85)',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 4,
-  },
   logoImage: {
-    width: 210,
-    height: 210,
+    width: 230,
+    height: 230,
   },
   dotsContainer: {
     flexDirection: 'row',
