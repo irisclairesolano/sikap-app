@@ -208,8 +208,7 @@ export const en = {
   report_user: 'Report User',
   report_job_post: 'Report Job Post',
   reason_for_report: 'Reason for Report',
-  report_describe_placeholder:
-    'Please describe why you are reporting this user or job posting in detail.',
+  report_describe_placeholder: 'Describe the issue in detail...',
   report_investigate_notice:
     'Our moderation team will investigate this report. Thank you for keeping SIKAP safe.',
 
@@ -249,7 +248,7 @@ export const en = {
   withdraw_confirm:
     'Are you sure you want to withdraw your application? This action cannot be undone.',
   job_closed_notice: 'This job has already been filled or is no longer accepting applications.',
-  tell_employer_why_fit: 'Tell the employer why you are the best fit for this position.',
+  tell_employer_why_fit: 'Tell the employer why you are a good fit...',
   employer_sent_offer_notice:
     'The employer has sent you a formal hiring offer. Review the compensation details below.',
 
@@ -363,7 +362,7 @@ export const en = {
   support_in_app_notice:
     'Support is handled directly within SIKAP. Admin replies will be visible on the "My Tickets" tab.',
   subject: 'Subject',
-  subject_placeholder: 'e.g. Question about job status, ID upload, or account',
+  subject_placeholder: 'e.g. Question about job status, ID, account...',
   issue_description: 'Issue Description',
   issue_description_placeholder: 'Provide details about what you need help with...',
   submit_ticket_btn: 'Submit Ticket',
@@ -468,11 +467,11 @@ export const en = {
   job_title_label: 'Job title *',
   job_title_placeholder: 'E.g. Carpenter wanted',
   exact_location_label: 'Exact Location',
-  exact_location_placeholder: 'E.g. 123 Main St, near Municipal Hall / Plaza',
+  exact_location_placeholder: 'E.g. 123 Main St, near Municipal Hall...',
   job_description_label: 'Job Description *',
-  job_description_placeholder: 'Describe the tasks, requirements, and expectations...',
+  job_description_placeholder: 'Describe tasks, requirements, and expectations...',
   tools_required_label: 'Tools Required (Optional)',
-  tools_required_placeholder: 'E.g. Hammer, nails, power saw',
+  tools_required_placeholder: 'E.g. Hammer, nails, saw...',
 
   // Categories & Suggestion Chips
   categories_label: 'Categories *',
@@ -785,7 +784,7 @@ export const en = {
   onboarding_employer_subtitle:
     'Please provide your business documents so we can verify your employer status.',
   onboarding_custom_skill_header: 'Type a custom skill',
-  onboarding_custom_skill_placeholder: 'e.g. Wood Carving, Hilot Massage',
+  onboarding_custom_skill_placeholder: 'e.g. Wood Carving, Hilot...',
   onboarding_add_skill_btn: '+ Add',
   onboarding_skill_required_title: 'Required',
   onboarding_skill_required_msg: 'Please select at least one skill.',
@@ -832,7 +831,7 @@ export const en = {
   work_history_unit_months: 'Months',
   work_history_unit_years: 'Years',
   work_history_desc_label: 'Description (optional)',
-  work_history_desc_placeholder: 'What did you do?',
+  work_history_desc_placeholder: 'Describe tasks and responsibilities...',
   work_history_added_jobs_header: 'Added Jobs ({count})',
   work_history_action_edit: 'Edit',
   work_history_action_delete: 'Delete',
@@ -1172,7 +1171,7 @@ export const en = {
   my_jobs_no_past_sub: 'Completed or closed jobs will appear here.',
   my_jobs_no_archived_sub: 'Jobs you archive will be stored here.',
 
-  my_apps_search_placeholder: 'Search job title, employer, or location...',
+  my_apps_search_placeholder: 'Search job, employer, or location...',
   my_apps_sort_newest: 'Newest',
   my_apps_sort_pay: 'Pay',
   my_apps_sort_oldest: 'Oldest',

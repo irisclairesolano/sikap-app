@@ -91,6 +91,17 @@ const CustomInput: React.FC<InputProps> = ({
     );
   };
 
+  // Safeguard: truncate overly long single-line placeholders with trailing ... to prevent breaking UI
+  const effectivePlaceholder = React.useMemo(() => {
+    if (!placeholder) return placeholder;
+    const MAX_SINGLE_LINE_PLACEHOLDER = 40;
+    if (!multiline && placeholder.length > MAX_SINGLE_LINE_PLACEHOLDER) {
+      const trimmed = placeholder.slice(0, MAX_SINGLE_LINE_PLACEHOLDER - 3).trimEnd();
+      return trimmed.replace(/\.+$/, '') + '...';
+    }
+    return placeholder;
+  }, [placeholder, multiline]);
+
   return (
     <View style={styles.wrap}>
       {renderLabel()}
@@ -98,7 +109,7 @@ const CustomInput: React.FC<InputProps> = ({
         <RNEInput
           value={value}
           onChangeText={handleChangeText}
-          placeholder={placeholder}
+          placeholder={effectivePlaceholder}
           secureTextEntry={secureTextEntry}
           multiline={multiline}
           numberOfLines={numberOfLines}

@@ -258,7 +258,7 @@ const RegisterScreen: React.FC = () => {
                       onPress: () => setShowPassword(!showPassword),
                     }}
                     error={fieldState.error?.message}
-                    placeholder="At least 8 characters"
+                    placeholder="At least 8 characters..."
                     status={fieldStatus.password as any}
                     statusText={fieldStatusText.password}
                   />

@@ -61,7 +61,7 @@ export const tl: Record<TranslationKey, string> = {
   messages: 'Mga Mensahe',
   profile: 'Profile',
   notifications: 'Mga Notification',
-  search_jobs_placeholder: 'Maghanap ng trabaho, kasanayan, o barangay...',
+  search_jobs_placeholder: 'Maghanap ng trabaho o kasanayan...',
   all: 'Lahat',
   urgent: 'Agarang Kailangan',
   filter: 'Filter',
@@ -202,7 +202,7 @@ export const tl: Record<TranslationKey, string> = {
     'I-rate kung gaano siya kadalas dumating sa oras at kung gaano siya maaasahan sa trabaho.',
   rate_quality_prompt: 'I-rate ang kalidad ng ginawa niyang trabaho.',
   rate_communication_prompt: 'I-rate kung gaano siya kahusay at kagalang makipag-usap.',
-  share_experience_placeholder: 'Ibahagi ang naging karanasan ninyo sa pagtatrabaho...',
+  share_experience_placeholder: 'Ibahagi ang inyong karanasan sa trabaho...',
   write_review_guide:
     'Sumulat ng review tungkol sa naging karanasan mo. Makakatulong ito sa ibang gumagamit ng SIKAP sa Sorsogon.',
   submit_review: 'Isumite ang Review',
@@ -213,7 +213,7 @@ export const tl: Record<TranslationKey, string> = {
   report_user: 'I-report ang User',
   report_job_post: 'I-report ang Job Post',
   reason_for_report: 'Dahilan ng Pag-report',
-  report_describe_placeholder: 'Ipaliwanag kung bakit mo inire-report ang user o job post na ito.',
+  report_describe_placeholder: 'Ipaliwanag kung bakit mo inire-report...',
   report_investigate_notice:
     'Susuriin ng aming team ang report na ito. Salamat sa pagtulong na mapanatiling ligtas ang SIKAP.',
 
@@ -255,8 +255,7 @@ export const tl: Record<TranslationKey, string> = {
     'Sigurado ka bang gusto mong bawiin ang aplikasyon mo? Hindi mo na ito maibabalik kapag itinuloy mo.',
   job_closed_notice:
     'May nakuha na para sa trabahong ito o hindi na ito tumatanggap ng mga aplikasyon.',
-  tell_employer_why_fit:
-    'Sabihin sa employer kung bakit ikaw ang angkop na tao para sa trabahong ito.',
+  tell_employer_why_fit: 'Sabihin kung bakit ikaw ang angkop sa trabaho...',
   employer_sent_offer_notice:
     'Nagpadala ang employer ng opisyal na alok sa trabaho. Tingnan sa ibaba ang detalye ng bayad.',
 
@@ -303,7 +302,7 @@ export const tl: Record<TranslationKey, string> = {
   reason_other_report: 'Iba pa',
   provide_more_details: 'Magbigay pa ng detalye',
   describe_what_happened: 'Ikuwento kung ano ang nangyari...',
-  describe_why_reporting_job: 'Sabihin kung bakit mo inire-report ang trabahong ito...',
+  describe_why_reporting_job: 'Sabihin kung bakit mo inire-report ito...',
   attach_evidence: 'Maglakip ng Ebidensya',
   screenshots_help_review:
     'Makakatulong ang mga screenshot para mas mabilis naming masuri at maaksyunan ang report.',
@@ -374,10 +373,9 @@ export const tl: Record<TranslationKey, string> = {
   support_in_app_notice:
     'Dito mismo sa SIKAP inaasikaso ang mga support request. Makikita ang sagot ng admin sa tab na “Mga Request Ko.”',
   subject: 'Paksa',
-  subject_placeholder: 'Hal. Tanong tungkol sa status ng trabaho, pag-upload ng ID, o account',
+  subject_placeholder: 'Hal. Tanong tungkol sa trabaho, ID, account...',
   issue_description: 'Paglalarawan ng Problema',
-  issue_description_placeholder:
-    'Ilarawan nang mas detalyado kung ano ang kailangan mo ng tulong...',
+  issue_description_placeholder: 'Ilarawan kung ano ang kailangan mo ng tulong...',
   submit_ticket_btn: 'Ipadala ang Request',
   ticket_submitted_title: 'Naipadala na ang Request',
   ticket_submitted_desc:
@@ -419,7 +417,7 @@ export const tl: Record<TranslationKey, string> = {
   decline_applicant: 'Tanggihan ang Application',
   set_final_price_confirm_hire: 'Itakda ang Napagkasunduang Bayad at Kumpirmahin ang Pagkuha',
   set_final_agreed_price: 'Itakda ang Napagkasunduang Bayad',
-  enter_agreed_price_placeholder: 'Ilagay ang napagkasunduang bayad (₱)',
+  enter_agreed_price_placeholder: 'Ilagay ang bayad (₱)...',
   shortlisted_application: 'Napiling Application',
   stage_2: 'Yugto 2',
   next_steps: 'Mga Susunod na Hakbang',
@@ -485,13 +483,13 @@ export const tl: Record<TranslationKey, string> = {
   edit_your_prefix: 'I-update ang',
   job_post_accent: 'iyong job post.',
   job_title_label: 'Pamagat ng Trabaho *',
-  job_title_placeholder: 'Hal. Kailangan ng karpintero',
+  job_title_placeholder: 'Hal. Kailangan ng karpintero...',
   exact_location_label: 'Eksaktong Lokasyon',
-  exact_location_placeholder: 'Hal. 123 Main St., malapit sa Munisipyo / Plaza',
+  exact_location_placeholder: 'Hal. 123 Main St., malapit sa Munisipyo...',
   job_description_label: 'Paglalarawan ng Trabaho *',
-  job_description_placeholder: 'Ilarawan ang mga gagawin, kailangan, at inaasahan sa trabaho...',
+  job_description_placeholder: 'Ilarawan ang mga gagawin at kailangan...',
   tools_required_label: 'Mga Kailangang Gamit (Opsyonal)',
-  tools_required_placeholder: 'Hal. Martilyo, pako, lagari',
+  tools_required_placeholder: 'Hal. Martilyo, pako, lagari...',
 
   // Categories & Suggestion Chips
   categories_label: 'Mga Kategorya *',
@@ -811,7 +809,7 @@ export const tl: Record<TranslationKey, string> = {
   onboarding_employer_subtitle:
     'Mag-upload ng dokumento ng negosyo para ma-verify namin ang iyong employer account.',
   onboarding_custom_skill_header: 'Magdagdag ng Ibang Skill',
-  onboarding_custom_skill_placeholder: 'Hal. Pag-uukit ng kahoy, Hilot',
+  onboarding_custom_skill_placeholder: 'Hal. Pag-uukit ng kahoy, Hilot...',
   onboarding_add_skill_btn: '+ Idagdag',
   onboarding_skill_required_title: 'Pumili Muna',
   onboarding_skill_required_msg: 'Pumili muna ng kahit isang skill bago magpatuloy.',
@@ -847,9 +845,9 @@ export const tl: Record<TranslationKey, string> = {
   work_history_form_header_add: 'Magdagdag ng Trabaho',
   work_history_form_header_edit: 'I-edit ang Trabaho',
   work_history_job_title_label: 'Anong Trabaho ang Ginawa Mo?',
-  work_history_job_title_placeholder: 'Hal. Mason, Karpintero, Tubero',
+  work_history_job_title_placeholder: 'Hal. Mason, Karpintero...',
   work_history_employer_label: 'Saan Ka Nagtrabaho?',
-  work_history_employer_placeholder: 'Hal. Pagpapagawa ng bahay ni Mang Reyes',
+  work_history_employer_placeholder: 'Hal. Bahay ni Mang Reyes...',
   work_history_duration_label: 'Gaano Ka Katagal Nagtrabaho?',
   work_history_duration_placeholder: 'Hal. 3',
   work_history_unit_label: 'Tagal ng Trabaho',
@@ -858,7 +856,7 @@ export const tl: Record<TranslationKey, string> = {
   work_history_unit_months: 'Buwan',
   work_history_unit_years: 'Taon',
   work_history_desc_label: 'Iba Pang Detalye (Optional)',
-  work_history_desc_placeholder: 'Ikuwento kung ano ang mga ginawa mo sa trabahong ito.',
+  work_history_desc_placeholder: 'Ikuwento ang mga ginawa mo sa trabaho...',
   work_history_added_jobs_header: 'Mga Naidagdag na Trabaho ({count})',
   work_history_action_edit: 'I-edit',
   work_history_action_delete: 'Alisin',
@@ -896,7 +894,7 @@ export const tl: Record<TranslationKey, string> = {
   skills_empty_selected:
     'Wala ka pang napipili. Pumili ng trabaho sa ibaba o magdagdag ng sarili mong skill.',
   skills_custom_section_header: 'Magdagdag ng Ibang Skill',
-  skills_custom_input_placeholder: 'Hal. Pagmamason, Pagkukumpuni, Hilot',
+  skills_custom_input_placeholder: 'Hal. Pagmamason, pagkukumpuni...',
   skills_add_btn: '+ Idagdag',
   skills_suggested_matches: 'Mga Posibleng Tugma',
   skills_err_already_selected: 'Napili mo na ang skill na ito.',
@@ -1209,7 +1207,7 @@ export const tl: Record<TranslationKey, string> = {
   my_jobs_no_past_sub: 'Lalabas dito ang mga natapos o isinarang trabaho.',
   my_jobs_no_archived_sub: 'Dito mapupunta ang mga trabahong i-a-archive mo.',
 
-  my_apps_search_placeholder: 'Maghanap ng trabaho, employer, o lokasyon...',
+  my_apps_search_placeholder: 'Maghanap ng trabaho, employer...',
   my_apps_sort_newest: 'Pinakabago',
   my_apps_sort_pay: 'Sahod',
   my_apps_sort_oldest: 'Pinakaluma',

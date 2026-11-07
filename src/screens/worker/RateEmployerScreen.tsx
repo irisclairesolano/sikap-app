@@ -184,7 +184,7 @@ export const RateEmployerScreen: React.FC = () => {
             />
             <TextInput
               style={styles.textInput}
-              placeholder="Write at least 5 characters (e.g. Clear instructions, paid on time)."
+              placeholder="Write your review (min. 5 characters)..."
               placeholderTextColor={colors.inkLight}
               multiline
               value={note}
