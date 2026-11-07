@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   footer: {
-    marginTop: 24,
+    marginTop: 16,
   },
 });
 

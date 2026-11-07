@@ -1335,10 +1335,11 @@ const styles = StyleSheet.create({
   },
   actionBtn: { width: '100%' },
   cancelBtn: {
+    height: 48,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    paddingHorizontal: 16,
     gap: 8,
     borderWidth: 1,
     borderColor: colors.error,

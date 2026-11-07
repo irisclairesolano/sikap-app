@@ -1338,7 +1338,7 @@ export const PostJobScreen: React.FC = () => {
               updateJobMutation.isPending
             }
             onPress={handleSubmit}
-            style={{ marginTop: 24 }}
+            style={{ marginTop: 16 }}
           />
           {(!isAllPhotosUploaded || isUploadingVideo) && (
             <Text
