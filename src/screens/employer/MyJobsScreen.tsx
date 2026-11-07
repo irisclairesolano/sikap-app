@@ -14,7 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../../components/common/Button';
 import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 import { formatRateUnit, getCategoryStyles, getRelativeTime } from '../../components/jobs/JobCard';
@@ -47,6 +47,7 @@ export const MyJobsScreen: React.FC = () => {
   const { t, language } = useLanguage();
   const navigation = useNavigation<MyJobsNavigationProp>();
   const route = useRoute<any>();
+  const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<'Active' | 'Past' | 'Archived'>('Active');
   const [refreshing, setRefreshing] = useState(false);
   const { showAlert } = useAlert();
@@ -520,7 +521,10 @@ export const MyJobsScreen: React.FC = () => {
         onRequestClose={() => setMenuJob(null)}
       >
         <Pressable style={styles.modalOverlay} onPress={() => setMenuJob(null)}>
-          <Pressable style={styles.modalSheet} onPress={(e) => e.stopPropagation()}>
+          <Pressable
+            style={[styles.modalSheet, { paddingBottom: Math.max(insets.bottom, 20) + 12 }]}
+            onPress={(e) => e.stopPropagation()}
+          >
             <View style={styles.modalHandle} />
 
             <View style={styles.modalHeader}>

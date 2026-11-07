@@ -48,6 +48,7 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthCheck } from '../hooks/useAuthCheck';
 import { useAuth } from '../hooks/useAuth';
 import {
@@ -129,6 +130,7 @@ const AdminFallback: React.FC = () => {
 
 const SuspendedFallback: React.FC = () => {
   const { logout } = useAuth();
+  const insets = useSafeAreaInsets();
   const [showAppealModal, setShowAppealModal] = React.useState(false);
   const [appealMessage, setAppealMessage] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -272,7 +274,7 @@ const SuspendedFallback: React.FC = () => {
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
               padding: 24,
-              paddingBottom: 36,
+              paddingBottom: Math.max(insets.bottom, 20) + 16,
             }}
           >
             <View

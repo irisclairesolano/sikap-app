@@ -32,7 +32,7 @@
  *        published jobs always appear at the top of the feed.
  * ============================================================================
  */
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
@@ -83,6 +83,7 @@ const LOCATIONS: { key: string; labelKey: TranslationKey }[] = [
 export const JobFeedScreen: React.FC = () => {
   const { t, language } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
+  const insets = useSafeAreaInsets();
   const [activeCategory, setActiveCategory] = useState('All');
   const [locationFilter, setLocationFilter] = useState('Anywhere');
   const [searchInput, setSearchInput] = useState('');
@@ -402,7 +403,7 @@ export const JobFeedScreen: React.FC = () => {
 
       <Modal visible={isFilterModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 20) + 16 }]}>
             <Text style={styles.modalTitle}>
               {t('filter')} - {t('location')}
             </Text>
@@ -592,7 +593,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
-    paddingBottom: 40,
     borderTopWidth: 1,
     borderColor: 'rgba(226, 232, 240, 0.60)',
     shadowColor: '#0F172A',
