@@ -78,7 +78,7 @@ const ForgotPasswordScreen: React.FC = () => {
 
         <Input
           label="Email Address"
-          placeholder="e.g. juan@example.com"
+          placeholder="e.g. juan@example.com..."
           keyboardType="email-address"
           autoCapitalize="none"
           value={email}

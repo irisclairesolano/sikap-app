@@ -77,7 +77,7 @@ describe('ActionCard Job Request Component', () => {
 
     // Must NOT show the old premature final price waiting pill or input box
     expect(queryByText('Waiting for employer to set final price & confirm hire...')).toBeNull();
-    expect(queryByPlaceholderText('Enter agreed price (₱)')).toBeNull();
+    expect(queryByPlaceholderText('Enter agreed price (₱)...')).toBeNull();
   });
 
   it('renders for employer with applicant announcement, next steps, and toggleable price confirmation', async () => {
@@ -109,11 +109,11 @@ describe('ActionCard Job Request Component', () => {
     expect(getByText('Hire Decision')).toBeTruthy();
     expect(getByText('Hire Worker')).toBeTruthy();
     expect(getByText('Decline')).toBeTruthy();
-    expect(queryByPlaceholderText('Enter agreed price (₱)')).toBeNull();
+    expect(queryByPlaceholderText('Enter agreed price (₱)...')).toBeNull();
 
     // Tapping Hire Worker reveals the price input and confirm button
     await fireEvent.press(getByText('Hire Worker'));
-    expect(getByPlaceholderText('Enter agreed price (₱)')).toBeTruthy();
+    expect(getByPlaceholderText('Enter agreed price (₱)...')).toBeTruthy();
     expect(getByText('Confirm Hire')).toBeTruthy();
   }, 15000);
 

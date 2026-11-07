@@ -77,8 +77,8 @@ describe('AddWorkHistoryScreen', () => {
   it('renders form elements correctly', async () => {
     const { getByText, getByPlaceholderText } = await render(<AddWorkHistoryScreen />);
     expect(getByText(/Add a/i)).toBeTruthy();
-    expect(getByPlaceholderText('E.g. Tile setter')).toBeTruthy();
-    expect(getByPlaceholderText('E.g. Reyes household renovation')).toBeTruthy();
+    expect(getByPlaceholderText('E.g. Tile setter...')).toBeTruthy();
+    expect(getByPlaceholderText('E.g. Reyes household renovation...')).toBeTruthy();
   });
 
   it('validates required fields on Save and shows inline warnings', async () => {
@@ -102,14 +102,14 @@ describe('AddWorkHistoryScreen', () => {
     );
 
     // Fill other fields
-    await fireEvent.changeText(getByPlaceholderText('E.g. Tile setter'), 'Mason');
+    await fireEvent.changeText(getByPlaceholderText('E.g. Tile setter...'), 'Mason');
     await fireEvent.changeText(
-      getByPlaceholderText('E.g. Reyes household renovation'),
+      getByPlaceholderText('E.g. Reyes household renovation...'),
       'Reyes Renovation',
     );
 
     // Pick start date (first button is Start Date)
-    const dateButtons = getAllByText('Select month & year');
+    const dateButtons = getAllByText('Select month & year...');
     await fireEvent.press(dateButtons[0]);
     const selectModalBtn = getByText('Select');
     await fireEvent.press(selectModalBtn);
@@ -128,14 +128,14 @@ describe('AddWorkHistoryScreen', () => {
       <AddWorkHistoryScreen />,
     );
 
-    await fireEvent.changeText(getByPlaceholderText('E.g. Tile setter'), 'Carpenter');
+    await fireEvent.changeText(getByPlaceholderText('E.g. Tile setter...'), 'Carpenter');
     await fireEvent.changeText(
-      getByPlaceholderText('E.g. Reyes household renovation'),
+      getByPlaceholderText('E.g. Reyes household renovation...'),
       'Reyes Renovation',
     );
 
     // Pick start date (first button is Start Date)
-    const dateButtons = getAllByText('Select month & year');
+    const dateButtons = getAllByText('Select month & year...');
     await fireEvent.press(dateButtons[0]);
     const selectModalBtn = getByText('Select');
     await fireEvent.press(selectModalBtn);
@@ -186,11 +186,11 @@ describe('AddWorkHistoryScreen', () => {
     expect(getByText('Electrician')).toBeTruthy();
     expect(getByText('Power Co')).toBeTruthy();
     expect(getByText('+ Add another job')).toBeTruthy();
-    expect(queryByPlaceholderText('E.g. Tile setter')).toBeNull();
+    expect(queryByPlaceholderText('E.g. Tile setter...')).toBeNull();
 
     // Clicking "+ Add another job" transitions to the dedicated form page
     await fireEvent.press(getByText('+ Add another job'));
-    expect(queryByPlaceholderText('E.g. Tile setter')).toBeTruthy();
+    expect(queryByPlaceholderText('E.g. Tile setter...')).toBeTruthy();
   });
 
   it('editing an existing job opens edit page and passes id to saveMutation without creating duplicate', async () => {

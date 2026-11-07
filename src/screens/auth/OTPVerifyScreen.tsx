@@ -201,7 +201,7 @@ const OTPVerifyScreen: React.FC = () => {
                   onChangeText={setNewEmailInput}
                   autoCapitalize="none"
                   keyboardType="email-address"
-                  placeholder="Enter new email"
+                  placeholder="Enter new email..."
                 />
                 <View
                   style={{

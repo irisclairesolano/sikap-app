@@ -290,7 +290,7 @@ const RegisterScreen: React.FC = () => {
                       onPress: () => setShowConfirmPassword(!showConfirmPassword),
                     }}
                     error={fieldState.error?.message}
-                    placeholder="Re-enter password"
+                    placeholder="Re-enter password..."
                     status={fieldStatus.confirmPassword as any}
                     statusText={fieldStatusText.confirmPassword}
                   />

@@ -114,8 +114,8 @@ describe('AddCharacterReferencesScreen', () => {
     await fireEvent.press(getByText('Add another reference'));
 
     // Enter details
-    await fireEvent.changeText(getByPlaceholderText('E.g. Juan Reyes'), 'Jane Doe');
-    await fireEvent.changeText(getByPlaceholderText('E.g. Former employer'), 'Manager');
+    await fireEvent.changeText(getByPlaceholderText('E.g. Juan Reyes...'), 'Jane Doe');
+    await fireEvent.changeText(getByPlaceholderText('E.g. Former employer...'), 'Manager');
 
     // Enter invalid phone
     await fireEvent.changeText(getByPlaceholderText('E.g. 09123456789'), '12345');
@@ -168,8 +168,8 @@ describe('AddCharacterReferencesScreen', () => {
     // Tap Add another reference
     await fireEvent.press(getByText('Add another reference'));
 
-    await fireEvent.changeText(getByPlaceholderText('E.g. Juan Reyes'), 'Bob Johnson');
-    await fireEvent.changeText(getByPlaceholderText('E.g. Former employer'), 'Colleague');
+    await fireEvent.changeText(getByPlaceholderText('E.g. Juan Reyes...'), 'Bob Johnson');
+    await fireEvent.changeText(getByPlaceholderText('E.g. Former employer...'), 'Colleague');
     await fireEvent.changeText(getByPlaceholderText('E.g. 09123456789'), '09222222222');
 
     await fireEvent.press(getByText('Save reference'));
@@ -185,8 +185,8 @@ describe('AddCharacterReferencesScreen', () => {
 
     await fireEvent.press(getByText('Add another reference'));
 
-    await fireEvent.changeText(getByPlaceholderText('E.g. Juan Reyes'), 'Maria Santos');
-    await fireEvent.changeText(getByPlaceholderText('E.g. Former employer'), 'Former Client');
+    await fireEvent.changeText(getByPlaceholderText('E.g. Juan Reyes...'), 'Maria Santos');
+    await fireEvent.changeText(getByPlaceholderText('E.g. Former employer...'), 'Former Client');
     await fireEvent.changeText(getByPlaceholderText('E.g. 09123456789'), '09333333333');
 
     await fireEvent.press(getByText('Save reference'));
