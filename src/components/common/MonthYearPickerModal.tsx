@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fonts } from '../../theme';
 import Button from './Button';
 
@@ -70,6 +71,8 @@ export const MonthYearPickerModal: React.FC<MonthYearPickerModalProps> = ({
   maxDate,
   minDate,
 }) => {
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom + 16, Platform.OS === 'ios' ? 36 : 28);
   const current = new Date();
   const [selectedYear, setSelectedYear] = useState<number>(
     initialValue?.year ?? current.getFullYear(),
@@ -123,7 +126,7 @@ export const MonthYearPickerModal: React.FC<MonthYearPickerModalProps> = ({
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+        <View style={[styles.modalContent, { paddingBottom: bottomInset }]}>
           <View style={styles.dragIndicator} />
 
           <View style={styles.header}>
@@ -236,7 +239,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: Platform.OS === 'ios' ? 36 : 24,
   },
   dragIndicator: {
     width: 40,

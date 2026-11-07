@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import {
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ScrollView,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fonts } from '../../theme';
 import Button from './Button';
 
@@ -15,6 +24,8 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom + 16, Platform.OS === 'ios' ? 36 : 28);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -187,7 +198,7 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
   return (
     <Modal visible={visible} transparent={true} animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+        <View style={[styles.modalContent, { paddingBottom: bottomInset }]}>
           {/* Header Drag Bar */}
           <View style={styles.dragIndicator} />
 
@@ -304,7 +315,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
     paddingTop: 12,
     paddingHorizontal: 24,
-    paddingBottom: 36,
     maxHeight: '90%',
   },
   dragIndicator: {
