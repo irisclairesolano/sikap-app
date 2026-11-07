@@ -313,7 +313,7 @@ export const RoleOnboardingScreen: React.FC = () => {
           <View style={{ width: 40 }} />
         )}
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>Almost There</Text>
+          <Text style={styles.headerPillText}>{t('onboarding_header_pill')}</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
@@ -321,12 +321,14 @@ export const RoleOnboardingScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.contentHeader}>
           <Text style={styles.title}>
-            {targetRole === 'employer' ? 'Employer Verification' : 'Your Skills'}
+            {targetRole === 'employer'
+              ? t('onboarding_employer_title')
+              : t('onboarding_worker_title')}
           </Text>
           <Text style={styles.subtitle}>
             {targetRole === 'employer'
-              ? 'Please provide your business documents so we can verify your employer status.'
-              : 'What are you good at? Select the skills that match your expertise.'}
+              ? t('onboarding_employer_subtitle')
+              : t('onboarding_worker_subtitle')}
           </Text>
         </View>
         {targetRole === 'employer' && (
@@ -359,8 +361,8 @@ export const RoleOnboardingScreen: React.FC = () => {
                 ]}
               >
                 {selectedBusinessDocs.length > 0
-                  ? `✓ ${selectedBusinessDocs.length} Document(s) Selected`
-                  : 'Upload Business Document (Optional)'}
+                  ? t('onboarding_docs_selected', { count: selectedBusinessDocs.length })
+                  : t('onboarding_upload_doc_title')}
               </Text>
               {selectedBusinessDocs.length > 0 ? (
                 <View style={{ width: '100%', marginTop: 12, gap: 8 }}>
@@ -416,13 +418,11 @@ export const RoleOnboardingScreen: React.FC = () => {
                       marginTop: 4,
                     }}
                   >
-                    Tap card to change or add more documents
+                    {t('onboarding_tap_to_change_docs')}
                   </Text>
                 </View>
               ) : (
-                <Text style={styles.uploadSubtitle}>
-                  DTI / SEC / TIN Document (Max 3 files, PDF/Image)
-                </Text>
+                <Text style={styles.uploadSubtitle}>{t('onboarding_upload_doc_subtitle')}</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -430,11 +430,11 @@ export const RoleOnboardingScreen: React.FC = () => {
         {targetRole === 'worker' && (
           <View>
             <View style={{ marginBottom: 20 }}>
-              <Text style={styles.sectionHeader}>Type a custom skill</Text>
+              <Text style={styles.sectionHeader}>{t('onboarding_custom_skill_header')}</Text>
               <View style={styles.customInputRow}>
                 <View style={{ flex: 1 }}>
                   <Input
-                    placeholder="e.g. Wood Carving, Hilot Massage"
+                    placeholder={t('onboarding_custom_skill_placeholder')}
                     value={customSkill}
                     onChangeText={(text) => {
                       setCustomSkill(text);
@@ -448,7 +448,7 @@ export const RoleOnboardingScreen: React.FC = () => {
                   onPress={handleAddCustomSkill}
                   disabled={!customSkill.trim()}
                 >
-                  <Text style={styles.addButtonText}>+ Add</Text>
+                  <Text style={styles.addButtonText}>{t('onboarding_add_skill_btn')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -482,10 +482,14 @@ export const RoleOnboardingScreen: React.FC = () => {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button label="Complete Setup" onPress={handleComplete} loading={isOnboardingRole} />
+        <Button
+          label={t('onboarding_complete_setup_btn')}
+          onPress={handleComplete}
+          loading={isOnboardingRole}
+        />
         {targetRole === 'employer' && (
           <Button
-            label="Skip for now"
+            label={t('onboarding_skip_for_now_btn')}
             variant="ghost"
             onPress={handleBackPress}
             disabled={isOnboardingRole}
@@ -499,14 +503,14 @@ export const RoleOnboardingScreen: React.FC = () => {
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>
             {isCancelling
-              ? 'Switching back to your previous mode...'
+              ? t('onboarding_completing_loading')
               : isSkipping
-                ? 'Completing setup...'
+                ? t('onboarding_completing_loading')
                 : targetRole === 'employer'
                   ? selectedBusinessDocs.length > 0
-                    ? 'Uploading documents & completing setup...'
-                    : 'Completing setup...'
-                  : 'Saving your skills & completing setup...'}
+                    ? t('onboarding_uploading_docs_loading')
+                    : t('onboarding_completing_loading')
+                  : t('onboarding_saving_skills_loading')}
           </Text>
         </View>
       )}
