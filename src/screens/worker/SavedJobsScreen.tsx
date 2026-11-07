@@ -11,8 +11,10 @@ import { JobCard } from '../../components/jobs/JobCard';
 import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { EmptyState } from '../../components/common/EmptyState';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const SavedJobsScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const { data, isLoading, isError, error, refetch, isFetching } = useSavedJobs();
   const { mutate: toggleSave } = useToggleSaveJob();
@@ -55,10 +57,10 @@ export const SavedJobsScreen: React.FC = () => {
         </TouchableOpacity>
       )}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={styles.headline}>Saved Jobs</Text>
+        <Text style={styles.headline}>{t('saved_jobs')}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingRight: 20 }}>
           <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
-            {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
+            {sortOrder === 'desc' ? t('my_apps_sort_newest') : t('my_apps_sort_oldest')}
           </Text>
           <TouchableOpacity
             style={{ padding: 4 }}
@@ -72,7 +74,7 @@ export const SavedJobsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <Text style={styles.subtitle}>Jobs you've bookmarked for later.</Text>
+      <Text style={styles.subtitle}>{t('saved_jobs_subtitle')}</Text>
     </View>
   );
 
@@ -98,7 +100,7 @@ export const SavedJobsScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.safeArea}>
         {renderHeader()}
-        <ErrorBanner message={error?.message || 'Failed to load saved jobs.'} />
+        <ErrorBanner message={error?.message || t('saved_jobs_load_error')} />
       </SafeAreaView>
     );
   }
@@ -117,9 +119,9 @@ export const SavedJobsScreen: React.FC = () => {
         ListEmptyComponent={
           <EmptyState
             icon="bookmark-outline"
-            title="No saved jobs yet"
-            subtitle="You don't have any saved jobs yet. Browse the job feed to save jobs you're interested in."
-            actionLabel="Browse Jobs"
+            title={t('saved_jobs_empty_title')}
+            subtitle={t('saved_jobs_empty_sub')}
+            actionLabel={t('saved_jobs_browse_btn')}
             onAction={() => navigation.navigate('Home')}
           />
         }

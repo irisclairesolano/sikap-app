@@ -1192,6 +1192,13 @@ export const en = {
   my_apps_next_leave_review: 'Leave a review to help the community',
   my_apps_next_reviewed_all: 'Employer has reviewed all applicants',
   my_apps_next_withdrawn: 'You withdrew this application',
+
+  saved_jobs_subtitle: "Jobs you've bookmarked for later.",
+  saved_jobs_load_error: 'Failed to load saved jobs.',
+  saved_jobs_empty_title: 'No saved jobs yet',
+  saved_jobs_empty_sub:
+    "You don't have any saved jobs yet. Browse the job feed to save jobs you're interested in.",
+  saved_jobs_browse_btn: 'Browse Jobs',
 };
 
 export type TranslationKey = keyof typeof en;

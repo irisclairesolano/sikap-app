@@ -1228,4 +1228,11 @@ export const tl: Record<TranslationKey, string> = {
   my_apps_next_leave_review: 'Mag-iwan ng review para makatulong sa komunidad',
   my_apps_next_reviewed_all: 'Nasuri na ng employer ang lahat ng aplikante',
   my_apps_next_withdrawn: 'Binawi mo ang application na ito',
+
+  saved_jobs_subtitle: 'Mga trabahong na-save mo para balikan.',
+  saved_jobs_load_error: 'Hindi ma-load ang mga na-save na trabaho.',
+  saved_jobs_empty_title: 'Wala pang na-save na trabaho',
+  saved_jobs_empty_sub:
+    'Wala ka pang na-save na trabaho. Maghanap sa job feed para mag-save ng mga trabahong gusto mo.',
+  saved_jobs_browse_btn: 'Maghanap ng Trabaho',
 };
