@@ -23,6 +23,7 @@ import { Skill } from '../../types';
 import Input from '../../components/common/Input';
 import { skillsApi } from '../../api/skills';
 import { appendFileToFormData } from '../../utils/formData';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const RoleOnboardingScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -30,6 +31,7 @@ export const RoleOnboardingScreen: React.FC = () => {
   const { targetRole } = route.params;
   const { onboardRole, isOnboardingRole, user, switchRole } = useAuth();
   const { showAlert } = useAlert();
+  const { t } = useLanguage();
 
   const [isCancelling, setIsCancelling] = useState(false);
   const [isSkipping, setIsSkipping] = useState(false);
@@ -49,12 +51,12 @@ export const RoleOnboardingScreen: React.FC = () => {
     const previousRole = isTargetWorker ? 'Employer' : 'Worker';
 
     showAlert(
-      'Cancel Setup?',
-      `Are you sure you want to cancel setup? This will switch your role back to ${previousRole} Mode.`,
+      t('onboarding_cancel_setup_title'),
+      t('onboarding_cancel_setup_msg', { previousRole }),
       [
-        { text: 'No', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         {
-          text: 'Yes, Switch Back',
+          text: t('onboarding_yes_switch_back_btn'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -78,17 +80,17 @@ export const RoleOnboardingScreen: React.FC = () => {
     if (targetRole === 'employer') {
       if (hasWorkerProfile) {
         showAlert(
-          'Cancel Employer Setup?',
-          'Would you like to switch back to Worker Mode, or skip document upload and continue as an Employer?',
+          t('onboarding_cancel_setup_title'),
+          t('onboarding_cancel_setup_msg', { previousRole: 'Worker' }),
           [
-            { text: 'Stay Here', style: 'cancel' },
+            { text: t('cancel'), style: 'cancel' },
             {
-              text: 'Switch to Worker',
+              text: t('onboarding_yes_switch_back_btn'),
               style: 'destructive',
               onPress: handleCancel,
             },
             {
-              text: 'Skip & Continue as Employer',
+              text: t('onboarding_skip_and_continue_btn'),
               onPress: async () => {
                 try {
                   setIsSkipping(true);
@@ -104,27 +106,23 @@ export const RoleOnboardingScreen: React.FC = () => {
           ],
         );
       } else {
-        showAlert(
-          'Skip Document Upload?',
-          'You can upload business documents anytime in your profile. Skipping this will not affect your ability to post jobs or use your account.',
-          [
-            { text: 'Stay Here', style: 'cancel' },
-            {
-              text: 'Skip and Continue',
-              onPress: async () => {
-                try {
-                  setIsSkipping(true);
-                  await onboardRole({ targetRole, data: {} });
-                  notifyAuthChanged();
-                } catch (error: any) {
-                  showAlert('Error', error.message || 'Failed to skip onboarding');
-                } finally {
-                  setIsSkipping(false);
-                }
-              },
+        showAlert(t('onboarding_skip_doc_upload_title'), t('onboarding_skip_doc_upload_msg'), [
+          { text: t('cancel'), style: 'cancel' },
+          {
+            text: t('onboarding_skip_and_continue_btn'),
+            onPress: async () => {
+              try {
+                setIsSkipping(true);
+                await onboardRole({ targetRole, data: {} });
+                notifyAuthChanged();
+              } catch (error: any) {
+                showAlert('Error', error.message || 'Failed to skip onboarding');
+              } finally {
+                setIsSkipping(false);
+              }
             },
-          ],
-        );
+          },
+        ]);
       }
     } else {
       handleCancel();
@@ -220,7 +218,7 @@ export const RoleOnboardingScreen: React.FC = () => {
 
       if (!pick.canceled && pick.assets) {
         if (pick.assets.length > 3) {
-          showAlert('Too Many Files', 'You can only upload up to 3 business documents.');
+          showAlert(t('onboarding_too_many_files_title'), t('onboarding_too_many_files_msg'));
           return;
         }
 
@@ -234,7 +232,7 @@ export const RoleOnboardingScreen: React.FC = () => {
         });
 
         if (hasLargeFile) {
-          showAlert('File Too Large', `One or more files exceed the ${MAX_SIZE_MB}MB limit.`);
+          showAlert(t('onboarding_file_too_large_title'), t('onboarding_file_too_large_msg'));
         }
 
         setSelectedBusinessDocs(validFiles.slice(0, 3));
@@ -259,7 +257,7 @@ export const RoleOnboardingScreen: React.FC = () => {
           .map((s) => s.name);
 
         if (validSkillIds.length === 0 && customNames.length === 0) {
-          showAlert('Required', 'Please select at least one skill.');
+          showAlert(t('onboarding_skill_required_title'), t('onboarding_skill_required_msg'));
           return;
         }
 
