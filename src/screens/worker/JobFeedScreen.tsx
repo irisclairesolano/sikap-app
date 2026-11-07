@@ -292,11 +292,11 @@ export const JobFeedScreen: React.FC = () => {
               {locationFilter !== 'Anywhere' && <View style={styles.filterActiveDot} />}
             </TouchableOpacity>
           </View>
-        </TutorialTarget>
 
-        <Text style={styles.headline}>
-          <Text style={styles.count}>{jobsList.length}</Text> {t('jobs_nearby')}
-        </Text>
+          <Text style={styles.headline}>
+            <Text style={styles.count}>{jobsList.length}</Text> {t('jobs_nearby')}
+          </Text>
+        </TutorialTarget>
 
         <TutorialTarget id="worker_skill_chips">
           <View style={styles.filterContainer}>
@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 14,
     gap: 12,
   },
   searchContainer: {
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.display,
     fontSize: 32,
     lineHeight: 40,
-    marginBottom: 24,
+    marginBottom: 8,
     textAlign: 'center',
     letterSpacing: -0.8,
     paddingBottom: 4,
@@ -575,6 +575,7 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     marginHorizontal: -20, // bleed out to edges
+    marginTop: 12,
   },
   filterScroll: {
     paddingHorizontal: 20,
