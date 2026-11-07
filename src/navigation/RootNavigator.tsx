@@ -511,7 +511,12 @@ const RootNavigator: React.FC = () => {
   }
 
   // 4. ID Upload gating for both Workers & Employers (Both must upload government ID before access)
-  if (!isVerified && (status === 'pending_id_upload' || (!status && !user.document_url))) {
+  if (
+    !isVerified &&
+    (status === 'pending_id_upload' ||
+      (!status && !user.document_url) ||
+      (user.verification_status === 'pending' && !user.document_url))
+  ) {
     return (
       <AuthNavigator
         key={`pending-id-${user.id}-${status}`}

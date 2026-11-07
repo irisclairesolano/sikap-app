@@ -41,8 +41,12 @@ const LoginScreen: React.FC = () => {
 
     loginMutation.mutate(credentials, {
       onSuccess: (data) => {
-        const status = data?.user?.registration_status;
+        const rawStatus = data?.user?.registration_status;
         const verificationStatus = data?.user?.verification_status;
+        const status =
+          rawStatus === 'approved' && verificationStatus === 'pending' && !data?.user?.document_url
+            ? 'pending_id_upload'
+            : rawStatus;
 
         if (status === 'rejected' || verificationStatus === 'rejected') {
           navigation.navigate('PendingVerify');

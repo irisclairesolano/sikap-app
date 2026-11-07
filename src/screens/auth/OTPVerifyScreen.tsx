@@ -14,7 +14,7 @@ import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { OtpInput } from 'react-native-otp-entry';
-import { notifyAuthChanged } from '../../store/authEvents';
+import { clearIdSubmitted, notifyAuthChanged } from '../../store/authEvents';
 import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'OTPVerify'>;
@@ -70,20 +70,35 @@ const OTPVerifyScreen: React.FC = () => {
     onSuccess: async (response: any) => {
       setBanner('');
       if (response?.user_id) {
+        clearIdSubmitted();
+        const userRole = response?.user?.role || role;
+        const rawRegStatus = response?.registration_status || response?.user?.registration_status;
+        const isActuallyApproved =
+          rawRegStatus === 'approved' &&
+          (response?.user?.verification_status === 'approved' || !!response?.user?.document_url);
+        const effectiveRegStatus = isActuallyApproved
+          ? 'approved'
+          : rawRegStatus && rawRegStatus !== 'approved'
+            ? rawRegStatus
+            : 'pending_id_upload';
+
         if ('token' in response && response.token) {
           await SecureStore.setItemAsync('auth_token', String(response.token));
         }
         if ('user' in response && response.user) {
-          await SecureStore.setItemAsync('user_profile', JSON.stringify(response.user));
-          queryClient.setQueryData(['profile'], response.user);
+          const normalizedUser = {
+            ...response.user,
+            role: userRole,
+            registration_status: effectiveRegStatus,
+            verification_status: response.user.verification_status || 'pending',
+          };
+          await SecureStore.setItemAsync('user_profile', JSON.stringify(normalizedUser));
+          queryClient.setQueryData(['profile'], normalizedUser);
         }
         notifyAuthChanged();
 
-        const userRole = response?.user?.role || role;
-        const regStatus = response?.registration_status || response?.user?.registration_status;
-
         // Already-approved users should not be forced to IDUpload
-        if (regStatus === 'approved') {
+        if (isActuallyApproved) {
           return;
         }
 

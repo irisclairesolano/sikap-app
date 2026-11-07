@@ -134,7 +134,7 @@ const IDUploadScreen: React.FC = () => {
       setBanner('');
       // Mark the submission first and cancel any profile fetch that started
       // before the upload committed, so it cannot overwrite pending_review.
-      markIdSubmitted();
+      markIdSubmitted(userId);
       await queryClient.cancelQueries({ queryKey: ['profile'] });
       const serverUser = res?.user && typeof res.user === 'object' ? res.user : {};
       try {

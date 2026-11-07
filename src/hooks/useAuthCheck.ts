@@ -53,7 +53,7 @@ export const useAuthCheck = () => {
         // Keep them on PendingVerify instead of remounting an empty IDUpload.
         if (
           response &&
-          wasIdRecentlySubmitted() &&
+          wasIdRecentlySubmitted(120000, response.id) &&
           response.verification_status !== 'approved' &&
           response.verification_status !== 'rejected' &&
           response.registration_status !== 'rejected' &&
@@ -64,6 +64,17 @@ export const useAuthCheck = () => {
             ...response,
             registration_status: 'pending_review',
             verification_status: 'pending',
+          };
+        } else if (
+          response &&
+          response.role !== 'admin' &&
+          response.registration_status === 'approved' &&
+          response.verification_status === 'pending' &&
+          !response.document_url
+        ) {
+          response = {
+            ...response,
+            registration_status: 'pending_id_upload',
           };
         }
         await SecureStore.setItemAsync('user_profile', JSON.stringify(response));

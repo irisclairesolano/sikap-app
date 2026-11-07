@@ -327,4 +327,35 @@ describe('RootNavigator', () => {
     const { queryByTestId } = await renderWithProviders(<RootNavigator />);
     expect(queryByTestId('mock-auth-navigator')).toBeNull();
   });
+
+  it('gates newly registered employer after OTP on IDUpload when verification_status is pending and document_url is missing', async () => {
+    const mockUser = {
+      id: 778,
+      email: 'otpemployer@example.com',
+      role: 'employer',
+      registration_status: 'approved',
+      verification_status: 'pending',
+      document_url: null,
+      has_employer_profile: true,
+    };
+
+    (useAuthCheck as jest.Mock).mockReturnValue({
+      user: mockUser,
+      isLoading: false,
+      isVerified: false,
+    });
+
+    await renderWithProviders(<RootNavigator />);
+
+    expect(AuthNavigator).toHaveBeenCalledWith(
+      expect.objectContaining({
+        initialRouteName: 'IDUpload',
+        initialParams: {
+          userId: 778,
+          role: 'employer',
+        },
+      }),
+      undefined,
+    );
+  });
 });
