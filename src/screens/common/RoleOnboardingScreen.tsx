@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -33,7 +34,17 @@ export const RoleOnboardingScreen: React.FC = () => {
   const [isCancelling, setIsCancelling] = useState(false);
   const [isSkipping, setIsSkipping] = useState(false);
 
+  // For workers, back is only permitted if switching roles from an existing employer account.
+  // During initial registration onboarding, skills selection is mandatory and there is no alternate role.
+  const hasEmployerProfile =
+    !!user?.has_employer_profile || !!user?.employer_profile || !!(user as any)?.employerProfile;
+  const hasWorkerProfile =
+    !!user?.has_worker_profile || !!user?.worker_profile || !!(user as any)?.workerProfile;
+
+  const canGoBackOrCancel = targetRole === 'worker' ? hasEmployerProfile : true;
+
   const handleCancel = async () => {
+    if (!canGoBackOrCancel) return;
     const isTargetWorker = targetRole === 'worker';
     const previousRole = isTargetWorker ? 'Employer' : 'Worker';
 
@@ -62,9 +73,9 @@ export const RoleOnboardingScreen: React.FC = () => {
   };
 
   const handleBackPress = () => {
-    if (targetRole === 'employer') {
-      const hasWorkerProfile = !!user?.has_worker_profile;
+    if (!canGoBackOrCancel) return;
 
+    if (targetRole === 'employer') {
       if (hasWorkerProfile) {
         showAlert(
           'Cancel Employer Setup?',
@@ -119,6 +130,20 @@ export const RoleOnboardingScreen: React.FC = () => {
       handleCancel();
     }
   };
+
+  useEffect(() => {
+    const onBackPress = () => {
+      if (!canGoBackOrCancel) {
+        // Prevent accidental hardware back button on Android during initial mandatory onboarding
+        return true;
+      }
+      handleBackPress();
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [canGoBackOrCancel]);
 
   const [selectedBusinessDocs, setSelectedBusinessDocs] = useState<any[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
@@ -277,13 +302,18 @@ export const RoleOnboardingScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom', 'left', 'right']}>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.cancelBtn}
-          onPress={handleBackPress}
-          disabled={isOnboardingRole}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.ink} />
-        </TouchableOpacity>
+        {canGoBackOrCancel ? (
+          <TouchableOpacity
+            style={styles.cancelBtn}
+            onPress={handleBackPress}
+            disabled={isOnboardingRole}
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.ink} />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 40 }} />
+        )}
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>Almost There</Text>
         </View>
