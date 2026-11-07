@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +16,7 @@ import { useEmployerJobs } from '../../hooks/useEmployerJobs';
 import { useEmployerStats } from '../../hooks/useEmployerStats';
 import { useReviews } from '../../hooks/useReviews';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useOnboardingTutorial } from '../../contexts/OnboardingTutorialContext';
 import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
 
 type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
@@ -25,8 +26,10 @@ type EmployerProfileScreenNavigationProp = NativeStackNavigationProp<
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<EmployerProfileScreenNavigationProp>();
+  const insets = useSafeAreaInsets();
   const { t } = useLanguage();
   const { user: authUser, refetchProfile } = useAuth();
+  const { isActive: isTutorialActive, refreshCurrentTarget } = useOnboardingTutorial();
   const queryClient = useQueryClient();
   const { data: jobsResponse } = useEmployerJobs();
   const { data: reviewsData } = useReviews(undefined, 'employer');
@@ -55,14 +58,23 @@ export const ProfileScreen: React.FC = () => {
     React.useCallback(() => {
       refetch();
       refetchStats();
-    }, [refetch, refetchStats]),
+      if (isTutorialActive) {
+        const timer = setTimeout(() => {
+          refreshCurrentTarget();
+        }, 60);
+        return () => clearTimeout(timer);
+      }
+    }, [refetch, refetchStats, isTutorialActive, refreshCurrentTarget]),
   );
 
   if (isLoading || (!user && !authUser)) {
     return (
       <SafeAreaView
-        style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}
-        edges={['top', 'left', 'right']}
+        style={[
+          styles.safeArea,
+          { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' },
+        ]}
+        edges={['left', 'right']}
       >
         <LoadingSpinner />
       </SafeAreaView>
@@ -136,7 +148,7 @@ export const ProfileScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]} edges={['left', 'right']}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('EditProfile')}>
           <Ionicons name="create-outline" size={22} color={colors.ink} />
@@ -158,7 +170,7 @@ export const ProfileScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <TutorialTarget id="employer_profile_overview">
+        <TutorialTarget id="employer_profile_overview" style={{ marginBottom: 16 }}>
           <View style={styles.profileHeader}>
             <TouchableOpacity
               style={styles.avatarContainer}
@@ -337,7 +349,7 @@ const styles = StyleSheet.create({
   },
   headerPillText: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.inkMuted },
   scrollContent: { padding: 20, paddingBottom: 40 },
-  profileHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 16 },
+  profileHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   avatarContainer: {
     width: 64,
     height: 64,

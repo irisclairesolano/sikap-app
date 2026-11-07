@@ -41,7 +41,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
 import { RouteProp, useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -64,6 +64,7 @@ type ApplicationDetailScreenNavigationProp = NativeStackNavigationProp<
 
 const ApplicationDetailScreen: React.FC = () => {
   const { t } = useLanguage();
+  const insets = useSafeAreaInsets();
   const route = useRoute<ApplicationDetailScreenRouteProp>();
   const navigation = useNavigation<ApplicationDetailScreenNavigationProp>();
 
@@ -750,7 +751,7 @@ const ApplicationDetailScreen: React.FC = () => {
       </ScrollView>
 
       {/* FOOTER ACTIONS */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         {stage === 1 && status !== 'withdrawn' && (
           <Button
             label={isWithdrawing ? 'Withdrawing...' : t('withdraw_application')}

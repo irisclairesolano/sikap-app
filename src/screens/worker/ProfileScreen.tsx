@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { Image } from 'expo-image';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,17 +11,21 @@ import { colors, fonts, shadows } from '../../theme';
 import { profileApi } from '../../api/profile';
 import { useAuth } from '../../hooks/useAuth';
 import { useReviews } from '../../hooks/useReviews';
-import { Skill, WorkerExperience } from '../../types';
+import { CharacterReference, Skill, WorkerExperience } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useOnboardingTutorial } from '../../contexts/OnboardingTutorialContext';
 import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
 type ProfileScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'ProfileMain'>;
 
 export const ProfileScreen: React.FC = () => {
   const { t } = useLanguage();
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  const { refetchProfile } = useAuth();
+  const { user: authUser, refetchProfile } = useAuth();
+  const { isActive: isTutorialActive, refreshCurrentTarget } = useOnboardingTutorial();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  const scrollViewRef = useRef<ScrollView | null>(null);
 
   const {
     data: user,
@@ -30,13 +34,20 @@ export const ProfileScreen: React.FC = () => {
   } = useQuery({
     queryKey: ['profile'],
     queryFn: profileApi.getProfile,
-    initialData: () => queryClient.getQueryData(['profile']),
+    initialData: () => (queryClient.getQueryData(['profile']) as any) || authUser,
   });
 
   useFocusEffect(
     React.useCallback(() => {
       refetch();
-    }, [refetch]),
+      if (isTutorialActive) {
+        scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+        const timer = setTimeout(() => {
+          refreshCurrentTarget();
+        }, 60);
+        return () => clearTimeout(timer);
+      }
+    }, [refetch, isTutorialActive, refreshCurrentTarget]),
   );
 
   const { data: reviewsData } = useReviews(undefined, 'worker');
@@ -44,8 +55,11 @@ export const ProfileScreen: React.FC = () => {
   if (isLoading || !user) {
     return (
       <SafeAreaView
-        style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}
-        edges={['top', 'left', 'right']}
+        style={[
+          styles.safeArea,
+          { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' },
+        ]}
+        edges={['left', 'right']}
       >
         <Text style={{ fontFamily: fonts.body, color: colors.inkMuted }}>Loading profile...</Text>
       </SafeAreaView>
@@ -132,7 +146,7 @@ export const ProfileScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]} edges={['left', 'right']}>
       <View style={styles.header}>
         <View style={styles.iconBtn} />
         <View style={styles.headerPill}>
@@ -144,6 +158,7 @@ export const ProfileScreen: React.FC = () => {
       </View>
 
       <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
@@ -170,7 +185,7 @@ export const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
         )}
 
-        <TutorialTarget id="worker_profile_overview">
+        <TutorialTarget id="worker_profile_overview" style={{ marginBottom: 16 }}>
           <TouchableOpacity
             style={styles.profileHeader}
             onPress={() => navigation.navigate('EditProfile')}
@@ -421,7 +436,7 @@ export const ProfileScreen: React.FC = () => {
                 {t('profile_no_references_added')}
               </Text>
             ) : (
-              user.worker_profile.references.map((ref) => (
+              user.worker_profile.references.map((ref: CharacterReference) => (
                 <View key={ref.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                   <View
                     style={{
@@ -521,7 +536,7 @@ const styles = StyleSheet.create({
   },
   headerPillText: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.inkMuted },
   scrollContent: { padding: 20, paddingBottom: 40 },
-  profileHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 16 },
+  profileHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   avatarContainer: {
     width: 64,
     height: 64,

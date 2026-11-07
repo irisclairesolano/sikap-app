@@ -300,7 +300,7 @@ export const JobFeedScreen: React.FC = () => {
           </Text>
         </TutorialTarget>
 
-        <TutorialTarget id="worker_skill_chips">
+        <TutorialTarget id="worker_skill_chips" style={{ marginTop: 12 }}>
           <View style={styles.filterContainer}>
             <ScrollView
               horizontal
@@ -597,7 +597,6 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     marginHorizontal: -20, // bleed out to edges
-    marginTop: 12,
   },
   filterScroll: {
     paddingHorizontal: 20,

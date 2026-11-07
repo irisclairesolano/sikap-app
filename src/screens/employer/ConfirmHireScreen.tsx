@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,6 +31,7 @@ type ConfirmHireScreenNavigationProp = NativeStackNavigationProp<
 
 const ConfirmHireScreen: React.FC = () => {
   const { t } = useLanguage();
+  const insets = useSafeAreaInsets();
   const route = useRoute<ConfirmHireScreenRouteProp>();
   const navigation = useNavigation<ConfirmHireScreenNavigationProp>();
   const {
@@ -269,7 +270,7 @@ const ConfirmHireScreen: React.FC = () => {
           </View>
         </ScrollView>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
           {!hasRealMessageFromEmployer ? (
             <View style={{ gap: 8 }}>
               <Button

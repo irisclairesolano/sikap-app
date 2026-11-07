@@ -270,10 +270,13 @@ export const tl: Record<TranslationKey, string> = {
   no_ratings_yet: 'Wala pang rating (0 review)',
   verification_and_documents: 'Beripikasyon at mga Dokumento',
   business_doc_verified: 'Beripikado ang Dokumento ng Negosyo',
+  id_verified: 'Beripikado ang Government ID',
   documents_under_review: 'Sinusuri pa ang mga Dokumento',
   business_doc_not_verified: 'Hindi Beripikado ang Dokumento ng Negosyo',
   employer_doc_verified_desc:
     'Nakumpleto na ng employer na ito ang beripikasyon ng mga dokumento ng negosyo sa SIKAP.',
+  employer_id_verified_desc:
+    'Beripikado ang pagkakakilanlan ng employer na ito gamit ang valid government ID. Opsyonal ang mga dokumento ng negosyo para sa mga indibidwal o sambahayang employer.',
   employer_doc_under_review_desc:
     'Naipasa na ang mga dokumento ng negosyo at kasalukuyang sinusuri ng mga admin ng SIKAP.',
   employer_doc_not_verified_desc:

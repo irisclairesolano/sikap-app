@@ -43,7 +43,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -70,6 +70,7 @@ const ApplicantDetailScreen: React.FC = () => {
   const { t } = useLanguage();
   const route = useRoute<ApplicantDetailScreenRouteProp>();
   const navigation = useNavigation<ApplicantDetailScreenNavigationProp>();
+  const insets = useSafeAreaInsets();
   const { showAlert } = useAlert();
   const [isMenuVisible, setMenuVisible] = useState(false);
   const [expandedExpIds, setExpandedExpIds] = useState<Record<number, boolean>>({});
@@ -1308,7 +1309,7 @@ const ApplicantDetailScreen: React.FC = () => {
 
       {/* Fixed Bottom Action */}
       {status !== 'completed' && status !== 'rejected' && status !== 'withdrawn' && (
-        <View style={styles.footer}>
+        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
           {status === 'pending' && (
             <View style={{ gap: 6 }}>
               <Button

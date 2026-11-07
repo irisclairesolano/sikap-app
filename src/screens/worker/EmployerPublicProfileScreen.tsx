@@ -54,6 +54,13 @@ export const EmployerPublicProfileScreen: React.FC = () => {
       ? publicProfile.business_documents
       : businessDocuments || [];
 
+  const isVerifiedBadge =
+    publicProfile?.verification_badge !== undefined
+      ? Boolean(publicProfile.verification_badge)
+      : Boolean(verificationBadge);
+
+  const hasBusinessDocs = effectiveDocs.length > 0;
+
   const currentReputation =
     publicProfile?.reputation_score !== undefined && publicProfile?.reputation_score !== null
       ? publicProfile.reputation_score
@@ -109,7 +116,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
 
           <View style={styles.nameRow}>
             <Text style={styles.employerName}>{employerName || 'Employer'}</Text>
-            {verificationBadge && (
+            {isVerifiedBadge && (
               <Ionicons
                 name="checkmark-circle"
                 size={20}
@@ -119,12 +126,12 @@ export const EmployerPublicProfileScreen: React.FC = () => {
             )}
           </View>
 
-          {verificationBadge ? (
+          {isVerifiedBadge ? (
             <View style={styles.verifiedChip}>
               <Ionicons name="shield-checkmark" size={14} color={colors.mintDeep} />
               <Text style={styles.verifiedText}>{t('verified_employer')}</Text>
             </View>
-          ) : businessDocuments && businessDocuments.length > 0 ? (
+          ) : hasBusinessDocs ? (
             <View style={styles.unverifiedChip}>
               <Ionicons name="time-outline" size={14} color={colors.inkMuted} />
               <Text style={styles.unverifiedText}>{t('verification_pending')}</Text>
@@ -197,38 +204,46 @@ export const EmployerPublicProfileScreen: React.FC = () => {
             <View style={styles.docHeader}>
               <Ionicons
                 name={
-                  verificationBadge
-                    ? 'ribbon'
-                    : effectiveDocs && effectiveDocs.length > 0
+                  isVerifiedBadge
+                    ? hasBusinessDocs
+                      ? 'ribbon'
+                      : 'shield-checkmark'
+                    : hasBusinessDocs
                       ? 'document-text-outline'
                       : 'alert-circle-outline'
                 }
                 size={20}
                 color={
-                  verificationBadge
-                    ? colors.primary
-                    : effectiveDocs && effectiveDocs.length > 0
+                  isVerifiedBadge
+                    ? hasBusinessDocs
+                      ? colors.primary
+                      : colors.mintDeep
+                    : hasBusinessDocs
                       ? '#D97706'
                       : colors.inkMuted
                 }
               />
               <Text style={styles.docTitle}>
-                {verificationBadge
-                  ? t('business_doc_verified')
-                  : effectiveDocs && effectiveDocs.length > 0
+                {isVerifiedBadge
+                  ? hasBusinessDocs
+                    ? t('business_doc_verified')
+                    : t('id_verified')
+                  : hasBusinessDocs
                     ? t('documents_under_review')
                     : t('business_doc_not_verified')}
               </Text>
             </View>
             <Text style={styles.docDesc}>
-              {verificationBadge
-                ? t('employer_doc_verified_desc')
-                : effectiveDocs && effectiveDocs.length > 0
+              {isVerifiedBadge
+                ? hasBusinessDocs
+                  ? t('employer_doc_verified_desc')
+                  : t('employer_id_verified_desc')
+                : hasBusinessDocs
                   ? t('employer_doc_under_review_desc')
                   : t('employer_doc_not_verified_desc')}
             </Text>
 
-            {effectiveDocs && effectiveDocs.length > 0 && (
+            {hasBusinessDocs && (
               <View style={styles.docList}>
                 <Text style={styles.docSubheader}>{t('attached_business_docs')}</Text>
                 <ScrollView

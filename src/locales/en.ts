@@ -263,10 +263,13 @@ export const en = {
   no_ratings_yet: 'No ratings yet (0 reviews)',
   verification_and_documents: 'Verification & Documents',
   business_doc_verified: 'Business Document Verified',
+  id_verified: 'Government ID Verified',
   documents_under_review: 'Documents Under Review',
   business_doc_not_verified: 'Business Document Not Verified',
   employer_doc_verified_desc:
     'This employer has completed business document verification with SIKAP Admins.',
+  employer_id_verified_desc:
+    "This employer's identity has been verified with a valid government ID. Business documents are optional for household and individual employers.",
   employer_doc_under_review_desc:
     'Business documents have been submitted and are currently undergoing verification by SIKAP administrators.',
   employer_doc_not_verified_desc:
