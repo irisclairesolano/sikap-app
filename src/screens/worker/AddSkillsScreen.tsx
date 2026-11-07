@@ -15,11 +15,13 @@ import { profileApi } from '../../api/profile';
 import { notifyAuthChanged } from '../../store/authEvents';
 import { useAuthCheck } from '../../hooks/useAuthCheck';
 import * as SecureStore from '../../utils/storage';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const AddSkillsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { user } = useAuthCheck();
+  const { t } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
   const [customSkills, setCustomSkills] = useState<string[]>([]);
@@ -62,7 +64,7 @@ export const AddSkillsScreen: React.FC = () => {
     },
     onError: (err: any) => {
       console.error('Failed to save skills', err);
-      setSaveError(err.message || 'Failed to save skills');
+      setSaveError(err.message || t('skills_err_save_failed'));
     },
   });
 
@@ -79,14 +81,14 @@ export const AddSkillsScreen: React.FC = () => {
         setCustomSkillError('');
         setSaveError('');
       } else {
-        setCustomSkillError('This skill is already in your selected list.');
+        setCustomSkillError(t('skills_err_already_selected'));
       }
       return;
     }
 
     // Check if already in custom skills
     if (customSkills.some((cs) => cs.toLowerCase() === trimmed.toLowerCase())) {
-      setCustomSkillError('This custom skill is already in your list.');
+      setCustomSkillError(t('skills_err_already_in_custom'));
       return;
     }
 
@@ -132,20 +134,21 @@ export const AddSkillsScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.appBarBadge}>
-          <Text style={styles.appBarBadgeText}>Your skills</Text>
+          <Text style={styles.appBarBadgeText}>{t('skills_screen_badge')}</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>
-          Tell employers what{'\n'}you <Text style={styles.titleAccent}>do best.</Text>
-        </Text>
-        <Text style={styles.subtitle}>Choose all that apply.</Text>
+        <Text style={styles.title}>{t('skills_screen_title')}</Text>
+        <Text style={styles.subtitle}>{t('skills_screen_subtitle')}</Text>
 
         {/* Selected Skills Section */}
         <Text style={styles.sectionHeaderPrimary}>
-          Selected · {selectedSkills.length + customSkills.length}
+          {t('skills_selected_header').replace(
+            '{count}',
+            String(selectedSkills.length + customSkills.length),
+          )}
         </Text>
         <View style={styles.chipContainer}>
           {selectedSkills.map((skill) => (
@@ -196,25 +199,23 @@ export const AddSkillsScreen: React.FC = () => {
                 }}
               >
                 <Text style={{ fontSize: 9, fontFamily: fonts.bodyBold, color: colors.primary }}>
-                  Custom
+                  {t('skills_custom_tag')}
                 </Text>
               </View>
               <Ionicons name="close" size={14} color={colors.primaryDark} />
             </TouchableOpacity>
           ))}
           {selectedSkills.length === 0 && customSkills.length === 0 && (
-            <Text style={styles.emptyText}>
-              No skills selected yet. Tap from below or add a custom skill.
-            </Text>
+            <Text style={styles.emptyText}>{t('skills_empty_selected')}</Text>
           )}
         </View>
 
         {/* Search & Custom Skill Input */}
-        <Text style={styles.sectionHeader}>Custom Skill</Text>
+        <Text style={styles.sectionHeader}>{t('skills_custom_section_header')}</Text>
         <View style={styles.customInputRow}>
           <View style={{ flex: 1 }}>
             <Input
-              placeholder="type custom skills"
+              placeholder={t('skills_custom_input_placeholder')}
               value={customSkill}
               onChangeText={(text) => {
                 setCustomSkill(text);
@@ -228,13 +229,13 @@ export const AddSkillsScreen: React.FC = () => {
             onPress={handleAddCustomSkill}
             disabled={!customSkill.trim()}
           >
-            <Text style={styles.addButtonText}>+ Add</Text>
+            <Text style={styles.addButtonText}>{t('skills_add_btn')}</Text>
           </TouchableOpacity>
         </View>
 
         {customSkill.trim().length > 0 && (
           <View style={styles.suggestionsContainer}>
-            <Text style={styles.suggestionsHeader}>Suggested Matches</Text>
+            <Text style={styles.suggestionsHeader}>{t('skills_suggested_matches')}</Text>
             <View style={styles.chipContainer}>
               {skills
                 .filter(
@@ -260,7 +261,7 @@ export const AddSkillsScreen: React.FC = () => {
         )}
 
         {/* Available Catalog Skills */}
-        <Text style={styles.sectionHeader}>Available Skills</Text>
+        <Text style={styles.sectionHeader}>{t('skills_available_catalog')}</Text>
         <View style={styles.chipContainer}>
           {skills
             .filter((s) => !selectedSkills.some((sel) => sel.id === s.id))
@@ -297,14 +298,14 @@ export const AddSkillsScreen: React.FC = () => {
           </Text>
         ) : null}
         <Button
-          label={saveMutation.isPending ? 'Saving...' : 'Save Skills'}
+          label={saveMutation.isPending ? t('skills_btn_saving') : t('skills_btn_save')}
           accessibilityLabel="Next"
           size="lg"
           fullWidth
           loading={saveMutation.isPending}
           onPress={() => {
             if (selectedSkills.length === 0 && customSkills.length === 0) {
-              setSaveError('Please select or add at least one skill to continue.');
+              setSaveError(t('skills_err_select_at_least_one'));
               return;
             }
             saveMutation.mutate();

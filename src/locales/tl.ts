@@ -886,4 +886,24 @@ export const tl: Record<TranslationKey, string> = {
   work_history_delete_msg: 'Gusto mo bang alisin ang trabahong ito sa listahan mo?',
   work_history_err_save_failed: 'Hindi na-save ang trabaho mo. Pakisubukan ulit.',
   work_history_err_delete_failed: 'Hindi naalis ang trabaho. Pakisubukan ulit.',
+
+  // Skills (AddSkillsScreen)
+  skills_screen_badge: 'Mga Kaya Mong Gawin',
+  skills_screen_title: 'Ipakita kung anong mga trabaho ang kaya mong gawin.',
+  skills_screen_subtitle: 'Piliin lahat ng trabahong kaya mong gawin.',
+  skills_selected_header: 'Napili ({count})',
+  skills_custom_tag: 'Iba',
+  skills_empty_selected:
+    'Wala ka pang napipili. Pumili ng trabaho sa ibaba o magdagdag ng sarili mong skill.',
+  skills_custom_section_header: 'Magdagdag ng Ibang Skill',
+  skills_custom_input_placeholder: 'Hal. Pagmamason, Pagkukumpuni, Hilot',
+  skills_add_btn: '+ Idagdag',
+  skills_suggested_matches: 'Mga Posibleng Tugma',
+  skills_err_already_selected: 'Napili mo na ang skill na ito.',
+  skills_err_already_in_custom: 'Naidagdag mo na ang skill na ito.',
+  skills_available_catalog: 'Mga Trabahong Puwede Mong Piliin',
+  skills_btn_save: 'I-save',
+  skills_btn_saving: 'Sine-save...',
+  skills_err_select_at_least_one: 'Pumili o magdagdag muna ng kahit isang skill bago magpatuloy.',
+  skills_err_save_failed: 'Hindi na-save ang mga pinili mo. Subukan ulit.',
 };

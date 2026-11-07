@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
+  Easing,
   Modal,
   Platform,
   StyleSheet,
@@ -15,10 +17,12 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useOnboardingTutorial } from '../../contexts/OnboardingTutorialContext';
 import { colors, fonts, shadows } from '../../theme';
 
-const SPOTLIGHT_PADDING = 8;
-const SPOTLIGHT_RADIUS = 16;
+const SPOTLIGHT_PADDING = 12;
+const SPOTLIGHT_RADIUS = 18;
 const MIN_SCREEN_MARGIN = 16;
 const ESTIMATED_TOOLTIP_HEIGHT = 140;
+const BACKDROP_OVERLAY_COLOR = 'rgba(6, 12, 27, 0.72)';
+const MASK_BORDER_WIDTH = 2500;
 
 export const TutorialSpotlightModal: React.FC = () => {
   const { t } = useLanguage();
@@ -42,7 +46,7 @@ export const TutorialSpotlightModal: React.FC = () => {
   const isFirstStep = currentStepIndex === 0;
   const isLastStep = currentStepIndex === totalSteps - 1;
 
-  // Compute clamped spotlight cutout rectangle (or fallback to bottom tab bar slot if target not measured)
+  // Compute clamped spotlight cutout rectangle
   const cutout = useMemo(() => {
     if (isTransitioning) return null;
 
@@ -58,7 +62,7 @@ export const TutorialSpotlightModal: React.FC = () => {
       const height = Math.max(0, bottom - top);
 
       // Avoid full-screen cutout if a container spans nearly the entire screen height
-      const maxSpotHeight = Math.min(height, windowHeight * 0.42);
+      const maxSpotHeight = Math.min(height, windowHeight * 0.44);
       if (width > 20 && maxSpotHeight > 20) {
         return {
           left,
@@ -74,6 +78,103 @@ export const TutorialSpotlightModal: React.FC = () => {
 
     return null;
   }, [isTransitioning, targetRect, insets.top, windowWidth, windowHeight]);
+
+  // Animated values for smooth gliding spotlight & gentle pulsing highlight ring
+  const animLeft = useRef(new Animated.Value(cutout?.left ?? windowWidth / 2)).current;
+  const animTop = useRef(new Animated.Value(cutout?.top ?? windowHeight / 2)).current;
+  const animWidth = useRef(new Animated.Value(cutout?.width ?? 0)).current;
+  const animHeight = useRef(new Animated.Value(cutout?.height ?? 0)).current;
+  const animOpacity = useRef(new Animated.Value(cutout ? 1 : 0)).current;
+  const pulseScale = useRef(new Animated.Value(1)).current;
+  const pulseOpacity = useRef(new Animated.Value(0.85)).current;
+
+  // Gentle pulsing animation on the spotlight ring
+  useEffect(() => {
+    if (!isActive || !cutout) return;
+
+    const pulseAnim = Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(pulseScale, {
+            toValue: 1.04,
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: false,
+          }),
+          Animated.timing(pulseOpacity, {
+            toValue: 0.45,
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: false,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(pulseScale, {
+            toValue: 1,
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: false,
+          }),
+          Animated.timing(pulseOpacity, {
+            toValue: 0.85,
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: false,
+          }),
+        ]),
+      ]),
+    );
+
+    pulseAnim.start();
+
+    return () => {
+      pulseAnim.stop();
+    };
+  }, [isActive, cutout, pulseScale, pulseOpacity]);
+
+  // Smooth animate cutout bounds when target transitions or shifts
+  useEffect(() => {
+    if (!cutout) {
+      Animated.timing(animOpacity, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: false,
+      }).start();
+      return;
+    }
+
+    Animated.parallel([
+      Animated.timing(animOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.spring(animLeft, {
+        toValue: cutout.left,
+        friction: 9,
+        tension: 65,
+        useNativeDriver: false,
+      }),
+      Animated.spring(animTop, {
+        toValue: cutout.top,
+        friction: 9,
+        tension: 65,
+        useNativeDriver: false,
+      }),
+      Animated.spring(animWidth, {
+        toValue: cutout.width,
+        friction: 9,
+        tension: 65,
+        useNativeDriver: false,
+      }),
+      Animated.spring(animHeight, {
+        toValue: cutout.height,
+        friction: 9,
+        tension: 65,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  }, [cutout, animLeft, animTop, animWidth, animHeight, animOpacity]);
 
   // Compute adaptive tooltip position (above vs below spotlight, or centered if no cutout)
   const tooltipLayout = useMemo(() => {
@@ -131,84 +232,73 @@ export const TutorialSpotlightModal: React.FC = () => {
       onRequestClose={skipTutorial}
     >
       <View style={styles.root} testID="tutorial-modal">
-        {/* 4-Rectangle Dimmed Backdrop Cutout */}
+        {/* Seamless Inverted Cutout (Smooth Rounded Corners, No Gaps or Rough Seams) */}
         {cutout ? (
-          <>
-            {/* Top mask */}
-            <View
-              pointerEvents="auto"
+          <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+            {/* The single punch-hole mask wrapper with overflow hidden */}
+            <View pointerEvents="none" style={styles.punchHoleContainer}>
+              <Animated.View
+                style={[
+                  styles.punchHoleMask,
+                  {
+                    left: Animated.subtract(animLeft, MASK_BORDER_WIDTH),
+                    top: Animated.subtract(animTop, MASK_BORDER_WIDTH),
+                    width: Animated.add(animWidth, MASK_BORDER_WIDTH * 2),
+                    height: Animated.add(animHeight, MASK_BORDER_WIDTH * 2),
+                    opacity: animOpacity,
+                  },
+                ]}
+              />
+            </View>
+
+            {/* Glowing Accent Outer Pulse Ring */}
+            <Animated.View
+              pointerEvents="none"
               style={[
-                styles.backdropMask,
-                { top: 0, left: 0, right: 0, height: Math.max(0, cutout.top) },
-              ]}
-            />
-            {/* Bottom mask */}
-            <View
-              pointerEvents="auto"
-              style={[
-                styles.backdropMask,
+                styles.spotlightGlowRing,
                 {
-                  top: cutout.bottom,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
+                  left: Animated.subtract(animLeft, 4),
+                  top: Animated.subtract(animTop, 4),
+                  width: Animated.add(animWidth, 8),
+                  height: Animated.add(animHeight, 8),
+                  opacity: pulseOpacity,
+                  transform: [{ scale: pulseScale }],
                 },
               ]}
             />
-            {/* Left mask */}
-            <View
-              pointerEvents="auto"
-              style={[
-                styles.backdropMask,
-                {
-                  top: cutout.top,
-                  left: 0,
-                  width: Math.max(0, cutout.left),
-                  height: cutout.height,
-                },
-              ]}
-            />
-            {/* Right mask */}
-            <View
-              pointerEvents="auto"
-              style={[
-                styles.backdropMask,
-                {
-                  top: cutout.top,
-                  left: cutout.right,
-                  right: 0,
-                  height: cutout.height,
-                },
-              ]}
-            />
-            {/* Spotlight Highlight Ring */}
-            <View
+
+            {/* Crisp Inner Highlight Ring */}
+            <Animated.View
               pointerEvents="none"
               testID="tutorial-spotlight-ring"
               style={[
                 styles.spotlightRing,
                 {
-                  top: cutout.top - 2,
-                  left: cutout.left - 2,
-                  width: cutout.width + 4,
-                  height: cutout.height + 4,
+                  left: animLeft,
+                  top: animTop,
+                  width: animWidth,
+                  height: animHeight,
+                  opacity: animOpacity,
                 },
               ]}
             />
-            {/* Block direct touches inside the cutout during walkthrough so user uses Next/Prev/Skip */}
-            <View
-              pointerEvents="auto"
-              style={{
-                position: 'absolute',
-                top: cutout.top,
-                left: cutout.left,
-                width: cutout.width,
-                height: cutout.height,
-              }}
+
+            {/* Catch direct touches inside the cutout so user uses Next/Prev/Skip */}
+            <TouchableOpacity
+              activeOpacity={1}
+              style={[
+                styles.touchBlocker,
+                {
+                  left: cutout.left,
+                  top: cutout.top,
+                  width: cutout.width,
+                  height: cutout.height,
+                },
+              ]}
             />
-          </>
+          </View>
         ) : (
-          <View pointerEvents="auto" style={[StyleSheet.absoluteFill, styles.backdropMask]} />
+          <View pointerEvents="auto" style={[StyleSheet.absoluteFill, styles.fallbackBackdrop]} />
         )}
 
         {/* Tooltip Card */}
@@ -334,27 +424,51 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  backdropMask: {
+  punchHoleContainer: {
     position: 'absolute',
-    backgroundColor: 'rgba(6, 12, 27, 0.72)',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: 'hidden',
+  },
+  punchHoleMask: {
+    position: 'absolute',
+    borderWidth: MASK_BORDER_WIDTH,
+    borderColor: BACKDROP_OVERLAY_COLOR,
+    borderRadius: SPOTLIGHT_RADIUS + MASK_BORDER_WIDTH,
+    backgroundColor: 'transparent',
+  },
+  fallbackBackdrop: {
+    backgroundColor: BACKDROP_OVERLAY_COLOR,
+  },
+  spotlightGlowRing: {
+    position: 'absolute',
+    borderRadius: SPOTLIGHT_RADIUS + 4,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    backgroundColor: 'transparent',
   },
   spotlightRing: {
     position: 'absolute',
     borderRadius: SPOTLIGHT_RADIUS,
-    borderWidth: 2.5,
+    borderWidth: 2,
     borderColor: '#FFFFFF',
     backgroundColor: 'transparent',
     ...Platform.select({
       ios: {
-        shadowColor: '#FFFFFF',
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.45,
-        shadowRadius: 8,
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
       },
       android: {
-        elevation: 4,
+        elevation: 6,
       },
     }),
+  },
+  touchBlocker: {
+    position: 'absolute',
   },
   tooltipWrapper: {
     position: 'absolute',

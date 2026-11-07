@@ -91,13 +91,15 @@ describe('AddWorkHistoryScreen', () => {
     await waitFor(() => {
       expect(getByText('Job title is required')).toBeTruthy();
       expect(getByText('Employer name is required')).toBeTruthy();
-      expect(getByText('Duration is required')).toBeTruthy();
+      expect(getByText('Start date is required')).toBeTruthy();
     });
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
-  it('shows error warning if duration is non-positive or non-numeric', async () => {
-    const { getByText, getByPlaceholderText } = await render(<AddWorkHistoryScreen />);
+  it('shows error warning if end date is missing for past job', async () => {
+    const { getByText, getAllByText, getByPlaceholderText } = await render(
+      <AddWorkHistoryScreen />,
+    );
 
     // Fill other fields
     await fireEvent.changeText(getByPlaceholderText('E.g. Tile setter'), 'Mason');
@@ -106,38 +108,54 @@ describe('AddWorkHistoryScreen', () => {
       'Reyes Renovation',
     );
 
-    // Fill invalid duration
-    await fireEvent.changeText(getByPlaceholderText('E.g. 3'), '-2');
+    // Pick start date (first button is Start Date)
+    const dateButtons = getAllByText('Select month & year');
+    await fireEvent.press(dateButtons[0]);
+    const selectModalBtn = getByText('Select');
+    await fireEvent.press(selectModalBtn);
 
     const saveButton = getByText('Save job');
     await fireEvent.press(saveButton);
 
     await waitFor(() => {
-      expect(getByText('Duration must be a positive number')).toBeTruthy();
+      expect(getByText('End date is required')).toBeTruthy();
     });
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
   it('triggers save mutation if form fields are valid', async () => {
-    const { getByText, getByPlaceholderText } = await render(<AddWorkHistoryScreen />);
+    const { getByText, getAllByText, getByPlaceholderText, getByRole } = await render(
+      <AddWorkHistoryScreen />,
+    );
 
     await fireEvent.changeText(getByPlaceholderText('E.g. Tile setter'), 'Carpenter');
     await fireEvent.changeText(
       getByPlaceholderText('E.g. Reyes household renovation'),
       'Reyes Renovation',
     );
-    await fireEvent.changeText(getByPlaceholderText('E.g. 3'), '6');
+
+    // Pick start date (first button is Start Date)
+    const dateButtons = getAllByText('Select month & year');
+    await fireEvent.press(dateButtons[0]);
+    const selectModalBtn = getByText('Select');
+    await fireEvent.press(selectModalBtn);
+
+    // Toggle "I currently work here" switch
+    const currentSwitch = getByRole('switch');
+    await fireEvent(currentSwitch, 'valueChange', true);
 
     const saveButton = getByText('Save job');
     await fireEvent.press(saveButton);
 
     await waitFor(() => {
-      expect(mockMutate).toHaveBeenCalledWith({
-        job_title: 'Carpenter',
-        employer_name: 'Reyes Renovation',
-        duration: '6 Months',
-        description: '',
-      });
+      expect(mockMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          job_title: 'Carpenter',
+          employer_name: 'Reyes Renovation',
+          is_current: true,
+          description: '',
+        }),
+      );
     });
   });
 });

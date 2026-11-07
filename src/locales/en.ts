@@ -859,6 +859,25 @@ export const en = {
   work_history_delete_msg: 'Are you sure you want to delete this experience?',
   work_history_err_save_failed: 'Failed to save experience',
   work_history_err_delete_failed: 'Failed to delete experience',
+
+  // Skills (AddSkillsScreen)
+  skills_screen_badge: 'Your skills',
+  skills_screen_title: 'Tell employers what you do best.',
+  skills_screen_subtitle: 'Choose all that apply.',
+  skills_selected_header: 'Selected · {count}',
+  skills_custom_tag: 'Custom',
+  skills_empty_selected: 'No skills selected yet. Tap from below or add a custom skill.',
+  skills_custom_section_header: 'Custom Skill',
+  skills_custom_input_placeholder: 'type custom skills',
+  skills_add_btn: '+ Add',
+  skills_suggested_matches: 'Suggested Matches',
+  skills_err_already_selected: 'This skill is already in your selected list.',
+  skills_err_already_in_custom: 'This custom skill is already in your list.',
+  skills_available_catalog: 'Available Skills',
+  skills_btn_save: 'Save Skills',
+  skills_btn_saving: 'Saving...',
+  skills_err_select_at_least_one: 'Please select or add at least one skill to continue.',
+  skills_err_save_failed: 'Failed to save skills',
 };
 
 export type TranslationKey = keyof typeof en;
