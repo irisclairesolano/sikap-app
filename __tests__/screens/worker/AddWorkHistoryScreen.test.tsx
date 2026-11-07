@@ -158,4 +158,84 @@ describe('AddWorkHistoryScreen', () => {
       );
     });
   });
+
+  it('shows list view when experiences exist, and clicking add another job opens the dedicated form page', async () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        worker_profile: {
+          experiences: [
+            {
+              id: 1,
+              job_title: 'Electrician',
+              employer_name: 'Power Co',
+              duration: 'Jan 2023 – Present',
+              start_date: 'Jan 2023',
+              end_date: null,
+              is_current: true,
+              description: 'Wiring work',
+            },
+          ],
+        },
+      },
+      isLoading: false,
+    });
+
+    const { getByText, queryByPlaceholderText } = await render(<AddWorkHistoryScreen />);
+
+    // In list view: job card is shown, but form input placeholders are NOT shown
+    expect(getByText('Electrician')).toBeTruthy();
+    expect(getByText('Power Co')).toBeTruthy();
+    expect(getByText('+ Add another job')).toBeTruthy();
+    expect(queryByPlaceholderText('E.g. Tile setter')).toBeNull();
+
+    // Clicking "+ Add another job" transitions to the dedicated form page
+    await fireEvent.press(getByText('+ Add another job'));
+    expect(queryByPlaceholderText('E.g. Tile setter')).toBeTruthy();
+  });
+
+  it('editing an existing job opens edit page and passes id to saveMutation without creating duplicate', async () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        worker_profile: {
+          experiences: [
+            {
+              id: 42,
+              job_title: 'Painter',
+              employer_name: 'Metro Homes',
+              duration: 'Jan 2022 – Dec 2022 (1 yr)',
+              start_date: 'Jan 2022',
+              end_date: 'Dec 2022',
+              is_current: false,
+              description: 'Interior walls',
+            },
+          ],
+        },
+      },
+      isLoading: false,
+    });
+
+    const { getByText, getByLabelText, getByDisplayValue } = await render(<AddWorkHistoryScreen />);
+
+    // Open 3 dots menu and click Edit
+    await fireEvent.press(getByLabelText('Job options'));
+    await fireEvent.press(getByText('Edit'));
+
+    // Check pre-filled values on edit page
+    expect(getByDisplayValue('Painter')).toBeTruthy();
+    expect(getByDisplayValue('Metro Homes')).toBeTruthy();
+
+    // Tap "Save changes"
+    const saveChangesBtn = getByText('Save changes');
+    await fireEvent.press(saveChangesBtn);
+
+    await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 42,
+          job_title: 'Painter',
+          employer_name: 'Metro Homes',
+        }),
+      );
+    });
+  });
 });

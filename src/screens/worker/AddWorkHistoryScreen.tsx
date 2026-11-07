@@ -132,6 +132,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
 
   const saveMutation = useMutation({
     mutationFn: (payload: {
+      id?: number | null;
       job_title: string;
       employer_name: string;
       duration: string;
@@ -140,42 +141,44 @@ export const AddWorkHistoryScreen: React.FC = () => {
       is_current?: boolean;
       description: string;
     }) => {
-      if (editingExperienceId !== null) {
-        return profileApi.updateExperience(editingExperienceId, payload as any);
+      const { id, ...data } = payload;
+      if (id) {
+        return profileApi.updateExperience(id, data as any);
       } else {
-        return profileApi.addExperience(payload as any);
+        return profileApi.addExperience(data as any);
       }
     },
     onMutate: async (payload) => {
+      const isEditing = Boolean(payload.id);
       const tempId = -Date.now();
+      const targetId = payload.id ?? tempId;
       const optimisticItem = {
-        id: editingExperienceId !== null ? editingExperienceId : tempId,
+        id: targetId,
         ...payload,
       };
 
-      if (editingExperienceId !== null) {
-        setExperiences((prev) =>
-          prev.map((exp) => (exp.id === editingExperienceId ? optimisticItem : exp)),
-        );
+      if (isEditing) {
+        setExperiences((prev) => prev.map((exp) => (exp.id === targetId ? optimisticItem : exp)));
       } else {
         setExperiences((prev) => [...prev, optimisticItem]);
       }
 
       handleCancel();
-      return { tempId };
+      return { tempId, isEditing, targetId };
     },
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       const realExp = (data as any)?.experience || data;
-      if (
-        realExp &&
-        typeof realExp === 'object' &&
-        'id' in realExp &&
-        editingExperienceId === null
-      ) {
-        setExperiences((prev) =>
-          prev.map((exp) => (exp.id === context?.tempId ? (realExp as any) : exp)),
-        );
+      if (realExp && typeof realExp === 'object' && 'id' in realExp) {
+        if (!context?.isEditing) {
+          setExperiences((prev) =>
+            prev.map((exp) => (exp.id === context?.tempId ? (realExp as any) : exp)),
+          );
+        } else {
+          setExperiences((prev) =>
+            prev.map((exp) => (exp.id === context?.targetId ? (realExp as any) : exp)),
+          );
+        }
       }
     },
     onError: (err) => {
@@ -220,6 +223,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
     setEmployerError('');
     setStartDateError('');
     setEndDateError('');
+    setActiveMenuId(null);
   };
 
   const handleJobTitleChange = (text: string) => {
@@ -237,6 +241,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
   };
 
   const handleEditPress = (exp: any) => {
+    setActiveMenuId(null);
     setJobTitle(exp.job_title);
     setEmployer(exp.employer_name || '');
 
@@ -296,7 +301,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
     }
   };
 
-  const showForm = isAdding || experiences.length === 0;
+  const showForm = isAdding || experiences.length === 0 || editingExperienceId !== null;
 
   const countWords = (text: string) => {
     return text.trim().split(/\s+/).filter(Boolean).length;
@@ -339,8 +344,8 @@ export const AddWorkHistoryScreen: React.FC = () => {
                 : t('work_history_subtitle_count').replace('{count}', String(experiences.length))}
           </Text>
 
-          {/* Added job history list (shown above form, if any exist) */}
-          {experiences.length > 0 && (
+          {!showForm ? (
+            /* Dedicated List Page */
             <View style={styles.listContainer}>
               <Text style={styles.sectionHeader}>
                 {t('work_history_added_jobs_header').replace('{count}', String(experiences.length))}
@@ -409,10 +414,22 @@ export const AddWorkHistoryScreen: React.FC = () => {
                   </View>
                 );
               })}
-            </View>
-          )}
 
-          {showForm ? (
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => {
+                  handleCancel();
+                  setIsAdding(true);
+                }}
+              >
+                <View style={styles.addIconCircle}>
+                  <Ionicons name="add" size={22} color={colors.white} />
+                </View>
+                <Text style={styles.addTitle}>{t('work_history_btn_add_another')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            /* Dedicated Add / Edit Form Page */
             <View style={styles.formContainer}>
               <Text style={styles.sectionHeader}>
                 {editingExperienceId !== null
@@ -574,13 +591,6 @@ export const AddWorkHistoryScreen: React.FC = () => {
                 </Text>
               </View>
             </View>
-          ) : (
-            <TouchableOpacity style={styles.addButton} onPress={() => setIsAdding(true)}>
-              <View style={styles.addIconCircle}>
-                <Ionicons name="add" size={22} color={colors.white} />
-              </View>
-              <Text style={styles.addTitle}>{t('work_history_btn_add_another')}</Text>
-            </TouchableOpacity>
           )}
         </KeyboardAwareScrollView>
 
@@ -685,6 +695,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
                   );
 
                   saveMutation.mutate({
+                    id: editingExperienceId,
                     job_title: jobTitle,
                     employer_name: employer,
                     duration: computedDuration,
