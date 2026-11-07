@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { profileApi } from '../../api/profile';
 import Button from '../../components/common/Button';
@@ -91,6 +91,7 @@ const computeExperienceDuration = (
 };
 
 export const AddWorkHistoryScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const queryClient = useQueryClient();
   const { t } = useLanguage();
@@ -304,7 +305,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
   const descWordCount = countWords(description);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom', 'left', 'right']}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -418,29 +419,36 @@ export const AddWorkHistoryScreen: React.FC = () => {
                   ? t('work_history_form_header_edit')
                   : t('work_history_form_header_add')}
               </Text>
-              <CustomInput
-                label={t('work_history_job_title_label')}
-                value={jobTitle}
-                onChangeText={handleJobTitleChange}
-                placeholder={t('work_history_job_title_placeholder')}
-                icon="briefcase-outline"
-                maxLength={85}
-                error={jobTitleError}
-                status={jobTitleError ? 'invalid' : null}
-              />
-              <Text style={styles.inputLimitHelper}>{jobTitle.length}/85 characters</Text>
 
-              <CustomInput
-                label={t('work_history_employer_label')}
-                value={employer}
-                onChangeText={handleEmployerChange}
-                placeholder={t('work_history_employer_placeholder')}
-                icon="business-outline"
-                maxLength={85}
-                error={employerError}
-                status={employerError ? 'invalid' : null}
-              />
-              <Text style={styles.inputLimitHelper}>{employer.length}/85 characters</Text>
+              {/* Job Title */}
+              <View style={styles.fieldGroup}>
+                <CustomInput
+                  label={t('work_history_job_title_label')}
+                  value={jobTitle}
+                  onChangeText={handleJobTitleChange}
+                  placeholder={t('work_history_job_title_placeholder')}
+                  icon="briefcase-outline"
+                  maxLength={85}
+                  error={jobTitleError}
+                  status={jobTitleError ? 'invalid' : null}
+                />
+                <Text style={styles.inputLimitHelper}>{jobTitle.length}/85 characters</Text>
+              </View>
+
+              {/* Employer / Project */}
+              <View style={styles.fieldGroup}>
+                <CustomInput
+                  label={t('work_history_employer_label')}
+                  value={employer}
+                  onChangeText={handleEmployerChange}
+                  placeholder={t('work_history_employer_placeholder')}
+                  icon="business-outline"
+                  maxLength={85}
+                  error={employerError}
+                  status={employerError ? 'invalid' : null}
+                />
+                <Text style={styles.inputLimitHelper}>{employer.length}/85 characters</Text>
+              </View>
 
               {/* Start Date & End Date Picker */}
               <View style={styles.datesContainer}>
@@ -549,7 +557,8 @@ export const AddWorkHistoryScreen: React.FC = () => {
                 ) : null}
               </View>
 
-              <View>
+              {/* Description */}
+              <View style={styles.fieldGroup}>
                 <CustomInput
                   label={t('work_history_desc_label')}
                   value={description}
@@ -606,7 +615,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
           }}
         />
 
-        <View style={styles.bottomBar}>
+        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
           {showForm ? (
             <View style={{ flexDirection: 'row', gap: 12 }}>
               {experiences.length > 0 && (
@@ -743,17 +752,17 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 24,
   },
   title: {
     fontFamily: fonts.display,
-    fontSize: 32,
-    lineHeight: 40,
+    fontSize: 26,
+    lineHeight: 32,
     color: colors.ink,
-    letterSpacing: -0.8,
-    paddingBottom: 4,
+    letterSpacing: -0.6,
+    paddingBottom: 2,
   },
   titleAccent: {
     fontFamily: fonts.displayItalic,
@@ -761,23 +770,23 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontFamily: fonts.body,
-    fontSize: 15,
+    fontSize: 14,
     color: colors.inkMuted,
-    marginTop: 8,
+    marginTop: 4,
   },
   formContainer: {
-    marginTop: 32,
-    gap: 16,
+    marginTop: 18,
+    gap: 12,
   },
   listContainer: {
-    marginTop: 32,
-    gap: 12,
+    marginTop: 20,
+    gap: 10,
   },
   sectionHeader: {
     fontFamily: fonts.bodyBold,
-    fontSize: 16,
+    fontSize: 15,
     color: colors.ink,
-    marginBottom: 8,
+    marginBottom: 2,
   },
   card: {
     backgroundColor: colors.paperBright,
@@ -872,20 +881,24 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.inkFaint,
   },
+  fieldGroup: {
+    marginBottom: 0,
+  },
   inputLimitHelper: {
     fontFamily: fonts.body,
-    fontSize: 12,
+    fontSize: 11,
     color: colors.inkMuted,
     textAlign: 'right',
-    marginTop: -8,
-    marginBottom: 4,
+    marginTop: -4,
+    marginBottom: 0,
   },
   wordCountText: {
     fontFamily: fonts.body,
-    fontSize: 12,
+    fontSize: 11,
     color: colors.inkMuted,
     textAlign: 'right',
-    marginTop: 4,
+    marginTop: -4,
+    marginBottom: 0,
   },
   wordCountTextError: {
     color: colors.error,
@@ -922,10 +935,11 @@ const styles = StyleSheet.create({
     color: colors.skyDeep,
   },
   bottomBar: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 16,
+    paddingHorizontal: 20,
+    paddingTop: 10,
     backgroundColor: colors.paper,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
   },
   cardDesc: {
     fontFamily: fonts.body,
@@ -936,14 +950,14 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 4,
+    gap: 10,
+    marginBottom: 0,
   },
   inputLabel: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 14,
-    color: colors.ink,
-    marginBottom: 8,
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 13,
+    color: colors.inkSoft,
+    marginBottom: 6,
   },
   unitSelector: {
     flexDirection: 'row',
@@ -975,19 +989,20 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   datesContainer: {
-    marginTop: -4,
-    marginBottom: 4,
+    marginTop: 0,
+    marginBottom: 0,
   },
   dateSelectButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    height: 56,
-    borderWidth: 1,
+    height: 48,
+    minHeight: 48,
+    borderWidth: 1.5,
     borderColor: colors.inkFaint,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 12,
-    backgroundColor: colors.white,
+    backgroundColor: colors.paperBright,
   },
   dateSelectButtonError: {
     borderColor: colors.error,
@@ -1019,12 +1034,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 12,
-    paddingVertical: 4,
+    marginTop: 8,
+    paddingVertical: 2,
   },
   currentJobLabel: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13,
     color: colors.ink,
   },
   durationPill: {
@@ -1032,10 +1047,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     backgroundColor: colors.primaryTint,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    marginTop: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginTop: 8,
     borderWidth: 1,
     borderColor: colors.primarySoft,
   },
