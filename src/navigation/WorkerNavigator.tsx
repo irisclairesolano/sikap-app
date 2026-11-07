@@ -277,7 +277,8 @@ const ProfileStack: React.FC = () => (
     <Stack.Screen name="AddSkills" component={AddSkillsScreen} />
     <Stack.Screen name="AddWorkHistory" component={AddWorkHistoryScreen} />
     <Stack.Screen name="CharacterReferences" component={AddCharacterReferencesScreen} />
-    <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
+    <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
+    <Stack.Screen name="ApplicationDetail" component={ApplicationDetailScreen} />
     <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>
 );

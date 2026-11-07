@@ -40,8 +40,10 @@ export const getApplicationStageInfo = (
         badgeIcon: 'hourglass-outline' as const,
         badgeBg: '#FEF3C7',
         badgeColor: '#D97706',
-        stepLabel: 'Step 1 of 5: Under Review',
-        nextStep: 'Waiting for the employer to review your application.',
+        stepLabel: t ? t('my_apps_stage_applied') : 'Step 1 of 5: Under Review',
+        nextStep: t
+          ? t('my_apps_next_waiting_review')
+          : 'Waiting for the employer to review your application.',
         isUrgent: false,
       };
     case 'shortlisted':
@@ -53,8 +55,10 @@ export const getApplicationStageInfo = (
         badgeIcon: 'chatbubble-ellipses-outline' as const,
         badgeBg: '#F3E8FF',
         badgeColor: '#7E22CE',
-        stepLabel: 'Step 2 of 5: Discussion & Chat',
-        nextStep: 'Employer shortlisted you! Tap to chat and discuss job details.',
+        stepLabel: t ? t('my_apps_stage_shortlisted') : 'Step 2 of 5: Discussion & Chat',
+        nextStep: t
+          ? t('my_apps_next_under_consideration')
+          : 'Employer shortlisted you! Tap to chat and discuss job details.',
         isUrgent: false,
       };
     case 'employer_confirmed':
@@ -64,8 +68,10 @@ export const getApplicationStageInfo = (
         badgeIcon: 'flash-outline' as const,
         badgeBg: '#FFE4E6',
         badgeColor: '#E11D48',
-        stepLabel: 'Step 3 of 5: Formal Offer Ready',
-        nextStep: 'Action required: Employer sent you a price offer! Tap to review and accept.',
+        stepLabel: t ? t('my_apps_stage_Offer_Received') : 'Step 3 of 5: Formal Offer Ready',
+        nextStep: t
+          ? t('my_apps_next_accept_or_decline')
+          : 'Action required: Employer sent you a price offer! Tap to review and accept.',
         isUrgent: true,
       };
     case 'accepted':
@@ -76,8 +82,10 @@ export const getApplicationStageInfo = (
         badgeIcon: 'checkmark-circle' as const,
         badgeBg: '#DCFCE7',
         badgeColor: '#15803D',
-        stepLabel: 'Step 4 of 5: Job in Progress',
-        nextStep: 'You are hired! Proceed to the job location on the agreed schedule.',
+        stepLabel: t ? t('my_apps_stage_hired') : 'Step 4 of 5: Job in Progress',
+        nextStep: t
+          ? t('my_apps_next_job_in_progress')
+          : 'You are hired! Proceed to the job location on the agreed schedule.',
         isUrgent: false,
       };
     case 'completed':
@@ -93,10 +101,18 @@ export const getApplicationStageInfo = (
         badgeIcon: hasReviewed ? ('checkmark-circle' as const) : ('ribbon-outline' as const),
         badgeBg: hasReviewed ? '#DCFCE7' : '#E0F2FE',
         badgeColor: hasReviewed ? '#15803D' : '#0369A1',
-        stepLabel: hasReviewed ? 'Step 5 of 5: Done & Rated' : 'Step 5 of 5: Done',
+        stepLabel: t
+          ? t('my_apps_stage_completed')
+          : hasReviewed
+            ? 'Step 5 of 5: Done & Rated'
+            : 'Step 5 of 5: Done',
         nextStep: hasReviewed
-          ? 'Job finished and rated. Thank you for your feedback!'
-          : 'Job done! Please rate your employer to help the community.',
+          ? t
+            ? t('my_apps_stage_completed')
+            : 'Job finished and rated. Thank you for your feedback!'
+          : t
+            ? t('my_apps_next_leave_review')
+            : 'Job done! Please rate your employer to help the community.',
         isUrgent: !hasReviewed,
       };
     case 'withdrawn':
@@ -106,8 +122,8 @@ export const getApplicationStageInfo = (
         badgeIcon: 'arrow-undo-outline' as const,
         badgeBg: '#FFEDD5',
         badgeColor: '#EA580C',
-        stepLabel: 'Application Withdrawn',
-        nextStep: 'You withdrew this application.',
+        stepLabel: t ? t('my_apps_stage_withdrawn') : 'Application Withdrawn',
+        nextStep: t ? t('my_apps_next_withdrawn') : 'You withdrew this application.',
         isUrgent: false,
       };
     case 'rejected':
@@ -117,8 +133,10 @@ export const getApplicationStageInfo = (
         badgeIcon: 'close-circle-outline' as const,
         badgeBg: '#F1F5F9',
         badgeColor: '#64748B',
-        stepLabel: 'Position Filled',
-        nextStep: 'This position was filled or is no longer available.',
+        stepLabel: t ? t('my_apps_stage_not_selected') : 'Position Filled',
+        nextStep: t
+          ? t('my_apps_next_reviewed_all')
+          : 'This position was filled or is no longer available.',
         isUrgent: false,
       };
     default:
@@ -128,8 +146,8 @@ export const getApplicationStageInfo = (
         badgeIcon: 'document-text-outline' as const,
         badgeBg: '#FEF3C7',
         badgeColor: '#D97706',
-        stepLabel: 'Step 1 of 5: Submitted',
-        nextStep: 'Application submitted to employer.',
+        stepLabel: t ? t('my_apps_stage_applied') : 'Step 1 of 5: Submitted',
+        nextStep: t ? t('my_apps_next_waiting_review') : 'Application submitted to employer.',
         isUrgent: false,
       };
   }

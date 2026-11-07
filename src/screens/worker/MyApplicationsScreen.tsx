@@ -28,7 +28,7 @@ type FilterType = 'All' | 'Needs Action' | 'Active' | 'In Review' | 'History';
 const FILTERS: FilterType[] = ['All', 'Needs Action', 'Active', 'In Review', 'History'];
 
 export const MyApplicationsScreen: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc' | 'pay'>('desc');
   const [searchQuery, setSearchQuery] = useState('');
@@ -172,7 +172,7 @@ export const MyApplicationsScreen: React.FC = () => {
         onRateEmployer={() => handleRateEmployer(item)}
       />
     ),
-    [handlePressCard, handleReviewOffer, handleRateEmployer],
+    [handlePressCard, handleReviewOffer, handleRateEmployer, language],
   );
 
   const canGoBack = navigation.canGoBack();
@@ -267,7 +267,7 @@ export const MyApplicationsScreen: React.FC = () => {
                 style={styles.searchIcon}
               />
               <TextInput
-                placeholder="Search job, employer, location..."
+                placeholder={t('my_apps_search_placeholder')}
                 placeholderTextColor={colors.inkLight}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -307,7 +307,11 @@ export const MyApplicationsScreen: React.FC = () => {
                 color={colors.ink}
               />
               <Text style={styles.sortButtonText}>
-                {sortOrder === 'desc' ? 'Newest' : sortOrder === 'pay' ? 'Pay' : 'Oldest'}
+                {sortOrder === 'desc'
+                  ? t('my_apps_sort_newest')
+                  : sortOrder === 'pay'
+                    ? t('my_apps_sort_pay')
+                    : t('my_apps_sort_oldest')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -439,6 +443,7 @@ export const MyApplicationsScreen: React.FC = () => {
       ) : (
         <FlatList
           data={filteredAndSortedApps}
+          extraData={language}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderAppCard}
           initialNumToRender={8}

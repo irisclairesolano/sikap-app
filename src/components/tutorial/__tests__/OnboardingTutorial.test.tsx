@@ -12,7 +12,12 @@ import {
 } from '../../../contexts/OnboardingTutorialContext';
 import { TutorialSpotlightModal } from '../TutorialSpotlightModal';
 import { TutorialTarget } from '../TutorialTarget';
-import { LanguageProvider, useLanguage } from '../../../contexts/LanguageContext';
+import {
+  LanguageProvider,
+  useLanguage,
+  getLanguageStorageKey,
+} from '../../../contexts/LanguageContext';
+import { notifyAuthChanged } from '../../../store/authEvents';
 import * as storage from '../../../utils/storage';
 
 jest.mock('../../../utils/storage', () => {
@@ -267,5 +272,66 @@ describe('OnboardingTutorial', () => {
     });
 
     expect(getByTestId('tutorial-step-title').props.children).toBe('Subaybayan ang Aplikasyon');
+  }, 30000);
+
+  it('scopes language preference per user account and resets to English when switching to another account', async () => {
+    let api: any;
+
+    await storage.setItemAsync('auth_token', 'token-101');
+    await storage.setItemAsync('user_profile', JSON.stringify({ id: 101, name: 'Juan Worker' }));
+
+    await render(
+      <LanguageProvider>
+        <OnboardingTutorialProvider>
+          <TestHarness
+            onReady={(ctx) => {
+              api = ctx;
+            }}
+          />
+        </OnboardingTutorialProvider>
+      </LanguageProvider>,
+    );
+
+    // Account A selects Filipino ('tl')
+    await act(async () => {
+      await api.setLanguage('tl');
+    });
+
+    expect(api.language).toBe('tl');
+    expect(api.t('my_profile')).toBe('Profile Ko');
+    expect(await storage.getItemAsync(getLanguageStorageKey(101))).toBe('tl');
+
+    // Account A logs out -> language resets to English
+    await act(async () => {
+      await storage.deleteItemAsync('auth_token');
+      await storage.deleteItemAsync('user_profile');
+      notifyAuthChanged();
+    });
+
+    expect(api.language).toBe('en');
+    expect(api.t('my_profile')).toBe('My Profile');
+
+    // Account B (id: 202) logs in with no saved language -> stays English
+    await act(async () => {
+      await storage.setItemAsync('auth_token', 'token-202');
+      await storage.setItemAsync(
+        'user_profile',
+        JSON.stringify({ id: 202, name: 'Maria Employer' }),
+      );
+      notifyAuthChanged();
+    });
+
+    expect(api.language).toBe('en');
+    expect(api.t('my_profile')).toBe('My Profile');
+
+    // Account A (id: 101) logs back in -> restores Filipino ('tl') automatically
+    await act(async () => {
+      await storage.setItemAsync('auth_token', 'token-101');
+      await storage.setItemAsync('user_profile', JSON.stringify({ id: 101, name: 'Juan Worker' }));
+      notifyAuthChanged();
+    });
+
+    expect(api.language).toBe('tl');
+    expect(api.t('my_profile')).toBe('Profile Ko');
   }, 30000);
 });

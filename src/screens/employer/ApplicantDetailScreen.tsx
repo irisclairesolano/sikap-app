@@ -1419,6 +1419,21 @@ const ApplicantDetailScreen: React.FC = () => {
           onPress={() => setMenuVisible(false)}
         >
           <View style={styles.menuContainer}>
+            {status === 'completed' && (
+              <TouchableOpacity
+                style={styles.menuOption}
+                onPress={() => {
+                  setMenuVisible(false);
+                  const targetJobId = appData?.job?.id || (appData as any)?.job_post_id;
+                  if (targetJobId) {
+                    navigation.navigate('JobDetails', { id: targetJobId });
+                  }
+                }}
+              >
+                <Ionicons name="eye-outline" size={20} color={colors.primary} />
+                <Text style={[styles.menuOptionText, { color: colors.ink }]}>View Job Post</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity style={styles.menuOption} onPress={handleReport}>
               <Ionicons name="flag-outline" size={20} color={colors.error} />
               <Text style={[styles.menuOptionText, { color: colors.error }]}>Report Applicant</Text>

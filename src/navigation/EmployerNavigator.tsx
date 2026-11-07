@@ -234,6 +234,7 @@ const ProfileStack: React.FC = () => (
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
+    <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
     <Stack.Screen name="Success" component={SuccessScreen} options={{ gestureEnabled: false }} />
   </Stack.Navigator>

@@ -177,6 +177,11 @@ export const MyJobsScreen: React.FC = () => {
       const handleJobPress = () => {
         if (item.deleted_at) return;
 
+        if (item.status === 'completed') {
+          navigation.navigate('JobDetails', { id: item.id });
+          return;
+        }
+
         if (activeApp) {
           navigation.navigate('ApplicantDetail', {
             applicantId: activeApp.id,
@@ -560,7 +565,7 @@ export const MyJobsScreen: React.FC = () => {
 
             {/* Menu Options */}
             <View style={styles.modalMenuOptions}>
-              {/* Option 1: Manage Applicants & Pipeline */}
+              {/* Option 1: Manage Applicants & Pipeline or View Completion Receipt */}
               {!menuJob?.deleted_at && (
                 <TouchableOpacity
                   style={styles.modalMenuItem}
@@ -576,13 +581,31 @@ export const MyJobsScreen: React.FC = () => {
                     }
                   }}
                 >
-                  <View style={[styles.modalMenuIconBox, { backgroundColor: colors.sky + '25' }]}>
-                    <Ionicons name="people-outline" size={18} color={colors.skyDeep} />
+                  <View
+                    style={[
+                      styles.modalMenuIconBox,
+                      {
+                        backgroundColor:
+                          menuJob?.status === 'completed' ? '#DCFCE7' : colors.sky + '25',
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name={menuJob?.status === 'completed' ? 'receipt-outline' : 'people-outline'}
+                      size={18}
+                      color={menuJob?.status === 'completed' ? '#15803D' : colors.skyDeep}
+                    />
                   </View>
                   <View style={styles.modalMenuTextBox}>
-                    <Text style={styles.modalMenuTitle}>Manage Applicants & Pipeline</Text>
+                    <Text style={styles.modalMenuTitle}>
+                      {menuJob?.status === 'completed'
+                        ? 'View Completion Receipt'
+                        : 'Manage Applicants & Pipeline'}
+                    </Text>
                     <Text style={styles.modalMenuSub}>
-                      Review candidates, negotiation, and stage progress
+                      {menuJob?.status === 'completed'
+                        ? 'Inspect digital receipt, payment summary, and ratings'
+                        : 'Review candidates, negotiation, and stage progress'}
                     </Text>
                   </View>
                   <Ionicons name="chevron-forward" size={16} color={colors.inkLight} />

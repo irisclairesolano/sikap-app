@@ -853,12 +853,30 @@ const ApplicationDetailScreen: React.FC = () => {
           onPress={() => setMenuVisible(false)}
         >
           <View style={styles.menuContainer}>
-            <TouchableOpacity style={styles.menuOption} onPress={handleWithdraw}>
-              <Ionicons name="close-circle-outline" size={20} color={colors.error} />
-              <Text style={[styles.menuOptionText, { color: colors.error }]}>
-                {t('withdraw_application')}
+            <TouchableOpacity
+              style={styles.menuOption}
+              onPress={() => {
+                setMenuVisible(false);
+                const targetJobId = appData?.job?.id || appData?.job_post_id;
+                if (targetJobId) {
+                  navigation.navigate('JobDetails', { id: targetJobId });
+                }
+              }}
+            >
+              <Ionicons name="eye-outline" size={20} color={colors.primary} />
+              <Text style={[styles.menuOptionText, { color: colors.ink }]}>
+                {t('receipt_btn_view_job_post') || 'View Job Post'}
               </Text>
             </TouchableOpacity>
+
+            {stage < 4 && status !== 'completed' && status !== 'withdrawn' && (
+              <TouchableOpacity style={styles.menuOption} onPress={handleWithdraw}>
+                <Ionicons name="close-circle-outline" size={20} color={colors.error} />
+                <Text style={[styles.menuOptionText, { color: colors.error }]}>
+                  {t('withdraw_application')}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </TouchableOpacity>
       </Modal>

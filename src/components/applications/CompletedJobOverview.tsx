@@ -258,6 +258,13 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
     }
   };
 
+  const targetJobId = job?.id || application?.job_post_id;
+  const handleViewJobPost = () => {
+    if (targetJobId) {
+      navigation.navigate('JobDetails', { id: targetJobId });
+    }
+  };
+
   const counterpartyScore = formatScore((counterparty as any)?.reputation_score);
   const counterpartyLocation = counterparty?.barangay
     ? `${counterparty.barangay}${counterparty.municipality ? `, ${counterparty.municipality}` : ''}`
@@ -304,7 +311,25 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
             <Text style={styles.amountEyebrow}>{rateUnitText}</Text>
             <Text style={styles.heroAmountValue}>{displayCompensation}</Text>
 
-            <Text style={styles.heroJobTitle}>{job?.title || 'Job Completion'}</Text>
+            <TouchableOpacity
+              activeOpacity={targetJobId ? 0.75 : 1}
+              onPress={targetJobId ? handleViewJobPost : undefined}
+              style={styles.heroJobTitleWrapper}
+              accessibilityRole={targetJobId ? 'button' : undefined}
+              accessibilityLabel={
+                targetJobId ? `View job post: ${job?.title || 'Job details'}` : undefined
+              }
+            >
+              <Text style={styles.heroJobTitle}>{job?.title || 'Job Completion'}</Text>
+              {targetJobId && (
+                <Ionicons
+                  name="open-outline"
+                  size={15}
+                  color={colors.primary}
+                  style={{ marginTop: 2 }}
+                />
+              )}
+            </TouchableOpacity>
 
             <View style={styles.heroSubMetaRow}>
               {formattedCompletedDate ? (
@@ -556,6 +581,19 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
             </>
           )}
         </TouchableOpacity>
+
+        {targetJobId ? (
+          <TouchableOpacity
+            style={styles.viewJobPostBtn}
+            onPress={handleViewJobPost}
+            activeOpacity={0.78}
+          >
+            <Ionicons name="document-text-outline" size={16} color={colors.primary} />
+            <Text style={styles.viewJobPostText}>
+              {t('receipt_btn_view_job_post') || 'View Job Post'}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
 
         {onOpenChat && (
           <TouchableOpacity style={styles.chatHistoryBtn} onPress={onOpenChat} activeOpacity={0.78}>
@@ -1076,5 +1114,29 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 13,
     color: colors.primaryDark,
+  },
+  heroJobTitleWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  viewJobPostBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    ...shadows.sm,
+  },
+  viewJobPostText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.primary,
   },
 });

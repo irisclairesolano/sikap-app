@@ -394,6 +394,20 @@ export const JobStatusManagementScreen: React.FC = () => {
 
             {/* Bottom Actions for Completed Job */}
             <View style={styles.actionsCard}>
+              <TouchableOpacity
+                style={[
+                  styles.cancelBtn,
+                  {
+                    borderColor: colors.primary,
+                    backgroundColor: colors.paperBright,
+                    marginBottom: 8,
+                  },
+                ]}
+                onPress={() => navigation.navigate('JobDetails', { id: job.id })}
+              >
+                <Ionicons name="eye-outline" size={18} color={colors.primary} />
+                <Text style={[styles.cancelBtnText, { color: colors.primary }]}>View Job Post</Text>
+              </TouchableOpacity>
               {unreviewedCount > 0 && (
                 <Button
                   label={`Rate Remaining Workers (${unreviewedCount})`}

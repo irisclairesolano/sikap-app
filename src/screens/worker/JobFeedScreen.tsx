@@ -81,7 +81,7 @@ const LOCATIONS: { key: string; labelKey: TranslationKey }[] = [
 ];
 
 export const JobFeedScreen: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const [activeCategory, setActiveCategory] = useState('All');
   const [locationFilter, setLocationFilter] = useState('Anywhere');
@@ -198,7 +198,7 @@ export const JobFeedScreen: React.FC = () => {
         onSave={() => toggleSave(item.id)}
       />
     ),
-    [handleJobPress, isSaved, toggleSave],
+    [handleJobPress, isSaved, toggleSave, language],
   );
 
   const getInitial = (name?: string) => {
@@ -340,6 +340,7 @@ export const JobFeedScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <FlatList
         data={isLoading ? [1, 2, 3] : isError ? [] : jobsList}
+        extraData={language}
         keyExtractor={(item, index) =>
           isLoading ? `skeleton_${index}` : isError ? 'error' : item.id.toString()
         }

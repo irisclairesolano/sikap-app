@@ -1015,6 +1015,9 @@ export const tl: Record<TranslationKey, string> = {
   receipt_footer_verified: 'Beripikadong Digital na Resibo • SIKAP Sorsogon Portal',
   receipt_btn_download: 'I-save ang Resibo bilang Larawan',
   receipt_btn_chat_history: 'Tingnan ang Chat History',
+  receipt_btn_view_job_post: 'Tingnan ang Job Post',
+  view_completion_receipt: 'Tingnan ang Resibo ng Pagtatapos',
+  job_completed_notice: 'Tapos na ang trabahong ito.',
   receipt_saved_alert_title: 'Na-save na ang Resibo',
   receipt_saved_alert_msg: 'Nasa photo gallery na ng cellphone mo ang opisyal na resibo.',
   receipt_err_save_title: 'Hindi Ma-save ang Resibo',
@@ -1040,11 +1043,15 @@ export const tl: Record<TranslationKey, string> = {
   alert_cancel_job_success_title: 'Nakansela na ang Job Post',
   alert_cancel_job_success_msg: 'Nakansela na ang job post mo.',
 
+  error_title: 'May Mali',
+  applicants: 'mga aplikante',
+
   // Hiring, Offers & Negotiation
   alert_chat_required_title: 'Mag-chat Muna',
   alert_chat_required_msg:
     'Mag-chat muna kayo ng aplikante para mapag-usapan ang mga detalye ng trabaho bago mo siya kumpirmahin bilang kukunin.',
   alert_chat_required_btn_chat: 'Buksan ang Chat',
+  alert_chat_required_btn_cancel: 'Huwag Muna',
   alert_cancel_hire_title: 'Kanselahin ang Pagkuha?',
   alert_cancel_hire_prompt:
     'Sigurado ka bang hindi mo na itutuloy ang pagkuha kay {applicantName} para sa trabahong "{jobTitle}"?',
@@ -1052,11 +1059,14 @@ export const tl: Record<TranslationKey, string> = {
   alert_cancel_hire_confirm_btn: 'Oo, Kanselahin',
   alert_cancel_hire_success_msg: 'Nakansela na ang pagkuha kay {applicantName}.',
   alert_cancel_hire_error_msg: 'Hindi nakansela ang pagkuha. Pakisubukang muli.',
+  alert_cancel_hire_err_msg: 'Hindi nakansela ang pagkuha. Subukan ulit.',
   alert_decline_offer_title: 'Tanggihan ang Alok?',
   alert_decline_offer_prompt: 'Sigurado ka bang tatanggihan mo ang alok para sa "{jobTitle}"?',
+  alert_decline_offer_msg: 'Sigurado ka bang gusto mong tanggihan ang alok para sa "{jobTitle}"?',
   alert_decline_offer_btn_cancel: 'Huwag Ituloy',
   alert_decline_offer_btn_confirm: 'Oo, Tanggihan',
   alert_decline_offer_success_msg: 'Tinanggihan mo na ang alok para sa "{jobTitle}".',
+  alert_decline_offer_err_msg: 'Hindi naituloy ang pagtanggi sa alok. Subukan ulit.',
   alert_accept_offer_error_msg: 'Hindi matanggap ang alok. Pakisubukang muli.',
   alert_mark_complete_error_msg: 'Hindi namarkahang tapos na ang trabaho. Pakisubukang muli.',
 
@@ -1064,27 +1074,43 @@ export const tl: Record<TranslationKey, string> = {
   alert_withdraw_title: 'Bawiin ang Application?',
   alert_withdraw_prompt:
     'Sigurado ka bang gusto mong bawiin ang application mo? Hindi mo na ito maibabalik kapag itinuloy mo.',
+  alert_withdraw_msg:
+    'Sigurado ka bang gusto mong bawiin ang iyong application? Hindi na ito maibabalik.',
   alert_withdraw_btn_keep: 'Huwag Ituloy',
+  alert_withdraw_btn_cancel: 'Huwag Muna',
   alert_withdraw_btn_confirm: 'Oo, Bawiin',
   alert_withdraw_error_msg: 'Hindi nabawi ang application mo. Pakisubukang muli.',
+  alert_withdraw_err_msg: 'Hindi nabawi ang application. Subukan ulit.',
 
   // Chat, Safety & Moderation
   alert_block_user_title: 'I-block ang User?',
   alert_block_user_prompt:
     'Sigurado ka bang gusto mong i-block si {targetName}? Hindi ka na niya puwedeng i-message, padalhan ng job offer, o makita ang mga job post mo.',
+  alert_block_user_msg:
+    'Sigurado ka bang gusto mong i-block si {name}? Hindi ka na niya maaaring padalhan ng mensahe, mag-alok ng trabaho, o makita ang iyong mga post.',
   alert_block_user_btn_cancel: 'Huwag Ituloy',
   alert_block_user_btn_confirm: 'I-block',
   alert_block_user_success_title: 'Naka-block na',
   alert_block_user_success_msg: 'Naka-block na si {targetName}.',
   alert_block_user_error_title: 'Hindi Ma-block',
+  alert_block_user_err_title: 'Hindi Na-block',
   alert_block_user_error_msg: 'Hindi ma-block ang user na ito. Pakisubukang muli.',
+  alert_block_user_err_msg: 'Hindi na-block ang user na ito. Pakisubukan muli.',
   alert_unblock_user_title: 'I-unblock ang User?',
   alert_unblock_user_prompt: 'Sigurado ka bang gusto mong i-unblock si {targetName}?',
+  alert_unblock_user_msg: 'Sigurado ka bang gusto mong i-unblock si {name}?',
+  alert_unblock_user_btn_cancel: 'Huwag Muna',
   alert_unblock_user_btn_confirm: 'I-unblock',
   alert_unblock_user_success_title: 'Na-unblock na',
   alert_unblock_user_success_msg: 'Na-unblock mo na si {targetName}.',
+  alert_unblock_user_error_title: 'Hindi Na-unblock',
+  alert_unblock_user_err_title: 'Hindi Na-unblock',
+  alert_unblock_user_error_msg: 'Hindi na-unblock ang user na ito. Pakisubukang muli.',
+  alert_unblock_user_err_msg: 'Hindi na-unblock ang user na ito. Pakisubukan muli.',
   alert_chat_send_failed_title: 'Hindi Naipadala',
+  alert_chat_send_err_title: 'Hindi Naipadala',
   alert_chat_send_failed_msg: 'Hindi naipadala ang mensahe. Pakisubukang muli.',
+  alert_chat_send_err_msg: 'Hindi naipadala ang mensahe. Pakisubukan muli.',
   alert_chat_send_image_failed_title: 'Hindi Naipadala ang Larawan',
   alert_chat_send_image_failed_msg: 'Hindi naipadala ang larawan. Pakisubukang muli.',
   alert_chat_prohibited_language: 'May mga salitang hindi puwedeng gamitin sa mensahe mo.',
@@ -1101,8 +1127,11 @@ export const tl: Record<TranslationKey, string> = {
   alert_docs_limit_reached_msg:
     'Hanggang 3 business documents lang ang puwede mong i-upload. Alisin muna ang isa sa mga na-upload mo kung gusto mong magdagdag.',
   alert_docs_too_many_title: 'Sobra ang Bilang ng Files',
+  alert_docs_limit_title: 'Sobra ang Files',
   alert_docs_too_many_msg:
     '{count} na lang na document ang puwede mong idagdag. Hanggang 3 lang ang puwedeng i-upload.',
+  alert_docs_limit_msg:
+    'Maaari ka na lamang magdagdag ng {remaining} pang dokumento (hanggang 3 files lamang).',
   alert_docs_file_too_large_title: 'Masyadong Malaki ang File',
   alert_docs_file_too_large_msg:
     'May isa o higit pang file na lampas sa 5MB limit. Pumili ng mas maliit na file.',

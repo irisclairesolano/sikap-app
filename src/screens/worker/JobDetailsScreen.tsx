@@ -200,6 +200,11 @@ export const JobDetailsScreen: React.FC = () => {
     remainingSlots === 0 || job?.status === 'completed' || job?.status === 'closed_in_progress';
   const isApplied = !!((job?.is_applied || (job as any)?.has_applied) && !job?.is_withdrawn);
   const isWithdrawn = !!job?.is_withdrawn;
+  const isOwnerEmployer =
+    user?.role === 'employer' &&
+    (Number(job?.employer_id || job?.employer?.id) === Number(user?.id) ||
+      job?.employer_id === user?.id ||
+      job?.employer?.id === user?.id);
 
   const getRelativeTime = (dateString?: string) => {
     if (!dateString) return 'Just now';
@@ -295,6 +300,14 @@ export const JobDetailsScreen: React.FC = () => {
               <Ionicons name="flame" size={10} color={colors.error} />
               <Text style={[styles.badgeText, { color: colors.error }]}>
                 {t('urgent').toUpperCase()}
+              </Text>
+            </View>
+          )}
+          {job.status === 'completed' && (
+            <View style={[styles.badge, { backgroundColor: '#DCFCE7' }]}>
+              <Ionicons name="checkmark-circle" size={10} color="#15803D" />
+              <Text style={[styles.badgeText, { color: '#15803D' }]}>
+                {(t('receipt_status_completed') || 'COMPLETED').toUpperCase()}
               </Text>
             </View>
           )}
@@ -529,7 +542,7 @@ export const JobDetailsScreen: React.FC = () => {
 
       {/* Bottom CTA */}
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
-        {job.employer_id === user?.id ? (
+        {isOwnerEmployer ? (
           <View
             style={[
               styles.alreadyAppliedCard,
@@ -537,9 +550,21 @@ export const JobDetailsScreen: React.FC = () => {
             ]}
           >
             <View style={styles.alreadyAppliedRow}>
-              <Ionicons name="information-circle" size={20} color={colors.primary} />
-              <Text style={[styles.alreadyAppliedTitle, { color: colors.ink }]}>
+              <Ionicons
+                name={job.status === 'completed' ? 'checkmark-circle' : 'information-circle'}
+                size={20}
+                color={job.status === 'completed' ? '#15803D' : colors.primary}
+              />
+              <Text
+                style={[
+                  styles.alreadyAppliedTitle,
+                  { color: job.status === 'completed' ? '#15803D' : colors.ink },
+                ]}
+              >
                 {t('your_own_job_posting')}
+                {job.status === 'completed'
+                  ? ` • ${t('receipt_status_completed') || 'COMPLETED'}`
+                  : ''}
               </Text>
             </View>
             <Text
@@ -550,14 +575,36 @@ export const JobDetailsScreen: React.FC = () => {
                 marginTop: 4,
               }}
             >
-              {t('cannot_apply_own_job')}
+              {job.status === 'completed'
+                ? t('job_completed_notice') || 'This job has been completed.'
+                : t('cannot_apply_own_job')}
             </Text>
+            {job.status === 'completed' && (
+              <TouchableOpacity
+                style={[
+                  styles.alreadyAppliedBtn,
+                  { marginTop: 10, backgroundColor: colors.primary },
+                ]}
+                activeOpacity={0.8}
+                onPress={() => {
+                  (navigation as any).navigate('JobStatusManagement', { id: job.id, job });
+                }}
+              >
+                <Text style={[styles.alreadyAppliedBtnText, { color: colors.white }]}>
+                  {t('view_completion_receipt') || 'View Completion Receipt'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : job.is_applied || job.has_applied || job.application_id ? (
           <View style={styles.alreadyAppliedCard}>
             <View style={styles.alreadyAppliedRow}>
               <Ionicons name="checkmark-circle" size={20} color={colors.mintDeep} />
-              <Text style={styles.alreadyAppliedTitle}>{t('already_applied_job')}</Text>
+              <Text style={styles.alreadyAppliedTitle}>
+                {job.status === 'completed'
+                  ? `${t('receipt_status_completed') || 'COMPLETED'} • ${t('already_applied_job')}`
+                  : t('already_applied_job')}
+              </Text>
             </View>
             <TouchableOpacity
               style={styles.alreadyAppliedBtn}
@@ -566,7 +613,9 @@ export const JobDetailsScreen: React.FC = () => {
                 if (job.application_id) {
                   (navigation as any).navigate('ApplicationDetail', {
                     applicationId: job.application_id,
-                    status: (job as any).application_status,
+                    status:
+                      (job as any).application_status ||
+                      (job.status === 'completed' ? 'completed' : undefined),
                     jobTitle: job.title,
                     employerName: job.employer?.name,
                     compensation: job.compensation?.toString(),
@@ -576,16 +625,34 @@ export const JobDetailsScreen: React.FC = () => {
                 }
               }}
             >
-              <Text style={styles.alreadyAppliedBtnText}>{t('click_to_manage_app')}</Text>
+              <Text style={styles.alreadyAppliedBtnText}>
+                {job.status === 'completed'
+                  ? t('view_completion_receipt') || 'View Completion Receipt'
+                  : t('click_to_manage_app')}
+              </Text>
             </TouchableOpacity>
           </View>
         ) : isFilled ? (
           <View style={styles.filledCard}>
             <View style={styles.alreadyAppliedRow}>
-              <Ionicons name="lock-closed" size={18} color={colors.error} />
-              <Text style={styles.filledTitle}>{t('closed')}</Text>
+              <Ionicons
+                name={job.status === 'completed' ? 'checkmark-circle' : 'lock-closed'}
+                size={18}
+                color={job.status === 'completed' ? '#15803D' : colors.error}
+              />
+              <Text
+                style={[styles.filledTitle, job.status === 'completed' && { color: '#15803D' }]}
+              >
+                {job.status === 'completed'
+                  ? t('receipt_status_completed') || 'COMPLETED'
+                  : t('closed')}
+              </Text>
             </View>
-            <Text style={styles.filledSubtitle}>{t('job_closed_notice')}</Text>
+            <Text style={styles.filledSubtitle}>
+              {job.status === 'completed'
+                ? t('job_completed_notice') || 'This job has already been completed.'
+                : t('job_closed_notice')}
+            </Text>
           </View>
         ) : (
           <Button

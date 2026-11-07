@@ -982,6 +982,9 @@ export const en = {
   receipt_footer_verified: 'Verified Digital Receipt • SIKAP Sorsogon Portal',
   receipt_btn_download: 'Download Receipt Photo',
   receipt_btn_chat_history: 'View Chat History',
+  receipt_btn_view_job_post: 'View Job Post',
+  view_completion_receipt: 'View Completion Receipt',
+  job_completed_notice: 'This job has been completed.',
   receipt_saved_alert_title: 'Receipt Saved',
   receipt_saved_alert_msg: 'The official receipt image has been saved to your photo gallery.',
   receipt_err_save_title: 'Unable to Save Receipt',
@@ -1007,11 +1010,15 @@ export const en = {
   alert_cancel_job_success_title: 'Cancelled',
   alert_cancel_job_success_msg: 'Your job post has been cancelled.',
 
+  error_title: 'Error',
+  applicants: 'applicants',
+
   // Hiring, Offers & Negotiation
   alert_chat_required_title: 'Chat Required',
   alert_chat_required_msg:
     'Please discuss the job with the applicant in chat before finalizing the hire.',
   alert_chat_required_btn_chat: 'Open Chat',
+  alert_chat_required_btn_cancel: 'Cancel',
   alert_cancel_hire_title: 'Cancel Hire',
   alert_cancel_hire_prompt:
     'Are you sure you want to cancel the hire process for {applicantName} regarding the {jobTitle} position?',
@@ -1020,11 +1027,14 @@ export const en = {
   alert_cancel_hire_confirm_btn: 'Confirm Cancellation',
   alert_cancel_hire_success_msg: 'You have successfully cancelled the hire for {applicantName}.',
   alert_cancel_hire_error_msg: 'Failed to cancel hire.',
+  alert_cancel_hire_err_msg: 'Failed to cancel hire.',
   alert_decline_offer_title: 'Decline Offer',
   alert_decline_offer_prompt: 'Are you sure you want to decline the offer for "{jobTitle}"?',
+  alert_decline_offer_msg: 'Are you sure you want to decline the offer for "{jobTitle}"?',
   alert_decline_offer_btn_cancel: 'Cancel',
   alert_decline_offer_btn_confirm: 'Decline',
   alert_decline_offer_success_msg: 'You have declined the offer for "{jobTitle}".',
+  alert_decline_offer_err_msg: 'Failed to decline offer.',
   alert_accept_offer_error_msg: 'Failed to accept offer.',
   alert_mark_complete_error_msg: 'Failed to mark job as complete.',
 
@@ -1032,27 +1042,43 @@ export const en = {
   alert_withdraw_title: 'Withdraw Application',
   alert_withdraw_prompt:
     'Are you sure you want to withdraw your application? This action cannot be undone.',
+  alert_withdraw_msg:
+    'Are you sure you want to withdraw your application? This action cannot be undone.',
   alert_withdraw_btn_keep: 'Cancel',
+  alert_withdraw_btn_cancel: 'Cancel',
   alert_withdraw_btn_confirm: 'Withdraw',
   alert_withdraw_error_msg: 'Could not withdraw application.',
+  alert_withdraw_err_msg: 'Could not withdraw application.',
 
   // Chat, Safety & Moderation
   alert_block_user_title: 'Block User',
   alert_block_user_prompt:
     'Are you sure you want to block {targetName}? They will no longer be able to message you, send job offers, or view your listings.',
+  alert_block_user_msg:
+    'Are you sure you want to block {name}? They will no longer be able to message you, send job offers, or view your listings.',
   alert_block_user_btn_cancel: 'Cancel',
   alert_block_user_btn_confirm: 'Block',
   alert_block_user_success_title: 'User Blocked',
   alert_block_user_success_msg: '{targetName} has been blocked.',
   alert_block_user_error_title: 'Block Failed',
+  alert_block_user_err_title: 'Block Failed',
   alert_block_user_error_msg: 'Could not block this user.',
+  alert_block_user_err_msg: 'Could not block this user.',
   alert_unblock_user_title: 'Unblock User',
   alert_unblock_user_prompt: 'Are you sure you want to unblock {targetName}?',
+  alert_unblock_user_msg: 'Are you sure you want to unblock {name}?',
+  alert_unblock_user_btn_cancel: 'Cancel',
   alert_unblock_user_btn_confirm: 'Unblock',
   alert_unblock_user_success_title: 'User Unblocked',
   alert_unblock_user_success_msg: '{targetName} has been unblocked.',
+  alert_unblock_user_error_title: 'Unblock Failed',
+  alert_unblock_user_err_title: 'Unblock Failed',
+  alert_unblock_user_error_msg: 'Could not unblock this user.',
+  alert_unblock_user_err_msg: 'Could not unblock this user.',
   alert_chat_send_failed_title: 'Failed to Send',
+  alert_chat_send_err_title: 'Failed to Send',
   alert_chat_send_failed_msg: 'Could not send message. Please try again.',
+  alert_chat_send_err_msg: 'Could not send message. Please try again.',
   alert_chat_send_image_failed_title: 'Failed to Send Image',
   alert_chat_send_image_failed_msg: 'Could not send image. Please try again.',
   alert_chat_prohibited_language: 'Message contains prohibited language.',
@@ -1068,7 +1094,9 @@ export const en = {
   alert_docs_limit_reached_msg:
     'You can only have up to 3 business documents. Please delete an existing document first.',
   alert_docs_too_many_title: 'Too Many Files',
+  alert_docs_limit_title: 'Too Many Files',
   alert_docs_too_many_msg: 'You can only add {count} more document(s) (maximum 3 total).',
+  alert_docs_limit_msg: 'You can only add {remaining} more document(s) (maximum 3 total).',
   alert_docs_file_too_large_title: 'File Too Large',
   alert_docs_file_too_large_msg: 'One or more files exceed the 5MB limit.',
 
