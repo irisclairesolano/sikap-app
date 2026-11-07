@@ -282,14 +282,31 @@ export const OnboardingTutorialProvider: React.FC<ProviderProps> = ({ children, 
     [],
   );
 
+  const updateTargetRectIfChanged = useCallback((rect: TargetRect) => {
+    setTargetRect((prev) => {
+      if (
+        prev &&
+        Math.abs(prev.x - rect.x) <= 1 &&
+        Math.abs(prev.y - rect.y) <= 1 &&
+        Math.abs(prev.width - rect.width) <= 1 &&
+        Math.abs(prev.height - rect.height) <= 1
+      ) {
+        return prev;
+      }
+      return rect;
+    });
+  }, []);
+
   const refreshCurrentTarget = useCallback(async () => {
     if (!currentStep) {
       setTargetRect(null);
       return;
     }
     const rect = await measureStepTarget(currentStep);
-    setTargetRect(rect);
-  }, [currentStep, measureStepTarget]);
+    if (rect) {
+      updateTargetRectIfChanged(rect);
+    }
+  }, [currentStep, measureStepTarget, updateTargetRectIfChanged]);
 
   // Handle actual screen navigation and target measurement whenever currentStep changes
   useEffect(() => {
@@ -308,7 +325,6 @@ export const OnboardingTutorialProvider: React.FC<ProviderProps> = ({ children, 
     if (onNavigate && needsTabChange) {
       lastNavigatedTabRef.current = routeKey;
       setIsTransitioning(true);
-      setTargetRect(null);
       try {
         onNavigate(currentStep.route);
       } catch (e) {
@@ -316,19 +332,35 @@ export const OnboardingTutorialProvider: React.FC<ProviderProps> = ({ children, 
       }
     }
 
+    const scheduleSettlementChecks = () => {
+      // Re-measure after tab/stack transitions and SafeAreaView insets finish settling
+      const settleDelays = needsTabChange ? [120, 280] : [100];
+      for (const delay of settleDelays) {
+        const settleTimer = setTimeout(async () => {
+          if (isCancelled) return;
+          const settledRect = await measureStepTarget(currentStep);
+          if (!isCancelled && settledRect) {
+            updateTargetRectIfChanged(settledRect);
+          }
+        }, delay);
+        timers.push(settleTimer);
+      }
+    };
+
     const attemptMeasurement = async (attempt: number) => {
       if (isCancelled) return;
       const rect = await measureStepTarget(currentStep);
       if (isCancelled) return;
 
       if (rect) {
-        setTargetRect(rect);
+        updateTargetRectIfChanged(rect);
         setIsTransitioning(false);
+        scheduleSettlementChecks();
         return;
       }
 
       if (attempt < 3) {
-        const delay = attempt === 1 ? 140 : 220;
+        const delay = attempt === 1 ? 110 : 180;
         const t = setTimeout(() => attemptMeasurement(attempt + 1), delay);
         timers.push(t);
       } else {
@@ -346,7 +378,7 @@ export const OnboardingTutorialProvider: React.FC<ProviderProps> = ({ children, 
       }
     };
 
-    const initialDelay = needsTabChange ? 120 : 40;
+    const initialDelay = needsTabChange ? 90 : 24;
     const initialTimer = setTimeout(() => attemptMeasurement(1), initialDelay);
     timers.push(initialTimer);
 
@@ -354,7 +386,15 @@ export const OnboardingTutorialProvider: React.FC<ProviderProps> = ({ children, 
       isCancelled = true;
       timers.forEach(clearTimeout);
     };
-  }, [isActive, currentStep, currentStepIndex, steps.length, measureStepTarget, onNavigate]);
+  }, [
+    isActive,
+    currentStep,
+    currentStepIndex,
+    steps.length,
+    measureStepTarget,
+    onNavigate,
+    updateTargetRectIfChanged,
+  ]);
 
   const registerTarget = useCallback((id: string, measureFn: MeasureFn) => {
     targetsRef.current.set(id, measureFn);
