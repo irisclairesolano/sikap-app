@@ -455,7 +455,7 @@ const ApplicationDetailScreen: React.FC = () => {
                     ? t('status_job_offer_received')
                     : stage === 4
                       ? t('status_hired')
-                      : t('status_completed')}
+                      : t('hiring_receipt_official_header') || 'Job Receipt'}
           </Text>
         </View>
         {status !== 'withdrawn' ? (

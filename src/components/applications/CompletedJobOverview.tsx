@@ -210,7 +210,8 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
       if (capturedUri) {
         try {
           const MediaLibrary = require('expo-media-library');
-          const permission = await MediaLibrary.requestPermissionsAsync();
+          // Request write-only photo permission so Android does not ask for audio / music access
+          const permission = await MediaLibrary.requestPermissionsAsync(true, ['photo']);
           if (permission?.granted) {
             await MediaLibrary.saveToLibraryAsync(capturedUri);
             showAlert('Receipt Saved', t('hiring_receipt_saved_msg'));
@@ -291,7 +292,9 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
             <View style={styles.headerMetaRow}>
               <View style={styles.refPill}>
                 <Text style={styles.refPillLabel}>REF #</Text>
-                <Text style={styles.refPillValue}>{refNumber}</Text>
+                <Text style={styles.refPillValue} numberOfLines={1} ellipsizeMode="middle">
+                  {refNumber}
+                </Text>
               </View>
               <View style={styles.completedStamp}>
                 <Ionicons name="checkmark-circle" size={14} color="#15803D" />
@@ -665,6 +668,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     marginTop: 14,
+    gap: 8,
+    flexWrap: 'wrap',
   },
   refPill: {
     flexDirection: 'row',
@@ -676,6 +681,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    flexShrink: 1,
+    minWidth: 0,
   },
   refPillLabel: {
     fontFamily: fonts.bodyBold,
@@ -687,6 +694,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.numericBold,
     fontSize: 11.5,
     color: colors.ink,
+    flexShrink: 1,
   },
   completedStamp: {
     flexDirection: 'row',
@@ -698,6 +706,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#86EFAC',
+    flexShrink: 0,
   },
   completedStampText: {
     fontFamily: fonts.bodyBold,

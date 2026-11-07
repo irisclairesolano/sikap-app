@@ -297,6 +297,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 15,
     color: colors.ink,
+    textAlign: 'center',
     marginTop: 10,
   },
   emptySubtitle: {

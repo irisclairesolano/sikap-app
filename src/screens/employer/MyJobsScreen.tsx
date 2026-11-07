@@ -446,7 +446,8 @@ export const MyJobsScreen: React.FC = () => {
         </View>
       ) : filteredJobs.length === 0 ? (
         <ScrollView
-          contentContainerStyle={[styles.emptyState, { flex: 1, justifyContent: 'center' }]}
+          style={{ flex: 1 }}
+          contentContainerStyle={[styles.emptyState, { flexGrow: 1, justifyContent: 'center' }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -455,7 +456,13 @@ export const MyJobsScreen: React.FC = () => {
             />
           }
         >
-          <Ionicons name="briefcase-outline" size={48} color={colors.inkFaint} />
+          <View style={styles.emptyIconContainer}>
+            <Ionicons
+              name={activeTab === 'Archived' ? 'archive-outline' : 'briefcase-outline'}
+              size={36}
+              color={colors.inkMuted}
+            />
+          </View>
           <Text style={styles.emptyTitle}>
             {activeTab === 'Active'
               ? t('no_active_jobs')
@@ -473,7 +480,7 @@ export const MyJobsScreen: React.FC = () => {
           <Button
             title={t('post_a_job')}
             onPress={() => navigation.navigate('PostJob')}
-            style={{ marginTop: 16, minWidth: 160 }}
+            style={{ marginTop: 20, minWidth: 160, alignSelf: 'center' }}
           />
         </ScrollView>
       ) : (
@@ -1079,12 +1086,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.inkSoft,
   },
-  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
+  emptyState: {
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 40,
+  },
+  emptyIconContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.paperCream,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
   emptyTitle: {
     fontFamily: fonts.bodyBold,
     fontSize: 18,
     color: colors.ink,
-    marginTop: 16,
+    textAlign: 'center',
+    alignSelf: 'center',
+    maxWidth: 300,
+    marginTop: 0,
     marginBottom: 8,
   },
   emptyBody: {
@@ -1092,6 +1117,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.inkSoft,
     textAlign: 'center',
+    alignSelf: 'center',
+    maxWidth: 300,
     lineHeight: 20,
   },
 });

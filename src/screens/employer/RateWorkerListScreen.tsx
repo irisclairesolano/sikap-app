@@ -191,7 +191,13 @@ const styles = StyleSheet.create({
   workerName: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
   jobTitle: { fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft, marginTop: 2 },
   emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 40 },
-  emptyTitle: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink, marginTop: 16 },
+  emptyTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 16,
+    color: colors.ink,
+    textAlign: 'center',
+    marginTop: 16,
+  },
   emptySubtitle: {
     fontFamily: fonts.body,
     fontSize: 14,
