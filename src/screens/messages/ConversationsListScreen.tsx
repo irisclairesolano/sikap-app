@@ -121,6 +121,8 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                   returnKeyType="search"
+                  multiline={false}
+                  numberOfLines={1}
                 />
                 {searchQuery.length > 0 && (
                   <TouchableOpacity

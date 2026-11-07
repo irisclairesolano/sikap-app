@@ -277,6 +277,8 @@ export const JobFeedScreen: React.FC = () => {
                 onChangeText={setSearchInput}
                 onSubmitEditing={() => setSearchQuery(searchInput)}
                 returnKeyType="search"
+                multiline={false}
+                numberOfLines={1}
               />
               {searchInput.length > 0 && (
                 <TouchableOpacity
@@ -527,6 +529,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 15,
     color: colors.ink,
+    paddingVertical: 0,
+    height: '100%',
   },
   filterBtn: {
     width: 52,

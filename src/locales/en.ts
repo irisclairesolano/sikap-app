@@ -59,7 +59,7 @@ export const en = {
   messages: 'Messages',
   profile: 'Profile',
   notifications: 'Notifications',
-  search_jobs_placeholder: 'Search jobs or skills...',
+  search_jobs_placeholder: 'Search jobs...',
   all: 'All',
   urgent: 'Urgent',
   filter: 'Filter',
@@ -82,7 +82,7 @@ export const en = {
   saved_jobs: 'Saved Jobs',
   job_saved_bookmark: 'Job saved to your bookmarks.',
   job_removed_bookmark: 'Job removed from your bookmarks.',
-  already_applied: 'Already Applied',
+  already_applied: 'Applied',
   closed: 'Closed',
   in_progress: 'In Progress',
   job_already_filled: 'This job has already been filled or is no longer accepting applications.',
@@ -377,7 +377,7 @@ export const en = {
     'Having trouble? Send us a message and our admin support team will review your ticket directly in-app.',
 
   // Group 5: Messages & Chat Features
-  search_messages_placeholder: 'Search by name or job...',
+  search_messages_placeholder: 'Search messages...',
   concluded: 'Concluded',
   no_conversations_matching: 'No conversations matching "{searchQuery}"',
   action_required: 'Action Required',
@@ -1174,7 +1174,7 @@ export const en = {
   my_jobs_no_past_sub: 'Completed or closed jobs will appear here.',
   my_jobs_no_archived_sub: 'Jobs you archive will be stored here.',
 
-  my_apps_search_placeholder: 'Search job, employer, or location...',
+  my_apps_search_placeholder: 'Search applications...',
   my_apps_sort_newest: 'Newest',
   my_apps_sort_pay: 'Pay',
   my_apps_sort_oldest: 'Oldest',

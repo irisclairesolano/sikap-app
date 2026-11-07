@@ -274,6 +274,8 @@ export const MyApplicationsScreen: React.FC = () => {
                 style={styles.searchInput}
                 autoCapitalize="none"
                 clearButtonMode="while-editing"
+                multiline={false}
+                numberOfLines={1}
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity

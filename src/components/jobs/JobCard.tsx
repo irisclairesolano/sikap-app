@@ -146,7 +146,7 @@ export const JobCard = React.memo(function JobCard({
 
         {/* Zone 2: Card Content Area */}
         <View style={styles.contentArea}>
-          {/* Header Row: Category Icon + Title + Verified Badge (Left) / Urgent + Bookmark (Right) */}
+          {/* Header Row: Category Icon + Title + Verified Badge (Left) / Bookmark (Right) */}
           <View style={styles.headerRow}>
             <View style={styles.headerLeft}>
               <View style={[styles.categoryIconCircle, { backgroundColor: catStyles.bg }]}>
@@ -166,58 +166,65 @@ export const JobCard = React.memo(function JobCard({
                     />
                   )}
                 </View>
+
+                {/* Status & Urgency Badges (Placed below title so title is never compressed) */}
+                {(isApplied ||
+                  job.is_withdrawn ||
+                  (!isApplied && !job.is_withdrawn && isFilled) ||
+                  isUrgent) && (
+                  <View style={styles.badgeRow}>
+                    {isApplied && (
+                      <View style={[styles.badge, styles.badgeApplied]}>
+                        <Ionicons name="checkmark-circle" size={10} color="#15803D" />
+                        <Text style={[styles.badgeText, styles.badgeTextApplied]}>
+                          {t('already_applied').toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+                    {job.is_withdrawn && (
+                      <View style={[styles.badge, styles.badgeWithdrawn]}>
+                        <Ionicons name="remove-circle" size={10} color="#92400E" />
+                        <Text style={[styles.badgeText, styles.badgeTextWithdrawn]}>
+                          {t('status_withdrawn').toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+                    {!isApplied && !job.is_withdrawn && isFilled && (
+                      <View style={[styles.badge, styles.badgeFilled]}>
+                        <Text style={[styles.badgeText, styles.badgeTextFilled]}>
+                          {t('closed').toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+                    {isUrgent && (
+                      <View style={[styles.badge, styles.badgeUrgent]}>
+                        <Ionicons name="flame" size={10} color={colors.error} />
+                        <Text style={[styles.badgeText, { color: colors.error }]}>
+                          {t('urgent').toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
               </View>
             </View>
 
-            <View style={styles.headerRight}>
-              {isApplied && (
-                <View style={[styles.badge, styles.badgeApplied]}>
-                  <Ionicons name="checkmark-circle" size={10} color="#15803D" />
-                  <Text style={[styles.badgeText, styles.badgeTextApplied]}>
-                    {t('already_applied').toUpperCase()}
-                  </Text>
-                </View>
-              )}
-              {job.is_withdrawn && (
-                <View style={[styles.badge, styles.badgeWithdrawn]}>
-                  <Ionicons name="remove-circle" size={10} color="#92400E" />
-                  <Text style={[styles.badgeText, styles.badgeTextWithdrawn]}>
-                    {t('status_withdrawn').toUpperCase()}
-                  </Text>
-                </View>
-              )}
-              {!isApplied && !job.is_withdrawn && isFilled && (
-                <View style={[styles.badge, styles.badgeFilled]}>
-                  <Text style={[styles.badgeText, styles.badgeTextFilled]}>
-                    {t('closed').toUpperCase()}
-                  </Text>
-                </View>
-              )}
-              {isUrgent && (
-                <View style={[styles.badge, styles.badgeUrgent]}>
-                  <Ionicons name="flame" size={10} color={colors.error} />
-                  <Text style={[styles.badgeText, { color: colors.error }]}>
-                    {t('urgent').toUpperCase()}
-                  </Text>
-                </View>
-              )}
-              {onSave && (
-                <TouchableOpacity
-                  onPress={handleSave}
-                  style={styles.saveBtn}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  accessibilityLabel={isSaved ? 'Remove from saved' : 'Save job'}
-                >
-                  <Ionicons
-                    name={isSaved ? 'bookmark' : 'bookmark-outline'}
-                    size={20}
-                    color={isSaved ? colors.primary : colors.inkSoft}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
+            {onSave && (
+              <TouchableOpacity
+                onPress={handleSave}
+                style={styles.saveBtn}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={isSaved ? 'Remove from saved' : 'Save job'}
+              >
+                <Ionicons
+                  name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                  size={20}
+                  color={isSaved ? colors.primary : colors.inkSoft}
+                />
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Meta Info Row: Location, Open Slots, Duration, Relative Time */}
@@ -411,7 +418,7 @@ const styles = StyleSheet.create({
   headerLeft: {
     flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 10,
   },
   categoryIconCircle: {
@@ -421,6 +428,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+    marginTop: 1,
   },
   titleContainer: {
     flex: 1,
@@ -433,21 +441,23 @@ const styles = StyleSheet.create({
   jobTitle: {
     fontFamily: fonts.bodyBold,
     fontSize: 15,
-    lineHeight: 19,
+    lineHeight: 20,
     color: colors.ink,
   },
   verifiedIcon: {
     marginLeft: 4,
   },
-  headerRight: {
+  badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 6,
-    flexShrink: 0,
-    paddingTop: 2,
+    marginTop: 5,
   },
   saveBtn: {
     padding: 2,
+    flexShrink: 0,
+    marginTop: 2,
   },
   badge: {
     flexDirection: 'row',

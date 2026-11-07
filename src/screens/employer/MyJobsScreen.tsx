@@ -259,7 +259,7 @@ export const MyJobsScreen: React.FC = () => {
 
             {/* Zone 2: Content Area */}
             <View style={styles.contentArea}>
-              {/* Header Row: Category Icon + Title (Left) / Status & Urgent (Right) */}
+              {/* Header Row: Category Icon + Title + Status & Urgent */}
               <View style={styles.headerRow}>
                 <View style={styles.headerLeft}>
                   <View style={[styles.categoryIconCircle, { backgroundColor: catStyles.bg }]}>
@@ -269,20 +269,19 @@ export const MyJobsScreen: React.FC = () => {
                     <Text style={styles.modernJobTitle} numberOfLines={2}>
                       {item.title}
                     </Text>
-                  </View>
-                </View>
-
-                <View style={styles.headerRight}>
-                  {isUrgent && (
-                    <View style={[styles.badge, styles.badgeUrgent]}>
-                      <Ionicons name="flame" size={10} color={colors.error} />
-                      <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
+                    <View style={styles.badgeRow}>
+                      {isUrgent && (
+                        <View style={[styles.badge, styles.badgeUrgent]}>
+                          <Ionicons name="flame" size={10} color={colors.error} />
+                          <Text style={[styles.badgeText, { color: colors.error }]}>URGENT</Text>
+                        </View>
+                      )}
+                      <View style={[styles.badge, { backgroundColor: statusBadge.bg }]}>
+                        <Text style={[styles.badgeText, { color: statusBadge.color }]}>
+                          {statusBadge.label}
+                        </Text>
+                      </View>
                     </View>
-                  )}
-                  <View style={[styles.badge, { backgroundColor: statusBadge.bg }]}>
-                    <Text style={[styles.badgeText, { color: statusBadge.color }]}>
-                      {statusBadge.label}
-                    </Text>
                   </View>
                 </View>
               </View>
@@ -828,7 +827,7 @@ const styles = StyleSheet.create({
   headerLeft: {
     flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 10,
   },
   categoryIconCircle: {
@@ -838,6 +837,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+    marginTop: 1,
   },
   titleContainer: {
     flex: 1,
@@ -848,12 +848,12 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: colors.ink,
   },
-  headerRight: {
+  badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 6,
-    flexShrink: 0,
-    paddingTop: 2,
+    marginTop: 5,
   },
   badge: {
     flexDirection: 'row',

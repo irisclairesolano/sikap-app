@@ -56,23 +56,25 @@ export const SavedJobsScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
       )}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={styles.headline}>{t('saved_jobs')}</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingRight: 20 }}>
-          <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft }}>
+      <View style={styles.headerTopRow}>
+        <Text style={styles.headline} numberOfLines={1} adjustsFontSizeToFit>
+          {t('saved_jobs')}
+        </Text>
+        <TouchableOpacity
+          style={styles.sortPill}
+          onPress={() => setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Text style={styles.sortPillText}>
             {sortOrder === 'desc' ? t('my_apps_sort_newest') : t('my_apps_sort_oldest')}
           </Text>
-          <TouchableOpacity
-            style={{ padding: 4 }}
-            onPress={() => setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
-          >
-            <Ionicons
-              name={sortOrder === 'desc' ? 'arrow-down-outline' : 'arrow-up-outline'}
-              size={20}
-              color={colors.ink}
-            />
-          </TouchableOpacity>
-        </View>
+          <Ionicons
+            name={sortOrder === 'desc' ? 'arrow-down-outline' : 'arrow-up-outline'}
+            size={16}
+            color={colors.ink}
+          />
+        </TouchableOpacity>
       </View>
       <Text style={styles.subtitle}>{t('saved_jobs_subtitle')}</Text>
     </View>
@@ -147,13 +149,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 12,
   },
+  headerTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    gap: 12,
+  },
   headline: {
+    flex: 1,
     fontFamily: fonts.display,
-    fontSize: 28,
-    lineHeight: 36,
+    fontSize: 24,
+    lineHeight: 30,
     color: colors.ink,
     letterSpacing: -0.5,
-    paddingHorizontal: 20,
+  },
+  sortPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.paperBright,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    flexShrink: 0,
+  },
+  sortPillText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.ink,
   },
   subtitle: {
     fontFamily: fonts.body,
