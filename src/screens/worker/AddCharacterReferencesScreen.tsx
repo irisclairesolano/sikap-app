@@ -1,4 +1,4 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import {
   View,
@@ -8,10 +8,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   Modal,
 } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -28,6 +26,7 @@ import { profileApi } from '../../api/profile';
 const AVATAR_COLORS = [colors.sky, colors.butter, colors.mint];
 
 export const AddCharacterReferencesScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const { t } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const queryClient = useQueryClient();
@@ -213,8 +212,6 @@ export const AddCharacterReferencesScreen: React.FC = () => {
     navigation.goBack();
   };
 
-  const showForm = isAdding || references.length === 0;
-
   const getInitials = (n: string) => {
     return n
       .split(' ')
@@ -326,7 +323,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
           )}
         </ScrollView>
 
-        <View style={styles.bottomBar}>
+        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom + 12, 16) }]}>
           <Button
             label={t('char_ref_btn_done')}
             size="lg"
@@ -353,7 +350,12 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                 activeOpacity={1}
                 onPress={handleCancel}
               />
-              <View style={styles.modalContent}>
+              <View
+                style={[
+                  styles.modalContent,
+                  { paddingBottom: Math.max(insets.bottom + 16, Platform.OS === 'ios' ? 36 : 28) },
+                ]}
+              >
                 <View style={styles.dragIndicator} />
 
                 <View style={styles.modalHeader}>

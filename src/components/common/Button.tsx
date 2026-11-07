@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 1,
   },
   lg: {
     paddingVertical: 14,
@@ -204,9 +205,12 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: fonts.bodyBold,
     fontSize: 15,
+    textAlign: 'center',
+    flexShrink: 1,
   },
   labelLg: {
     fontSize: 16,
+    textAlign: 'center',
   },
   labelOnPrimary: {
     color: colors.white,
