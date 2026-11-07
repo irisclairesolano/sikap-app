@@ -217,6 +217,9 @@ export interface WorkerExperience {
   employer_name: string;
   company?: string;
   duration: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  is_current?: boolean;
   description: string;
   experience?: string;
 }

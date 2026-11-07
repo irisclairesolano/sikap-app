@@ -19,14 +19,22 @@ import Button from '../../components/common/Button';
 import { DatePickerModal } from '../../components/common/DatePickerModal';
 import CustomInput from '../../components/common/Input';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { TranslationKey } from '../../locales/en';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts } from '../../theme';
 
-const DURATION_UNITS = ['Days', 'Weeks', 'Months', 'Years'];
+const DURATION_UNITS: { key: string; labelKey: TranslationKey }[] = [
+  { key: 'Days', labelKey: 'work_history_unit_days' },
+  { key: 'Weeks', labelKey: 'work_history_unit_weeks' },
+  { key: 'Months', labelKey: 'work_history_unit_months' },
+  { key: 'Years', labelKey: 'work_history_unit_years' },
+];
 
 export const AddWorkHistoryScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -107,7 +115,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
       if (profile?.worker_profile?.experiences) {
         setExperiences(profile.worker_profile.experiences);
       }
-      showAlert('Error', 'Failed to save experience');
+      showAlert('Error', t('work_history_err_save_failed'));
     },
   });
 
@@ -125,7 +133,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
       if (profile?.worker_profile?.experiences) {
         setExperiences(profile.worker_profile.experiences);
       }
-      showAlert('Error', 'Failed to delete experience');
+      showAlert('Error', t('work_history_err_delete_failed'));
     },
   });
 
@@ -190,10 +198,10 @@ export const AddWorkHistoryScreen: React.FC = () => {
 
   const handleDeleteExperience = (id: number) => {
     setSelectedExperienceId(id);
-    showAlert('Delete Work History', 'Are you sure you want to delete this experience?', [
-      { text: 'Cancel', style: 'cancel' },
+    showAlert(t('work_history_delete_title'), t('work_history_delete_msg'), [
+      { text: t('work_history_btn_cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('work_history_action_delete'),
         style: 'destructive',
         onPress: () => deleteMutation.mutate(id),
       },
@@ -376,19 +384,19 @@ export const AddWorkHistoryScreen: React.FC = () => {
                 <View style={{ flex: 1.5 }}>
                   <Text style={styles.inputLabel}>Unit</Text>
                   <View style={styles.unitSelector}>
-                    {DURATION_UNITS.map((unit) => (
+                    {DURATION_UNITS.map(({ key, labelKey }) => (
                       <TouchableOpacity
-                        key={unit}
-                        style={[styles.unitBtn, durationUnit === unit && styles.unitBtnActive]}
-                        onPress={() => setDurationUnit(unit)}
+                        key={key}
+                        style={[styles.unitBtn, durationUnit === key && styles.unitBtnActive]}
+                        onPress={() => setDurationUnit(key)}
                       >
                         <Text
                           style={[
                             styles.unitBtnText,
-                            durationUnit === unit && styles.unitBtnTextActive,
+                            durationUnit === key && styles.unitBtnTextActive,
                           ]}
                         >
-                          {unit}
+                          {t(labelKey) || key}
                         </Text>
                       </TouchableOpacity>
                     ))}

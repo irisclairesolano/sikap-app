@@ -282,7 +282,7 @@ export const AddSkillsScreen: React.FC = () => {
         </View>
       </ScrollView>
 
-      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 14) }]}>
         {saveError ? (
           <Text
             style={{
@@ -302,7 +302,6 @@ export const AddSkillsScreen: React.FC = () => {
           size="lg"
           fullWidth
           loading={saveMutation.isPending}
-          style={{ shadowOpacity: 0, elevation: 0 }}
           onPress={() => {
             if (selectedSkills.length === 0 && customSkills.length === 0) {
               setSaveError('Please select or add at least one skill to continue.');
@@ -431,12 +430,17 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   bottomBar: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 12,
-    backgroundColor: colors.paper,
+    paddingBottom: 14,
+    backgroundColor: colors.paperBright,
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 4,
   },
   customInputRow: {
     flexDirection: 'row',
