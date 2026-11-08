@@ -1807,7 +1807,7 @@ const styles = StyleSheet.create({
     height: 3,
     flex: 1,
     backgroundColor: colors.inkFaint,
-    marginHorizontal: -4,
+    marginHorizontal: 4,
     marginBottom: 16,
     borderRadius: 2,
     overflow: 'hidden',
@@ -1817,6 +1817,11 @@ const styles = StyleSheet.create({
     width: '50%',
     height: '100%',
     backgroundColor: colors.mint,
+  },
+  footerRow: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
   },
 });
 

@@ -883,36 +883,6 @@ const ChatScreen: React.FC = () => {
           </View>
         )}
 
-        {/* Lock Banner */}
-        {!isOtherUserDeleted && (isLocked || isUnlockRequested) && (
-          <View style={styles.lockBanner}>
-            <Text style={styles.lockBannerText}>
-              {isUnlockRequested ? t('reopen_pending_employer') : t('chat_locked_concluded')}
-            </Text>
-            {conversationUserRole === 'employer' ? (
-              <TouchableOpacity
-                style={styles.bannerBtn}
-                onPress={() =>
-                  unlockConversation.mutate(conversationId, { onSuccess: () => refetch() })
-                }
-                disabled={unlockConversation.isPending}
-              >
-                <Text style={styles.bannerBtnText}>{t('unlock_chat')}</Text>
-              </TouchableOpacity>
-            ) : isLocked ? (
-              <TouchableOpacity
-                style={styles.bannerBtn}
-                onPress={() => requestUnlock.mutate(conversationId, { onSuccess: () => refetch() })}
-                disabled={requestUnlock.isPending}
-              >
-                <Text style={styles.bannerBtnText}>{t('request_to_reopen')}</Text>
-              </TouchableOpacity>
-            ) : (
-              <Text style={styles.pendingText}>Request Pending…</Text>
-            )}
-          </View>
-        )}
-
         {/* Message List */}
         <FlatList
           ref={flatListRef}
@@ -1010,7 +980,13 @@ const ChatScreen: React.FC = () => {
 
         {/* Scroll to Bottom FAB with Unread Counter */}
         {showScrollBottomFab && (
-          <View style={styles.fabWrapper} pointerEvents="box-none">
+          <View
+            style={[
+              styles.fabWrapper,
+              showQuickReplies && status === 'open' && !isBlocked && { bottom: 148 },
+            ]}
+            pointerEvents="box-none"
+          >
             <TouchableOpacity
               style={styles.scrollFab}
               activeOpacity={0.85}

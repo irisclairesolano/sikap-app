@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
     height: 3,
     flex: 1,
     backgroundColor: colors.inkFaint,
-    marginHorizontal: -4,
+    marginHorizontal: 4,
     marginBottom: 16,
     borderRadius: 2,
     overflow: 'hidden',

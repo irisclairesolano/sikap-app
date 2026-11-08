@@ -446,11 +446,10 @@ const styles = StyleSheet.create({
   addButton: {
     backgroundColor: colors.primary,
     paddingHorizontal: 20,
-    height: 56,
+    height: 48,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 4,
   },
   addButtonDisabled: {
     backgroundColor: colors.inkFaint,

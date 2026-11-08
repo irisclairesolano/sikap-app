@@ -980,7 +980,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 3,
     backgroundColor: colors.inkFaint,
-    marginHorizontal: -6,
+    marginHorizontal: 4,
     marginBottom: 16, // to align with circle center
     borderRadius: 2,
     overflow: 'hidden',
@@ -1065,7 +1065,7 @@ const styles = StyleSheet.create({
   successHeadline: {
     fontFamily: fonts.display,
     fontSize: 28,
-    lineHeight: 28,
+    lineHeight: 36,
     color: colors.ink,
     letterSpacing: -0.7,
     marginTop: 18,

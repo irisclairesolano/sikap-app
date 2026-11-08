@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: fonts.display,
     fontSize: 30,
-    lineHeight: 30,
+    lineHeight: 38,
     fontWeight: '800',
     color: colors.ink,
     letterSpacing: -0.75,

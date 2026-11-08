@@ -354,7 +354,14 @@ export const AddWorkHistoryScreen: React.FC = () => {
                 const isSelected = selectedExperienceId === exp.id;
                 const isMenuOpen = activeMenuId === exp.id;
                 return (
-                  <View key={exp.id} style={[styles.card, isSelected && styles.cardSelected]}>
+                  <View
+                    key={exp.id}
+                    style={[
+                      styles.card,
+                      isSelected && styles.cardSelected,
+                      isMenuOpen && { zIndex: 1000, elevation: 10 },
+                    ]}
+                  >
                     <View style={styles.cardHeader}>
                       <View style={styles.cardMain}>
                         <View style={styles.cardIcon}>
@@ -631,7 +638,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
               {experiences.length > 0 && (
                 <Button
                   label={t('work_history_btn_cancel')}
-                  size="lg"
+                  size="base"
                   variant="outline"
                   onPress={handleCancel}
                   style={{ flex: 1 }}
@@ -645,7 +652,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
                       ? t('work_history_btn_save_changes')
                       : t('work_history_btn_save_job')
                 }
-                size="lg"
+                size="base"
                 style={{ flex: experiences.length > 0 ? 2 : 1 }}
                 loading={saveMutation.isPending}
                 onPress={() => {

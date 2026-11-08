@@ -409,7 +409,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                   {editingReferenceId !== null ? (
                     <Button
                       label={t('char_ref_btn_delete')}
-                      size="lg"
+                      size="base"
                       variant="outline"
                       onPress={() => handleDeletePress(editingReferenceId)}
                       style={{ flex: 1, borderColor: colors.error }}
@@ -417,7 +417,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                   ) : (
                     <Button
                       label={t('char_ref_btn_cancel')}
-                      size="lg"
+                      size="base"
                       variant="outline"
                       onPress={handleCancel}
                       style={{ flex: 1 }}
@@ -431,7 +431,7 @@ export const AddCharacterReferencesScreen: React.FC = () => {
                           ? t('char_ref_btn_save_changes')
                           : t('char_ref_btn_save_ref')
                     }
-                    size="lg"
+                    size="base"
                     style={{ flex: 2 }}
                     loading={saveMutation.isPending}
                     onPress={() => {

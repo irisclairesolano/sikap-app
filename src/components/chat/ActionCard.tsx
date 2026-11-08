@@ -1185,7 +1185,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <ActivityIndicator color={colors.white} />
           ) : (
             <Text style={styles.primaryButtonText}>
-              Work flagged as done by {workerName}. Confirm
+              {t('hiring_mark_complete_confirm_btn') || 'Confirm Work Done'}
             </Text>
           )}
         </TouchableOpacity>

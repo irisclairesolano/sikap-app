@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     color: colors.ink,
     letterSpacing: -1.2,
-    lineHeight: 36,
+    lineHeight: 44,
   },
   titleItalic: {
     fontFamily: fonts.displayItalic,

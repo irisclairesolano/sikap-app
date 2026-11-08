@@ -217,7 +217,6 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                   <View style={styles.nameRow}>
                     <Text style={styles.name} numberOfLines={1}>
                       {item.other_user?.name || 'Deleted Account'}
-                      {item.job_title ? ` — ${item.job_title}` : ''}
                     </Text>
                     {item.last_message_at && (
                       <Text style={styles.time}>
@@ -226,11 +225,13 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                     )}
                   </View>
                   <View style={styles.badgeRow}>
-                    <View style={styles.jobBadge}>
-                      <Text style={styles.jobBadgeText} numberOfLines={1}>
-                        {item.job_title}
-                      </Text>
-                    </View>
+                    {!!item.job_title && (
+                      <View style={styles.jobBadge}>
+                        <Text style={styles.jobBadgeText} numberOfLines={1}>
+                          {item.job_title}
+                        </Text>
+                      </View>
+                    )}
                     {isLocked && (
                       <View style={styles.concludedBadge}>
                         <Ionicons
@@ -465,6 +466,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     marginTop: 4,
+    flexWrap: 'nowrap',
   },
   jobBadge: {
     alignSelf: 'flex-start',
@@ -472,6 +474,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 7,
     paddingVertical: 2,
+    maxWidth: '75%',
+    flexShrink: 1,
   },
   jobBadgeText: {
     fontFamily: fonts.bodyBold,
