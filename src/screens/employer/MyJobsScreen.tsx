@@ -13,11 +13,13 @@ import {
   Text,
   TouchableOpacity,
   View,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../../components/common/Button';
 import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 import { formatRateUnit, getCategoryStyles, getRelativeTime } from '../../components/jobs/JobCard';
+import { safeGoBack } from '../../utils/navigation';
 import { useAlert } from '../../contexts/AlertContext';
 import {
   useArchivedJobs,
@@ -47,16 +49,6 @@ const isActiveJob = (j: JobPost): boolean =>
   (j.status as string) === 'open' ||
   (j.status as string) === 'closed_in_progress' ||
   (j.status as string) === 'in_progress';
-
-const STAGE_PRIORITY: Record<string, number> = {
-  completed: 5,
-  accepted: 4,
-  employer_confirmed: 3,
-  pending_negotiation: 2,
-  employer_requested: 2,
-  shortlisted: 2,
-  pending: 1,
-};
 
 export const MyJobsScreen: React.FC = () => {
   const { t, language } = useLanguage();
@@ -133,6 +125,20 @@ export const MyJobsScreen: React.FC = () => {
     }, [refetchJobs, refetchArchived]),
   );
 
+  const handleGoBack = useCallback(() => {
+    safeGoBack(navigation, 'EmployerDashboard');
+  }, [navigation]);
+
+  useEffect(() => {
+    if (!navigation.canGoBack()) return;
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack, navigation]);
+
   const jobs = jobsResponse?.data || [];
   const archivedJobs = archivedResponse?.data || [];
 
@@ -164,20 +170,6 @@ export const MyJobsScreen: React.FC = () => {
 
   const renderJobCard = useCallback(
     ({ item }: { item: JobPost }) => {
-      const sortedApps = [...(item.applications || [])].sort(
-        (a: any, b: any) => (STAGE_PRIORITY[b.status] || 0) - (STAGE_PRIORITY[a.status] || 0),
-      );
-      const activeApp = sortedApps.find((a: any) =>
-        [
-          'shortlisted',
-          'employer_requested',
-          'pending_negotiation',
-          'employer_confirmed',
-          'accepted',
-          'completed',
-        ].includes(a.status),
-      );
-
       const isUrgent = !!(item.is_urgent || item.urgent);
       const primaryCategory = item.categories?.[0] || item.category || 'Other';
       const catStyles = getCategoryStyles(primaryCategory);
@@ -208,26 +200,7 @@ export const MyJobsScreen: React.FC = () => {
           return;
         }
 
-        if (activeApp) {
-          navigation.navigate('ApplicantDetail', {
-            applicantId: activeApp.id,
-            applicantName: activeApp.worker?.name || 'Worker Applicant',
-            jobTitle: item.title,
-            status: activeApp.status,
-            barangay: activeApp.worker?.barangay,
-            municipality: activeApp.worker?.municipality,
-            reputationScore: activeApp.worker?.reputation_score,
-            bio: activeApp.worker?.workerProfile?.bio || (activeApp.worker as any)?.bio,
-            skills: activeApp.worker?.skills,
-            experiences: activeApp.worker?.experiences,
-            characterReferences: activeApp.worker?.character_references || undefined,
-            phone: activeApp.worker?.phone || undefined,
-            emergencyContactName: (activeApp.worker as any)?.emergency_contact_name,
-            emergencyContactPhone: (activeApp.worker as any)?.emergency_contact_phone,
-          });
-        } else {
-          navigation.navigate('JobStatusManagement', { id: item.id, job: item });
-        }
+        navigation.navigate('JobStatusManagement', { id: item.id, job: item });
       };
 
       const getStatusBadge = () => {
@@ -436,7 +409,13 @@ export const MyJobsScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <View style={styles.iconBtn} />
+        {navigation.canGoBack() ? (
+          <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
+            <Ionicons name="arrow-back" size={24} color={colors.ink} />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.iconBtn} />
+        )}
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>{t('my_jobs')}</Text>
         </View>

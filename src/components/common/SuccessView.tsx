@@ -7,6 +7,7 @@ import {
   AccessibilityInfo,
   Platform,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,6 +34,7 @@ export interface SuccessViewProps {
   secondaryAction?: SuccessAction;
   onPrimaryPress?: () => void;
   onSecondaryPress?: () => void;
+  onClosePress?: () => void;
   isNavigating?: boolean;
 }
 
@@ -45,6 +47,7 @@ export const SuccessView: React.FC<SuccessViewProps> = ({
   secondaryAction,
   onPrimaryPress,
   onSecondaryPress,
+  onClosePress,
   isNavigating = false,
 }) => {
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
@@ -126,6 +129,19 @@ export const SuccessView: React.FC<SuccessViewProps> = ({
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
       <View style={styles.container}>
+        {onClosePress && (
+          <View style={styles.topBar}>
+            <TouchableOpacity
+              onPress={onClosePress}
+              style={styles.closeBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Ionicons name="close" size={22} color={colors.inkSoft} />
+            </TouchableOpacity>
+          </View>
+        )}
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -223,6 +239,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     paddingHorizontal: 24,
+  },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  closeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.paperBright,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scrollContent: {
     flexGrow: 1,

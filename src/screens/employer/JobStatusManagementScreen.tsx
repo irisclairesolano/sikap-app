@@ -8,10 +8,12 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
+import { safeGoBack } from '../../utils/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { Ionicons } from '@expo/vector-icons';
@@ -198,13 +200,17 @@ export const JobStatusManagementScreen: React.FC = () => {
   };
 
   const handleGoBack = useCallback(() => {
-    const state = navigation.getState?.();
-    if (state && typeof state.index === 'number' && state.index > 0) {
-      navigation.goBack();
-    } else {
-      (navigation as any).navigate('MyJobs', { screen: 'MyJobsList' });
-    }
+    safeGoBack(navigation, 'MyJobsList');
   }, [navigation]);
+
+  React.useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
 
   const handleCancelJob = () => {
     showAlert(t('alert_cancel_job_title'), t('alert_cancel_job_msg'), [
@@ -479,10 +485,22 @@ export const JobStatusManagementScreen: React.FC = () => {
           /* ============================================================ */
           <>
             <View style={styles.statusBanner}>
-              <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
-                <Text style={[styles.statusBadgeText, { color: statusConfig.text }]}>
-                  {statusConfig.label}
-                </Text>
+              <View style={styles.statusBannerLeft}>
+                <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
+                  <Text style={[styles.statusBadgeText, { color: statusConfig.text }]}>
+                    {statusConfig.label}
+                  </Text>
+                </View>
+                {(job.slots || 1) > 1 && (
+                  <View style={styles.slotSummaryBadge}>
+                    <Ionicons name="people" size={13} color={colors.primary} />
+                    <Text style={styles.slotSummaryText}>
+                      {t('pipeline_slot_summary')
+                        .replace('{filled}', String(job.filled_slots ?? (job.accepted_count || 0)))
+                        .replace('{total}', String(job.slots || 1))}
+                    </Text>
+                  </View>
+                )}
               </View>
               <Text style={styles.refNumber}>{job.reference_number}</Text>
             </View>
@@ -646,20 +664,23 @@ export const JobStatusManagementScreen: React.FC = () => {
 
               return (
                 <View style={{ marginBottom: 8 }}>
-                  {activeApps.length > 1 && (
-                    <Text
-                      style={{
-                        fontFamily: fonts.bodyBold,
-                        fontSize: 12,
-                        color: colors.inkSoft,
-                        marginBottom: 8,
-                        textTransform: 'uppercase',
-                        letterSpacing: 0.5,
-                      }}
-                    >
-                      {t('pipeline_active_candidates_header', { count: activeApps.length })}
-                    </Text>
-                  )}
+                  <Text
+                    style={{
+                      fontFamily: fonts.bodyBold,
+                      fontSize: 12,
+                      color: colors.inkSoft,
+                      marginBottom: 8,
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    {activeApps.length > 1
+                      ? t('pipeline_active_candidates_header').replace(
+                          '{count}',
+                          String(activeApps.length),
+                        )
+                      : t('pipeline_single_candidate_header')}
+                  </Text>
                   {activeApps.map((activeApp) => (
                     <View
                       key={activeApp.id}
@@ -983,13 +1004,19 @@ export const JobStatusManagementScreen: React.FC = () => {
                   <View style={styles.card}>
                     <Text style={styles.sectionTitle}>
                       {activeApps.length > 0
-                        ? `Other Applicants (${otherApplications.length})`
-                        : t('job_applicants_header', { count: applications.length })}
+                        ? t('pipeline_other_applicants_header').replace(
+                            '{count}',
+                            String(otherApplications.length),
+                          )
+                        : t('job_applicants_header').replace(
+                            '{count}',
+                            String(applications.length),
+                          )}
                     </Text>
                     {otherApplications.length === 0 ? (
                       <Text style={styles.noApplicantsText}>
                         {activeApps.length > 0
-                          ? 'No other applicants for this job.'
+                          ? t('pipeline_no_other_applicants')
                           : t('job_no_applicants_text')}
                       </Text>
                     ) : (
@@ -1134,6 +1161,29 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     ...shadows.sm,
+  },
+  statusBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+    flex: 1,
+  },
+  slotSummaryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.primaryTint,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.primary + '20',
+  },
+  slotSummaryText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.primaryDark,
   },
   statusBadge: {
     paddingHorizontal: 12,

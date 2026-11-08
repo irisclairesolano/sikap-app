@@ -37,6 +37,7 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
+  BackHandler,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -44,6 +45,7 @@ import { useRoute, useNavigation, RouteProp, useFocusEffect } from '@react-navig
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
+import { safeGoBack } from '../../utils/navigation';
 import { useJob } from '../../hooks/useJob';
 import { useSavedJobs, useToggleSaveJob } from '../../hooks/useSavedJobs';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
@@ -65,6 +67,18 @@ export const JobDetailsScreen: React.FC = () => {
   const id = Number(route.params.id);
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const handleGoBack = useCallback(() => {
+    safeGoBack(navigation, 'Home');
+  }, [navigation]);
+
+  React.useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
 
   const { data: job, isLoading, isError, error, refetch, isFetching } = useJob(id);
 
@@ -131,7 +145,7 @@ export const JobDetailsScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.iconButton}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.postedChip}>
@@ -171,12 +185,7 @@ export const JobDetailsScreen: React.FC = () => {
           </Text>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <Button label="Retry" variant="outline" size="base" onPress={() => refetch()} />
-            <Button
-              label="Back to Job Feed"
-              variant="primary"
-              size="base"
-              onPress={() => navigation.goBack()}
-            />
+            <Button label="Back to Job Feed" variant="primary" size="base" onPress={handleGoBack} />
           </View>
         </View>
       </SafeAreaView>
@@ -227,7 +236,7 @@ export const JobDetailsScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       {/* App Bar */}
       <View style={styles.appBar}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
+        <TouchableOpacity onPress={handleGoBack} style={styles.iconButton}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
 

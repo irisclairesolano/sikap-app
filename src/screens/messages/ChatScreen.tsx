@@ -50,6 +50,7 @@ import {
   ActivityIndicator,
   Modal,
   Pressable,
+  BackHandler,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -57,6 +58,7 @@ import { useRoute, useNavigation, useIsFocused, useFocusEffect } from '@react-na
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { safeGoBack } from '../../utils/navigation';
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useMessages, useSendMessage, useSendImage, useMarkRead } from '../../hooks/useMessages';
@@ -255,6 +257,19 @@ const ChatScreen: React.FC = () => {
     currentUserId: user?.id,
     onTyping: handlePartnerTyping,
   });
+
+  const handleGoBack = useCallback(() => {
+    safeGoBack(navigation, 'ConversationsList');
+  }, [navigation]);
+
+  useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
 
   const blockUserMutation = useBlockUser();
   const unblockUserMutation = useUnblockUser();
@@ -775,7 +790,7 @@ const ChatScreen: React.FC = () => {
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <TouchableOpacity

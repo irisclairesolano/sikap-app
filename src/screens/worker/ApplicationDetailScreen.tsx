@@ -40,8 +40,10 @@ import {
   Modal,
   ActivityIndicator,
   RefreshControl,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { safeGoBack } from '../../utils/navigation';
 import { useAlert } from '../../contexts/AlertContext';
 import { RouteProp, useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -89,15 +91,17 @@ const ApplicationDetailScreen: React.FC = () => {
   );
 
   const handleGoBack = React.useCallback(() => {
-    const state = navigation.getState?.();
-    if (state && typeof state.index === 'number' && state.index > 0) {
-      navigation.goBack();
-    } else if (navigation.canGoBack()) {
-      navigation.goBack();
-    } else {
-      (navigation as any).navigate('Mine', { screen: 'Applications' });
-    }
+    safeGoBack(navigation, 'Mine', { screen: 'Applications' });
   }, [navigation]);
+
+  React.useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
 
   const status = appData?.status || route.params?.status;
   const jobTitle = appData?.job?.title || route.params?.jobTitle;

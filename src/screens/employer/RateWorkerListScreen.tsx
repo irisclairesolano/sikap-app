@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useMemo, useCallback, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,6 +11,7 @@ import { useJobApplications } from '../../hooks/useJobApplications';
 import { useReviews } from '../../hooks/useReviews';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import Button from '../../components/common/Button';
+import { safeGoBack } from '../../utils/navigation';
 
 type RateWorkerListScreenRouteProp = RouteProp<EmployerStackParamList, 'RateWorkerList'>;
 type RateWorkerListScreenNavigationProp = NativeStackNavigationProp<
@@ -22,6 +23,19 @@ const RateWorkerListScreen: React.FC = () => {
   const route = useRoute<RateWorkerListScreenRouteProp>();
   const navigation = useNavigation<RateWorkerListScreenNavigationProp>();
   const { jobId, jobTitle } = route.params;
+
+  const handleGoBack = useCallback(() => {
+    safeGoBack(navigation, 'JobStatusManagement', { id: jobId });
+  }, [navigation, jobId]);
+
+  useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
 
   const { data: jobData, isLoading: isLoadingJob } = useJob(jobId);
   const { data: applicationsData = [], isLoading: isLoadingApps } = useJobApplications(jobId);
@@ -98,12 +112,7 @@ const RateWorkerListScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.iconBtn}
-          onPress={() =>
-            navigation.canGoBack() ? navigation.goBack() : navigation.navigate('MyJobs')
-          }
-        >
+        <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>

@@ -54,17 +54,44 @@ export const SuccessScreen: React.FC = () => {
       } else if ('popToTop' in action && action.popToTop) {
         navigation.popToTop();
       } else if ('navigateTo' in action && action.navigateTo) {
-        navigation.navigate(action.navigateTo.name, action.navigateTo.params);
+        const state = navigation.getState?.();
+        const routes = state?.routes || [];
+        const targetName = action.navigateTo.name;
+        const targetParams = action.navigateTo.params;
+
+        // 1. If target screen is already in our backstack, pop back to it directly
+        const targetIndex = routes.findIndex((r: any) => r.name === targetName);
+        if (
+          targetIndex >= 0 &&
+          targetIndex < routes.length - 1 &&
+          typeof navigation.pop === 'function'
+        ) {
+          const popCount = routes.length - 1 - targetIndex;
+          navigation.pop(popCount);
+          return;
+        }
+
+        // 2. Otherwise REPLACE the Success screen with the target screen
+        // so Success never lingers in the backstack!
+        if (typeof navigation.replace === 'function') {
+          navigation.replace(targetName, targetParams);
+        } else {
+          navigation.navigate(targetName, targetParams);
+        }
       }
     },
     [navigation],
   );
 
   // Hardware back button behavior on Android:
-  // Must execute secondaryAction if available, otherwise primaryAction or safe back.
+  // If secondaryAction is a dismiss/deferral option (e.g. "Later", "Skip", "Not now"), execute it.
+  // Otherwise default to primaryAction (safe exit to target/list) so user is never trapped or forced into secondary workflows like "Post another job".
   useEffect(() => {
     const onBackPress = () => {
-      if (secondaryAction) {
+      const isDismissiveSecondary =
+        secondaryAction && /later|skip|not now|dismiss|cancel/i.test(secondaryAction.label || '');
+
+      if (isDismissiveSecondary) {
         handleAction(secondaryAction);
       } else {
         handleAction(primaryAction);
@@ -77,6 +104,17 @@ export const SuccessScreen: React.FC = () => {
     return () => backSubscription.remove();
   }, [secondaryAction, primaryAction, handleAction]);
 
+  const handleClose = useCallback(() => {
+    const isDismissiveSecondary =
+      secondaryAction && /later|skip|not now|dismiss|cancel/i.test(secondaryAction.label || '');
+
+    if (isDismissiveSecondary) {
+      handleAction(secondaryAction);
+    } else {
+      handleAction(primaryAction);
+    }
+  }, [secondaryAction, primaryAction, handleAction]);
+
   return (
     <SuccessView
       variant={variant}
@@ -87,6 +125,7 @@ export const SuccessScreen: React.FC = () => {
       secondaryAction={secondaryAction}
       onPrimaryPress={() => handleAction(primaryAction)}
       onSecondaryPress={secondaryAction ? () => handleAction(secondaryAction) : undefined}
+      onClosePress={handleClose}
       isNavigating={navigatingState}
     />
   );

@@ -612,7 +612,7 @@ export const ApplyScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
+          <TouchableOpacity onPress={handleBackToJobs} style={styles.iconButton}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <Text style={styles.appBarTitle}>Application Status</Text>

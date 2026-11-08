@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  BackHandler,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -12,6 +20,7 @@ import { useAlert } from '../../contexts/AlertContext';
 import { useApplication } from '../../hooks/useJobApplications';
 import { triggerHaptic } from '../../utils/haptics';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { safeGoBack } from '../../utils/navigation';
 
 type RateWorkerScreenRouteProp = RouteProp<EmployerStackParamList, 'RateWorker'>;
 type RateWorkerScreenNavigationProp = NativeStackNavigationProp<
@@ -57,6 +66,19 @@ export const RateWorkerScreen: React.FC = () => {
   const navigation = useNavigation<RateWorkerScreenNavigationProp>();
   const route = useRoute<RateWorkerScreenRouteProp>();
   const { id, workerName, jobTitle } = route.params; // this is the applicationId
+
+  const handleGoBack = useCallback(() => {
+    safeGoBack(navigation, 'JobStatusManagement');
+  }, [navigation]);
+
+  useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
 
   const { showAlert } = useAlert();
   const { data: appData } = useApplication(id);
@@ -148,7 +170,7 @@ export const RateWorkerScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom', 'left', 'right']}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>

@@ -42,8 +42,10 @@ import {
   Linking,
   ActivityIndicator,
   RefreshControl,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { safeGoBack } from '../../utils/navigation';
 import { RouteProp, useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -91,6 +93,19 @@ const ApplicantDetailScreen: React.FC = () => {
       refetch();
     }, [refetch]),
   );
+
+  const handleGoBack = React.useCallback(() => {
+    safeGoBack(navigation, 'JobStatusManagement');
+  }, [navigation]);
+
+  React.useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
 
   const status = appData?.status || route.params.status || 'pending';
   const applicantName = appData?.worker?.name || route.params.applicantName || 'Worker';
@@ -480,7 +495,7 @@ const ApplicantDetailScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>
