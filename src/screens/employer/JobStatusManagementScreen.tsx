@@ -1313,7 +1313,13 @@ const styles = StyleSheet.create({
     padding: 20,
     ...shadows.sm,
   },
-  jobTitle: { fontFamily: fonts.bodyBold, fontSize: 22, color: colors.ink, marginBottom: 4 },
+  jobTitle: {
+    flex: 1,
+    fontFamily: fonts.bodyBold,
+    fontSize: 22,
+    color: colors.ink,
+    marginBottom: 4,
+  },
   categoryText: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 12,
