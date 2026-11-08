@@ -492,6 +492,16 @@ export function useRealtimeUserEvents(userId?: number) {
         queryClient.invalidateQueries({ queryKey: ['conversation', data.conversation_id] });
       }
 
+      if (data.card_type || data.message_type === 'action_card' || data.message_type === 'system') {
+        queryClient.invalidateQueries({ queryKey: ['myJobs'] });
+        queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+        queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
+        queryClient.invalidateQueries({ queryKey: ['application'] });
+        queryClient.invalidateQueries({ queryKey: ['job'] });
+        queryClient.invalidateQueries({ queryKey: ['jobs'] });
+        queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
+      }
+
       // 4. If incoming from another user and not currently active in that chat, trigger haptic and toast
       if (data.sender_id && data.sender_id !== userId && !isActiveChat) {
         triggerHaptic('medium');
@@ -544,6 +554,10 @@ export function useRealtimeUserEvents(userId?: number) {
       if (data?.id) {
         queryClient.invalidateQueries({ queryKey: ['conversation', data.id] });
       }
+      queryClient.invalidateQueries({ queryKey: ['myJobs'] });
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
+      queryClient.invalidateQueries({ queryKey: ['application'] });
     };
 
     channel.bind('conversation.updated', handleUserConversationUpdate);
@@ -573,6 +587,13 @@ export function useRealtimeUserEvents(userId?: number) {
       // 2. Background server reconciliation
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
+      queryClient.invalidateQueries({ queryKey: ['myJobs'] });
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
+      queryClient.invalidateQueries({ queryKey: ['application'] });
+      queryClient.invalidateQueries({ queryKey: ['job'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
       triggerHaptic('medium');
 
       try {

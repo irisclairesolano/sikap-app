@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -41,6 +41,21 @@ const formatCompensation = (amount: number | string | undefined | null): string 
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
+};
+
+const isActiveJob = (j: JobPost): boolean =>
+  (j.status as string) === 'open' ||
+  (j.status as string) === 'closed_in_progress' ||
+  (j.status as string) === 'in_progress';
+
+const STAGE_PRIORITY: Record<string, number> = {
+  completed: 5,
+  accepted: 4,
+  employer_confirmed: 3,
+  pending_negotiation: 2,
+  employer_requested: 2,
+  shortlisted: 2,
+  pending: 1,
 };
 
 export const MyJobsScreen: React.FC = () => {
@@ -111,6 +126,13 @@ export const MyJobsScreen: React.FC = () => {
     [restoreJob, showAlert, t],
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      refetchJobs().catch(() => {});
+      refetchArchived().catch(() => {});
+    }, [refetchJobs, refetchArchived]),
+  );
+
   const jobs = jobsResponse?.data || [];
   const archivedJobs = archivedResponse?.data || [];
 
@@ -119,9 +141,9 @@ export const MyJobsScreen: React.FC = () => {
 
   const filteredJobs =
     activeTab === 'Active'
-      ? jobs.filter((job) => job.status === 'open')
+      ? jobs.filter(isActiveJob)
       : activeTab === 'Past'
-        ? jobs.filter((job) => job.status !== 'open')
+        ? jobs.filter((job) => !isActiveJob(job))
         : archivedJobs;
 
   useEffect(() => {
@@ -142,7 +164,10 @@ export const MyJobsScreen: React.FC = () => {
 
   const renderJobCard = useCallback(
     ({ item }: { item: JobPost }) => {
-      const activeApp = (item.applications || []).find((a: any) =>
+      const sortedApps = [...(item.applications || [])].sort(
+        (a: any, b: any) => (STAGE_PRIORITY[b.status] || 0) - (STAGE_PRIORITY[a.status] || 0),
+      );
+      const activeApp = sortedApps.find((a: any) =>
         [
           'shortlisted',
           'employer_requested',
@@ -432,7 +457,7 @@ export const MyJobsScreen: React.FC = () => {
               adjustsFontSizeToFit
               minimumFontScale={0.8}
             >
-              {t('my_jobs_tab_active')} ({jobs.filter((j) => j.status === 'open').length})
+              {t('my_jobs_tab_active')} ({jobs.filter(isActiveJob).length})
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -445,7 +470,7 @@ export const MyJobsScreen: React.FC = () => {
               adjustsFontSizeToFit
               minimumFontScale={0.8}
             >
-              {t('my_jobs_tab_past')} ({jobs.filter((j) => j.status !== 'open').length})
+              {t('my_jobs_tab_past')} ({jobs.filter((j) => !isActiveJob(j)).length})
             </Text>
           </TouchableOpacity>
           <TouchableOpacity

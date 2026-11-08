@@ -32,6 +32,16 @@ type JobStatusScreenNavigationProp = NativeStackNavigationProp<
   'JobStatusManagement'
 >;
 
+const STAGE_PRIORITY: Record<string, number> = {
+  completed: 5,
+  accepted: 4,
+  employer_confirmed: 3,
+  pending_negotiation: 2,
+  employer_requested: 2,
+  shortlisted: 2,
+  pending: 1,
+};
+
 export const JobStatusManagementScreen: React.FC = () => {
   const { t } = useLanguage();
   const route = useRoute<JobStatusScreenRouteProp>();
@@ -107,11 +117,17 @@ export const JobStatusManagementScreen: React.FC = () => {
   }, [applications]);
 
   const activeApps = React.useMemo(() => {
-    return applications.filter((a) =>
-      ['employer_requested', 'pending_negotiation', 'employer_confirmed', 'accepted'].includes(
-        a.status,
-      ),
-    );
+    return applications
+      .filter((a) =>
+        [
+          'shortlisted',
+          'employer_requested',
+          'pending_negotiation',
+          'employer_confirmed',
+          'accepted',
+        ].includes(a.status),
+      )
+      .sort((a, b) => (STAGE_PRIORITY[b.status] || 0) - (STAGE_PRIORITY[a.status] || 0));
   }, [applications]);
 
   const completedCount =
@@ -136,7 +152,9 @@ export const JobStatusManagementScreen: React.FC = () => {
     switch (status) {
       case 'pending':
         return t('pipeline_stage_applied');
+      case 'shortlisted':
       case 'employer_requested':
+      case 'pending_negotiation':
         return t('pipeline_stage_shortlist');
       case 'employer_confirmed':
         return t('pipeline_stage_offer');
@@ -478,7 +496,9 @@ export const JobStatusManagementScreen: React.FC = () => {
                     const countPending = applications.filter((a) => a.status === 'pending').length;
                     const countShortlisted = applications.filter(
                       (a) =>
-                        a.status === 'employer_requested' || a.status === 'pending_negotiation',
+                        a.status === 'employer_requested' ||
+                        a.status === 'pending_negotiation' ||
+                        (a.status as string) === 'shortlisted',
                     ).length;
                     const countOffer = applications.filter(
                       (a) => a.status === 'employer_confirmed',
@@ -601,7 +621,11 @@ export const JobStatusManagementScreen: React.FC = () => {
               if (activeApps.length === 0) return null;
 
               const getStageTitle = (st: string) => {
-                if (st === 'employer_requested' || st === 'pending_negotiation')
+                if (
+                  st === 'employer_requested' ||
+                  st === 'pending_negotiation' ||
+                  st === 'shortlisted'
+                )
                   return t('pipeline_stage_2_shortlisted');
                 if (st === 'employer_confirmed') return t('pipeline_stage_3_offer');
                 if (st === 'accepted') return t('pipeline_stage_4_hired');
@@ -609,7 +633,11 @@ export const JobStatusManagementScreen: React.FC = () => {
               };
 
               const getActionLabel = (st: string) => {
-                if (st === 'employer_requested' || st === 'pending_negotiation')
+                if (
+                  st === 'employer_requested' ||
+                  st === 'pending_negotiation' ||
+                  st === 'shortlisted'
+                )
                   return t('pipeline_action_proceed_confirm');
                 if (st === 'employer_confirmed') return t('pipeline_action_view_offer');
                 if (st === 'accepted') return t('pipeline_action_manage_active');
@@ -662,6 +690,8 @@ export const JobStatusManagementScreen: React.FC = () => {
                             color: colors.primaryDark,
                           }}
                           numberOfLines={1}
+                          adjustsFontSizeToFit
+                          minimumFontScale={0.85}
                         >
                           {getStageTitle(activeApp.status)}
                         </Text>
@@ -686,100 +716,96 @@ export const JobStatusManagementScreen: React.FC = () => {
                         </View>
                       </View>
 
-                      <View
+                      {/* Candidate Info (Full width row with avatar, name, and location) */}
+                      <TouchableOpacity
                         style={{
                           flexDirection: 'row',
                           alignItems: 'center',
                           gap: 12,
+                          paddingVertical: 2,
                         }}
+                        onPress={() =>
+                          (navigation as any).navigate('WorkerPublicProfile', {
+                            workerId: activeApp.worker?.id || 0,
+                            applicationId: activeApp.id,
+                            workerName: activeApp.worker?.name,
+                            avatarUrl: activeApp.worker?.avatar_url,
+                            jobTitle: job?.title,
+                            status: activeApp.status,
+                            barangay: activeApp.worker?.barangay,
+                            municipality: activeApp.worker?.municipality,
+                            reputationScore: activeApp.worker?.reputation_score,
+                            skills: activeApp.worker?.skills,
+                            experiences: activeApp.worker?.experiences,
+                            characterReferences: activeApp.worker?.character_references,
+                            phone: activeApp.worker?.phone,
+                          })
+                        }
+                        activeOpacity={0.7}
                       >
-                        <TouchableOpacity
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 12,
-                            flex: 1,
-                          }}
-                          onPress={() =>
-                            (navigation as any).navigate('WorkerPublicProfile', {
-                              workerId: activeApp.worker?.id || 0,
-                              applicationId: activeApp.id,
-                              workerName: activeApp.worker?.name,
-                              avatarUrl: activeApp.worker?.avatar_url,
-                              jobTitle: job?.title,
-                              status: activeApp.status,
-                              barangay: activeApp.worker?.barangay,
-                              municipality: activeApp.worker?.municipality,
-                              reputationScore: activeApp.worker?.reputation_score,
-                              skills: activeApp.worker?.skills,
-                              experiences: activeApp.worker?.experiences,
-                              characterReferences: activeApp.worker?.character_references,
-                              phone: activeApp.worker?.phone,
-                            })
-                          }
-                          activeOpacity={0.7}
-                        >
-                          <View style={styles.applicantAvatar}>
-                            <Text style={styles.avatarInitial}>
-                              {(activeApp.worker?.name || 'W').charAt(0).toUpperCase()}
-                            </Text>
-                          </View>
-                          <View style={{ flex: 1 }}>
-                            <Text
-                              style={{
-                                fontFamily: fonts.bodyBold,
-                                fontSize: 15,
-                                color: colors.ink,
-                              }}
-                              numberOfLines={1}
-                            >
-                              {activeApp.worker?.name || 'Worker'}
-                            </Text>
-                            <Text
-                              style={{
-                                fontFamily: fonts.body,
-                                fontSize: 12,
-                                color: colors.inkSoft,
-                                marginTop: 2,
-                              }}
-                              numberOfLines={1}
-                            >
-                              {activeApp.worker?.barangay
-                                ? `${activeApp.worker.barangay}, ${activeApp.worker.municipality}`
-                                : t('pipeline_worker_applicant_default')}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                        <Button
-                          label={getActionLabel(activeApp.status)}
-                          variant="primary"
-                          size="sm"
-                          onPress={() =>
-                            navigation.navigate('ApplicantDetail', {
-                              applicantId: activeApp.id,
-                              applicantName: activeApp.worker?.name || 'Worker Applicant',
-                              jobTitle: job?.title || '',
-                              status: activeApp.status,
-                              barangay: activeApp.worker?.barangay,
-                              municipality: activeApp.worker?.municipality,
-                              reputationScore: activeApp.worker?.reputation_score,
-                              bio:
-                                activeApp.worker?.workerProfile?.bio ||
-                                (activeApp.worker as any)?.bio,
-                              skills: activeApp.worker?.skills,
-                              experiences: activeApp.worker?.experiences,
-                              characterReferences:
-                                activeApp.worker?.character_references || undefined,
-                              phone: activeApp.worker?.phone || undefined,
-                              emergencyContactName: (activeApp.worker as any)
-                                ?.emergency_contact_name,
-                              emergencyContactPhone: (activeApp.worker as any)
-                                ?.emergency_contact_phone,
-                              coverNote: activeApp.cover_note || undefined,
-                            })
-                          }
-                        />
-                      </View>
+                        <View style={styles.applicantAvatar}>
+                          <Text style={styles.avatarInitial}>
+                            {(activeApp.worker?.name || 'W').charAt(0).toUpperCase()}
+                          </Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={{
+                              fontFamily: fonts.bodyBold,
+                              fontSize: 15,
+                              color: colors.ink,
+                            }}
+                            numberOfLines={1}
+                          >
+                            {activeApp.worker?.name || 'Worker'}
+                          </Text>
+                          <Text
+                            style={{
+                              fontFamily: fonts.body,
+                              fontSize: 12,
+                              color: colors.inkSoft,
+                              marginTop: 2,
+                            }}
+                            numberOfLines={1}
+                          >
+                            {activeApp.worker?.barangay
+                              ? `${activeApp.worker.barangay}, ${activeApp.worker.municipality}`
+                              : t('pipeline_worker_applicant_default')}
+                          </Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />
+                      </TouchableOpacity>
+
+                      {/* Action Button: Stacked below with full horizontal clearance */}
+                      <Button
+                        label={getActionLabel(activeApp.status)}
+                        variant="primary"
+                        size="sm"
+                        style={{ marginTop: 10 }}
+                        onPress={() =>
+                          navigation.navigate('ApplicantDetail', {
+                            applicantId: activeApp.id,
+                            applicantName: activeApp.worker?.name || 'Worker Applicant',
+                            jobTitle: job?.title || '',
+                            status: activeApp.status,
+                            barangay: activeApp.worker?.barangay,
+                            municipality: activeApp.worker?.municipality,
+                            reputationScore: activeApp.worker?.reputation_score,
+                            bio:
+                              activeApp.worker?.workerProfile?.bio ||
+                              (activeApp.worker as any)?.bio,
+                            skills: activeApp.worker?.skills,
+                            experiences: activeApp.worker?.experiences,
+                            characterReferences:
+                              activeApp.worker?.character_references || undefined,
+                            phone: activeApp.worker?.phone || undefined,
+                            emergencyContactName: (activeApp.worker as any)?.emergency_contact_name,
+                            emergencyContactPhone: (activeApp.worker as any)
+                              ?.emergency_contact_phone,
+                            coverNote: activeApp.cover_note || undefined,
+                          })
+                        }
+                      />
                     </View>
                   ))}
                 </View>
