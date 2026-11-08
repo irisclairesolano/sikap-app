@@ -11,6 +11,7 @@ import { useSubmitReview } from '../../hooks/useReviews';
 import { useAlert } from '../../contexts/AlertContext';
 import { useApplication } from '../../hooks/useJobApplications';
 import { triggerHaptic } from '../../utils/haptics';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type RateEmployerScreenRouteProp = RouteProp<WorkerStackParamList, 'RateEmployer'>;
 type RateEmployerScreenNavigationProp = NativeStackNavigationProp<
@@ -52,6 +53,7 @@ const RatingCategory = ({
 };
 
 export const RateEmployerScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation<RateEmployerScreenNavigationProp>();
   const route = useRoute<RateEmployerScreenRouteProp>();
   const { id, employerName, jobTitle } = route.params;
@@ -62,11 +64,11 @@ export const RateEmployerScreen: React.FC = () => {
 
   React.useEffect(() => {
     if (application?.has_reviewed) {
-      showAlert('Already Reviewed', 'You have already submitted a review for this employer.', [
+      showAlert(t('rate_already_reviewed_title'), t('rate_already_reviewed_employer_msg'), [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     }
-  }, [application?.has_reviewed, navigation, showAlert]);
+  }, [application?.has_reviewed, navigation, showAlert, t]);
 
   const [safety, setSafety] = useState(0);
   const [clarity, setClarity] = useState(0);
@@ -100,35 +102,35 @@ export const RateEmployerScreen: React.FC = () => {
           triggerHaptic('success');
           const hasWarnings = res?.content_warnings && res.content_warnings.length > 0;
           const msg = hasWarnings
-            ? 'Salamat! Your rating helps other workers know what to expect. Note: your review contains language that may be reviewed for community standards.'
-            : 'Salamat! Your rating helps other workers know what to expect.';
+            ? t('rate_employer_success_msg_warn')
+            : t('rate_employer_success_msg');
           const avgRating = (clarity + fairness + respect + reliability) / 4;
 
           navigation.replace('Success', {
             variant: 'confirm',
-            title: 'Review sent',
+            title: t('rate_review_sent_title'),
             message: msg,
             detail: [
-              { label: 'Employer', value: employerName },
-              { label: 'Job', value: jobTitle },
-              { label: 'Your rating', value: `${avgRating.toFixed(1)} / 5` },
+              { label: t('rate_label_employer'), value: employerName },
+              { label: t('rate_label_job'), value: jobTitle },
+              { label: t('rate_label_your_rating'), value: `${avgRating.toFixed(1)} / 5` },
             ],
             primaryAction: {
-              label: 'View job summary',
+              label: t('rate_btn_view_job_summary'),
               navigateTo: {
                 name: 'ApplicationDetail',
                 params: { applicationId: id, jobTitle, employerName },
               },
             },
             secondaryAction: {
-              label: 'Done',
+              label: t('rate_btn_done'),
               goBack: true,
             },
           });
         },
         onError: (err: any) => {
           setIsSubmitted(false);
-          showAlert('Error', err.message || 'Failed to submit review.');
+          showAlert(t('error_title'), err.message || t('rate_submit_error'));
         },
       },
     );
@@ -145,7 +147,7 @@ export const RateEmployerScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>Rate employer</Text>
+          <Text style={styles.headerPillText}>{t('rate_employer_pill')}</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
@@ -166,16 +168,20 @@ export const RateEmployerScreen: React.FC = () => {
 
         {/* Rating Categories */}
         <View style={styles.categoriesContainer}>
-          <RatingCategory title="Clarity of job description" rating={clarity} onRate={setClarity} />
-          <RatingCategory title="Fairness of pay" rating={fairness} onRate={setFairness} />
-          <RatingCategory title="Respectfulness" rating={respect} onRate={setRespect} />
-          <RatingCategory title="Reliability" rating={reliability} onRate={setReliability} />
+          <RatingCategory title={t('rate_clarity')} rating={clarity} onRate={setClarity} />
+          <RatingCategory title={t('rate_fairness')} rating={fairness} onRate={setFairness} />
+          <RatingCategory title={t('rate_respect')} rating={respect} onRate={setRespect} />
+          <RatingCategory
+            title={t('rate_reliability')}
+            rating={reliability}
+            onRate={setReliability}
+          />
         </View>
 
         {/* Note Field */}
         <View style={styles.noteField}>
           <Text style={styles.noteLabel}>
-            Review Feedback <Text style={{ color: colors.error }}>*</Text>
+            {t('rate_review_feedback')} <Text style={{ color: colors.error }}>*</Text>
           </Text>
           <View style={styles.inputContainer}>
             <Ionicons
@@ -186,7 +192,7 @@ export const RateEmployerScreen: React.FC = () => {
             />
             <TextInput
               style={styles.textInput}
-              placeholder="Write your review (min. 5 characters)..."
+              placeholder={t('rate_review_placeholder')}
               placeholderTextColor={colors.inkLight}
               multiline
               value={note}
@@ -198,7 +204,7 @@ export const RateEmployerScreen: React.FC = () => {
         {/* Submit Button */}
         <View style={styles.submitContainer}>
           <Button
-            title="Submit rating"
+            title={t('rate_submit_btn')}
             onPress={handleSubmit}
             disabled={!isFormValid || isPending || isSubmitted}
             loading={isPending || isSubmitted}

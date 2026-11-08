@@ -492,6 +492,8 @@ export const AddWorkHistoryScreen: React.FC = () => {
                       <Text
                         style={[styles.dateSelectText, !startDate && styles.dateSelectPlaceholder]}
                         numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.75}
                       >
                         {startDate
                           ? formatMonthYear(startDate)
@@ -530,6 +532,8 @@ export const AddWorkHistoryScreen: React.FC = () => {
                           !endDate && !isCurrentJob && styles.dateSelectPlaceholder,
                         ]}
                         numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.75}
                       >
                         {isCurrentJob
                           ? t('work_history_present')

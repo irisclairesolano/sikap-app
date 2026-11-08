@@ -316,7 +316,7 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.reviewHeader}>
             <Text
               style={styles.sectionEyebrow}
-              numberOfLines={1}
+              numberOfLines={2}
               adjustsFontSizeToFit
               minimumFontScale={0.85}
             >
@@ -455,7 +455,7 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.reviewHeader}>
             <Text
               style={styles.sectionEyebrow}
-              numberOfLines={1}
+              numberOfLines={2}
               adjustsFontSizeToFit
               minimumFontScale={0.85}
             >

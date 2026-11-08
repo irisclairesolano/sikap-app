@@ -449,7 +449,7 @@ const ApplicationDetailScreen: React.FC = () => {
         <View style={styles.headerPill}>
           <Text
             style={styles.headerPillText}
-            numberOfLines={1}
+            numberOfLines={2}
             adjustsFontSizeToFit
             minimumFontScale={0.8}
           >

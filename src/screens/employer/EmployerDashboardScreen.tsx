@@ -410,12 +410,7 @@ export const EmployerDashboardScreen: React.FC = () => {
         <TutorialTarget id="employer_action_required" style={{ marginTop: 24 }}>
           <View>
             <View style={[styles.actionHeader, { marginTop: 0 }]}>
-              <Text
-                style={[styles.sectionHeaderTitle, { flex: 1, marginRight: 8 }]}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.85}
-              >
+              <Text style={[styles.sectionHeaderTitle, { flex: 1, marginRight: 8 }]}>
                 {t('employer_dash_action_header')}
               </Text>
               {pendingCount > 0 && (

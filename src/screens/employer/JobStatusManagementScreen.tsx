@@ -127,17 +127,17 @@ export const JobStatusManagementScreen: React.FC = () => {
   const getStageLabel = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'Applied';
+        return t('pipeline_stage_applied');
       case 'employer_requested':
-        return 'Shortlisted';
+        return t('pipeline_stage_shortlist');
       case 'employer_confirmed':
-        return 'Offer';
+        return t('pipeline_stage_offer');
       case 'accepted':
-        return 'Hired';
+        return t('pipeline_stage_hired');
       case 'completed':
-        return 'Done';
+        return t('pipeline_stage_done');
       case 'rejected':
-        return 'Rejected';
+        return t('pipeline_stage_rejected');
       default:
         return status;
     }
@@ -245,7 +245,7 @@ export const JobStatusManagementScreen: React.FC = () => {
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.headerPill}>
-            <Text style={styles.headerPillText}>Job Status</Text>
+            <Text style={styles.headerPillText}>{t('job_status_screen_title')}</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
@@ -265,7 +265,7 @@ export const JobStatusManagementScreen: React.FC = () => {
               textAlign: 'center',
             }}
           >
-            Job Record Unavailable
+            {t('job_status_record_unavailable')}
           </Text>
           <Text
             style={{
@@ -276,11 +276,21 @@ export const JobStatusManagementScreen: React.FC = () => {
               marginBottom: 20,
             }}
           >
-            {error?.message || 'This job could not be found or may have been removed.'}
+            {error?.message || t('job_status_not_found_desc')}
           </Text>
           <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Button label="Back to My Jobs" variant="ghost" size="base" onPress={handleGoBack} />
-            <Button label="Retry" variant="primary" size="base" onPress={() => refetchJob()} />
+            <Button
+              label={t('job_status_back_my_jobs')}
+              variant="ghost"
+              size="base"
+              onPress={handleGoBack}
+            />
+            <Button
+              label={t('job_status_retry_btn')}
+              variant="primary"
+              size="base"
+              onPress={() => refetchJob()}
+            />
           </View>
         </View>
       </SafeAreaView>
@@ -292,25 +302,25 @@ export const JobStatusManagementScreen: React.FC = () => {
     switch (status) {
       case 'open':
         return {
-          label: 'Active / Open',
+          label: t('status_badge_active_open'),
           bg: colors.status.accepted.bg,
           text: colors.status.accepted.text,
         };
       case 'closed_in_progress':
         return {
-          label: 'In Progress',
+          label: t('status_badge_in_progress'),
           bg: colors.status.pending_negotiation.bg,
           text: colors.status.pending_negotiation.text,
         };
       case 'completed':
         return {
-          label: 'Completed',
+          label: t('status_badge_completed'),
           bg: colors.status.completed.bg,
           text: colors.status.completed.text,
         };
       case 'cancelled':
         return {
-          label: 'Cancelled',
+          label: t('status_badge_cancelled'),
           bg: colors.status.rejected.bg,
           text: colors.status.rejected.text,
         };
@@ -329,7 +339,9 @@ export const JobStatusManagementScreen: React.FC = () => {
         </TouchableOpacity>
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>
-            {job.status === 'completed' ? 'Completed Job' : 'Manage Job Status'}
+            {job.status === 'completed'
+              ? t('job_status_completed_title')
+              : t('job_status_manage_title')}
           </Text>
         </View>
         <View style={{ width: 40 }} />
@@ -407,11 +419,13 @@ export const JobStatusManagementScreen: React.FC = () => {
                 onPress={() => navigation.navigate('JobDetails', { id: job.id })}
               >
                 <Ionicons name="eye-outline" size={18} color={colors.primary} />
-                <Text style={[styles.cancelBtnText, { color: colors.primary }]}>View Job Post</Text>
+                <Text style={[styles.cancelBtnText, { color: colors.primary }]}>
+                  {t('job_btn_view_job_post')}
+                </Text>
               </TouchableOpacity>
               {unreviewedCount > 0 && (
                 <Button
-                  label={`Rate Remaining Workers (${unreviewedCount})`}
+                  label={t('job_btn_rate_remaining', { count: unreviewedCount })}
                   variant="primary"
                   onPress={() =>
                     navigation.navigate('RateWorkerList', {
@@ -428,7 +442,7 @@ export const JobStatusManagementScreen: React.FC = () => {
               >
                 <Ionicons name="archive-outline" size={18} color={colors.inkSoft} />
                 <Text style={[styles.cancelBtnText, { color: colors.inkSoft }]}>
-                  Archive Job Post
+                  {t('job_btn_archive_post')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -450,7 +464,7 @@ export const JobStatusManagementScreen: React.FC = () => {
             {/* 5-Stage Hiring Pipeline */}
             {job.status !== 'cancelled' && (job.status as string) !== 'suspended' && (
               <View style={styles.pipelineCard}>
-                <Text style={styles.pipelineTitle}>Hiring Pipeline</Text>
+                <Text style={styles.pipelineTitle}>{t('pipeline_section_title')}</Text>
                 <View style={styles.pipeline}>
                   {(() => {
                     const countPending = applications.filter((a) => a.status === 'pending').length;
@@ -482,7 +496,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                               {countPending}
                             </Text>
                           </View>
-                          <Text style={styles.pipelineLabel}>Applied</Text>
+                          <Text style={styles.pipelineLabel}>{t('pipeline_stage_applied')}</Text>
                         </View>
 
                         <View style={styles.pipelineDivider} />
@@ -503,7 +517,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                               {countShortlisted}
                             </Text>
                           </View>
-                          <Text style={styles.pipelineLabel}>Shortlist</Text>
+                          <Text style={styles.pipelineLabel}>{t('pipeline_stage_shortlist')}</Text>
                         </View>
 
                         <View style={styles.pipelineDivider} />
@@ -524,7 +538,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                               {countOffer}
                             </Text>
                           </View>
-                          <Text style={styles.pipelineLabel}>Offer</Text>
+                          <Text style={styles.pipelineLabel}>{t('pipeline_stage_offer')}</Text>
                         </View>
 
                         <View style={styles.pipelineDivider} />
@@ -545,7 +559,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                               {countHired}
                             </Text>
                           </View>
-                          <Text style={styles.pipelineLabel}>Hired</Text>
+                          <Text style={styles.pipelineLabel}>{t('pipeline_stage_hired')}</Text>
                         </View>
 
                         <View style={styles.pipelineDivider} />
@@ -566,7 +580,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                               {countDone}
                             </Text>
                           </View>
-                          <Text style={styles.pipelineLabel}>Done</Text>
+                          <Text style={styles.pipelineLabel}>{t('pipeline_stage_done')}</Text>
                         </View>
                       </>
                     );
@@ -588,18 +602,18 @@ export const JobStatusManagementScreen: React.FC = () => {
 
               const getStageTitle = (st: string) => {
                 if (st === 'employer_requested' || st === 'pending_negotiation')
-                  return 'Stage 2: Shortlisted & Negotiation';
-                if (st === 'employer_confirmed') return 'Stage 3: Offer Sent';
-                if (st === 'accepted') return 'Stage 4: Worker Hired';
-                return 'Active Stage';
+                  return t('pipeline_stage_2_shortlisted');
+                if (st === 'employer_confirmed') return t('pipeline_stage_3_offer');
+                if (st === 'accepted') return t('pipeline_stage_4_hired');
+                return t('pipeline_stage_active_default');
               };
 
               const getActionLabel = (st: string) => {
                 if (st === 'employer_requested' || st === 'pending_negotiation')
-                  return 'Proceed to Confirm Hire →';
-                if (st === 'employer_confirmed') return 'View Offer Details →';
-                if (st === 'accepted') return 'Manage Active Job →';
-                return 'View Details →';
+                  return t('pipeline_action_proceed_confirm');
+                if (st === 'employer_confirmed') return t('pipeline_action_view_offer');
+                if (st === 'accepted') return t('pipeline_action_manage_active');
+                return t('pipeline_action_view_details');
               };
 
               return (
@@ -615,7 +629,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                         letterSpacing: 0.5,
                       }}
                     >
-                      Active Candidates ({activeApps.length})
+                      {t('pipeline_active_candidates_header', { count: activeApps.length })}
                     </Text>
                   )}
                   {activeApps.map((activeApp) => (
@@ -647,7 +661,6 @@ export const JobStatusManagementScreen: React.FC = () => {
                             fontSize: 13,
                             color: colors.primaryDark,
                           }}
-                          numberOfLines={1}
                         >
                           {getStageTitle(activeApp.status)}
                         </Text>
@@ -667,7 +680,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                               color: colors.primary,
                             }}
                           >
-                            CURRENT STAGE
+                            {t('pipeline_current_stage_badge')}
                           </Text>
                         </View>
                       </View>
@@ -692,7 +705,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                       >
                         {activeApp.worker?.barangay
                           ? `${activeApp.worker.barangay}, ${activeApp.worker.municipality}`
-                          : 'Worker Applicant'}
+                          : t('pipeline_worker_applicant_default')}
                       </Text>
 
                       <Button
@@ -784,25 +797,30 @@ export const JobStatusManagementScreen: React.FC = () => {
                 <View style={styles.metaItem}>
                   <Ionicons name="people-outline" size={16} color={colors.inkSoft} />
                   <Text style={styles.metaValue}>
-                    Slots: {job.filled_slots ?? job.accepted_count ?? 0} / {job.slots} hired
+                    {t('job_meta_slots_hired', {
+                      hired: job.filled_slots ?? job.accepted_count ?? 0,
+                      total: job.slots,
+                    })}
                   </Text>
                 </View>
 
                 <View style={styles.metaItem}>
                   <Ionicons name="heart-outline" size={16} color={colors.error} />
-                  <Text style={styles.metaValue}>{job.reactions_count || 0} interested</Text>
+                  <Text style={styles.metaValue}>
+                    {t('job_meta_interested_count', { count: job.reactions_count || 0 })}
+                  </Text>
                 </View>
               </View>
 
               <View style={styles.divider} />
 
-              <Text style={styles.sectionTitle}>Description</Text>
+              <Text style={styles.sectionTitle}>{t('job_section_description')}</Text>
               <Text style={styles.descriptionText}>{job.description}</Text>
 
               {job.tools_required ? (
                 <>
                   <View style={styles.divider} />
-                  <Text style={styles.sectionTitle}>Tools Required</Text>
+                  <Text style={styles.sectionTitle}>{t('job_section_tools_required')}</Text>
                   <Text style={styles.descriptionText}>{job.tools_required}</Text>
                 </>
               ) : null}
@@ -811,7 +829,9 @@ export const JobStatusManagementScreen: React.FC = () => {
                 <>
                   <View style={styles.divider} />
                   <Text style={styles.sectionTitle}>
-                    Attachments & Media ({parsedPhotos.length + (job.video_url ? 1 : 0)})
+                    {t('job_section_attachments', {
+                      count: parsedPhotos.length + (job.video_url ? 1 : 0),
+                    })}
                   </Text>
                   <ScrollView
                     horizontal
@@ -871,7 +891,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                             marginTop: 4,
                           }}
                         >
-                          Play Video
+                          {t('job_play_video_btn')}
                         </Text>
                       </TouchableOpacity>
                     )}
@@ -883,11 +903,11 @@ export const JobStatusManagementScreen: React.FC = () => {
             {/* Applicants List Section */}
             {job.status !== 'cancelled' && (job.status as string) !== 'suspended' && (
               <View style={styles.card}>
-                <Text style={styles.sectionTitle}>Applicants ({applications.length})</Text>
+                <Text style={styles.sectionTitle}>
+                  {t('job_applicants_header', { count: applications.length })}
+                </Text>
                 {applications.length === 0 ? (
-                  <Text style={styles.noApplicantsText}>
-                    No workers have applied to this job post yet.
-                  </Text>
+                  <Text style={styles.noApplicantsText}>{t('job_no_applicants_text')}</Text>
                 ) : (
                   <View style={styles.applicantsList}>
                     {applications.map((app) => (
@@ -897,7 +917,8 @@ export const JobStatusManagementScreen: React.FC = () => {
                         onPress={() =>
                           navigation.navigate('ApplicantDetail', {
                             applicantId: app.id,
-                            applicantName: app.worker?.name || 'Worker Applicant',
+                            applicantName:
+                              app.worker?.name || t('pipeline_worker_applicant_default'),
                             jobTitle: job?.title || '',
                             status: app.status,
                             barangay: app.worker?.barangay,
@@ -921,12 +942,12 @@ export const JobStatusManagementScreen: React.FC = () => {
                           </View>
                           <View style={{ flex: 1 }}>
                             <Text style={styles.applicantName}>
-                              {app.worker?.name || 'Worker Applicant'}
+                              {app.worker?.name || t('pipeline_worker_applicant_default')}
                             </Text>
                             <Text style={styles.applicantSub} numberOfLines={1}>
                               {app.worker?.barangay
                                 ? `${app.worker.barangay}, ${app.worker.municipality}`
-                                : 'Worker'}
+                                : t('pipeline_worker_applicant_default')}
                             </Text>
                           </View>
                         </View>
@@ -950,9 +971,13 @@ export const JobStatusManagementScreen: React.FC = () => {
             <View style={styles.actionsCard}>
               {job.status === 'open' && (
                 <>
-                  <Button label="Edit Job Post" onPress={handleEditJob} style={styles.actionBtn} />
+                  <Button
+                    label={t('job_btn_edit_post')}
+                    onPress={handleEditJob}
+                    style={styles.actionBtn}
+                  />
                   <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelJob}>
-                    <Text style={styles.cancelBtnText}>Cancel / Archive Job</Text>
+                    <Text style={styles.cancelBtnText}>{t('job_btn_cancel_archive')}</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -960,12 +985,12 @@ export const JobStatusManagementScreen: React.FC = () => {
               {job.status === 'closed_in_progress' && (
                 <>
                   <Button
-                    label="Mark as Completed"
+                    label={t('job_btn_mark_completed')}
                     onPress={handleMarkComplete}
                     style={styles.actionBtn}
                   />
                   <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelJob}>
-                    <Text style={styles.cancelBtnText}>Cancel Job</Text>
+                    <Text style={styles.cancelBtnText}>{t('job_btn_cancel_job')}</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -976,7 +1001,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                   onPress={handleDeleteJob}
                 >
                   <Text style={[styles.cancelBtnText, { color: colors.inkSoft }]}>
-                    Delete Job Post
+                    {t('job_btn_delete_post')}
                   </Text>
                 </TouchableOpacity>
               )}

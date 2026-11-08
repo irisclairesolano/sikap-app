@@ -57,9 +57,7 @@ export const SavedJobsScreen: React.FC = () => {
         </TouchableOpacity>
       )}
       <View style={styles.headerTopRow}>
-        <Text style={styles.headline} numberOfLines={1} adjustsFontSizeToFit>
-          {t('saved_jobs')}
-        </Text>
+        <Text style={styles.headline}>{t('saved_jobs')}</Text>
         <TouchableOpacity
           style={styles.sortPill}
           onPress={() => setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
@@ -152,7 +150,7 @@ const styles = StyleSheet.create({
   headerTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingHorizontal: 20,
     gap: 12,
   },
@@ -165,6 +163,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   sortPill: {
+    marginTop: 2,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,

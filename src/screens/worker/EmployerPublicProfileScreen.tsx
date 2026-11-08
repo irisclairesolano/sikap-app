@@ -89,7 +89,12 @@ export const EmployerPublicProfileScreen: React.FC = () => {
         <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.appBarTitle} numberOfLines={1} adjustsFontSizeToFit>
+        <Text
+          style={styles.appBarTitle}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.8}
+        >
           {t('employer_profile')}
         </Text>
         <TouchableOpacity
