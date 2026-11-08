@@ -90,11 +90,23 @@ export const EmployerDashboardScreen: React.FC = () => {
       })();
 
       const hasReviewed = Boolean(app.has_reviewed || app.user_review);
+      const isJobCompleted = (job.status as string) === 'completed';
+      const isJobCancelled =
+        (job.status as string) === 'cancelled' ||
+        (job.status as string) === 'suspended' ||
+        (job.status as string) === 'archived';
 
+      // An item is done (clears out of the Action Required inbox) if:
+      // 1. The job was cancelled/archived/suspended
+      // 2. The application was rejected or withdrawn
+      // 3. The job is completed and the applicant was not hired, or the hired worker was already rated / rating window expired
+      // 4. The employer already sent the formal offer (Stage 3) and is waiting on the worker
       const isDone =
+        isJobCancelled ||
         app.status === 'rejected' ||
         app.status === 'withdrawn' ||
-        (app.status === 'completed' && (hasReviewed || isRatingWindowClosed));
+        (isJobCompleted && (app.status !== 'completed' || hasReviewed || isRatingWindowClosed)) ||
+        app.status === 'employer_confirmed';
 
       let title = 'Review application';
       let description = `${app.worker?.name || 'Worker'} applied for ${job.title}`;
@@ -153,31 +165,15 @@ export const EmployerDashboardScreen: React.FC = () => {
           borderColor = colors.mint;
           break;
         case 'completed':
-          if (!hasReviewed && !isRatingWindowClosed) {
-            title = t('employer_dash_action_rate_title');
-            description = t('employer_dash_action_rate_desc')
-              .replace('{name}', app.worker?.name || 'Worker')
-              .replace('{job}', job.title);
-            stageBadge = t('employer_dash_stage_rate');
-            badgeBg = colors.gold + '25';
-            badgeColor = colors.ink;
-            iconName = 'star-outline';
-            borderColor = colors.gold + '60';
-          } else {
-            title = hasReviewed
-              ? t('employer_dash_action_rated_title')
-              : t('employer_dash_action_completed_title');
-            description = t('employer_dash_action_rate_desc')
-              .replace('{name}', app.worker?.name || 'Worker')
-              .replace('{job}', job.title);
-            stageBadge = hasReviewed
-              ? t('employer_dash_stage_rated')
-              : t('employer_dash_stage_done');
-            badgeBg = '#E0DED4';
-            badgeColor = colors.inkSoft;
-            iconName = hasReviewed ? 'checkmark-circle-outline' : 'time-outline';
-            borderColor = colors.inkFaint;
-          }
+          title = t('employer_dash_action_rate_title');
+          description = t('employer_dash_action_rate_desc')
+            .replace('{name}', app.worker?.name || 'Worker')
+            .replace('{job}', job.title);
+          stageBadge = t('employer_dash_stage_rate');
+          badgeBg = colors.gold + '25';
+          badgeColor = colors.ink;
+          iconName = 'star-outline';
+          borderColor = colors.gold + '60';
           break;
         default:
           title = `Application status: ${app.status}`;
@@ -206,17 +202,14 @@ export const EmployerDashboardScreen: React.FC = () => {
     }),
   );
 
-  // Active items first, then completed items
-  const sortedActions = [...allActions].sort((a, b) => {
-    if (a.isDone === b.isDone) return 0;
-    return a.isDone ? 1 : -1;
-  });
-
-  const pendingCount = allActions.filter((a) => !a.isDone).length;
-  const totalActionPages = Math.ceil(sortedActions.length / ITEMS_PER_PAGE) || 1;
-  const paginatedActions = sortedActions.slice(
-    (actionPage - 1) * ITEMS_PER_PAGE,
-    actionPage * ITEMS_PER_PAGE,
+  // Action Required Inbox: ONLY show active items needing immediate attention
+  const activeActions = allActions.filter((a) => !a.isDone);
+  const pendingCount = activeActions.length;
+  const totalActionPages = Math.ceil(activeActions.length / ITEMS_PER_PAGE) || 1;
+  const currentPage = Math.min(actionPage, totalActionPages);
+  const paginatedActions = activeActions.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
   );
 
   // Flatten recent applicants
@@ -422,7 +415,7 @@ export const EmployerDashboardScreen: React.FC = () => {
             </View>
 
             <View style={styles.listContainer}>
-              {sortedActions.length === 0 ? (
+              {activeActions.length === 0 ? (
                 <View style={[styles.actionCard, { borderColor: colors.inkFaint }]}>
                   <View style={[styles.actionIconBox, { backgroundColor: colors.paperBright }]}>
                     <Ionicons name="checkmark-circle-outline" size={24} color={colors.mintDeep} />
@@ -440,14 +433,11 @@ export const EmployerDashboardScreen: React.FC = () => {
                       styles.actionCard,
                       {
                         borderColor: action.borderColor,
-                        backgroundColor: action.isDone ? '#ECEAE2' : colors.paperBright,
-                        opacity: action.isDone ? 0.75 : 1,
+                        backgroundColor: colors.paperBright,
                       },
                     ]}
-                    activeOpacity={action.isDone ? 1 : 0.7}
-                    disabled={action.isDone}
+                    activeOpacity={0.7}
                     onPress={() => {
-                      if (action.isDone) return;
                       if (action.app.status === 'completed') {
                         navigation.navigate('RateWorker', {
                           id: action.app.id,
@@ -463,49 +453,28 @@ export const EmployerDashboardScreen: React.FC = () => {
                       style={[
                         styles.actionIconBox,
                         {
-                          backgroundColor: action.isDone ? '#DEDCD2' : action.badgeBg,
+                          backgroundColor: action.badgeBg,
                         },
                       ]}
                     >
-                      <Ionicons
-                        name={action.iconName}
-                        size={22}
-                        color={action.isDone ? colors.inkSoft : action.badgeColor}
-                      />
+                      <Ionicons name={action.iconName} size={22} color={action.badgeColor} />
                     </View>
                     <View style={styles.jobDetails}>
-                      <Text
-                        style={[
-                          styles.jobTitle,
-                          { color: action.isDone ? colors.inkSoft : colors.ink },
-                        ]}
-                      >
-                        {action.title}
-                      </Text>
+                      <Text style={[styles.jobTitle, { color: colors.ink }]}>{action.title}</Text>
                       <Text style={styles.jobSubtitle} numberOfLines={1}>
                         {action.description}
                       </Text>
                       <View style={{ marginTop: 4, alignSelf: 'flex-start' }}>
                         <View
-                          style={[
-                            styles.stageBadgeContainer,
-                            { backgroundColor: action.isDone ? '#DEDCD2' : action.badgeBg },
-                          ]}
+                          style={[styles.stageBadgeContainer, { backgroundColor: action.badgeBg }]}
                         >
-                          <Text
-                            style={[
-                              styles.stageBadgeText,
-                              { color: action.isDone ? colors.inkSoft : action.badgeColor },
-                            ]}
-                          >
+                          <Text style={[styles.stageBadgeText, { color: action.badgeColor }]}>
                             {action.stageBadge}
                           </Text>
                         </View>
                       </View>
                     </View>
-                    {!action.isDone && (
-                      <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
-                    )}
+                    <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
                   </TouchableOpacity>
                 ))
               )}
@@ -521,14 +490,11 @@ export const EmployerDashboardScreen: React.FC = () => {
                 styles.actionCard,
                 {
                   borderColor: action.borderColor,
-                  backgroundColor: action.isDone ? '#ECEAE2' : colors.paperBright,
-                  opacity: action.isDone ? 0.75 : 1,
+                  backgroundColor: colors.paperBright,
                 },
               ]}
-              activeOpacity={action.isDone ? 1 : 0.7}
-              disabled={action.isDone}
+              activeOpacity={0.7}
               onPress={() => {
-                if (action.isDone) return;
                 if (action.app.status === 'completed') {
                   navigation.navigate('RateWorker', {
                     id: action.app.id,
@@ -544,46 +510,26 @@ export const EmployerDashboardScreen: React.FC = () => {
                 style={[
                   styles.actionIconBox,
                   {
-                    backgroundColor: action.isDone ? '#DEDCD2' : action.badgeBg,
+                    backgroundColor: action.badgeBg,
                   },
                 ]}
               >
-                <Ionicons
-                  name={action.iconName}
-                  size={22}
-                  color={action.isDone ? colors.inkSoft : action.badgeColor}
-                />
+                <Ionicons name={action.iconName} size={22} color={action.badgeColor} />
               </View>
               <View style={styles.jobDetails}>
-                <Text
-                  style={[styles.jobTitle, { color: action.isDone ? colors.inkSoft : colors.ink }]}
-                >
-                  {action.title}
-                </Text>
+                <Text style={[styles.jobTitle, { color: colors.ink }]}>{action.title}</Text>
                 <Text style={styles.jobSubtitle} numberOfLines={1}>
                   {action.description}
                 </Text>
                 <View style={{ marginTop: 4, alignSelf: 'flex-start' }}>
-                  <View
-                    style={[
-                      styles.stageBadgeContainer,
-                      { backgroundColor: action.isDone ? '#DEDCD2' : action.badgeBg },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.stageBadgeText,
-                        { color: action.isDone ? colors.inkSoft : action.badgeColor },
-                      ]}
-                    >
+                  <View style={[styles.stageBadgeContainer, { backgroundColor: action.badgeBg }]}>
+                    <Text style={[styles.stageBadgeText, { color: action.badgeColor }]}>
                       {action.stageBadge}
                     </Text>
                   </View>
                 </View>
               </View>
-              {!action.isDone && (
-                <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
-              )}
+              <Ionicons name="chevron-forward" size={18} color={colors.inkLight} />
             </TouchableOpacity>
           ))}
 
@@ -591,35 +537,35 @@ export const EmployerDashboardScreen: React.FC = () => {
           {totalActionPages > 1 && (
             <View style={styles.paginationRow}>
               <TouchableOpacity
-                style={[styles.pageBtn, actionPage === 1 && styles.pageBtnDisabled]}
-                disabled={actionPage === 1}
+                style={[styles.pageBtn, currentPage === 1 && styles.pageBtnDisabled]}
+                disabled={currentPage === 1}
                 onPress={() => setActionPage((p) => Math.max(1, p - 1))}
               >
                 <Ionicons
                   name="chevron-back"
                   size={16}
-                  color={actionPage === 1 ? colors.inkFaint : colors.ink}
+                  color={currentPage === 1 ? colors.inkFaint : colors.ink}
                 />
-                <Text style={[styles.pageBtnText, actionPage === 1 && styles.pageBtnTextDisabled]}>
+                <Text style={[styles.pageBtnText, currentPage === 1 && styles.pageBtnTextDisabled]}>
                   {t('employer_dash_pagination_prev')}
                 </Text>
               </TouchableOpacity>
 
               <Text style={styles.pageIndicator}>
                 {t('employer_dash_pagination_page')
-                  .replace('{page}', String(actionPage))
+                  .replace('{page}', String(currentPage))
                   .replace('{total}', String(totalActionPages))}
               </Text>
 
               <TouchableOpacity
-                style={[styles.pageBtn, actionPage === totalActionPages && styles.pageBtnDisabled]}
-                disabled={actionPage === totalActionPages}
+                style={[styles.pageBtn, currentPage === totalActionPages && styles.pageBtnDisabled]}
+                disabled={currentPage === totalActionPages}
                 onPress={() => setActionPage((p) => Math.min(totalActionPages, p + 1))}
               >
                 <Text
                   style={[
                     styles.pageBtnText,
-                    actionPage === totalActionPages && styles.pageBtnTextDisabled,
+                    currentPage === totalActionPages && styles.pageBtnTextDisabled,
                   ]}
                 >
                   {t('employer_dash_pagination_next')}
@@ -627,7 +573,7 @@ export const EmployerDashboardScreen: React.FC = () => {
                 <Ionicons
                   name="chevron-forward"
                   size={16}
-                  color={actionPage === totalActionPages ? colors.inkFaint : colors.ink}
+                  color={currentPage === totalActionPages ? colors.inkFaint : colors.ink}
                 />
               </TouchableOpacity>
             </View>

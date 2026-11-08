@@ -58,7 +58,46 @@ export const useMarkJobComplete = () => {
     mutationFn: async (id) => {
       return apiClient<{ message: string }>(`/jobs/${id}/complete`, { method: 'PATCH' });
     },
-    onSuccess: () => {
+    onSuccess: (_, jobId) => {
+      // 1. Immediately update matching job and applications in myJobs in-memory cache
+      queryClient.setQueriesData({ queryKey: ['myJobs'] }, (old: any) => {
+        if (!old) return old;
+        const updateJobItem = (job: any) => {
+          if (Number(job.id) !== Number(jobId)) return job;
+          const updatedApps = (job.applications || []).map((app: any) => {
+            if (app.status === 'accepted') {
+              return { ...app, status: 'completed' };
+            }
+            if (
+              [
+                'pending',
+                'shortlisted',
+                'employer_requested',
+                'pending_negotiation',
+                'employer_confirmed',
+              ].includes(app.status)
+            ) {
+              return { ...app, status: 'rejected' };
+            }
+            return app;
+          });
+          return {
+            ...job,
+            status: 'completed',
+            rating_window_expires_at: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(),
+            applications: updatedApps,
+          };
+        };
+
+        if (Array.isArray(old.data)) {
+          return { ...old, data: old.data.map(updateJobItem) };
+        }
+        if (Array.isArray(old)) {
+          return old.map(updateJobItem);
+        }
+        return old;
+      });
+
       queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
       queryClient.invalidateQueries({ queryKey: ['myJobs'] });
       queryClient.invalidateQueries({ queryKey: ['employer-jobs'] });
