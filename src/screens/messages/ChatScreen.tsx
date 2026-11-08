@@ -53,7 +53,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRoute, useNavigation, useIsFocused } from '@react-navigation/native';
+import { useRoute, useNavigation, useIsFocused, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -437,6 +437,30 @@ const ChatScreen: React.FC = () => {
     });
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      isNearBottomRef.current = true;
+      setShowScrollBottomFab(false);
+      setNewMessagesBelow(0);
+
+      const scrollToRecent = () => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      };
+
+      // Always scroll to most recent messages upon opening
+      scrollToRecent();
+      const t1 = setTimeout(scrollToRecent, 60);
+      const t2 = setTimeout(scrollToRecent, 180);
+      const t3 = setTimeout(scrollToRecent, 400);
+
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+      };
+    }, [conversationId]),
+  );
+
   useEffect(() => {
     if (messages.length === 0) return;
 
@@ -467,15 +491,18 @@ const ChatScreen: React.FC = () => {
           setShowScrollBottomFab(true);
         }
       }
-    } else if (isInitialMountRef.current && messages.length > 0) {
-      requestAnimationFrame(() => {
-        flatListRef.current?.scrollToEnd({ animated: false });
-      });
+    } else if (messages.length > 0) {
+      if (isNearBottomRef.current || isInitialMountRef.current) {
+        requestAnimationFrame(() => {
+          flatListRef.current?.scrollToEnd({ animated: false });
+        });
+        isInitialMountRef.current = false;
+      }
     }
 
     prevMessagesLengthRef.current = messages.length;
     lastMessageIdRef.current = latestMessage?.id ?? null;
-  }, [messages, user?.id]);
+  }, [messages, user?.id, isFocused]);
 
   const handleSendText = () => {
     const textToSend = inputText.trim();
@@ -955,15 +982,13 @@ const ChatScreen: React.FC = () => {
             }, 100);
           }}
           onContentSizeChange={() => {
-            if (isInitialMountRef.current) {
+            if (isInitialMountRef.current || isNearBottomRef.current) {
               flatListRef.current?.scrollToEnd({ animated: false });
               isInitialMountRef.current = false;
-            } else if (isNearBottomRef.current) {
-              flatListRef.current?.scrollToEnd({ animated: true });
             }
           }}
           onLayout={() => {
-            if (isInitialMountRef.current) {
+            if (isInitialMountRef.current || isNearBottomRef.current) {
               flatListRef.current?.scrollToEnd({ animated: false });
             }
           }}
