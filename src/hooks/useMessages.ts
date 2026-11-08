@@ -242,6 +242,24 @@ export function useMarkRead(conversationId: number) {
 
   return useMutation({
     mutationFn: () => messagesApi.markRead(conversationId),
+    onMutate: async () => {
+      // Instantly clear or decrement unread count in cache in 0 milliseconds
+      queryClient.setQueriesData({ queryKey: ['conversations', 'unread-count'] }, (old: any) => {
+        if (!old) return { unread_count: 0 };
+        const prev = typeof old === 'number' ? old : (old?.unread_count ?? 0);
+        const next = Math.max(0, prev - 1);
+        if (typeof old === 'object' && old !== null) {
+          return { ...old, unread_count: next };
+        }
+        return { unread_count: next };
+      });
+      queryClient.setQueriesData({ queryKey: ['conversations'] }, (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((conv: any) =>
+          conv.id === conversationId ? { ...conv, unread_count: 0 } : conv,
+        );
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations', 'unread-count'] });
     },

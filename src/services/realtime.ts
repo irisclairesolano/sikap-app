@@ -51,6 +51,7 @@ const PUSHER_PORT = process.env.EXPO_PUBLIC_PUSHER_PORT
   : undefined;
 
 let pusherInstance: Pusher | null = null;
+const optimisticallyCountedMessageIds = new Set<number>();
 
 /**
  * Returns the singleton Pusher WebSocket client.
@@ -411,20 +412,88 @@ export function useRealtimeUserEvents(userId?: number) {
     const handleUserMessage = (data: any) => {
       if (!data) return;
 
-      // Invalidate conversations list and unread count
+      const { getActiveChatConversationId } = require('../utils/activeChatTracker');
+      const isActiveChat = getActiveChatConversationId() === data.conversation_id;
+
+      // 1. INSTANT MILLISECOND BADGE INCREMENT:
+      // If incoming from another user and not currently active in that chat,
+      // update unread count cache immediately in memory (0ms lapse)
+      if (data.sender_id && data.sender_id !== userId && !isActiveChat) {
+        if (!data.id || !optimisticallyCountedMessageIds.has(data.id)) {
+          if (data.id) {
+            optimisticallyCountedMessageIds.add(data.id);
+            if (optimisticallyCountedMessageIds.size > 200) {
+              const first = optimisticallyCountedMessageIds.values().next().value;
+              if (first !== undefined) optimisticallyCountedMessageIds.delete(first);
+            }
+          }
+
+          queryClient.setQueriesData(
+            { queryKey: ['conversations', 'unread-count'] },
+            (old: any) => {
+              const prev = typeof old === 'number' ? old : (old?.unread_count ?? 0);
+              const next = prev + 1;
+              const latestMsg = {
+                id: data.id,
+                conversation_id: data.conversation_id,
+                sender_id: data.sender_id,
+                sender_name: data.sender?.name || data.sender_name || 'SIKAP',
+                body: data.body || data.message || '',
+                image_url: data.image_url || null,
+                message_type: data.message_type || 'text',
+                card_type: data.card_type || null,
+                created_at: data.created_at || new Date().toISOString(),
+              };
+              if (typeof old === 'object' && old !== null) {
+                return {
+                  ...old,
+                  unread_count: next,
+                  latest_message: latestMsg,
+                };
+              }
+              return { unread_count: next, latest_message: latestMsg };
+            },
+          );
+        }
+      }
+
+      // 2. INSTANT MILLISECOND CONVERSATION LIST UPDATE:
+      // Immediately reflect latest message preview, timestamp, and position in list
+      if (data.conversation_id) {
+        queryClient.setQueriesData({ queryKey: ['conversations'] }, (old: any) => {
+          if (!Array.isArray(old)) return old;
+          const preview =
+            data.message_type === 'image' ? '📷 Image' : data.body || data.message || '';
+          const updated = old.map((conv: any) => {
+            if (conv.id === data.conversation_id) {
+              return {
+                ...conv,
+                last_message_at: data.created_at || new Date().toISOString(),
+                last_message_preview: preview,
+                unread_count: isActiveChat
+                  ? (conv.unread_count ?? 0)
+                  : (conv.unread_count ?? 0) + 1,
+              };
+            }
+            return conv;
+          });
+          return [...updated].sort((a: any, b: any) => {
+            const timeA = new Date(a.last_message_at || 0).getTime();
+            const timeB = new Date(b.last_message_at || 0).getTime();
+            return timeB - timeA;
+          });
+        });
+      }
+
+      // 3. Background server reconciliation (guarantees eventual consistency with database)
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
       queryClient.invalidateQueries({ queryKey: ['conversations', 'unread-count'] });
       if (data.conversation_id) {
         queryClient.invalidateQueries({ queryKey: ['conversation', data.conversation_id] });
       }
 
-      // If incoming from another user, provide a light haptic pulse + system/in-app notification
-      if (data.sender_id && data.sender_id !== userId) {
-        const { getActiveChatConversationId } = require('../utils/activeChatTracker');
-        if (getActiveChatConversationId() === data.conversation_id) {
-          return;
-        }
-
+      // 4. If incoming from another user and not currently active in that chat, trigger haptic and toast
+      if (data.sender_id && data.sender_id !== userId && !isActiveChat) {
         triggerHaptic('medium');
         try {
           const { triggerSystemNotification } = require('../hooks/usePushNotifications');
@@ -484,6 +553,24 @@ export function useRealtimeUserEvents(userId?: number) {
     // 6. Handle Real-Time In-App Notifications
     const handleNotificationSent = (data: any) => {
       if (!data) return;
+
+      // 1. INSTANT MILLISECOND BADGE INCREMENT:
+      queryClient.setQueriesData({ queryKey: ['notifications'] }, (old: any) => {
+        if (!old) return old;
+        const currentCount = old.unread_count ?? 0;
+        const notif = data.notification || data;
+        const prevList = old.notifications?.data || [];
+        return {
+          ...old,
+          unread_count: currentCount + 1,
+          notifications: {
+            ...(old.notifications || {}),
+            data: notif ? [notif, ...prevList] : prevList,
+          },
+        };
+      });
+
+      // 2. Background server reconciliation
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
       triggerHaptic('medium');
