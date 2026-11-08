@@ -53,7 +53,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation, useIsFocused } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -256,13 +256,6 @@ const ChatScreen: React.FC = () => {
     onTyping: handlePartnerTyping,
   });
 
-  useEffect(() => {
-    setActiveChatConversationId(conversationId);
-    return () => {
-      setActiveChatConversationId(null);
-    };
-  }, [conversationId]);
-
   const blockUserMutation = useBlockUser();
   const unblockUserMutation = useUnblockUser();
 
@@ -340,6 +333,23 @@ const ChatScreen: React.FC = () => {
     [rawMessages, conversationUserRole, conversation?.application_status],
   );
   const messageCount = messages.length;
+
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused) {
+      setActiveChatConversationId(conversationId);
+      if (messageCount > 0) {
+        markRead.mutate();
+      }
+    } else {
+      setActiveChatConversationId(null);
+    }
+    return () => {
+      setActiveChatConversationId(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFocused, conversationId, messageCount]);
 
   const isWorkerReplyAllowed =
     conversationUserRole !== 'worker' ||
@@ -428,13 +438,6 @@ const ChatScreen: React.FC = () => {
   };
 
   useEffect(() => {
-    if (messageCount > 0) {
-      markRead.mutate();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messageCount]);
-
-  useEffect(() => {
     if (messages.length === 0) return;
 
     const latestMessage = messages[messages.length - 1];
@@ -447,7 +450,7 @@ const ChatScreen: React.FC = () => {
         latestMessage.sender_id !== user?.id &&
         latestMessage.id !== lastMessageIdRef.current;
 
-      if (isIncoming) {
+      if (isIncoming && isFocused) {
         triggerHaptic('medium');
       }
 

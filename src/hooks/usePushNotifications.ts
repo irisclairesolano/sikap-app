@@ -37,6 +37,7 @@ import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
+import { triggerHaptic } from '../utils/haptics';
 
 export interface PushNotificationState {
   expoPushToken?: { data: string };
@@ -99,6 +100,8 @@ export const triggerSystemNotification = async (
     const firstKey = shownNotificationIds.values().next().value;
     if (firstKey) shownNotificationIds.delete(firstKey);
   }
+
+  triggerHaptic('medium');
 
   // 1. Emit to in-app top banner subscribers
   const bannerPayload: InAppBannerPayload = {

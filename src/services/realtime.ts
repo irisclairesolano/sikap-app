@@ -169,7 +169,7 @@ export function useRealtimeChat({
 
       // Vibrate if incoming from other user
       if (incomingMessage.sender_id && incomingMessage.sender_id !== currentUserId) {
-        triggerHaptic('light');
+        triggerHaptic('medium');
       }
 
       // Immediately write into query cache across pages
@@ -425,7 +425,7 @@ export function useRealtimeUserEvents(userId?: number) {
           return;
         }
 
-        triggerHaptic('light');
+        triggerHaptic('medium');
         try {
           const { triggerSystemNotification } = require('../hooks/usePushNotifications');
           const {
@@ -486,7 +486,7 @@ export function useRealtimeUserEvents(userId?: number) {
       if (!data) return;
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
-      triggerHaptic('light');
+      triggerHaptic('medium');
 
       try {
         const { triggerSystemNotification } = require('../hooks/usePushNotifications');

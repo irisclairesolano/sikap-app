@@ -92,7 +92,7 @@ export type WorkerStackParamList = {
   CharacterReferences: undefined;
   Reviews: undefined;
   Messages: undefined;
-  ConversationsList: undefined;
+  ConversationsList: { role?: 'worker' | 'employer' } | undefined;
   Chat: { conversationId: number; jobTitle?: string; otherUserName?: string };
 };
 
@@ -129,7 +129,11 @@ const popTabStackOnPress = ({ navigation, route }: { navigation: any; route: any
 // Messages Stack
 const MessagesStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="ConversationsList">
-    <Stack.Screen name="ConversationsList" component={ConversationsListScreen} />
+    <Stack.Screen
+      name="ConversationsList"
+      component={ConversationsListScreen}
+      initialParams={{ role: 'worker' }}
+    />
     <Stack.Screen name="Chat" component={ChatScreen} />
     <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
     <Stack.Screen name="AcceptHire" component={AcceptHireScreen} />

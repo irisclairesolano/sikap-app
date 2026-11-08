@@ -48,7 +48,7 @@ export function useUnreadMessageCount(role?: 'worker' | 'employer' | 'all' | str
     // If user is currently looking at this exact chat in ChatScreen, don't show toast
     if (getActiveChatConversationId() === latest.conversation_id) return;
 
-    triggerHaptic('light');
+    triggerHaptic('medium');
 
     const lang = getActiveLanguage();
     const senderName = latest.sender_name || 'SIKAP';

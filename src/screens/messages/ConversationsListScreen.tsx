@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -41,9 +41,13 @@ const formatConversationTime = (dateString: string) => {
 };
 
 const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
+  const route = useRoute<any>();
   const { t } = useLanguage();
   const { user } = useAuth();
-  const currentRole = (user?.role as 'worker' | 'employer') || 'worker';
+  const explicitRole = route.params?.role;
+  const isEmployerStack = navigation.getParent()?.getState()?.routeNames?.includes('MyJobs');
+  const fallbackRole = isEmployerStack ? 'employer' : 'worker';
+  const currentRole = explicitRole || (user?.role as 'worker' | 'employer') || fallbackRole;
   const { data, isLoading, isError, refetch } = useConversations(currentRole);
 
   useFocusEffect(
