@@ -81,7 +81,35 @@ const ActionCard: React.FC<ActionCardProps> = ({
   const hasEmployerSentMessage = hasRealMessageFromEmployer ?? true;
   const [isGuideMinimized, setIsGuideMinimized] = useState(hasRealMessageFromEmployer === true);
 
-  const { card_type, card_data, card_resolved } = message;
+  const { card_type } = message;
+
+  const [optimisticState, setOptimisticState] = useState<{
+    cardResolved?: boolean;
+    applicationStatus?: string;
+    finalAgreedPrice?: number;
+    conversationStatus?: 'open' | 'locked' | 'unlock_requested';
+    cardDataPatch?: Record<string, any>;
+  } | null>(null);
+
+  const card_data = {
+    ...message.card_data,
+    ...(optimisticState?.cardDataPatch || {}),
+  };
+
+  const card_resolved =
+    optimisticState?.cardResolved !== undefined
+      ? optimisticState.cardResolved
+      : message.card_resolved;
+
+  const effectiveApplicationStatus =
+    optimisticState?.applicationStatus !== undefined
+      ? optimisticState.applicationStatus
+      : applicationStatus;
+
+  const effectiveConversationStatus =
+    optimisticState?.conversationStatus !== undefined
+      ? optimisticState.conversationStatus
+      : conversationStatus;
 
   const targetAppId = Number(card_data?.application_id || card_data?.id || applicationId || 0);
   const cachedApp: any =
@@ -102,26 +130,175 @@ const ActionCard: React.FC<ActionCardProps> = ({
   if (message.message_type !== 'action_card' || !message.card_type) return null;
 
   const effectivePrice =
+    optimisticState?.finalAgreedPrice ??
     card_data?.price ??
     card_data?.final_agreed_price ??
     (card_data as any)?.agreed_price ??
     finalAgreedPrice;
 
+  const applyOptimisticCardUpdate = (patch: {
+    cardResolved?: boolean;
+    applicationStatus?: string;
+    finalAgreedPrice?: number;
+    conversationStatus?: 'open' | 'locked' | 'unlock_requested';
+    cardDataPatch?: Record<string, any>;
+  }) => {
+    // 1. Immediately update local card state (0 ms)
+    setOptimisticState((prev) => ({
+      cardResolved:
+        patch.cardResolved !== undefined ? patch.cardResolved : (prev?.cardResolved ?? true),
+      applicationStatus:
+        patch.applicationStatus !== undefined ? patch.applicationStatus : prev?.applicationStatus,
+      finalAgreedPrice:
+        patch.finalAgreedPrice !== undefined ? patch.finalAgreedPrice : prev?.finalAgreedPrice,
+      conversationStatus:
+        patch.conversationStatus !== undefined
+          ? patch.conversationStatus
+          : prev?.conversationStatus,
+      cardDataPatch: {
+        ...(prev?.cardDataPatch || {}),
+        ...(patch.cardDataPatch || {}),
+      },
+    }));
+
+    // 2. Synchronously update ['messages', conversationId] in queryClient cache
+    queryClient.setQueryData(['messages', conversationId], (old: any) => {
+      if (!old) return old;
+      if (old.pages && Array.isArray(old.pages)) {
+        const newPages = old.pages.map((page: any) => {
+          if (!page?.data || !Array.isArray(page.data)) return page;
+          return {
+            ...page,
+            data: page.data.map((m: Message) => {
+              if (m.id === message.id) {
+                return {
+                  ...m,
+                  card_resolved: patch.cardResolved !== undefined ? patch.cardResolved : true,
+                  card_data: {
+                    ...m.card_data,
+                    ...(patch.cardDataPatch || {}),
+                    ...(patch.finalAgreedPrice !== undefined
+                      ? {
+                          price: patch.finalAgreedPrice,
+                          final_agreed_price: patch.finalAgreedPrice,
+                        }
+                      : {}),
+                  },
+                };
+              }
+              return m;
+            }),
+          };
+        });
+        return { ...old, pages: newPages };
+      }
+      if (Array.isArray(old)) {
+        return old.map((m: Message) => {
+          if (m.id === message.id) {
+            return {
+              ...m,
+              card_resolved: patch.cardResolved !== undefined ? patch.cardResolved : true,
+              card_data: {
+                ...m.card_data,
+                ...(patch.cardDataPatch || {}),
+                ...(patch.finalAgreedPrice !== undefined
+                  ? { price: patch.finalAgreedPrice, final_agreed_price: patch.finalAgreedPrice }
+                  : {}),
+              },
+            };
+          }
+          return m;
+        });
+      }
+      return old;
+    });
+
+    // 3. Synchronously update ['conversation', conversationId] cache
+    queryClient.setQueryData(['conversation', conversationId], (old: any) => {
+      if (!old) return old;
+      const targetObj = old.data ? old.data : old;
+      const updated = {
+        ...targetObj,
+        ...(patch.applicationStatus !== undefined
+          ? { application_status: patch.applicationStatus }
+          : {}),
+        ...(patch.finalAgreedPrice !== undefined
+          ? { final_agreed_price: patch.finalAgreedPrice }
+          : {}),
+        ...(patch.conversationStatus !== undefined ? { status: patch.conversationStatus } : {}),
+      };
+      return old.data ? { ...old, data: updated } : updated;
+    });
+
+    // 4. Synchronously update ['conversations'] cache
+    queryClient.setQueriesData({ queryKey: ['conversations'] }, (old: any) => {
+      if (!old) return old;
+      const updateList = (list: any[]) =>
+        list.map((c: any) => {
+          if (c.id === conversationId) {
+            return {
+              ...c,
+              ...(patch.applicationStatus !== undefined
+                ? { application_status: patch.applicationStatus }
+                : {}),
+              ...(patch.finalAgreedPrice !== undefined
+                ? { final_agreed_price: patch.finalAgreedPrice }
+                : {}),
+              ...(patch.conversationStatus !== undefined
+                ? { status: patch.conversationStatus }
+                : {}),
+            };
+          }
+          return c;
+        });
+      if (Array.isArray(old)) return updateList(old);
+      if (old.data && Array.isArray(old.data)) return { ...old, data: updateList(old.data) };
+      return old;
+    });
+
+    // 5. Synchronously update ['application', targetAppId] cache if applicable
+    if (targetAppId > 0) {
+      queryClient.setQueryData(['application', targetAppId], (old: any) => {
+        if (!old) return old;
+        const targetObj = old.data ? old.data : old;
+        const updated = {
+          ...targetObj,
+          ...(patch.applicationStatus !== undefined ? { status: patch.applicationStatus } : {}),
+          ...(patch.finalAgreedPrice !== undefined
+            ? { final_agreed_price: patch.finalAgreedPrice, agreed_price: patch.finalAgreedPrice }
+            : {}),
+        };
+        return old.data ? { ...old, data: updated } : updated;
+      });
+    }
+  };
+
   const handleAction = async (
     actionId: string,
     apiCall: () => Promise<any>,
     invalidateKeys?: unknown[][],
+    optimisticConfig?: {
+      cardResolved?: boolean;
+      applicationStatus?: string;
+      finalAgreedPrice?: number;
+      conversationStatus?: 'open' | 'locked' | 'unlock_requested';
+      cardDataPatch?: Record<string, any>;
+    },
   ) => {
     if (isBlocked) {
       triggerHaptic('error');
       showAlert('Action Unavailable', 'Cannot perform actions while this conversation is blocked.');
       return;
     }
-    triggerHaptic('medium');
-    setLoadingAction(actionId);
+    triggerHaptic('success');
+    if (optimisticConfig) {
+      applyOptimisticCardUpdate(optimisticConfig);
+    } else {
+      setLoadingAction(actionId);
+    }
+
     try {
       await apiCall();
-      triggerHaptic('success');
       if (invalidateKeys) {
         for (const key of invalidateKeys) {
           queryClient.invalidateQueries({ queryKey: key });
@@ -129,6 +306,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
       }
       onActionComplete();
     } catch (error: any) {
+      if (optimisticConfig) {
+        setOptimisticState(null);
+        queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+        queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+      }
       triggerHaptic('error');
       showAlert('Action Failed', error.message || 'Unable to complete request.');
     } finally {
@@ -179,7 +361,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
   // 1. JOB REQUEST & CONFIRM HIRE
   if (card_type === 'job_request' || card_type === 'confirm_hire') {
-    if (applicationStatus === 'rejected' || applicationStatus === 'declined') {
+    if (effectiveApplicationStatus === 'rejected' || effectiveApplicationStatus === 'declined') {
       return renderEtchedCard(
         'Application Declined',
         'This application was declined and conversation is closed.',
@@ -192,7 +374,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
     const isConfirmResolved =
       card_resolved ||
-      ['employer_confirmed', 'accepted', 'completed'].includes(applicationStatus || '');
+      ['employer_confirmed', 'accepted', 'completed'].includes(effectiveApplicationStatus || '');
 
     if (isConfirmResolved) {
       const displayPrice = effectivePrice;
@@ -461,15 +643,24 @@ const ActionCard: React.FC<ActionCardProps> = ({
                             text: 'Yes, Decline',
                             style: 'destructive',
                             onPress: () => {
-                              const appId = Number(card_data?.application_id);
-                              handleAction('decline', () => applicationsApi.decline(appId), [
-                                ['conversations'],
-                                ['messages', conversationId],
-                                ['jobApplications'],
-                                ['application', appId],
-                                ['myJobs'],
-                                ['job'],
-                              ]);
+                              const appId = targetAppId;
+                              handleAction(
+                                'decline',
+                                () => applicationsApi.decline(appId),
+                                [
+                                  ['conversations'],
+                                  ['conversation', conversationId],
+                                  ['messages', conversationId],
+                                  ['jobApplications'],
+                                  ['application', appId],
+                                  ['myJobs'],
+                                  ['job'],
+                                ],
+                                {
+                                  cardResolved: true,
+                                  applicationStatus: 'declined',
+                                },
+                              );
                             },
                           },
                         ],
@@ -541,13 +732,28 @@ const ActionCard: React.FC<ActionCardProps> = ({
                         showAlert('Invalid Price', 'Please enter a valid price in Pesos.');
                         return;
                       }
+                      setIsPriceInputVisible(false);
+                      triggerHaptic('success');
+                      applyOptimisticCardUpdate({
+                        cardResolved: true,
+                        applicationStatus: 'employer_confirmed',
+                        finalAgreedPrice: price,
+                        cardDataPatch: { price, final_agreed_price: price },
+                      });
                       confirmHireMutation.mutate(
-                        { id: Number(card_data?.application_id), price },
+                        { id: targetAppId, price },
                         {
                           onSuccess: () => {
                             onActionComplete();
                           },
                           onError: (err: any) => {
+                            setOptimisticState(null);
+                            queryClient.invalidateQueries({
+                              queryKey: ['messages', conversationId],
+                            });
+                            queryClient.invalidateQueries({
+                              queryKey: ['conversation', conversationId],
+                            });
                             showAlert('Action Failed', err.message || 'Unable to confirm hire.');
                           },
                         },
@@ -581,10 +787,10 @@ const ActionCard: React.FC<ActionCardProps> = ({
   if (card_type === 'accept_or_reject') {
     const isOfferResolved =
       card_resolved ||
-      ['accepted', 'completed', 'rejected', 'cancelled'].includes(applicationStatus || '');
+      ['accepted', 'completed', 'rejected', 'cancelled'].includes(effectiveApplicationStatus || '');
 
     if (isOfferResolved) {
-      if (applicationStatus === 'rejected' || applicationStatus === 'cancelled') {
+      if (effectiveApplicationStatus === 'rejected' || effectiveApplicationStatus === 'cancelled') {
         return renderEtchedCard(
           t('job_offer_declined'),
           `Offer of ${formatCurrency(effectivePrice)} was declined.`,
@@ -643,20 +849,25 @@ const ActionCard: React.FC<ActionCardProps> = ({
                     handleAction(
                       'cancel',
                       () =>
-                        apiClient(
-                          `/applications/${String(card_data?.application_id)}/cancel-hire`,
-                          { method: 'PATCH' },
-                        ),
+                        apiClient(`/applications/${String(targetAppId)}/cancel-hire`, {
+                          method: 'PATCH',
+                        }),
                       [
-                        ['application', Number(card_data?.application_id)],
+                        ['application', targetAppId],
                         ['applications'],
                         ['conversations'],
+                        ['conversation', conversationId],
+                        ['messages', conversationId],
                         ['job'],
                         ['jobs'],
                         ['myJobs'],
                         ['jobApplications'],
                         ['my-applications'],
                       ],
+                      {
+                        cardResolved: true,
+                        applicationStatus: 'cancelled',
+                      },
                     ),
                 },
               ]);
@@ -675,7 +886,9 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
     if (
       isSlotLocked &&
-      !['employer_confirmed', 'accepted', 'completed', 'hired'].includes(applicationStatus || '')
+      !['employer_confirmed', 'accepted', 'completed', 'hired'].includes(
+        effectiveApplicationStatus || '',
+      )
     ) {
       return (
         <View style={styles.card}>
@@ -727,8 +940,13 @@ const ActionCard: React.FC<ActionCardProps> = ({
         <View style={styles.rowButtons}>
           <TouchableOpacity
             style={[styles.actionBtn, { backgroundColor: colors.success }]}
-            onPress={() =>
-              acceptOfferMutation.mutate(Number(card_data?.application_id), {
+            onPress={() => {
+              triggerHaptic('success');
+              applyOptimisticCardUpdate({
+                cardResolved: true,
+                applicationStatus: 'accepted',
+              });
+              acceptOfferMutation.mutate(targetAppId, {
                 onSuccess: () => {
                   onActionComplete();
                   navigation.navigate('Success', {
@@ -746,10 +964,13 @@ const ActionCard: React.FC<ActionCardProps> = ({
                   });
                 },
                 onError: (err: any) => {
+                  setOptimisticState(null);
+                  queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+                  queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
                   showAlert('Action Failed', err.message || 'Unable to accept offer.');
                 },
-              })
-            }
+              });
+            }}
             disabled={acceptOfferMutation.isPending || !!loadingAction}
           >
             {acceptOfferMutation.isPending ? (
@@ -766,15 +987,26 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 {
                   text: 'Yes, Decline',
                   style: 'destructive',
-                  onPress: () =>
-                    rejectOfferMutation.mutate(Number(card_data?.application_id), {
+                  onPress: () => {
+                    triggerHaptic('medium');
+                    applyOptimisticCardUpdate({
+                      cardResolved: true,
+                      applicationStatus: 'rejected',
+                    });
+                    rejectOfferMutation.mutate(targetAppId, {
                       onSuccess: () => {
                         onActionComplete();
                       },
                       onError: (err: any) => {
+                        setOptimisticState(null);
+                        queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+                        queryClient.invalidateQueries({
+                          queryKey: ['conversation', conversationId],
+                        });
                         showAlert('Action Failed', err.message || 'Unable to decline offer.');
                       },
-                    }),
+                    });
+                  },
                 },
               ]);
             }}
@@ -795,11 +1027,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
   if (card_type === 'cancel_hire') {
     if (currentUserRole === 'worker') return null;
 
-    if (['accepted', 'completed'].includes(applicationStatus || '')) {
+    if (['accepted', 'completed'].includes(effectiveApplicationStatus || '')) {
       return null;
     }
 
-    if (card_resolved || applicationStatus === 'cancelled') {
+    if (card_resolved || effectiveApplicationStatus === 'cancelled') {
       return renderEtchedCard(
         t('hiring_cancelled'),
         'This hiring was cancelled.',
@@ -811,7 +1043,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
     }
 
     // Suppress standalone cancel_hire card when offer is pending worker response (handled in accept_or_reject)
-    if (applicationStatus === 'employer_confirmed') {
+    if (effectiveApplicationStatus === 'employer_confirmed') {
       return null;
     }
 
@@ -838,19 +1070,25 @@ const ActionCard: React.FC<ActionCardProps> = ({
                   handleAction(
                     'cancel',
                     () =>
-                      apiClient(`/applications/${String(card_data?.application_id)}/cancel-hire`, {
+                      apiClient(`/applications/${String(targetAppId)}/cancel-hire`, {
                         method: 'PATCH',
                       }),
                     [
-                      ['application', Number(card_data?.application_id)],
+                      ['application', targetAppId],
                       ['applications'],
                       ['conversations'],
+                      ['conversation', conversationId],
+                      ['messages', conversationId],
                       ['job'],
                       ['jobs'],
                       ['myJobs'],
                       ['jobApplications'],
                       ['my-applications'],
                     ],
+                    {
+                      cardResolved: true,
+                      applicationStatus: 'cancelled',
+                    },
                   ),
               },
             ]);
@@ -917,7 +1155,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
   // 7. MARK COMPLETE (Employer side, or completion etched card for either role)
   if (card_type === 'mark_complete') {
-    const isJobCompleted = applicationStatus === 'completed';
+    const isJobCompleted = effectiveApplicationStatus === 'completed';
 
     if (isJobCompleted) {
       if (currentUserRole === 'worker') {
@@ -995,6 +1233,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 text: 'Yes, Mark Complete',
                 onPress: () => {
                   const targetJobId = Number(card_data?.job_id || jobId);
+                  triggerHaptic('success');
+                  applyOptimisticCardUpdate({
+                    cardResolved: true,
+                    applicationStatus: 'completed',
+                  });
                   markJobCompleteMutation.mutate(targetJobId, {
                     onSuccess: () => {
                       showAlert(
@@ -1004,6 +1247,9 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       onActionComplete();
                     },
                     onError: (err: any) => {
+                      setOptimisticState(null);
+                      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+                      queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
                       showAlert('Action Failed', err.message || 'Unable to mark job complete.');
                     },
                   });
@@ -1025,7 +1271,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
 
   // 8. FLAG OFFLINE (Worker flags, Employer confirms)
   if (card_type === 'flag_offline') {
-    const isJobCompleted = applicationStatus === 'completed';
+    const isJobCompleted = effectiveApplicationStatus === 'completed';
 
     if (isJobCompleted) {
       // For worker: render Rate Employer CTA
@@ -1114,12 +1360,18 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 {
                   text: t('flag_completed_confirm_btn'),
                   onPress: () => {
-                    const appId = Number(card_data?.application_id || card_data?.id);
+                    const appId = targetAppId;
+                    triggerHaptic('success');
+                    applyOptimisticCardUpdate({
+                      cardDataPatch: { is_flagged: true },
+                    });
                     flagOfflineMutation.mutate(appId, {
                       onSuccess: () => {
                         onActionComplete();
                       },
                       onError: (err: any) => {
+                        setOptimisticState(null);
+                        queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
                         showAlert(t('action_failed'), err.message || t('flag_completed_error'));
                       },
                     });
@@ -1168,12 +1420,20 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 text: t('confirm') || 'Confirm',
                 onPress: () => {
                   const targetJobId = Number(card_data?.job_id || jobId);
+                  triggerHaptic('success');
+                  applyOptimisticCardUpdate({
+                    cardResolved: true,
+                    applicationStatus: 'completed',
+                  });
                   markJobCompleteMutation.mutate(targetJobId, {
                     onSuccess: () => {
                       showAlert(t('job_completed_title'), t('job_completed_review_msg'));
                       onActionComplete();
                     },
                     onError: (err: any) => {
+                      setOptimisticState(null);
+                      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+                      queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
                       showAlert(t('action_failed'), err.message || t('mark_job_complete_error'));
                     },
                   });
@@ -1197,7 +1457,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
   if (card_type === 'unlock_request') {
     const workerName = String(card_data?.worker_name || otherUserName || 'Worker');
 
-    if (conversationStatus === 'open' || (card_resolved && !card_data?.declined)) {
+    if (effectiveConversationStatus === 'open' || (card_resolved && !card_data?.declined)) {
       return renderEtchedCard(
         'Chat Reopened',
         currentUserRole === 'employer'
@@ -1258,6 +1518,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
                             ['conversation', conversationId],
                             ['messages', conversationId],
                           ],
+                          {
+                            cardResolved: true,
+                            conversationStatus: 'open',
+                            cardDataPatch: { declined: false },
+                          },
                         );
                       },
                     },
@@ -1300,6 +1565,10 @@ const ActionCard: React.FC<ActionCardProps> = ({
                             ['conversation', conversationId],
                             ['messages', conversationId],
                           ],
+                          {
+                            cardResolved: true,
+                            cardDataPatch: { declined: true },
+                          },
                         );
                       },
                     },

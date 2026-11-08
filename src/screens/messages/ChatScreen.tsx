@@ -1126,7 +1126,14 @@ const ChatScreen: React.FC = () => {
                 />
               );
             }
-            return <MessageBubble message={item} isOwnMessage={item.sender_id === user?.id} />;
+            return (
+              <MessageBubble
+                message={item}
+                isOwnMessage={item.sender_id === user?.id}
+                currentUserRole={conversationUserRole}
+                otherUserName={conversation?.other_user?.name || otherUserName || ''}
+              />
+            );
           }}
         />
 

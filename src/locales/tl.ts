@@ -788,6 +788,10 @@ export const tl: Record<TranslationKey, string> = {
   hiring_stage4_guidance:
     'Tanggap ka na! Pumunta sa lugar ng trabaho sa napag-usapan ninyong petsa.',
   hiring_job_in_progress_btn: 'Ginagawa na ang trabaho',
+  system_msg_hired_worker:
+    '🎉 Tanggap ka na! Kasalukuyan nang ginagawa ang trabaho. Magsumikap, maging ligtas, at mag-usap dito.',
+  system_msg_hired_employer:
+    '🎉 Tanggap na si {workerName}! Kasalukuyan nang ginagawa ang trabaho. Magtulungan, maging ligtas, at mag-usap dito.',
 
   // Stage 5 & Receipt
   hiring_mark_complete_prompt: 'Tapos na ba ang trabahong {jobTitle}?',

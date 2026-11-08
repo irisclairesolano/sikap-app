@@ -13,10 +13,13 @@ import { Message } from '../../types';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface MessageBubbleProps {
   message: Message;
   isOwnMessage: boolean;
+  currentUserRole?: 'worker' | 'employer';
+  otherUserName?: string;
 }
 
 const formatTime = (dateString: string) => {
@@ -24,7 +27,13 @@ const formatTime = (dateString: string) => {
   return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 };
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({
+  message,
+  isOwnMessage,
+  currentUserRole,
+  otherUserName,
+}) => {
+  const { t } = useLanguage();
   const [modalVisible, setModalVisible] = useState(false);
 
   if (message.message_type === 'action_card') {
@@ -32,6 +41,25 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage }) 
   }
 
   if (message.message_type === 'system') {
+    const isHiredSystemMessage =
+      Boolean((message as any)?.card_data?.system_event === 'worker_hired') ||
+      Boolean(
+        message.body &&
+        (message.body.includes('You are hired! The job is officially in progress') ||
+          message.body.toLowerCase().includes('you are hired') ||
+          message.body.toLowerCase().includes('is officially hired')),
+      );
+
+    let systemText = message.body;
+    if (isHiredSystemMessage) {
+      if (currentUserRole === 'employer') {
+        const rawName = (message as any)?.card_data?.worker_name || otherUserName || 'Worker';
+        systemText = t('system_msg_hired_employer', { workerName: rawName });
+      } else {
+        systemText = t('system_msg_hired_worker');
+      }
+    }
+
     return (
       <View style={styles.systemBadgeContainer}>
         <View style={styles.systemBadge}>
@@ -41,7 +69,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage }) 
             color={colors.inkMuted}
             style={{ marginRight: 5 }}
           />
-          <Text style={styles.systemBadgeText}>{message.body}</Text>
+          <Text style={styles.systemBadgeText}>{systemText}</Text>
         </View>
       </View>
     );

@@ -763,6 +763,10 @@ export const en = {
   hiring_active_contract_eyebrow: 'Active Contract • Agreed price locked.',
   hiring_stage4_guidance: 'You are hired! Proceed to the job location on the agreed date.',
   hiring_job_in_progress_btn: 'Job is in progress',
+  system_msg_hired_worker:
+    '🎉 You are hired! The job is officially in progress. Work hard, stay safe, and communicate here.',
+  system_msg_hired_employer:
+    '🎉 {workerName} is officially hired! The job is in progress. Coordinate details, stay safe, and communicate here.',
 
   // Stage 5 & Receipt
   hiring_mark_complete_prompt: 'Are you ready to mark {jobTitle} as completed?',
