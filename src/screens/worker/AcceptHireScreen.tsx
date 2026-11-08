@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, BackHandler } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,6 +11,7 @@ import { useAcceptOffer, useRejectOffer } from '../../hooks/useApply';
 import { useAlert } from '../../contexts/AlertContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { triggerHaptic } from '../../utils/haptics';
+import { safeGoBack } from '../../utils/navigation';
 
 import { useMyApplications } from '../../hooks/useMyApplications';
 
@@ -75,6 +76,19 @@ const AcceptHireScreen: React.FC = () => {
     });
   };
 
+  const handleGoBack = React.useCallback(() => {
+    safeGoBack(navigation, 'Mine', { screen: 'Applications' });
+  }, [navigation]);
+
+  React.useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
+
   const handleReject = () => {
     rejectOfferMutation.mutate(id, {
       onSuccess: () => {
@@ -82,7 +96,7 @@ const AcceptHireScreen: React.FC = () => {
         showAlert(
           t('alert_decline_offer_title') || 'Offer Declined',
           `You have declined the offer for ${jobTitle}.`,
-          [{ text: 'OK', onPress: () => navigation.goBack() }],
+          [{ text: 'OK', onPress: handleGoBack }],
         );
       },
       onError: (err: any) => {
@@ -96,7 +110,7 @@ const AcceptHireScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>

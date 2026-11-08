@@ -8,6 +8,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -22,6 +23,7 @@ import { useConversations } from '../../hooks/useConversations';
 import { useMessages } from '../../hooks/useMessages';
 import { triggerHaptic } from '../../utils/haptics';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { safeGoBack } from '../../utils/navigation';
 
 type ConfirmHireScreenRouteProp = RouteProp<EmployerStackParamList, 'ConfirmHire'>;
 type ConfirmHireScreenNavigationProp = NativeStackNavigationProp<
@@ -42,6 +44,7 @@ const ConfirmHireScreen: React.FC = () => {
     municipality,
     reputationScore,
     conversationId,
+    jobId,
   } = route.params;
 
   const { data: conversations } = useConversations('employer');
@@ -107,8 +110,13 @@ const ConfirmHireScreen: React.FC = () => {
               },
             ],
             primaryAction: {
-              label: 'Back to applicants',
-              goBack: true,
+              label: t('view_pipeline_btn') || 'View pipeline',
+              navigateTo: jobId
+                ? {
+                    name: 'JobStatusManagement',
+                    params: { id: jobId, jobTitle },
+                  }
+                : { name: 'MyJobsList' },
             },
             secondaryAction: convId
               ? {
@@ -132,6 +140,23 @@ const ConfirmHireScreen: React.FC = () => {
     );
   };
 
+  const handleGoBack = React.useCallback(() => {
+    if (jobId) {
+      safeGoBack(navigation, 'JobStatusManagement', { id: jobId });
+    } else {
+      safeGoBack(navigation, 'MyJobsList');
+    }
+  }, [navigation, jobId]);
+
+  React.useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView
@@ -139,7 +164,7 @@ const ConfirmHireScreen: React.FC = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.headerPill}>

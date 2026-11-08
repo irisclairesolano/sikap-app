@@ -116,6 +116,7 @@ export const EmployerDashboardScreen: React.FC = () => {
           iconName = 'people-outline';
           borderColor = colors.urgentSoft;
           break;
+        case 'shortlisted':
         case 'employer_requested':
         case 'pending_negotiation':
           title = t('employer_dash_action_negotiate_title');

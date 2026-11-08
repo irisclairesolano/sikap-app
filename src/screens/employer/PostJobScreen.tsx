@@ -55,6 +55,7 @@ import {
   View,
   Modal,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/common/Button';
@@ -63,6 +64,7 @@ import LocationPicker from '../../components/common/LocationPicker';
 import { useAlert } from '../../contexts/AlertContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { TranslationKey } from '../../locales/en';
+import { safeGoBack } from '../../utils/navigation';
 import { useCreateJob, useUpdateJob, useEmployerJobs } from '../../hooks/useEmployerJobs';
 import { jobsApi } from '../../api/jobs';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
@@ -816,6 +818,39 @@ export const PostJobScreen: React.FC = () => {
     }
   };
 
+  const handleGoBack = React.useCallback(() => {
+    if (isPublishing) return;
+
+    const hasEdits =
+      title.trim().length > 0 || municipality.trim().length > 0 || pay.trim().length > 0;
+
+    if (hasEdits && !isEditMode) {
+      showAlert(
+        t('discard_job_title') || 'Leave Job Post?',
+        t('discard_job_msg') || 'Your progress is saved as a draft. Do you want to leave?',
+        [
+          { text: t('keep_editing') || 'Keep Editing', style: 'cancel' },
+          {
+            text: t('leave') || 'Leave',
+            style: 'destructive',
+            onPress: () => safeGoBack(navigation, 'MyJobsList'),
+          },
+        ],
+      );
+    } else {
+      safeGoBack(navigation, 'MyJobsList');
+    }
+  }, [isPublishing, title, municipality, pay, isEditMode, navigation, showAlert, t]);
+
+  React.useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -823,7 +858,7 @@ export const PostJobScreen: React.FC = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.iconButton}>
             <Ionicons name="close" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={styles.appBarBadge}>

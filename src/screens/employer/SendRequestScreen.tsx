@@ -12,7 +12,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { ScrollView, TouchableOpacity } from 'react-native';
+import { ScrollView, TouchableOpacity, BackHandler } from 'react-native';
+import { safeGoBack } from '../../utils/navigation';
 
 type SendRequestScreenRouteProp = RouteProp<EmployerStackParamList, 'SendRequest'>;
 type SendRequestScreenNavigationProp = NativeStackNavigationProp<
@@ -25,10 +26,27 @@ const SendRequestScreen: React.FC = () => {
   const { t } = useLanguage();
   const route = useRoute<SendRequestScreenRouteProp>();
   const navigation = useNavigation<SendRequestScreenNavigationProp>();
-  const { id, applicantName, jobTitle } = route.params;
+  const { id, applicantName, jobTitle, jobId } = route.params;
 
   const jobRequestMutation = useJobRequest();
   const { showAlert } = useAlert();
+
+  const handleGoBack = React.useCallback(() => {
+    if (jobId) {
+      safeGoBack(navigation, 'JobStatusManagement', { id: jobId });
+    } else {
+      safeGoBack(navigation, 'MyJobsList');
+    }
+  }, [navigation, jobId]);
+
+  React.useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
 
   const handleSendRequest = () => {
     jobRequestMutation.mutate(id, {
@@ -36,7 +54,7 @@ const SendRequestScreen: React.FC = () => {
         showAlert(
           t('hiring_shortlist_action'),
           t('hiring_shortlist_success_msg', { applicantName }),
-          [{ text: 'OK', onPress: () => navigation.goBack() }],
+          [{ text: 'OK', onPress: handleGoBack }],
         );
       },
       onError: (err: any) => {
@@ -56,7 +74,7 @@ const SendRequestScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>

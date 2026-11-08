@@ -94,9 +94,20 @@ const ApplicantDetailScreen: React.FC = () => {
     }, [refetch]),
   );
 
+  const status = appData?.status || route.params.status || 'pending';
+  const applicantName = appData?.worker?.name || route.params.applicantName || 'Worker';
+  const jobTitle = appData?.job?.title || route.params.jobTitle || 'Job';
+  const coverNote = appData?.cover_note || (route.params as any)?.coverNote;
+  const applicantId = appId;
+  const jobId = appData?.job?.id || (route.params as any)?.jobId || appData?.job_id;
+
   const handleGoBack = React.useCallback(() => {
-    safeGoBack(navigation, 'JobStatusManagement');
-  }, [navigation]);
+    if (jobId) {
+      safeGoBack(navigation, 'JobStatusManagement', { id: jobId, jobTitle });
+    } else {
+      safeGoBack(navigation, 'MyJobsList');
+    }
+  }, [navigation, jobId, jobTitle]);
 
   React.useEffect(() => {
     const onBackPress = () => {
@@ -106,12 +117,6 @@ const ApplicantDetailScreen: React.FC = () => {
     const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => sub.remove();
   }, [handleGoBack]);
-
-  const status = appData?.status || route.params.status || 'pending';
-  const applicantName = appData?.worker?.name || route.params.applicantName || 'Worker';
-  const jobTitle = appData?.job?.title || route.params.jobTitle || 'Job';
-  const coverNote = appData?.cover_note || (route.params as any)?.coverNote;
-  const applicantId = appId;
 
   const barangay = appData?.worker?.barangay || route.params.barangay;
   const municipality = appData?.worker?.municipality || route.params.municipality;
@@ -473,6 +478,7 @@ const ApplicantDetailScreen: React.FC = () => {
       municipality,
       reputationScore,
       conversationId: activeConversationId || undefined,
+      jobId,
     });
   };
 
@@ -481,6 +487,7 @@ const ApplicantDetailScreen: React.FC = () => {
       id: applicantId,
       applicantName: applicantName || 'Applicant',
       jobTitle: jobTitle || 'Job',
+      jobId,
     });
   };
 
@@ -489,6 +496,7 @@ const ApplicantDetailScreen: React.FC = () => {
       id: applicantId,
       applicantName: applicantName || 'Applicant',
       jobTitle: jobTitle || 'Job',
+      jobId,
     });
   };
 

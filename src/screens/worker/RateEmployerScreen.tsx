@@ -146,7 +146,9 @@ export const RateEmployerScreen: React.FC = () => {
             },
             secondaryAction: {
               label: t('rate_btn_done'),
-              goBack: true,
+              navigateTo: {
+                name: 'Mine',
+              },
             },
           });
         },

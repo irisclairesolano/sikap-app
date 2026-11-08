@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -12,6 +12,7 @@ import { JobCardSkeleton } from '../../components/common/SkeletonLoader';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { EmptyState } from '../../components/common/EmptyState';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { safeGoBack } from '../../utils/navigation';
 
 export const SavedJobsScreen: React.FC = () => {
   const { t } = useLanguage();
@@ -19,6 +20,19 @@ export const SavedJobsScreen: React.FC = () => {
   const { data, isLoading, isError, error, refetch, isFetching } = useSavedJobs();
   const { mutate: toggleSave } = useToggleSaveJob();
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+
+  const handleGoBack = useCallback(() => {
+    safeGoBack(navigation, 'Home');
+  }, [navigation]);
+
+  useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
 
   useFocusEffect(
     useCallback(() => {
@@ -49,7 +63,7 @@ export const SavedJobsScreen: React.FC = () => {
     <View style={styles.header}>
       {navigation.canGoBack() && (
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={handleGoBack}
           style={styles.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >

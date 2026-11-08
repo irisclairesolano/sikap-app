@@ -1365,6 +1365,15 @@ export const en = {
   privacy_shield_title: 'Protected by SIKAP Privacy Shield',
   privacy_shield_desc:
     'Character references and contact details are unlocked as you progress through the hiring pipeline.',
+
+  // Discard & Navigation
+  discard_job_title: 'Leave Job Post?',
+  discard_job_msg: 'Your progress is saved as a draft. Do you want to leave?',
+  discard_application_title: 'Discard Application?',
+  discard_application_msg: 'Your cover note will not be saved. Are you sure you want to leave?',
+  keep_editing: 'Keep Editing',
+  leave: 'Leave',
+  view_pipeline_btn: 'View Pipeline',
 };
 
 export type TranslationKey = keyof typeof en;

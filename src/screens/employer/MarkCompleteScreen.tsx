@@ -14,7 +14,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { ScrollView, TouchableOpacity } from 'react-native';
+import { ScrollView, TouchableOpacity, BackHandler } from 'react-native';
+import { safeGoBack } from '../../utils/navigation';
 
 type MarkCompleteScreenRouteProp = RouteProp<EmployerStackParamList, 'MarkComplete'>;
 type MarkCompleteScreenNavigationProp = NativeStackNavigationProp<
@@ -32,6 +33,19 @@ const MarkCompleteScreen: React.FC = () => {
   const markCompleteMutation = useMarkJobComplete();
   const { data: myJobsData } = useEmployerJobs();
   const { showAlert } = useAlert();
+
+  const handleGoBack = React.useCallback(() => {
+    safeGoBack(navigation, 'JobStatusManagement', { id });
+  }, [navigation, id]);
+
+  React.useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
 
   const handleMarkComplete = () => {
     markCompleteMutation.mutate(id, {
@@ -74,7 +88,7 @@ const MarkCompleteScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>
@@ -104,7 +118,7 @@ const MarkCompleteScreen: React.FC = () => {
           variant="outline"
           size="base"
           fullWidth
-          onPress={() => navigation.goBack()}
+          onPress={handleGoBack}
           disabled={markCompleteMutation.isPending}
         />
       </View>

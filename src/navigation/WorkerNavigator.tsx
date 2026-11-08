@@ -295,7 +295,7 @@ const WorkerNavigator: React.FC = () => {
 
   return (
     <Tab.Navigator
-      backBehavior="history"
+      backBehavior="initialRoute"
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;

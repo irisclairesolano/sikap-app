@@ -1401,4 +1401,14 @@ export const tl: Record<TranslationKey, string> = {
   privacy_shield_title: 'Protektado ng SIKAP Privacy Shield',
   privacy_shield_desc:
     'Maa-unlock ang mga character reference at detalye ng pakikipag-ugnayan habang umuusad ka sa proseso ng pagkuha.',
+
+  // Discard & Navigation
+  discard_job_title: 'Umalis sa Pag-post ng Trabaho?',
+  discard_job_msg: 'Nai-save ang iyong progreso bilang draft. Nais mo bang umalis?',
+  discard_application_title: 'I-discard ang Aplikasyon?',
+  discard_application_msg:
+    'Hindi mase-save ang iyong cover note. Sigurado ka bang nais mong umalis?',
+  keep_editing: 'Ipagpatuloy ang Pag-edit',
+  leave: 'Umalis',
+  view_pipeline_btn: 'Tingnan ang Pipeline',
 };

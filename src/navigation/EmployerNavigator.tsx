@@ -81,7 +81,7 @@ export type EmployerStackParamList = {
     coverNote?: string | null;
     viewProfile?: boolean;
   };
-  SendRequest: { id: number; applicantName: string; jobTitle: string };
+  SendRequest: { id: number; applicantName: string; jobTitle: string; jobId?: number };
   ConfirmHire: {
     applicantId: number;
     applicantName: string;
@@ -90,8 +90,9 @@ export type EmployerStackParamList = {
     municipality?: string;
     reputationScore?: number;
     conversationId?: number;
+    jobId?: number;
   };
-  CancelHire: { id: number; applicantName: string; jobTitle: string };
+  CancelHire: { id: number; applicantName: string; jobTitle: string; jobId?: number };
   MarkComplete: { id: number; jobTitle: string; workerName?: string };
   RateWorkerList: { jobId: number; jobTitle: string };
   RateWorker: { id: number; workerName: string; jobTitle: string; jobId?: number };
@@ -277,7 +278,7 @@ const EmployerNavigator: React.FC = () => {
 
   return (
     <Tab.Navigator
-      backBehavior="history"
+      backBehavior="initialRoute"
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;

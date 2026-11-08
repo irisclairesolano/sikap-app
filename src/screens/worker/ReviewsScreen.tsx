@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -16,6 +17,7 @@ import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts, shadows } from '../../theme';
 import { useReviews } from '../../hooks/useReviews';
 import { useAuth } from '../../hooks/useAuth';
+import { safeGoBack } from '../../utils/navigation';
 
 type ReviewsScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'Reviews'>;
 
@@ -24,6 +26,19 @@ export const ReviewsScreen: React.FC = () => {
   const { user } = useAuth();
   const currentRole = (user?.role === 'employer' ? 'employer' : 'worker') as 'worker' | 'employer';
   const { data, isLoading, refetch, isFetching } = useReviews(undefined, currentRole);
+
+  const handleGoBack = useCallback(() => {
+    safeGoBack(navigation, currentRole === 'employer' ? 'EmployerDashboard' : 'ProfileMain');
+  }, [navigation, currentRole]);
+
+  React.useEffect(() => {
+    const onBackPress = () => {
+      handleGoBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBack]);
 
   useFocusEffect(
     useCallback(() => {
@@ -74,7 +89,7 @@ export const ReviewsScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>

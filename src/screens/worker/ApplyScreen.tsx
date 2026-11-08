@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  BackHandler,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
@@ -27,6 +28,7 @@ import { getApplicationStageInfo } from '../../components/applications/Applicati
 import { messagesApi } from '../../api/messages';
 import { triggerHaptic } from '../../utils/haptics';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { safeGoBack } from '../../utils/navigation';
 
 type ApplyRouteProp = RouteProp<WorkerStackParamList, 'Apply'>;
 
@@ -76,6 +78,58 @@ export const ApplyScreen: React.FC = () => {
   const [coverNote, setCoverNote] = useState('');
   const maxLength = 1000;
 
+  const isAlreadySubmitted =
+    job?.is_applied ||
+    job?.has_applied ||
+    !!job?.application_id ||
+    (isError &&
+      (error?.message?.toLowerCase().includes('already applied') ||
+        (error instanceof ApiClientError &&
+          JSON.stringify(error.errors || {})
+            .toLowerCase()
+            .includes('already applied'))));
+
+  const handleBackToJobs = React.useCallback(() => {
+    safeGoBack(navigation, 'Mine', { screen: 'Applications' });
+  }, [navigation]);
+
+  const handleFormBack = React.useCallback(() => {
+    if (coverNote.trim().length > 0) {
+      showAlert(
+        t('discard_application_title') || 'Discard Application?',
+        t('discard_application_msg') ||
+          'Your cover note will not be saved. Are you sure you want to leave?',
+        [
+          { text: t('keep_editing') || 'Keep Editing', style: 'cancel' },
+          {
+            text: t('leave') || 'Leave',
+            style: 'destructive',
+            onPress: () => safeGoBack(navigation, 'JobDetails', { id }),
+          },
+        ],
+      );
+    } else {
+      safeGoBack(navigation, 'JobDetails', { id });
+    }
+  }, [coverNote, id, navigation, showAlert, t]);
+
+  const handleGoBackGeneral = React.useCallback(() => {
+    if (isSuccess || isAlreadySubmitted) {
+      handleBackToJobs();
+    } else {
+      handleFormBack();
+    }
+  }, [isSuccess, isAlreadySubmitted, handleBackToJobs, handleFormBack]);
+
+  React.useEffect(() => {
+    const onBackPress = () => {
+      handleGoBackGeneral();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [handleGoBackGeneral]);
+
   const handleSubmit = () => {
     if (isFilled) return;
     apply(
@@ -86,18 +140,6 @@ export const ApplyScreen: React.FC = () => {
         },
       },
     );
-  };
-
-  const handleBackToJobs = () => {
-    triggerHaptic('light');
-    const state = navigation.getState?.();
-    if (state && typeof state.index === 'number' && state.index > 0 && navigation.popToTop) {
-      navigation.popToTop();
-    } else if (navigation.canGoBack()) {
-      navigation.goBack();
-    } else {
-      navigation.navigate('Home');
-    }
   };
 
   const handleWithdraw = () => {
@@ -135,7 +177,7 @@ export const ApplyScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
+          <TouchableOpacity onPress={handleGoBackGeneral} style={styles.iconButton}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
         </View>
@@ -584,17 +626,6 @@ export const ApplyScreen: React.FC = () => {
   }
 
   // DEDICATED ALREADY SUBMITTED SCREEN VIEW
-  const isAlreadySubmitted =
-    job.is_applied ||
-    job.has_applied ||
-    !!job.application_id ||
-    (isError &&
-      (error?.message?.toLowerCase().includes('already applied') ||
-        (error instanceof ApiClientError &&
-          JSON.stringify(error.errors || {})
-            .toLowerCase()
-            .includes('already applied'))));
-
   if (isAlreadySubmitted) {
     const handleGoToApplicationStatus = () => {
       if (job.application_id) {
@@ -686,7 +717,7 @@ export const ApplyScreen: React.FC = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
+          <TouchableOpacity onPress={handleFormBack} style={styles.iconButton}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <Text style={styles.appBarTitle}>{t('apply_now')}</Text>
