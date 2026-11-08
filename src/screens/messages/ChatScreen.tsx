@@ -46,6 +46,7 @@ import {
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   ActivityIndicator,
   Modal,
@@ -279,11 +280,34 @@ const ChatScreen: React.FC = () => {
   const [showQuickReplies, setShowQuickReplies] = useState(true);
   const [showScrollBottomFab, setShowScrollBottomFab] = useState(false);
   const [newMessagesBelow, setNewMessagesBelow] = useState(0);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const isInitialMountRef = useRef(true);
   const prevMessagesLengthRef = useRef(0);
   const lastMessageIdRef = useRef<number | null>(null);
   const isNearBottomRef = useRef(true);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, () => {
+      setIsKeyboardVisible(true);
+      if (isNearBottomRef.current) {
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 80);
+      }
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const [typingUser, setTypingUser] = useState<string | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -846,7 +870,7 @@ const ChatScreen: React.FC = () => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
@@ -1111,7 +1135,11 @@ const ChatScreen: React.FC = () => {
           <View
             style={[
               styles.fabWrapper,
-              showQuickReplies && status === 'open' && !isBlocked && { bottom: 148 },
+              isKeyboardVisible
+                ? { bottom: 64 }
+                : showQuickReplies && status === 'open' && !isBlocked
+                  ? { bottom: 148 }
+                  : { bottom: Math.max(insets.bottom + 60, 80) },
             ]}
             pointerEvents="box-none"
           >
@@ -1185,17 +1213,23 @@ const ChatScreen: React.FC = () => {
 
         {/* Input Bar or Disabled Account / Slot Locked Notice */}
         {isOtherUserDeleted ? (
-          <View style={styles.deletedInputContainer}>
+          <View
+            style={[styles.deletedInputContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}
+          >
             <Ionicons name="lock-closed-outline" size={16} color={colors.inkMuted} />
             <Text style={styles.deletedInputText}>{t('messaging_disabled_deleted_account')}</Text>
           </View>
         ) : isSlotLocked ? (
-          <View style={styles.deletedInputContainer}>
+          <View
+            style={[styles.deletedInputContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}
+          >
             <Ionicons name="lock-closed-outline" size={16} color={colors.inkMuted} />
             <Text style={styles.deletedInputText}>{t('slots_full_messaging_disabled')}</Text>
           </View>
         ) : isLocked || isUnlockRequested ? (
-          <View style={styles.lockedBottomContainer}>
+          <View
+            style={[styles.lockedBottomContainer, { paddingBottom: Math.max(insets.bottom, 12) }]}
+          >
             <View style={styles.lockedBottomContent}>
               <Ionicons
                 name={isUnlockRequested ? 'time-outline' : 'lock-closed-outline'}
@@ -1270,7 +1304,18 @@ const ChatScreen: React.FC = () => {
                 />
               )}
               <TypingIndicator visible={Boolean(typingUser)} userName={typingUser || undefined} />
-              <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+              {inputError ? (
+                <View style={styles.inlineErrorBox}>
+                  <Ionicons name="alert-circle" size={15} color={colors.error} />
+                  <Text style={styles.inlineErrorText}>{inputError}</Text>
+                </View>
+              ) : null}
+              <View
+                style={[
+                  styles.inputContainer,
+                  { paddingBottom: isKeyboardVisible ? 8 : Math.max(insets.bottom, 8) },
+                ]}
+              >
                 <TouchableOpacity
                   onPress={handlePickImage}
                   style={styles.iconBtn}
@@ -1340,12 +1385,6 @@ const ChatScreen: React.FC = () => {
                   />
                 </TouchableOpacity>
               </View>
-              {inputError ? (
-                <View style={styles.inlineErrorBox}>
-                  <Ionicons name="alert-circle" size={15} color={colors.error} />
-                  <Text style={styles.inlineErrorText}>{inputError}</Text>
-                </View>
-              ) : null}
             </>
           )
         )}
@@ -1563,25 +1602,32 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingHorizontal: 8,
+    paddingTop: 8,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(226, 232, 240, 0.70)',
+    borderTopColor: 'rgba(226, 232, 240, 0.85)',
   },
-  iconBtn: { padding: 8 },
+  iconBtn: {
+    padding: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   input: {
     flex: 1,
-    backgroundColor: 'rgba(248, 250, 252, 0.85)',
+    backgroundColor: '#F8FAFC',
     borderRadius: 20,
     paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingTop: Platform.OS === 'ios' ? 9 : 8,
+    paddingBottom: Platform.OS === 'ios' ? 9 : 8,
+    minHeight: 40,
     maxHeight: 100,
     borderWidth: 1,
     borderColor: 'rgba(226, 232, 240, 0.85)',
     fontFamily: fonts.body,
     fontSize: 14,
     color: colors.ink,
+    marginHorizontal: 4,
   },
   firstMsgNotice: {
     flexDirection: 'row',

@@ -49,6 +49,12 @@ export const initDrafts = async (): Promise<void> => {
   return initPromise;
 };
 
+export const _resetDraftsForTesting = () => {
+  draftsCache.clear();
+  isInitialized = false;
+  initPromise = null;
+};
+
 // Start background hydration immediately
 initDrafts().catch(() => {});
 

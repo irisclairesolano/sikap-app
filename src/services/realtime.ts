@@ -502,9 +502,13 @@ export function useRealtimeUserEvents(userId?: number) {
         queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
       }
 
-      // 4. If incoming from another user and not currently active in that chat, trigger haptic and toast
+      // 4. If incoming from another user and not currently active in that chat, trigger haptic and sound
       if (data.sender_id && data.sender_id !== userId && !isActiveChat) {
         triggerHaptic('medium');
+        try {
+          const { playMessageReceivedSound } = require('../utils/sound');
+          playMessageReceivedSound();
+        } catch (_) {}
         try {
           const { triggerSystemNotification } = require('../hooks/usePushNotifications');
           const {

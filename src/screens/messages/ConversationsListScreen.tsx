@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useFocusEffect, useRoute } from '@react-navigation/native';
 import {
   View,
@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
+import { getDraft, subscribeToDrafts } from '../../utils/chatDrafts';
 
 interface Props {
   navigation: any;
@@ -49,10 +50,19 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
   const fallbackRole = isEmployerStack ? 'employer' : 'worker';
   const currentRole = explicitRole || (user?.role as 'worker' | 'employer') || fallbackRole;
   const { data, isLoading, isError, refetch } = useConversations(currentRole);
+  const [, setDraftTick] = useState(0);
+
+  useEffect(() => {
+    const unsub = subscribeToDrafts(() => {
+      setDraftTick((t) => t + 1);
+    });
+    return unsub;
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
       refetch();
+      setDraftTick((t) => t + 1);
     }, [refetch]),
   );
   const [searchQuery, setSearchQuery] = useState('');
@@ -249,17 +259,28 @@ const ConversationsListScreen: React.FC<Props> = ({ navigation }) => {
                     )}
                   </View>
                   <View style={styles.previewRow}>
-                    {isLocked && (
-                      <Ionicons
-                        name="lock-closed"
-                        size={12}
-                        color={colors.inkMuted}
-                        style={{ marginRight: 4 }}
-                      />
+                    {getDraft(item.id) ? (
+                      <>
+                        <Text style={styles.draftPrefix}>{t('draft')}: </Text>
+                        <Text style={styles.draftPreview} numberOfLines={1}>
+                          {getDraft(item.id)}
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        {isLocked && (
+                          <Ionicons
+                            name="lock-closed"
+                            size={12}
+                            color={colors.inkMuted}
+                            style={{ marginRight: 4 }}
+                          />
+                        )}
+                        <Text style={styles.preview} numberOfLines={1}>
+                          {item.last_message_preview || t('no_messages_yet')}
+                        </Text>
+                      </>
                     )}
-                    <Text style={styles.preview} numberOfLines={1}>
-                      {item.last_message_preview || t('no_messages_yet')}
-                    </Text>
                   </View>
                 </View>
                 {item.unread_count > 0 && (
@@ -511,6 +532,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.inkSoft,
     flex: 1,
+  },
+  draftPrefix: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: '#DC2626',
+  },
+  draftPreview: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkMuted,
+    flex: 1,
+    fontStyle: 'italic',
   },
   unreadBadge: {
     backgroundColor: '#DC2626',
