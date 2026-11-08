@@ -149,6 +149,8 @@ export const useSubmitReview = () => {
       queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
       queryClient.invalidateQueries({ queryKey: ['application'] });
       queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['conversation'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });

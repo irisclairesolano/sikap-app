@@ -967,6 +967,8 @@ export const en = {
   // Digital Job Receipt (CompletedJobOverview)
   receipt_official_header: 'Job Receipt',
   receipt_official_subtitle: 'Digital Job Completion Record • Province of Sorsogon',
+  receipt_official_subtitle_line1: 'Digital Job Completion Record',
+  receipt_official_subtitle_line2: 'Province of Sorsogon',
   receipt_ref_label: 'REF #',
   receipt_status_completed: 'COMPLETED',
   receipt_total_compensation: 'TOTAL COMPENSATION',
@@ -977,6 +979,7 @@ export const en = {
   receipt_ledger_header: 'JOB DETAILS & SUMMARY',
   receipt_ledger_location: 'Location',
   receipt_ledger_scheduled_date: 'Scheduled Date',
+  receipt_ledger_completed_at: 'Completion Timestamp',
   receipt_ledger_category: 'Trade Category',
   receipt_ledger_work_scope: 'Work Scope / Notes',
   receipt_attached_photos: 'ATTACHED WORK PHOTOS ({count})',

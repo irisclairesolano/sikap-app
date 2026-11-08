@@ -43,6 +43,7 @@
       "expo-status-bar",
       "expo-asset",
       "expo-sharing",
+      "expo-media-library",
       "expo-notifications"
     ],
     "extra": {

@@ -67,6 +67,13 @@ export const RateEmployerScreen: React.FC = () => {
   const route = useRoute<RateEmployerScreenRouteProp>();
   const { id, employerName, jobTitle } = route.params;
 
+  const { showAlert } = useAlert();
+  const { data: appData } = useApplication(id);
+  const application = ((appData as any)?.data ?? appData) as any;
+
+  const effectiveEmployerName = employerName || application?.job?.employer?.name || 'Employer';
+  const effectiveJobTitle = jobTitle || application?.job?.title || 'Job';
+
   const handleGoBack = useCallback(() => {
     safeGoBack(navigation, 'ApplicationDetail', { applicationId: id });
   }, [navigation, id]);
@@ -79,10 +86,6 @@ export const RateEmployerScreen: React.FC = () => {
     const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => sub.remove();
   }, [handleGoBack]);
-
-  const { showAlert } = useAlert();
-  const { data: appData } = useApplication(id);
-  const application = ((appData as any)?.data ?? appData) as any;
 
   React.useEffect(() => {
     if (application?.has_reviewed) {
@@ -133,15 +136,19 @@ export const RateEmployerScreen: React.FC = () => {
             title: t('rate_review_sent_title'),
             message: msg,
             detail: [
-              { label: t('rate_label_employer'), value: employerName },
-              { label: t('rate_label_job'), value: jobTitle },
+              { label: t('rate_label_employer'), value: effectiveEmployerName },
+              { label: t('rate_label_job'), value: effectiveJobTitle },
               { label: t('rate_label_your_rating'), value: `${avgRating.toFixed(1)} / 5` },
             ],
             primaryAction: {
               label: t('rate_btn_view_job_summary'),
               navigateTo: {
                 name: 'ApplicationDetail',
-                params: { applicationId: id, jobTitle, employerName },
+                params: {
+                  applicationId: id,
+                  jobTitle: effectiveJobTitle,
+                  employerName: effectiveEmployerName,
+                },
               },
             },
             secondaryAction: {
@@ -181,12 +188,12 @@ export const RateEmployerScreen: React.FC = () => {
         <View style={styles.employerInfoCard}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>
-              {(employerName || 'Employer').charAt(0).toUpperCase()}
+              {(effectiveEmployerName || 'Employer').charAt(0).toUpperCase()}
             </Text>
           </View>
           <View style={styles.employerDetails}>
-            <Text style={styles.employerName}>{employerName}</Text>
-            <Text style={styles.jobMeta}>{jobTitle}</Text>
+            <Text style={styles.employerName}>{effectiveEmployerName}</Text>
+            <Text style={styles.jobMeta}>{effectiveJobTitle}</Text>
           </View>
         </View>
 

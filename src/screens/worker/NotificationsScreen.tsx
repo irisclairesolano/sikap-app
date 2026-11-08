@@ -191,6 +191,30 @@ export const NotificationsScreen: React.FC = () => {
             return;
           }
 
+          const rawTitle = notif.data?.title || parsedData?.title || '';
+          const isRateEmployerNotif =
+            notifType === 'rate_employer_reminder' ||
+            (typeof rawTitle === 'string' &&
+              rawTitle.toLowerCase().includes('rate your employer')) ||
+            (typeof title === 'string' &&
+              (title.toLowerCase().includes('rate your employer') ||
+                title.toLowerCase().includes('i-rate ang iyong employer') ||
+                title.toLowerCase().includes('i-rate ang employer')));
+
+          if (isRateEmployerNotif && appId && !isNaN(Number(appId))) {
+            navigation.navigate('RateEmployer', {
+              id: Number(appId),
+              employerName:
+                parsedData?.employer_name ||
+                parsedData?.employerName ||
+                notif.data?.employer_name ||
+                '',
+              jobTitle:
+                parsedData?.job_title || parsedData?.jobTitle || notif.data?.job_title || '',
+            });
+            return;
+          }
+
           // Actionable application notifications (offers, shortlisted, hired)
           if (appId && !isNaN(Number(appId))) {
             navigation.navigate('ApplicationDetail', { applicationId: Number(appId) });

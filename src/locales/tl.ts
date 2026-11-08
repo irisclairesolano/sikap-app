@@ -996,6 +996,8 @@ export const tl: Record<TranslationKey, string> = {
   // Digital Job Receipt (CompletedJobOverview)
   receipt_official_header: 'Resibo ng Trabaho',
   receipt_official_subtitle: 'Digital na Talaan ng Natapos na Trabaho • Lalawigan ng Sorsogon',
+  receipt_official_subtitle_line1: 'Digital na Talaan ng Natapos na Trabaho',
+  receipt_official_subtitle_line2: 'Lalawigan ng Sorsogon',
   receipt_ref_label: 'Reference No.',
   receipt_status_completed: 'TAPOS NA',
   receipt_total_compensation: 'KABUUANG BAYAD',
@@ -1006,6 +1008,7 @@ export const tl: Record<TranslationKey, string> = {
   receipt_ledger_header: 'MGA DETALYE NG TRABAHO',
   receipt_ledger_location: 'Lugar ng Trabaho',
   receipt_ledger_scheduled_date: 'Petsa ng Trabaho',
+  receipt_ledger_completed_at: 'Petsa at Oras ng Pagtatapos',
   receipt_ledger_category: 'Uri ng Trabaho',
   receipt_ledger_work_scope: 'Mga Gawain at Iba Pang Detalye',
   receipt_attached_photos: 'MGA LARAWAN NG NATAPOS NA TRABAHO ({count})',

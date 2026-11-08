@@ -29,6 +29,8 @@ interface ActionCardProps {
   conversationId: number;
   conversationStatus?: 'open' | 'locked' | 'unlock_requested';
   applicationStatus?: string;
+  applicationId?: number;
+  hasReviewed?: boolean;
   otherUserName?: string;
   jobTitle?: string;
   jobId?: number;
@@ -51,6 +53,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
   conversationId,
   conversationStatus = 'open',
   applicationStatus,
+  applicationId,
+  hasReviewed = false,
   otherUserName,
   jobTitle,
   jobId,
@@ -77,9 +81,26 @@ const ActionCard: React.FC<ActionCardProps> = ({
   const hasEmployerSentMessage = hasRealMessageFromEmployer ?? true;
   const [isGuideMinimized, setIsGuideMinimized] = useState(hasRealMessageFromEmployer === true);
 
+  const { card_type, card_data, card_resolved } = message;
+
+  const targetAppId = Number(card_data?.application_id || card_data?.id || applicationId || 0);
+  const cachedApp: any =
+    targetAppId > 0 && queryClient?.getQueryData
+      ? queryClient.getQueryData(['application', targetAppId])
+      : null;
+  const applicationObj = cachedApp?.data ?? cachedApp;
+
+  const userHasReviewed = Boolean(
+    hasReviewed ||
+    applicationObj?.has_reviewed ||
+    applicationObj?.user_review ||
+    (applicationObj as any)?.reviewed ||
+    card_data?.has_reviewed ||
+    card_data?.user_has_reviewed,
+  );
+
   if (message.message_type !== 'action_card' || !message.card_type) return null;
 
-  const { card_type, card_data, card_resolved } = message;
   const effectivePrice =
     card_data?.price ??
     card_data?.final_agreed_price ??
@@ -899,17 +920,19 @@ const ActionCard: React.FC<ActionCardProps> = ({
           'Completed',
           colors.success,
           '#DCFCE7',
-          {
-            label: t('rate_employer'),
-            iconName: 'star' as const,
-            onPress: () => {
-              navigation.navigate('RateEmployer', {
-                id: Number(card_data?.application_id || card_data?.id),
-                employerName: String(card_data?.employer_name || otherUserName || 'Employer'),
-                jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
-              });
-            },
-          },
+          userHasReviewed
+            ? undefined
+            : {
+                label: t('rate_employer'),
+                iconName: 'star' as const,
+                onPress: () => {
+                  navigation.navigate('RateEmployer', {
+                    id: Number(card_data?.application_id || card_data?.id || targetAppId),
+                    employerName: String(card_data?.employer_name || otherUserName || 'Employer'),
+                    jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
+                  });
+                },
+              },
         );
       }
 
@@ -920,18 +943,20 @@ const ActionCard: React.FC<ActionCardProps> = ({
         'Completed',
         colors.success,
         '#DCFCE7',
-        {
-          label: t('rate_worker'),
-          iconName: 'star',
-          onPress: () => {
-            navigation.navigate('RateWorker', {
-              id: Number(card_data?.application_id || card_data?.id),
-              workerName: String(card_data?.worker_name || otherUserName || 'Worker'),
-              jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
-              jobId: Number(card_data?.job_id || jobId),
-            });
-          },
-        },
+        userHasReviewed
+          ? undefined
+          : {
+              label: t('rate_worker'),
+              iconName: 'star',
+              onPress: () => {
+                navigation.navigate('RateWorker', {
+                  id: Number(card_data?.application_id || card_data?.id || targetAppId),
+                  workerName: String(card_data?.worker_name || otherUserName || 'Worker'),
+                  jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
+                  jobId: Number(card_data?.job_id || jobId),
+                });
+              },
+            },
       );
     }
 
@@ -1004,17 +1029,19 @@ const ActionCard: React.FC<ActionCardProps> = ({
           t('card_status_completed'),
           colors.success,
           '#DCFCE7',
-          {
-            label: t('rate_employer'),
-            iconName: 'star' as const,
-            onPress: () => {
-              navigation.navigate('RateEmployer', {
-                id: Number(card_data?.application_id || card_data?.id),
-                employerName: String(card_data?.employer_name || otherUserName || 'Employer'),
-                jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
-              });
-            },
-          },
+          userHasReviewed
+            ? undefined
+            : {
+                label: t('rate_employer'),
+                iconName: 'star' as const,
+                onPress: () => {
+                  navigation.navigate('RateEmployer', {
+                    id: Number(card_data?.application_id || card_data?.id || targetAppId),
+                    employerName: String(card_data?.employer_name || otherUserName || 'Employer'),
+                    jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
+                  });
+                },
+              },
         );
       }
 
@@ -1026,18 +1053,20 @@ const ActionCard: React.FC<ActionCardProps> = ({
         t('card_status_completed'),
         colors.success,
         '#DCFCE7',
-        {
-          label: t('rate_worker'),
-          iconName: 'star' as const,
-          onPress: () => {
-            navigation.navigate('RateWorker', {
-              id: Number(card_data?.application_id || card_data?.id),
-              workerName: String(card_data?.worker_name || otherUserName || 'Worker'),
-              jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
-              jobId: Number(card_data?.job_id || jobId),
-            });
-          },
-        },
+        userHasReviewed
+          ? undefined
+          : {
+              label: t('rate_worker'),
+              iconName: 'star' as const,
+              onPress: () => {
+                navigation.navigate('RateWorker', {
+                  id: Number(card_data?.application_id || card_data?.id || targetAppId),
+                  workerName: String(card_data?.worker_name || otherUserName || 'Worker'),
+                  jobTitle: String(card_data?.job_title || jobTitle || 'Job'),
+                  jobId: Number(card_data?.job_id || jobId),
+                });
+              },
+            },
       );
     }
 
@@ -1464,12 +1493,14 @@ const styles = StyleSheet.create({
   },
   etchedContent: {
     flex: 1,
+    minWidth: 0,
   },
   etchedTitle: {
     fontFamily: fonts.bodyBold,
     fontSize: 14,
     color: colors.ink,
     lineHeight: 19,
+    flexShrink: 1,
   },
   etchedSubtitle: {
     fontFamily: fonts.body,
@@ -1477,6 +1508,7 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
     lineHeight: 17,
     marginTop: 3,
+    flexShrink: 1,
   },
   etchedBadgeRow: {
     flexDirection: 'row',

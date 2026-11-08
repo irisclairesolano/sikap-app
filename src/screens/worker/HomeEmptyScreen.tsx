@@ -14,6 +14,7 @@ import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
 import { useTriggerInitialTutorial } from '../../hooks/useTriggerInitialTutorial';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNotifications } from '../../hooks/useNotifications';
+import { setItemAsync } from '../../utils/storage';
 
 export const HomeEmptyScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
@@ -64,6 +65,19 @@ export const HomeEmptyScreen: React.FC = () => {
   if (hasRefs) progressCount++;
 
   const progressPercent = Math.round((progressCount / 4) * 100);
+
+  React.useEffect(() => {
+    if (user?.id) {
+      setItemAsync(`@sikap:profile_onboarding_seen_${user.id}`, 'true').catch(() => {});
+    }
+  }, [user?.id]);
+
+  const handleSkipToJobs = async () => {
+    if (user?.id) {
+      await setItemAsync(`@sikap:profile_onboarding_seen_${user.id}`, 'true').catch(() => {});
+    }
+    navigation.replace('Home');
+  };
 
   React.useEffect(() => {
     if (isFocused && isComplete) {
@@ -251,11 +265,8 @@ export const HomeEmptyScreen: React.FC = () => {
           </View>
         </TutorialTarget>
 
-        {/* Temporary jump to JobFeed */}
-        <TouchableOpacity
-          style={{ marginTop: 24, alignSelf: 'center' }}
-          onPress={() => navigation.replace('Home')}
-        >
+        {/* Jump to JobFeed */}
+        <TouchableOpacity style={{ marginTop: 24, alignSelf: 'center' }} onPress={handleSkipToJobs}>
           <Text style={{ fontFamily: fonts.bodyBold, color: colors.primary }}>
             {t('home_empty_skip_to_jobs')}
           </Text>

@@ -14,7 +14,12 @@ jest.mock('@react-navigation/native', () => ({
 jest.mock('@tanstack/react-query', () => ({
   useQueryClient: () => ({
     invalidateQueries: jest.fn(),
+    getQueryData: jest.fn(),
   }),
+  useQuery: jest.fn(() => ({
+    data: null,
+    isLoading: false,
+  })),
   useMutation: jest.fn(() => ({
     mutate: jest.fn(),
     isPending: false,
@@ -229,6 +234,58 @@ describe('ActionCard Job Request Component', () => {
     );
     expect(workerRender.getByText('Job Marked Complete')).toBeTruthy();
     expect(workerRender.getByText('Rate Employer')).toBeTruthy();
+  });
+
+  it('does not render Rate CTA buttons when user has already reviewed', async () => {
+    const completedFlagOfflineMessage: Message = {
+      id: 103,
+      conversation_id: 5,
+      sender_id: null,
+      message_type: 'action_card',
+      card_type: 'flag_offline',
+      card_data: {
+        application_id: 42,
+        job_id: 10,
+        job_title: 'House Cleaning',
+        worker_name: 'Juan Dela Cruz',
+        employer_name: 'Cristina Solano',
+        is_flagged: true,
+      },
+      card_resolved: true,
+      created_at: '2026-09-24T00:00:00.000Z',
+    };
+
+    // Employer view with hasReviewed=true
+    const employerRender = await render(
+      <ActionCard
+        message={completedFlagOfflineMessage}
+        currentUserId={1}
+        currentUserRole="employer"
+        conversationId={5}
+        conversationStatus="locked"
+        applicationStatus="completed"
+        hasReviewed={true}
+        onActionComplete={jest.fn()}
+      />,
+    );
+    expect(employerRender.getByText('Job Marked Complete')).toBeTruthy();
+    expect(employerRender.queryByText('Rate Worker')).toBeNull();
+
+    // Worker view with hasReviewed=true
+    const workerRender = await render(
+      <ActionCard
+        message={completedFlagOfflineMessage}
+        currentUserId={2}
+        currentUserRole="worker"
+        conversationId={5}
+        conversationStatus="locked"
+        applicationStatus="completed"
+        hasReviewed={true}
+        onActionComplete={jest.fn()}
+      />,
+    );
+    expect(workerRender.getByText('Job Marked Complete')).toBeTruthy();
+    expect(workerRender.queryByText('Rate Employer')).toBeNull();
   });
 
   it('renders Work flagged as done by [worker]. Confirm for employer when worker flags complete, without Rate Worker button', async () => {

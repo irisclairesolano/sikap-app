@@ -10,6 +10,7 @@ import { profileApi } from '../api/profile';
 import { useNotifications } from '../hooks/useNotifications';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getItemAsync, getItemSync, setItemAsync } from '../utils/storage';
 
 import { JobFeedScreen } from '../screens/worker/JobFeedScreen';
 import { JobDetailsScreen } from '../screens/worker/JobDetailsScreen';
@@ -169,8 +170,39 @@ const FindStack: React.FC = () => {
     (workerProfile?.references?.length || 0) > 0 ||
     ((workerProfile as any)?.character_references?.length || 0) > 0;
   const isProfileComplete = hasSkills && hasHistory && hasRefs;
+  const hasAnyProfileContent = hasSkills || hasHistory || hasRefs;
 
-  if (isLoading && !profile && !user) {
+  const onboardingKey = user?.id ? `@sikap:profile_onboarding_seen_${user.id}` : null;
+  const [hasSeenOnboarding, setHasSeenOnboarding] = React.useState<boolean | null>(() => {
+    if (!onboardingKey) return false;
+    const syncVal = getItemSync(onboardingKey);
+    return syncVal ? syncVal === 'true' : null;
+  });
+
+  React.useEffect(() => {
+    if (!onboardingKey) return;
+    getItemAsync(onboardingKey)
+      .then((val) => {
+        setHasSeenOnboarding(val === 'true');
+      })
+      .catch(() => {
+        setHasSeenOnboarding(false);
+      });
+  }, [onboardingKey]);
+
+  React.useEffect(() => {
+    if (onboardingKey && (hasAnyProfileContent || isProfileComplete)) {
+      setItemAsync(onboardingKey, 'true').catch(() => {});
+    }
+  }, [onboardingKey, hasAnyProfileContent, isProfileComplete]);
+
+  const shouldShowOnboarding =
+    !isProfileComplete && !hasAnyProfileContent && hasSeenOnboarding === false;
+
+  if (
+    (isLoading && !profile && !user) ||
+    (!isProfileComplete && !hasAnyProfileContent && hasSeenOnboarding === null)
+  ) {
     return (
       <View
         style={{
@@ -199,17 +231,17 @@ const FindStack: React.FC = () => {
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName={isProfileComplete ? 'Home' : 'HomeEmpty'}
+      initialRouteName={shouldShowOnboarding ? 'HomeEmpty' : 'Home'}
     >
-      {isProfileComplete ? (
+      {shouldShowOnboarding ? (
         <>
-          <Stack.Screen name="Home" component={JobFeedScreen} />
           <Stack.Screen name="HomeEmpty" component={HomeEmptyScreen} />
+          <Stack.Screen name="Home" component={JobFeedScreen} />
         </>
       ) : (
         <>
-          <Stack.Screen name="HomeEmpty" component={HomeEmptyScreen} />
           <Stack.Screen name="Home" component={JobFeedScreen} />
+          <Stack.Screen name="HomeEmpty" component={HomeEmptyScreen} />
         </>
       )}
       <Stack.Screen name="AddSkills" component={AddSkillsScreen} />

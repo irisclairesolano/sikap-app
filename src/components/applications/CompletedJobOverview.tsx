@@ -41,6 +41,24 @@ const formatDate = (dateString?: string | null): string => {
   }
 };
 
+const formatDateTime = (dateString?: string | null): string => {
+  if (!dateString) return '';
+  try {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  } catch {
+    return '';
+  }
+};
+
 const formatScore = (score?: number | null): string => {
   if (score === undefined || score === null) return 'N/A';
   const num = Number(score);
@@ -92,6 +110,8 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
     job?.completed_at || application?.completed_at || job?.updated_at || application?.updated_at;
   const formattedCompletedDate =
     formatDate(completedDateStr) || formatDate(new Date().toISOString());
+  const formattedCompletedDateTime =
+    formatDateTime(completedDateStr) || formatDateTime(new Date().toISOString());
 
   const hasReviewed = Boolean(
     application?.has_reviewed || application?.user_review || (application as any)?.reviewed,
@@ -191,8 +211,10 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
       let capturedUri: string | null = null;
       try {
         const ViewShot = require('react-native-view-shot');
-        if (ViewShot?.captureRef && receiptRef.current) {
-          capturedUri = await ViewShot.captureRef(receiptRef, {
+        const captureFn = ViewShot?.captureRef || ViewShot?.default?.captureRef;
+        const targetView = receiptRef.current;
+        if (captureFn && targetView) {
+          capturedUri = await captureFn(targetView, {
             format: 'png',
             quality: 1,
             result: 'tmpfile',
@@ -203,41 +225,148 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
       }
 
       if (capturedUri) {
+        const fileUri = capturedUri.startsWith('file://') ? capturedUri : `file://${capturedUri}`;
+
+        // 1. Attempt to save directly to photo gallery
         try {
           const MediaLibrary = require('expo-media-library');
-          // Request write-only photo permission so Android does not ask for audio / music access
-          const permission = await MediaLibrary.requestPermissionsAsync(true, ['photo']);
-          if (permission?.granted) {
-            await MediaLibrary.saveToLibraryAsync(capturedUri);
-            showAlert(t('receipt_saved_alert_title'), t('receipt_saved_alert_msg'));
-            return;
+          let perm = await MediaLibrary.getPermissionsAsync(true);
+          if (!perm?.granted) {
+            try {
+              perm = await MediaLibrary.requestPermissionsAsync(true);
+            } catch {
+              perm = await MediaLibrary.requestPermissionsAsync();
+            }
+          }
+          if (perm?.granted) {
+            // Expo SDK 57 modern class API
+            if (MediaLibrary?.Asset?.create) {
+              await MediaLibrary.Asset.create(fileUri);
+              showAlert(t('receipt_saved_alert_title'), t('receipt_saved_alert_msg'));
+              return;
+            }
+            // Expo SDK 57 legacy API fallback
+            try {
+              const MediaLibraryLegacy = require('expo-media-library/legacy');
+              if (MediaLibraryLegacy?.createAssetAsync) {
+                await MediaLibraryLegacy.createAssetAsync(fileUri);
+                showAlert(t('receipt_saved_alert_title'), t('receipt_saved_alert_msg'));
+                return;
+              } else if (MediaLibraryLegacy?.saveToLibraryAsync) {
+                await MediaLibraryLegacy.saveToLibraryAsync(fileUri);
+                showAlert(t('receipt_saved_alert_title'), t('receipt_saved_alert_msg'));
+                return;
+              }
+            } catch (legacyErr) {
+              console.warn('Legacy MediaLibrary error:', legacyErr);
+            }
           }
         } catch (mediaErr) {
           console.warn('MediaLibrary save fallback to Sharing:', mediaErr);
         }
 
+        // 2. Fallback to sharing the captured image file directly
         try {
           const Sharing = require('expo-sharing');
           if (await Sharing.isAvailableAsync()) {
-            await Sharing.shareAsync(capturedUri, {
+            await Sharing.shareAsync(fileUri, {
               mimeType: 'image/png',
               dialogTitle: `SIKAP Receipt ${refNumber}`,
+              UTI: 'public.png',
             });
             return;
           }
-        } catch (shareErr) {
-          console.warn('expo-sharing fallback:', shareErr);
+        } catch (shareErr: any) {
+          if (shareErr?.name === 'AbortError' || String(shareErr).includes('cancel')) {
+            return;
+          }
+          console.warn('expo-sharing image fallback:', shareErr);
         }
       }
 
-      // Fallback if native image capture is not linked in an older APK build
-      await Share.share({
+      // 3. Fallback if native image capture is unavailable (e.g. Expo Go): generate authentic HTML receipt document
+      try {
+        const FileSystem = require('expo-file-system');
+        const Sharing = require('expo-sharing');
+
+        const cleanRef = String(refNumber).replace(/[^a-zA-Z0-9_-]/g, '_');
+        const baseDir = FileSystem.cacheDirectory || FileSystem.documentDirectory;
+        const receiptPath = `${baseDir}SIKAP_Receipt_${cleanRef}.html`;
+
+        const htmlReceipt = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIKAP Receipt ${refNumber}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #F8FAFC; padding: 24px 12px; color: #0F172A; }
+    .receipt { max-width: 440px; margin: 0 auto; background: #FFFFFF; border-radius: 16px; border: 1px solid #E2E8F0; padding: 24px; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06); }
+    .header { text-align: center; border-bottom: 2px dashed #CBD5E1; padding-bottom: 16px; margin-bottom: 16px; }
+    .brand { font-size: 16px; font-weight: 800; color: #0F766E; letter-spacing: 0.5px; text-transform: uppercase; }
+    .subtitle { font-size: 11px; color: #64748B; margin-top: 4px; line-height: 1.4; }
+    .ref { font-size: 11px; color: #94A3B8; font-family: monospace; margin-top: 8px; font-weight: 600; }
+    .status-badge { display: inline-block; background: #DCFCE7; color: #166534; padding: 4px 14px; border-radius: 9999px; font-size: 11px; font-weight: 700; margin-top: 10px; letter-spacing: 0.5px; }
+    .amount-box { text-align: center; background: #F0FDFA; border: 1px solid #CCFBF1; border-radius: 12px; padding: 16px; margin: 16px 0; }
+    .amount-label { font-size: 11px; color: #0F766E; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .amount { font-size: 26px; font-weight: 800; color: #0F766E; margin-top: 4px; }
+    .details { border-bottom: 2px dashed #CBD5E1; padding-bottom: 16px; margin-bottom: 16px; }
+    .row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; font-size: 12px; line-height: 1.4; }
+    .row-label { color: #64748B; flex: 1; }
+    .row-val { font-weight: 600; color: #0F172A; text-align: right; flex: 1.4; }
+    .footer { text-align: center; font-size: 10px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  </style>
+</head>
+<body>
+  <div class="receipt">
+    <div class="header">
+      <div class="brand">${t('receipt_official_header') || 'SIKAP • RESIBO NG TRABAHO'}</div>
+      <div class="subtitle">${t('receipt_official_subtitle_line1') || 'Digital na Talaan ng Natapos na Trabaho'}<br>${t('receipt_official_subtitle_line2') || 'Lalawigan ng Sorsogon'}</div>
+      <div class="ref">${refNumber}</div>
+      <div class="status-badge">✓ ${t('receipt_status_completed') || 'TAPOS NA'}</div>
+    </div>
+    <div class="amount-box">
+      <div class="amount-label">${rateUnitText}</div>
+      <div class="amount">${displayCompensation}</div>
+    </div>
+    <div class="details">
+      <div class="row"><span class="row-label">Job / Trabaho:</span><span class="row-val">${job?.title || 'Completed Job'}</span></div>
+      ${counterparty?.name ? `<div class="row"><span class="row-label">${counterpartyLabel}:</span><span class="row-val">${counterparty.name}</span></div>` : ''}
+      <div class="row"><span class="row-label">Location / Lugar:</span><span class="row-val">${locationText}</span></div>
+      <div class="row"><span class="row-label">Completed / Petsa:</span><span class="row-val">${formattedCompletedDateTime}</span></div>
+    </div>
+    <div class="footer">${t('receipt_footer_verified') || 'Beripikadong Digital na Resibo • SIKAP Sorsogon Portal'}</div>
+  </div>
+</body>
+</html>`;
+
+        await FileSystem.writeAsStringAsync(receiptPath, htmlReceipt, {
+          encoding: FileSystem.EncodingType.UTF8,
+        });
+
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(receiptPath, {
+            mimeType: 'text/html',
+            dialogTitle: `SIKAP Receipt ${refNumber}`,
+            UTI: 'public.html',
+          });
+          return;
+        }
+      } catch (docErr) {
+        console.warn('HTML receipt document fallback error:', docErr);
+      }
+
+      // 4. Final text fallback
+      const shareResult = await Share.share({
         title: `SIKAP Job Completion Receipt (${refNumber})`,
         message: [
           `=== ${t('receipt_official_header')} ===`,
+          `${t('receipt_official_subtitle_line1') || 'Digital na Talaan ng Natapos na Trabaho'}`,
+          `${t('receipt_official_subtitle_line2') || 'Lalawigan ng Sorsogon'}`,
           `${t('receipt_ref_label')}: ${refNumber}`,
           `Status: ${t('receipt_status_completed')}`,
-          `Date: ${formattedCompletedDate}`,
+          `${t('receipt_ledger_completed_at') || 'Completed'}: ${formattedCompletedDateTime}`,
           `Job Title: ${job?.title || 'Completed Job'}`,
           `${rateUnitText}: ${displayCompensation}`,
           counterparty?.name ? `${counterpartyLabel}: ${counterparty.name}` : null,
@@ -247,7 +376,21 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           .filter(Boolean)
           .join('\n'),
       });
-    } catch (err) {
+
+      if (
+        shareResult?.action === Share.sharedAction ||
+        shareResult?.action === Share.dismissedAction
+      ) {
+        return;
+      }
+    } catch (err: any) {
+      if (
+        err?.name === 'AbortError' ||
+        String(err).includes('cancel') ||
+        String(err).includes('dismissed')
+      ) {
+        return;
+      }
       console.warn('Failed to save or share receipt:', err);
       showAlert(t('receipt_err_save_title'), t('receipt_err_save_msg'));
     } finally {
@@ -289,12 +432,17 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
                 {t('receipt_official_header')}
               </Text>
             </View>
-            <Text style={styles.brandSubtitle}>{t('receipt_official_subtitle')}</Text>
+            <Text style={styles.brandSubtitleLine1}>
+              {t('receipt_official_subtitle_line1') || 'Digital na Talaan ng Natapos na Trabaho'}
+            </Text>
+            <Text style={styles.brandSubtitleLine2}>
+              {t('receipt_official_subtitle_line2') || 'Lalawigan ng Sorsogon'}
+            </Text>
 
             <View style={styles.headerMetaRow}>
-              <View style={styles.refPill}>
-                <Text style={styles.refPillLabel}>{t('receipt_ref_label')}</Text>
-                <Text style={styles.refPillValue} numberOfLines={1} ellipsizeMode="middle">
+              <View style={styles.refContainer}>
+                <Text style={styles.refLabel}>{t('receipt_ref_label')}</Text>
+                <Text style={styles.refValue} numberOfLines={1} ellipsizeMode="middle">
                   {refNumber}
                 </Text>
               </View>
@@ -331,15 +479,15 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
             </TouchableOpacity>
 
             <View style={styles.heroSubMetaRow}>
-              {formattedCompletedDate ? (
+              {formattedCompletedDateTime ? (
                 <View style={styles.heroMetaChip}>
-                  <Ionicons name="calendar-outline" size={13} color={colors.inkSoft} />
-                  <Text style={styles.heroMetaChipText}>{formattedCompletedDate}</Text>
+                  <Ionicons name="time-outline" size={13} color={colors.inkSoft} />
+                  <Text style={styles.heroMetaChipText}>{formattedCompletedDateTime}</Text>
                 </View>
               ) : null}
               {job?.duration ? (
                 <View style={[styles.heroMetaChip, styles.durationChip]}>
-                  <Ionicons name="time-outline" size={13} color={colors.skyDeep} />
+                  <Ionicons name="calendar-outline" size={13} color={colors.skyDeep} />
                   <Text style={[styles.heroMetaChipText, { color: colors.skyDeep }]}>
                     {job.duration} {job.duration_unit || 'Days'}
                   </Text>
@@ -403,6 +551,11 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
             <Text style={styles.sectionEyebrow}>{t('receipt_ledger_header')}</Text>
 
             <View style={styles.ledgerTable}>
+              <View style={styles.ledgerRow}>
+                <Text style={styles.ledgerLabel}>{t('receipt_ledger_completed_at')}</Text>
+                <Text style={styles.ledgerValue}>{formattedCompletedDateTime}</Text>
+              </View>
+
               <View style={styles.ledgerRow}>
                 <Text style={styles.ledgerLabel}>{t('receipt_ledger_location')}</Text>
                 <Text style={styles.ledgerValue}>{locationText}</Text>
@@ -688,11 +841,22 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     flexShrink: 1,
   },
-  brandSubtitle: {
-    fontFamily: fonts.body,
+  brandSubtitleLine1: {
+    fontFamily: fonts.bodyBold,
     fontSize: 11,
+    color: colors.inkSoft,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+    marginTop: 3,
+  },
+  brandSubtitleLine2: {
+    fontFamily: fonts.body,
+    fontSize: 10.5,
     color: colors.inkMuted,
-    marginTop: 2,
+    letterSpacing: 0.3,
+    textAlign: 'center',
+    marginTop: 1,
   },
   headerMetaRow: {
     flexDirection: 'row',
@@ -703,29 +867,24 @@ const styles = StyleSheet.create({
     gap: 8,
     flexWrap: 'wrap',
   },
-  refPill: {
+  refContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: '#F8FAFC',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    alignItems: 'baseline',
+    gap: 4,
     flexShrink: 1,
     minWidth: 0,
   },
-  refPillLabel: {
+  refLabel: {
     fontFamily: fonts.bodyBold,
-    fontSize: 10,
+    fontSize: 11,
     color: colors.inkMuted,
     letterSpacing: 0.5,
   },
-  refPillValue: {
+  refValue: {
     fontFamily: fonts.numericBold,
-    fontSize: 11.5,
+    fontSize: 12.5,
     color: colors.ink,
+    letterSpacing: 0.5,
     flexShrink: 1,
   },
   completedStamp: {

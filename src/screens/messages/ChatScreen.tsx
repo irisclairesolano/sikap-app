@@ -1035,7 +1035,8 @@ const ChatScreen: React.FC = () => {
                   jobTitle={jobTitle || conversation?.job_title || ''}
                   jobId={conversation?.job_id}
                   finalAgreedPrice={conversation?.final_agreed_price}
-                  hasRealMessageFromEmployer={hasRealMessageFromEmployer}
+                  applicationId={conversation?.application_id}
+                  hasReviewed={conversation?.has_reviewed}
                   isBlocked={isBlocked}
                   isSlotLocked={isSlotLocked}
                   onActionComplete={handleActionComplete}

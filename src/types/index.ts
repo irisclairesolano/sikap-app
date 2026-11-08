@@ -327,6 +327,7 @@ export interface Conversation {
   job_id?: number;
   job_title: string;
   application_status?: string;
+  has_reviewed?: boolean;
   status: 'open' | 'locked' | 'unlock_requested';
   final_agreed_price?: number | null;
   employer_id?: number;
