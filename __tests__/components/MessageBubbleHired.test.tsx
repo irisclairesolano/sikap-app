@@ -14,6 +14,7 @@ describe('MessageBubble Hired Dedicated System Messages', () => {
     sender_id: null,
     body: '🎉 You are hired! The job is officially in progress. Work hard, stay safe, and communicate here.',
     message_type: 'system',
+    card_resolved: false,
     created_at: new Date().toISOString(),
   };
 

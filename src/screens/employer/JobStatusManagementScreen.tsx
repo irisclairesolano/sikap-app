@@ -1085,31 +1085,45 @@ export const JobStatusManagementScreen: React.FC = () => {
               })()}
 
             <View style={styles.actionsCard}>
-              {job.status === 'open' && (
-                <>
-                  <Button
-                    label={t('job_btn_edit_post')}
-                    onPress={handleEditJob}
-                    style={styles.actionBtn}
-                  />
-                  <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelJob}>
-                    <Text style={styles.cancelBtnText}>{t('job_btn_cancel_archive')}</Text>
-                  </TouchableOpacity>
-                </>
-              )}
+              {(() => {
+                const hasHiredWorkers = applications.some((a) => a.status === 'accepted');
+                const isJobInProgress =
+                  job.status === 'closed_in_progress' ||
+                  job.status === 'in_progress' ||
+                  hasHiredWorkers;
 
-              {job.status === 'closed_in_progress' && (
-                <>
-                  <Button
-                    label={t('job_btn_mark_completed')}
-                    onPress={handleMarkComplete}
-                    style={styles.actionBtn}
-                  />
-                  <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelJob}>
-                    <Text style={styles.cancelBtnText}>{t('job_btn_cancel_job')}</Text>
-                  </TouchableOpacity>
-                </>
-              )}
+                if (job.status !== 'cancelled' && isJobInProgress) {
+                  return (
+                    <>
+                      <Button
+                        label={t('job_btn_mark_completed')}
+                        onPress={handleMarkComplete}
+                        style={styles.actionBtn}
+                      />
+                      <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelJob}>
+                        <Text style={styles.cancelBtnText}>{t('job_btn_cancel_job')}</Text>
+                      </TouchableOpacity>
+                    </>
+                  );
+                }
+
+                if (job.status === 'open') {
+                  return (
+                    <>
+                      <Button
+                        label={t('job_btn_edit_post')}
+                        onPress={handleEditJob}
+                        style={styles.actionBtn}
+                      />
+                      <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelJob}>
+                        <Text style={styles.cancelBtnText}>{t('job_btn_cancel_archive')}</Text>
+                      </TouchableOpacity>
+                    </>
+                  );
+                }
+
+                return null;
+              })()}
 
               {job.status === 'cancelled' && (
                 <TouchableOpacity
