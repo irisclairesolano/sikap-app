@@ -1374,6 +1374,42 @@ export const en = {
   keep_editing: 'Keep Editing',
   leave: 'Leave',
   view_pipeline_btn: 'View Pipeline',
+
+  // Flag as Complete & Mark Complete
+  card_status_completed: 'Completed',
+  action_failed: 'Action Failed',
+  finish_work_title: 'Finish Work',
+  finish_work_subtitle: 'Flag this job as completed when you finish your work offline.',
+  flag_completed_btn: 'Flag Job as Completed',
+  flag_completed_alert_title: 'Flag as Completed',
+  flag_completed_alert_msg:
+    'Have you finished all required work for this job? Your employer will be notified to confirm.',
+  flag_completed_confirm_btn: 'Yes, Flag as Completed',
+  flag_completed_error: 'Unable to flag job as completed.',
+  work_flagged_done_title: 'Work Flagged as Done',
+  work_flagged_waiting_subtitle: 'Waiting for employer confirmation.',
+  work_flagged_confirm_subtitle: 'Work flagged as done by {workerName}. Confirm',
+  confirm_work_done_title: 'Confirm Work Done',
+  confirm_work_done_prompt:
+    'Work flagged as done by {workerName}. Confirm that the work has been completed satisfactorily?',
+  job_completed_title: 'Job Completed',
+  job_completed_review_msg: 'The job has been marked as complete. You can now submit your review.',
+  mark_job_complete_error: 'Unable to mark job complete.',
+
+  // Chat pinned header
+  pinned_flag_job_done: 'Flag Job as Done',
+  pinned_waiting_employer_confirmation: 'Waiting for Employer Confirmation',
+  pinned_mark_job_complete: 'Mark Job Complete',
+
+  // Mark Complete screen / success
+  mark_complete_first_job_title: 'Your first job is done!',
+  mark_complete_first_job_msg:
+    'Congratulations! You just completed your first job on SIKAP. Please rate {workerName} to keep our community trusted.',
+  mark_complete_job_done_title: 'Job completed!',
+  mark_complete_job_done_msg: 'Nice work! Please rate {workerName}. It only takes a minute.',
+  mark_complete_failed_error: 'Failed to mark job as complete.',
+  mark_complete_rate_worker_btn: 'Rate worker',
+  mark_complete_later_btn: 'Later',
 };
 
 export type TranslationKey = keyof typeof en;

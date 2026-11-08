@@ -55,23 +55,25 @@ const MarkCompleteScreen: React.FC = () => {
 
         navigation.replace('Success', {
           variant: isFirstCompleted ? 'milestone' : 'confirm',
-          title: isFirstCompleted ? 'Your first job is done!' : 'Job completed!',
+          title: isFirstCompleted
+            ? t('mark_complete_first_job_title')
+            : t('mark_complete_job_done_title'),
           message: isFirstCompleted
-            ? `Congratulations! You just completed your first job on SIKAP. Please rate ${workerName || 'your worker'} to keep our community trusted.`
-            : `Nice work! Please rate ${workerName || 'your worker'}. It only takes a minute.`,
+            ? t('mark_complete_first_job_msg', { workerName: workerName || 'your worker' })
+            : t('mark_complete_job_done_msg', { workerName: workerName || 'your worker' }),
           detail: [
             { label: 'Job', value: jobTitle },
             ...(workerName ? [{ label: 'Worker', value: workerName }] : []),
           ],
           primaryAction: {
-            label: 'Rate worker',
+            label: t('mark_complete_rate_worker_btn'),
             navigateTo: {
               name: 'RateWorkerList',
               params: { jobId: id, jobTitle },
             },
           },
           secondaryAction: {
-            label: 'Later',
+            label: t('mark_complete_later_btn'),
             navigateTo: {
               name: 'JobStatusManagement',
               params: { id },
@@ -80,7 +82,7 @@ const MarkCompleteScreen: React.FC = () => {
         });
       },
       onError: (err: any) => {
-        showAlert('Error', err.message || 'Failed to mark job as complete.');
+        showAlert('Error', err.message || t('mark_complete_failed_error'));
       },
     });
   };

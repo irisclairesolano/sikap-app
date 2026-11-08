@@ -126,15 +126,21 @@ const ActionCard: React.FC<ActionCardProps> = ({
   ) => (
     <View style={styles.etchedCardContainer}>
       <View style={styles.etchedCard}>
-        <View style={[styles.etchedIconBadge, { backgroundColor: badgeBg }]}>
-          <Ionicons name={icon} size={15} color={badgeColor} />
-        </View>
-        <View style={styles.etchedContent}>
-          <Text style={styles.etchedTitle}>{title}</Text>
-          {subtitle ? <Text style={styles.etchedSubtitle}>{subtitle}</Text> : null}
-        </View>
-        <View style={[styles.etchedBadge, { backgroundColor: badgeBg }]}>
-          <Text style={[styles.etchedBadgeText, { color: badgeColor }]}>{badgeText}</Text>
+        <View style={styles.etchedCardTop}>
+          <View style={[styles.etchedIconBadge, { backgroundColor: badgeBg }]}>
+            <Ionicons name={icon} size={16} color={badgeColor} />
+          </View>
+          <View style={styles.etchedContent}>
+            <Text style={styles.etchedTitle}>{title}</Text>
+            {subtitle ? <Text style={styles.etchedSubtitle}>{subtitle}</Text> : null}
+            {badgeText ? (
+              <View style={styles.etchedBadgeRow}>
+                <View style={[styles.etchedBadge, { backgroundColor: badgeBg }]}>
+                  <Text style={[styles.etchedBadgeText, { color: badgeColor }]}>{badgeText}</Text>
+                </View>
+              </View>
+            ) : null}
+          </View>
         </View>
       </View>
       {ctaButton && (
@@ -995,7 +1001,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           t('job_marked_complete'),
           t('work_completed_verified'),
           'checkmark-done-circle',
-          'Completed',
+          t('card_status_completed'),
           colors.success,
           '#DCFCE7',
           {
@@ -1017,7 +1023,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
         t('job_marked_complete'),
         t('work_completed_verified'),
         'checkmark-done-circle',
-        'Completed',
+        t('card_status_completed'),
         colors.success,
         '#DCFCE7',
         {
@@ -1038,8 +1044,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
     if (currentUserRole === 'worker') {
       if (card_data?.is_flagged) {
         return renderEtchedCard(
-          'Work Flagged as Done',
-          'Waiting for employer confirmation.',
+          t('work_flagged_done_title'),
+          t('work_flagged_waiting_subtitle'),
           'time-outline',
           t('card_status_pending_confirmation'),
           colors.warning,
@@ -1059,46 +1065,37 @@ const ActionCard: React.FC<ActionCardProps> = ({
               <Ionicons name="flag-outline" size={20} color={colors.warning} />
             </View>
             <View style={styles.cardHeaderText}>
-              <Text style={styles.title}>Finish Work</Text>
-              <Text style={styles.subtitle}>
-                Flag this job as completed when you finish your work offline.
-              </Text>
+              <Text style={styles.title}>{t('finish_work_title')}</Text>
+              <Text style={styles.subtitle}>{t('finish_work_subtitle')}</Text>
             </View>
           </View>
           <TouchableOpacity
             style={[styles.primaryButton, { backgroundColor: colors.warning }]}
             onPress={() => {
-              showAlert(
-                'Flag as Completed',
-                'Have you finished all required work for this job? Your employer will be notified to confirm.',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  {
-                    text: 'Yes, Flag as Completed',
-                    onPress: () => {
-                      const appId = Number(card_data?.application_id || card_data?.id);
-                      flagOfflineMutation.mutate(appId, {
-                        onSuccess: () => {
-                          onActionComplete();
-                        },
-                        onError: (err: any) => {
-                          showAlert(
-                            'Action Failed',
-                            err.message || 'Unable to flag job as completed.',
-                          );
-                        },
-                      });
-                    },
+              showAlert(t('flag_completed_alert_title'), t('flag_completed_alert_msg'), [
+                { text: t('cancel') || 'Cancel', style: 'cancel' },
+                {
+                  text: t('flag_completed_confirm_btn'),
+                  onPress: () => {
+                    const appId = Number(card_data?.application_id || card_data?.id);
+                    flagOfflineMutation.mutate(appId, {
+                      onSuccess: () => {
+                        onActionComplete();
+                      },
+                      onError: (err: any) => {
+                        showAlert(t('action_failed'), err.message || t('flag_completed_error'));
+                      },
+                    });
                   },
-                ],
-              );
+                },
+              ]);
             }}
             disabled={flagOfflineMutation.isPending || !!loadingAction}
           >
             {flagOfflineMutation.isPending ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.primaryButtonText}>Flag Job as Completed</Text>
+              <Text style={styles.primaryButtonText}>{t('flag_completed_btn')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -1119,47 +1116,40 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <Ionicons name="flag-outline" size={20} color={colors.warning} />
           </View>
           <View style={styles.cardHeaderText}>
-            <Text style={styles.title}>Work Flagged as Done</Text>
-            <Text style={styles.subtitle}>Work flagged as done by {workerName}. Confirm</Text>
+            <Text style={styles.title}>{t('work_flagged_done_title')}</Text>
+            <Text style={styles.subtitle}>
+              {t('work_flagged_confirm_subtitle', { workerName })}
+            </Text>
           </View>
         </View>
         <TouchableOpacity
           style={[styles.primaryButton, { backgroundColor: colors.success }]}
           onPress={() => {
-            showAlert(
-              'Confirm Work Done',
-              `Work flagged as done by ${workerName}. Confirm that the work has been completed satisfactorily?`,
-              [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Confirm',
-                  onPress: () => {
-                    const targetJobId = Number(card_data?.job_id || jobId);
-                    markJobCompleteMutation.mutate(targetJobId, {
-                      onSuccess: () => {
-                        showAlert(
-                          'Job Completed',
-                          'The job has been marked as complete. You can now submit your review.',
-                        );
-                        onActionComplete();
-                      },
-                      onError: (err: any) => {
-                        showAlert('Action Failed', err.message || 'Unable to mark job complete.');
-                      },
-                    });
-                  },
+            showAlert(t('confirm_work_done_title'), t('confirm_work_done_prompt', { workerName }), [
+              { text: t('cancel') || 'Cancel', style: 'cancel' },
+              {
+                text: t('confirm') || 'Confirm',
+                onPress: () => {
+                  const targetJobId = Number(card_data?.job_id || jobId);
+                  markJobCompleteMutation.mutate(targetJobId, {
+                    onSuccess: () => {
+                      showAlert(t('job_completed_title'), t('job_completed_review_msg'));
+                      onActionComplete();
+                    },
+                    onError: (err: any) => {
+                      showAlert(t('action_failed'), err.message || t('mark_job_complete_error'));
+                    },
+                  });
                 },
-              ],
-            );
+              },
+            ]);
           }}
           disabled={markJobCompleteMutation.isPending || !!loadingAction}
         >
           {markJobCompleteMutation.isPending ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.primaryButtonText}>
-              {t('hiring_mark_complete_confirm_btn') || 'Confirm Work Done'}
-            </Text>
+            <Text style={styles.primaryButtonText}>{t('confirm_work_done_title')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -1425,15 +1415,22 @@ const styles = StyleSheet.create({
   etchedCard: {
     marginHorizontal: 16,
     marginVertical: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.68)',
-    paddingVertical: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.75)',
-    gap: 10,
+    borderColor: 'rgba(226, 232, 240, 0.85)',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  etchedCardTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
   },
   ratingCtaBtn: {
     flexDirection: 'row',
@@ -1458,30 +1455,38 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   etchedIconBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 1,
   },
   etchedContent: {
     flex: 1,
   },
   etchedTitle: {
     fontFamily: fonts.bodyBold,
-    fontSize: 13,
-    color: colors.inkSoft,
+    fontSize: 14,
+    color: colors.ink,
+    lineHeight: 19,
   },
   etchedSubtitle: {
     fontFamily: fonts.body,
-    fontSize: 11,
+    fontSize: 12,
     color: colors.inkMuted,
-    marginTop: 1,
+    lineHeight: 17,
+    marginTop: 3,
+  },
+  etchedBadgeRow: {
+    flexDirection: 'row',
+    marginTop: 8,
   },
   etchedBadge: {
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    paddingVertical: 3.5,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
   },
   etchedBadgeText: {
     fontFamily: fonts.bodyBold,

@@ -697,7 +697,7 @@ const ChatScreen: React.FC = () => {
       case 'mark_complete':
         return {
           icon: 'checkmark-circle-outline' as const,
-          label: 'Mark Job Complete',
+          label: t('pinned_mark_job_complete'),
           color: colors.success,
           bg: '#DCFCE7',
         };
@@ -706,9 +706,11 @@ const ChatScreen: React.FC = () => {
           icon: 'flag-outline' as const,
           label: card.card_data?.is_flagged
             ? conversationUserRole === 'employer'
-              ? `Work flagged as done by ${card.card_data?.worker_name || otherUserName || 'Worker'}. Confirm`
-              : 'Waiting for Employer Confirmation'
-            : 'Flag Job as Done',
+              ? t('work_flagged_confirm_subtitle', {
+                  workerName: card.card_data?.worker_name || otherUserName || 'Worker',
+                })
+              : t('pinned_waiting_employer_confirmation')
+            : t('pinned_flag_job_done'),
           color: colors.warning,
           bg: '#FEF3C7',
         };

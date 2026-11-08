@@ -1411,4 +1411,42 @@ export const tl: Record<TranslationKey, string> = {
   keep_editing: 'Ipagpatuloy ang Pag-edit',
   leave: 'Umalis',
   view_pipeline_btn: 'Tingnan ang Pipeline',
+
+  // Flag as Complete & Mark Complete
+  card_status_completed: 'Tapos Na',
+  action_failed: 'Nabigo ang Aksyon',
+  finish_work_title: 'Tapusin ang Trabaho',
+  finish_work_subtitle:
+    'I-flag ang trabahong ito bilang tapos na kapag natapos mo na ang iyong trabaho offline.',
+  flag_completed_btn: 'I-flag ang Trabaho bilang Tapos Na',
+  flag_completed_alert_title: 'I-flag bilang Tapos Na',
+  flag_completed_alert_msg:
+    'Natapos mo na ba ang lahat ng kailangang gawin sa trabahong ito? Aabisuhan ang iyong employer para kumpirmahin ito.',
+  flag_completed_confirm_btn: 'Oo, I-flag bilang Tapos Na',
+  flag_completed_error: 'Hindi ma-flag ang trabaho bilang tapos na.',
+  work_flagged_done_title: 'Minarkahang Tapos Na ang Trabaho',
+  work_flagged_waiting_subtitle: 'Naghihintay ng kumpirmasyon mula sa employer.',
+  work_flagged_confirm_subtitle: 'Minarkahan ni {workerName} na tapos na ang trabaho. Kumpirmahin',
+  confirm_work_done_title: 'Kumpirmahin ang Natapos na Trabaho',
+  confirm_work_done_prompt:
+    'Minarkahan ni {workerName} na tapos na ang trabaho. Kumpirmahin kung maayos at tapos na nga ang trabaho?',
+  job_completed_title: 'Tapos na ang Trabaho',
+  job_completed_review_msg:
+    'Minarkahan nang tapos na ang trabaho. Maaari mo nang i-rate at i-review ang worker.',
+  mark_job_complete_error: 'Hindi nagawang markahan ang trabaho bilang tapos na.',
+
+  // Chat pinned header
+  pinned_flag_job_done: 'I-flag bilang Tapos Na',
+  pinned_waiting_employer_confirmation: 'Naghihintay ng Kumpirmasyon ng Employer',
+  pinned_mark_job_complete: 'Markahang Tapos Na ang Trabaho',
+
+  // Mark Complete screen / success
+  mark_complete_first_job_title: 'Tapos na ang iyong unang trabaho!',
+  mark_complete_first_job_msg:
+    'Binabati kita! Nakumpleto mo ang iyong unang trabaho sa SIKAP. Paki-rate si {workerName} para mapanatiling mapagkakatiwalaan ang ating komunidad.',
+  mark_complete_job_done_title: 'Tapos na ang trabaho!',
+  mark_complete_job_done_msg: 'Magaling! Paki-rate si {workerName}. Sandali lang ito.',
+  mark_complete_failed_error: 'Hindi nagawang markahan ang trabaho bilang tapos na.',
+  mark_complete_rate_worker_btn: 'I-rate ang Worker',
+  mark_complete_later_btn: 'Mamaya',
 };
