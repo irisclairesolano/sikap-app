@@ -25,6 +25,7 @@ export interface ButtonProps extends TouchableOpacityProps {
   icon?: any;
   iconPosition?: 'left' | 'right';
   style?: any;
+  labelStyle?: TextStyle;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -40,6 +41,7 @@ const Button: React.FC<ButtonProps> = ({
   icon,
   iconPosition = 'left',
   style,
+  labelStyle: customLabelStyle,
   testID,
   ...rest
 }) => {
@@ -133,6 +135,7 @@ const Button: React.FC<ButtonProps> = ({
               size === 'sm' && styles.labelSm,
               size === 'lg' && styles.labelLg,
               labelStyle,
+              customLabelStyle,
             ]}
           >
             {displayLabel}

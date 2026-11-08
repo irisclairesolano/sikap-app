@@ -12,6 +12,10 @@ import { useAlert } from '../../contexts/AlertContext';
 import { useEmployerJobs } from '../../hooks/useEmployerJobs';
 import { useLanguage } from '../../contexts/LanguageContext';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { ScrollView, TouchableOpacity } from 'react-native';
+
 type MarkCompleteScreenRouteProp = RouteProp<EmployerStackParamList, 'MarkComplete'>;
 type MarkCompleteScreenNavigationProp = NativeStackNavigationProp<
   EmployerStackParamList,
@@ -19,6 +23,7 @@ type MarkCompleteScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 const MarkCompleteScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const { t } = useLanguage();
   const route = useRoute<MarkCompleteScreenRouteProp>();
   const navigation = useNavigation<MarkCompleteScreenNavigationProp>();
@@ -67,28 +72,38 @@ const MarkCompleteScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('mark_as_completed')}</Text>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+        </TouchableOpacity>
+        <View style={styles.headerPill}>
+          <Text style={styles.headerPillText}>{t('mark_as_completed')}</Text>
+        </View>
+        <View style={styles.iconBtn} />
       </View>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.prompt}>
           {t('hiring_mark_complete_prompt', { jobTitle: jobTitle || 'this job' })}
         </Text>
         <View style={styles.infoBox}>
           <Text style={styles.infoText}>{t('hiring_mark_complete_explainer')}</Text>
         </View>
-
+      </ScrollView>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <Button
           label={t('hiring_mark_complete_confirm_btn')}
           onPress={handleMarkComplete}
           loading={markCompleteMutation.isPending}
           variant="primary"
-          style={styles.actionBtn}
+          size="lg"
+          fullWidth
         />
         <Button
           label={t('hiring_not_yet_btn')}
           variant="outline"
+          size="base"
+          fullWidth
           onPress={() => navigation.goBack()}
           disabled={markCompleteMutation.isPending}
         />
@@ -99,8 +114,37 @@ const MarkCompleteScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
-  header: { padding: 20, borderBottomWidth: 1, borderBottomColor: colors.inkFaint },
-  headerTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: colors.paper,
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerPill: {
+    backgroundColor: colors.paperBright,
+    paddingVertical: 6,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  headerPillText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.inkMuted,
+    letterSpacing: 0.3,
+  },
   content: { padding: 20 },
   prompt: {
     fontFamily: fonts.body,
@@ -115,11 +159,18 @@ const styles = StyleSheet.create({
     borderColor: colors.mint,
     borderWidth: 1,
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 18,
   },
   infoText: { fontFamily: fonts.body, fontSize: 14, color: colors.mintDeep, lineHeight: 20 },
-  actionBtn: { marginBottom: 8 },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    backgroundColor: colors.paperBright,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+    gap: 8,
+  },
 });
 
 export default MarkCompleteScreen;

@@ -1339,6 +1339,16 @@ export const en = {
   job_btn_mark_completed: 'Mark as Completed',
   job_btn_cancel_job: 'Cancel Job',
   job_btn_delete_post: 'Delete Job Post',
+
+  // Progressive Disclosure in ApplicantDetailScreen
+  view_worker_profile: 'View Full Worker Profile',
+  view_worker_profile_sub: 'Inspect skills, ratings, and public work history',
+  collapse_worker_profile: 'Collapse Worker Profile',
+  contact_locked_phone_sub: 'Phone number locked',
+  contact_locked_stage1_desc:
+    'Shortlist worker to unlock character references and in-app negotiation chat.',
+  contact_locked_stage2_desc:
+    'Direct phone number and emergency contacts will be unlocked once hire offer is accepted.',
 };
 
 export type TranslationKey = keyof typeof en;

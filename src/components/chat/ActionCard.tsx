@@ -55,7 +55,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
   jobTitle,
   jobId,
   finalAgreedPrice,
-  hasRealMessageFromEmployer = true,
+  hasRealMessageFromEmployer,
   isBlocked = false,
   isSlotLocked = false,
   onActionComplete,
@@ -74,7 +74,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
   const [priceInput, setPriceInput] = useState('');
   const [isPriceInputVisible, setIsPriceInputVisible] = useState(false);
   const [hireDecision, setHireDecision] = useState<'hire' | 'decline' | null>(null);
-  const [isGuideMinimized, setIsGuideMinimized] = useState(false);
+  const hasEmployerSentMessage = hasRealMessageFromEmployer ?? true;
+  const [isGuideMinimized, setIsGuideMinimized] = useState(hasRealMessageFromEmployer === true);
 
   if (message.message_type !== 'action_card' || !message.card_type) return null;
 
@@ -149,78 +150,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
     </View>
   );
 
-  // 1. UNLOCK REQUEST
-  if (card_type === 'unlock_request') {
-    const isUnlockResolved = card_resolved || conversationStatus === 'open';
-
-    if (isUnlockResolved) {
-      return renderEtchedCard(
-        'Conversation Unlocked',
-        'Chat has been reopened.',
-        'lock-open-outline',
-        'Unlocked',
-        colors.primary,
-        colors.peach,
-      );
-    }
-
-    if (currentUserRole === 'worker') {
-      return (
-        <View style={styles.frostedWaitingPill}>
-          <Ionicons name="time-outline" size={14} color={colors.inkMuted} />
-          <Text style={styles.frostedWaitingText}>
-            Reopen request sent — Waiting for employer approval...
-          </Text>
-        </View>
-      );
-    }
-
-    return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View style={[styles.cardIconBadge, { backgroundColor: colors.peach }]}>
-            <Ionicons name="lock-open-outline" size={20} color={colors.primary} />
-          </View>
-          <View style={styles.cardHeaderText}>
-            <Text style={styles.title}>Chat Reopen Request</Text>
-            <Text style={styles.subtitle}>
-              {String(card_data?.worker_name ?? 'Worker')} wants to reopen this conversation.
-            </Text>
-          </View>
-        </View>
-        <View style={styles.rowButtons}>
-          <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: colors.primary }]}
-            onPress={() =>
-              handleAction(
-                'unlock',
-                () => apiClient(`/conversations/${conversationId}/unlock`, { method: 'PATCH' }),
-                [['conversations'], ['messages', conversationId]],
-              )
-            }
-            disabled={!!loadingAction}
-          >
-            {loadingAction === 'unlock' ? (
-              <ActivityIndicator color={colors.white} />
-            ) : (
-              <Text style={styles.actionBtnText}>Unlock Chat</Text>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.actionBtn,
-              { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.inkFaint },
-            ]}
-            onPress={() => onActionComplete()}
-          >
-            <Text style={[styles.actionBtnText, { color: colors.ink }]}>Dismiss</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
-
-  // 2. JOB REQUEST & CONFIRM HIRE
+  // 1. JOB REQUEST & CONFIRM HIRE
   if (card_type === 'job_request' || card_type === 'confirm_hire') {
     if (applicationStatus === 'rejected' || applicationStatus === 'declined') {
       return renderEtchedCard(
@@ -429,7 +359,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           </View>
         ) : currentUserRole === 'employer' ? (
           <>
-            {!hasRealMessageFromEmployer ? (
+            {!hasEmployerSentMessage ? (
               <View style={styles.chatReadyPill}>
                 <Ionicons name="chatbubbles-outline" size={14} color={colors.inkMuted} />
                 <Text style={[styles.chatReadyText, { color: colors.inkMuted }]}>
@@ -672,6 +602,44 @@ const ActionCard: React.FC<ActionCardProps> = ({
               {t('waiting_worker_response', { workerName: otherUserName || 'the worker' })}
             </Text>
           </View>
+          <TouchableOpacity
+            style={[styles.outlineButtonError, { marginTop: 12 }]}
+            onPress={() => {
+              showAlert(t('alert_cancel_hire_title'), t('confirm_cancel_hire_prompt'), [
+                { text: t('hiring_cancel_hire_back_btn') || 'No', style: 'cancel' },
+                {
+                  text: t('hiring_cancel_hire_confirm_btn') || 'Yes, Cancel',
+                  style: 'destructive',
+                  onPress: () =>
+                    handleAction(
+                      'cancel',
+                      () =>
+                        apiClient(
+                          `/applications/${String(card_data?.application_id)}/cancel-hire`,
+                          { method: 'PATCH' },
+                        ),
+                      [
+                        ['application', Number(card_data?.application_id)],
+                        ['applications'],
+                        ['conversations'],
+                        ['job'],
+                        ['jobs'],
+                        ['myJobs'],
+                        ['jobApplications'],
+                        ['my-applications'],
+                      ],
+                    ),
+                },
+              ]);
+            }}
+            disabled={!!loadingAction}
+          >
+            {loadingAction === 'cancel' ? (
+              <ActivityIndicator color={colors.error} />
+            ) : (
+              <Text style={styles.outlineButtonErrorText}>{t('cancel_hire')}</Text>
+            )}
+          </TouchableOpacity>
         </View>
       );
     }
@@ -805,6 +773,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
         colors.error,
         '#FEE2E2',
       );
+    }
+
+    // Suppress standalone cancel_hire card when offer is pending worker response (handled in accept_or_reject)
+    if (applicationStatus === 'employer_confirmed') {
+      return null;
     }
 
     return (

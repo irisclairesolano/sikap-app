@@ -10,6 +10,10 @@ import { useCancelHire } from '../../hooks/useJobApplications';
 import { useAlert } from '../../contexts/AlertContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { ScrollView, TouchableOpacity } from 'react-native';
+
 type CancelHireScreenRouteProp = RouteProp<EmployerStackParamList, 'CancelHire'>;
 type CancelHireScreenNavigationProp = NativeStackNavigationProp<
   EmployerStackParamList,
@@ -17,6 +21,7 @@ type CancelHireScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 const CancelHireScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const { t } = useLanguage();
   const route = useRoute<CancelHireScreenRouteProp>();
   const navigation = useNavigation<CancelHireScreenNavigationProp>();
@@ -41,30 +46,39 @@ const CancelHireScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('hiring_cancel_hire_title')}</Text>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+        </TouchableOpacity>
+        <View style={styles.headerPill}>
+          <Text style={styles.headerPillText}>{t('hiring_cancel_hire_title')}</Text>
+        </View>
+        <View style={styles.iconBtn} />
       </View>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.prompt}>
-          Are you sure you want to cancel the hire process for{' '}
-          <Text style={styles.bold}>{applicantName}</Text> regarding the{' '}
-          <Text style={styles.bold}>{jobTitle}</Text> position?
+          {t('confirm_cancel_hire_prompt')} <Text style={styles.bold}>{applicantName}</Text> (
+          {jobTitle})?
         </Text>
         <View style={styles.warningBox}>
           <Text style={styles.warningText}>{t('hiring_cancel_hire_warning')}</Text>
         </View>
-
+      </ScrollView>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <Button
           label={t('hiring_cancel_hire_confirm_btn')}
           onPress={handleCancelHire}
           loading={cancelHireMutation.isPending}
-          variant="primary"
-          style={styles.actionBtn}
+          variant="danger"
+          size="lg"
+          fullWidth
         />
         <Button
           label={t('hiring_cancel_hire_back_btn')}
           variant="outline"
+          size="base"
+          fullWidth
           onPress={() => navigation.goBack()}
           disabled={cancelHireMutation.isPending}
         />
@@ -75,8 +89,37 @@ const CancelHireScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
-  header: { padding: 20, borderBottomWidth: 1, borderBottomColor: colors.inkFaint },
-  headerTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: colors.paper,
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerPill: {
+    backgroundColor: colors.paperBright,
+    paddingVertical: 6,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  headerPillText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.inkMuted,
+    letterSpacing: 0.3,
+  },
   content: { padding: 20 },
   prompt: {
     fontFamily: fonts.body,
@@ -91,7 +134,7 @@ const styles = StyleSheet.create({
     borderColor: colors.warning,
     borderWidth: 1,
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 18,
   },
   warningText: {
@@ -100,7 +143,14 @@ const styles = StyleSheet.create({
     color: colors.status.pending.text,
     lineHeight: 20,
   },
-  actionBtn: { marginBottom: 8 },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    backgroundColor: colors.paperBright,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+    gap: 8,
+  },
 });
 
 export default CancelHireScreen;

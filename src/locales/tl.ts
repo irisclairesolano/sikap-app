@@ -1375,4 +1375,14 @@ export const tl: Record<TranslationKey, string> = {
   job_btn_mark_completed: 'Markahang Tapos na',
   job_btn_cancel_job: 'I-cancel ang Trabaho',
   job_btn_delete_post: 'I-delete ang Job Post',
+
+  // Progressive Disclosure in ApplicantDetailScreen
+  view_worker_profile: 'Tingnan ang Buong Profile',
+  view_worker_profile_sub: 'Suriin ang mga kasanayan, rating, at kasaysayan ng trabaho',
+  collapse_worker_profile: 'Itago ang Profile ng Manggagawa',
+  contact_locked_phone_sub: 'Naka-lock ang numero ng telepono',
+  contact_locked_stage1_desc:
+    'I-shortlist ang manggagawa para ma-unlock ang character references at in-app chat.',
+  contact_locked_stage2_desc:
+    'Maa-unlock ang direktang numero at emergency contact kapag tinanggap na ang alok sa trabaho.',
 };

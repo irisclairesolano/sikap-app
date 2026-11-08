@@ -10,6 +10,10 @@ import { useJobRequest } from '../../hooks/useJobApplications';
 import { useAlert } from '../../contexts/AlertContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { ScrollView, TouchableOpacity } from 'react-native';
+
 type SendRequestScreenRouteProp = RouteProp<EmployerStackParamList, 'SendRequest'>;
 type SendRequestScreenNavigationProp = NativeStackNavigationProp<
   EmployerStackParamList,
@@ -17,6 +21,7 @@ type SendRequestScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 const SendRequestScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const { t } = useLanguage();
   const route = useRoute<SendRequestScreenRouteProp>();
   const navigation = useNavigation<SendRequestScreenNavigationProp>();
@@ -49,11 +54,17 @@ const SendRequestScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('hiring_shortlist_action')}</Text>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+        </TouchableOpacity>
+        <View style={styles.headerPill}>
+          <Text style={styles.headerPillText}>{t('hiring_shortlist_action')}</Text>
+        </View>
+        <View style={styles.iconBtn} />
       </View>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.prompt}>
           {t('hiring_shortlist_prompt', {
             applicantName: applicantName || 'the applicant',
@@ -61,17 +72,21 @@ const SendRequestScreen: React.FC = () => {
           })}
         </Text>
         <Text style={styles.info}>{t('hiring_shortlist_info')}</Text>
-
+      </ScrollView>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <Button
           label={t('hiring_shortlist_action')}
           onPress={handleSendRequest}
           loading={jobRequestMutation.isPending}
           variant="primary"
-          style={styles.actionBtn}
+          size="lg"
+          fullWidth
         />
         <Button
           label={t('cancel') || 'Cancel'}
           variant="outline"
+          size="base"
+          fullWidth
           onPress={() => navigation.goBack()}
           disabled={jobRequestMutation.isPending}
         />
@@ -82,8 +97,37 @@ const SendRequestScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
-  header: { padding: 20, borderBottomWidth: 1, borderBottomColor: colors.inkFaint },
-  headerTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: colors.paper,
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerPill: {
+    backgroundColor: colors.paperBright,
+    paddingVertical: 6,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  headerPillText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.inkMuted,
+    letterSpacing: 0.3,
+  },
   content: { padding: 20 },
   prompt: {
     fontFamily: fonts.body,
@@ -100,7 +144,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     lineHeight: 20,
   },
-  actionBtn: { marginBottom: 8 },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    backgroundColor: colors.paperBright,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+    gap: 8,
+  },
 });
 
 export default SendRequestScreen;

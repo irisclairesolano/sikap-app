@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import { colors, fonts } from '../../theme';
 import Button from '../../components/common/Button';
 import { useAcceptOffer, useRejectOffer } from '../../hooks/useApply';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { triggerHaptic } from '../../utils/haptics';
 
 import { useMyApplications } from '../../hooks/useMyApplications';
@@ -17,6 +18,8 @@ type AcceptHireScreenRouteProp = RouteProp<WorkerStackParamList, 'AcceptHire'>;
 type AcceptHireScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'AcceptHire'>;
 
 const AcceptHireScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const route = useRoute<AcceptHireScreenRouteProp>();
   const navigation = useNavigation<AcceptHireScreenNavigationProp>();
   const { id, employerName, jobTitle, offeredPrice, conversationId } = route.params;
@@ -76,9 +79,11 @@ const AcceptHireScreen: React.FC = () => {
     rejectOfferMutation.mutate(id, {
       onSuccess: () => {
         triggerHaptic('medium');
-        showAlert('Offer Declined', `You have declined the offer for ${jobTitle}.`, [
-          { text: 'OK', onPress: () => navigation.goBack() },
-        ]);
+        showAlert(
+          t('alert_decline_offer_title') || 'Offer Declined',
+          `You have declined the offer for ${jobTitle}.`,
+          [{ text: 'OK', onPress: () => navigation.goBack() }],
+        );
       },
       onError: (err: any) => {
         showAlert('Error', err.message || 'Failed to decline offer.');
@@ -89,49 +94,54 @@ const AcceptHireScreen: React.FC = () => {
   const isPending = acceptOfferMutation.isPending || rejectOfferMutation.isPending;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>Job Offer</Text>
+          <Text style={styles.headerPillText}>{t('job_offer_received') || 'Job Offer'}</Text>
         </View>
         <View style={styles.iconBtn} />
       </View>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.prompt}>
-          <Text style={styles.bold}>{employerName}</Text> has confirmed you for the{' '}
-          <Text style={styles.bold}>{jobTitle}</Text> position.
+          <Text style={styles.bold}>{employerName}</Text> — {t('employer_sent_offer_notice')}
         </Text>
 
         {offeredPrice && (
           <View style={styles.priceBox}>
-            <Text style={styles.priceLabel}>Agreed Price</Text>
+            <Text style={styles.priceLabel}>
+              {t('hiring_final_agreed_price_eyebrow') || 'Agreed Price'}
+            </Text>
             <Text style={styles.priceValue}>₱{offeredPrice}</Text>
           </View>
         )}
 
-        <Text style={styles.infoText}>
-          By accepting this offer, your contact details will be shared with the employer, and you
-          commit to completing the job.
-        </Text>
+        <Text style={styles.infoText}>{t('hiring_stage4_guidance')}</Text>
+      </ScrollView>
 
-        <Button
-          label="Accept Offer"
-          onPress={handleAccept}
-          loading={acceptOfferMutation.isPending}
-          disabled={isPending}
-          variant="primary"
-          style={styles.actionBtn}
-        />
-        <Button
-          label="Decline Offer"
-          variant="outline"
-          onPress={handleReject}
-          loading={rejectOfferMutation.isPending}
-          disabled={isPending}
-        />
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+        <View style={styles.footerRow}>
+          <Button
+            label={t('hiring_decline_offer_btn')}
+            variant="outline"
+            size="base"
+            style={{ flex: 1 }}
+            onPress={handleReject}
+            loading={rejectOfferMutation.isPending}
+            disabled={isPending}
+          />
+          <Button
+            label={t('hiring_accept_offer_btn')}
+            onPress={handleAccept}
+            loading={acceptOfferMutation.isPending}
+            disabled={isPending}
+            variant="primary"
+            size="base"
+            style={{ flex: 1 }}
+          />
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -210,6 +220,17 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   actionBtn: { marginBottom: 8 },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    backgroundColor: colors.paperBright,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+  },
+  footerRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
 });
 
 export default AcceptHireScreen;

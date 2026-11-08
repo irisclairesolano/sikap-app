@@ -155,7 +155,9 @@ const ConfirmHireScreen: React.FC = () => {
               <View style={[styles.stageCircle, styles.stageDone]}>
                 <Ionicons name="checkmark" size={12} color="white" />
               </View>
-              <Text style={styles.stageLabel}>Applied</Text>
+              <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                Applied
+              </Text>
             </View>
             <View style={styles.stageDivider}>
               <View style={[StyleSheet.absoluteFill, styles.stageDoneDivider]} />
@@ -164,7 +166,9 @@ const ConfirmHireScreen: React.FC = () => {
               <View style={[styles.stageCircle, styles.stageDone]}>
                 <Ionicons name="checkmark" size={12} color="white" />
               </View>
-              <Text style={styles.stageLabel}>Shortlist</Text>
+              <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                Shortlist
+              </Text>
             </View>
             <View style={styles.stageDivider}>
               <View style={[StyleSheet.absoluteFill, styles.stageDoneDivider]} />
@@ -173,7 +177,9 @@ const ConfirmHireScreen: React.FC = () => {
               <View style={[styles.stageCircle, styles.stageCircleActive]}>
                 <Text style={styles.stageCircleTextActive}>3</Text>
               </View>
-              <Text style={styles.stageLabel}>Offer</Text>
+              <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                Offer
+              </Text>
             </View>
             <View style={styles.stageDivider}>
               <View style={styles.stageDividerHalf} />
@@ -182,14 +188,18 @@ const ConfirmHireScreen: React.FC = () => {
               <View style={styles.stageCircle}>
                 <Text style={styles.stageCircleText}>4</Text>
               </View>
-              <Text style={styles.stageLabel}>Hired</Text>
+              <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                Hired
+              </Text>
             </View>
             <View style={styles.stageDivider} />
             <View style={styles.stage}>
               <View style={styles.stageCircle}>
                 <Text style={styles.stageCircleText}>5</Text>
               </View>
-              <Text style={styles.stageLabel}>Done</Text>
+              <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                Done
+              </Text>
             </View>
           </View>
 
@@ -357,6 +367,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 24,
+    backgroundColor: colors.paperBright,
+    padding: 14,
+    borderRadius: 16,
+    ...shadows.sm,
   },
   stage: {
     alignItems: 'center',
@@ -400,6 +414,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 10,
     color: colors.ink,
+    textAlign: 'center',
   },
   stageDivider: {
     height: 3,

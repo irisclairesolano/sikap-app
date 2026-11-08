@@ -403,7 +403,9 @@ const ApplicantDetailScreen: React.FC = () => {
   const isContactLocked =
     appData?.contact_locked ??
     appData?.worker?.contact_locked ??
-    (status === 'pending' || status === 'withdrawn' || stage === 1);
+    (status === 'pending' || status === 'withdrawn' || stage < 4);
+
+  const isProfileVisible = stage >= 2 || showProfile;
 
   const handleReport = () => {
     setMenuVisible(false);
@@ -560,7 +562,9 @@ const ApplicantDetailScreen: React.FC = () => {
                       </Text>
                     )}
                   </View>
-                  <Text style={styles.stageLabel}>{t('stepper_applied')}</Text>
+                  <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                    {t('stepper_applied')}
+                  </Text>
                 </View>
                 <View style={styles.stageDivider}>
                   {stage > 1 ? (
@@ -587,7 +591,9 @@ const ApplicantDetailScreen: React.FC = () => {
                       </Text>
                     )}
                   </View>
-                  <Text style={styles.stageLabel}>{t('stepper_shortlisted')}</Text>
+                  <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                    {t('stepper_shortlisted')}
+                  </Text>
                 </View>
                 <View style={styles.stageDivider}>
                   {stage > 2 ? (
@@ -614,7 +620,9 @@ const ApplicantDetailScreen: React.FC = () => {
                       </Text>
                     )}
                   </View>
-                  <Text style={styles.stageLabel}>{t('stepper_offer')}</Text>
+                  <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                    {t('stepper_offer')}
+                  </Text>
                 </View>
                 <View style={styles.stageDivider}>
                   {stage > 3 ? (
@@ -641,7 +649,9 @@ const ApplicantDetailScreen: React.FC = () => {
                       </Text>
                     )}
                   </View>
-                  <Text style={styles.stageLabel}>{t('stepper_hired')}</Text>
+                  <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                    {t('stepper_hired')}
+                  </Text>
                 </View>
                 <View style={styles.stageDivider}>
                   {stage > 4 ? (
@@ -672,13 +682,20 @@ const ApplicantDetailScreen: React.FC = () => {
                       </Text>
                     )}
                   </View>
-                  <Text style={styles.stageLabel}>{t('stepper_done')}</Text>
+                  <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                    {t('stepper_done')}
+                  </Text>
                 </View>
               </View>
             )}
 
             {/* Profile Header */}
-            <View style={styles.profileHeader}>
+            <TouchableOpacity
+              style={styles.profileHeader}
+              disabled={stage !== 1}
+              onPress={() => setShowProfile((prev) => !prev)}
+              activeOpacity={stage === 1 ? 0.7 : 1}
+            >
               <Avatar
                 url={appData?.worker?.avatar_url}
                 name={applicantName || 'Worker'}
@@ -696,7 +713,19 @@ const ApplicantDetailScreen: React.FC = () => {
                   {barangay ? `${barangay}, ${municipality}` : 'Worker'}
                 </Text>
               </View>
-              {(status === 'pending_negotiation' ||
+              {stage === 1 && (
+                <View style={styles.profileHeaderTogglePill}>
+                  <Text style={styles.profileHeaderToggleText}>
+                    {isProfileVisible ? 'Hide' : 'Profile'}
+                  </Text>
+                  <Ionicons
+                    name={isProfileVisible ? 'chevron-up' : 'chevron-down'}
+                    size={14}
+                    color={colors.primary}
+                  />
+                </View>
+              )}
+              {((status === 'pending_negotiation' && hasRealMessageFromEmployer) ||
                 status === 'employer_confirmed' ||
                 status === 'accepted') && (
                 <TouchableOpacity
@@ -708,7 +737,7 @@ const ApplicantDetailScreen: React.FC = () => {
                   <Text style={styles.profileMessageBtnText}>Message</Text>
                 </TouchableOpacity>
               )}
-            </View>
+            </TouchableOpacity>
 
             {/* Applicant Cover Note */}
             {status !== 'completed' && !!coverNote && (
@@ -752,238 +781,116 @@ const ApplicantDetailScreen: React.FC = () => {
               </View>
             )}
 
-            {/* Reputation Card - Macaron Peach */}
-            <View style={styles.reputationCardWrapper}>
-              <View style={styles.reputationCard}>
-                <View style={styles.reputationHeaderRow}>
-                  <View style={styles.reputationBadge}>
-                    <Ionicons name="shield-checkmark" size={13} color={colors.primaryDark} />
+            {/* Stage 1: Tap to view full profile if collapsed */}
+            {stage === 1 && !isProfileVisible && (
+              <TouchableOpacity
+                style={styles.viewProfileBanner}
+                onPress={() => setShowProfile(true)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.viewProfileBannerLeft}>
+                  <View style={styles.viewProfileIconBox}>
+                    <Ionicons name="person-circle-outline" size={24} color={colors.primary} />
                   </View>
-                  <Text style={styles.reputationEyebrow}>Worker Reputation</Text>
-                </View>
-                <View style={styles.reputationRow}>
-                  <Text style={styles.reputationScore}>
-                    {reputationScore !== undefined && reputationScore !== null
-                      ? formatScore(reputationScore)
-                      : 'N/A'}
-                  </Text>
-                  <View style={styles.reputationStars}>
-                    <Text style={styles.reputationCount}>
-                      {reputationScore !== undefined && reputationScore !== null
-                        ? 'Reputation Score'
-                        : 'No ratings yet'}
-                    </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.viewProfileBannerTitle}>{t('view_worker_profile')}</Text>
+                    <Text style={styles.viewProfileBannerSub}>{t('view_worker_profile_sub')}</Text>
                   </View>
                 </View>
-                <Text style={styles.reputationTagline}>Their score travels with them.</Text>
-              </View>
-            </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.inkMuted} />
+              </TouchableOpacity>
+            )}
 
-            {/* Stats Grid - Macaron Colors */}
-            <View style={styles.statsWrapper}>
-              <View style={styles.statsGrid}>
-                <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
-                  <View
-                    style={[
-                      styles.statIconCircle,
-                      { backgroundColor: 'rgba(255, 255, 255, 0.65)' },
-                    ]}
-                  >
-                    <Ionicons name="checkmark-done-outline" size={18} color={colors.mintDeep} />
-                  </View>
-                  <Text style={[styles.statValue, { color: colors.mintDeep }]}>
-                    {appData?.worker?.completed_jobs_count ?? 0}
-                  </Text>
-                  <Text style={[styles.statLabel, { color: colors.mintDeep }]}>Completed Jobs</Text>
-                </View>
-
-                <View style={[styles.statBox, { backgroundColor: colors.sky }]}>
-                  <View
-                    style={[
-                      styles.statIconCircle,
-                      { backgroundColor: 'rgba(255, 255, 255, 0.65)' },
-                    ]}
-                  >
-                    <Ionicons name="shield-outline" size={18} color={colors.skyDeep} />
-                  </View>
-                  <Text style={[styles.statValue, { color: colors.skyDeep }]}>Active</Text>
-                  <Text style={[styles.statLabel, { color: colors.skyDeep }]}>Worker Status</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Worker Reviews List */}
-            <View style={styles.skillsSection}>
-              <Text style={styles.sectionEyebrow}>Employer Reviews</Text>
-              <View style={{ marginTop: 10, gap: 12 }}>
-                {!reviews || reviews.length === 0 ? (
-                  <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
-                    No feedback reviews yet.
-                  </Text>
-                ) : (
-                  reviews.map((rev: any) => (
-                    <View
-                      key={rev.id}
-                      style={{
-                        backgroundColor: colors.paperBright,
-                        padding: 14,
-                        borderRadius: 16,
-                        borderWidth: 1,
-                        borderColor: colors.inkFaint,
-                        gap: 6,
-                      }}
-                    >
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Text
-                          style={{ fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink }}
-                        >
-                          {rev.reviewer_name}
-                        </Text>
-                        <Text
-                          style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}
-                        >
-                          {rev.created_at}
-                        </Text>
+            {/* Full Worker Profile - Visible in Stage 2+ or when explicitly viewed */}
+            {isProfileVisible && (
+              <>
+                {/* Reputation Card - Macaron Peach */}
+                <View style={styles.reputationCardWrapper}>
+                  <View style={styles.reputationCard}>
+                    <View style={styles.reputationHeaderRow}>
+                      <View style={styles.reputationBadge}>
+                        <Ionicons name="shield-checkmark" size={13} color={colors.primaryDark} />
                       </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Ionicons
-                          name="star"
-                          size={14}
-                          color={colors.butter}
-                          style={{
-                            textShadowColor: 'rgba(0,0,0,0.1)',
-                            textShadowOffset: { width: 0, height: 1 },
-                            textShadowRadius: 1,
-                          }}
-                        />
-                        <Text
-                          style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink }}
-                        >
-                          {rev.overall_rating} / 5.0
-                        </Text>
-                      </View>
-                      {rev.comment ? (
-                        <Text
-                          style={{
-                            fontFamily: fonts.body,
-                            fontSize: 13,
-                            color: colors.inkSoft,
-                            marginTop: 4,
-                            lineHeight: 18,
-                          }}
-                        >
-                          "{rev.comment}"
-                        </Text>
-                      ) : null}
+                      <Text style={styles.reputationEyebrow}>Worker Reputation</Text>
                     </View>
-                  ))
-                )}
-              </View>
-            </View>
+                    <View style={styles.reputationRow}>
+                      <Text style={styles.reputationScore}>
+                        {reputationScore !== undefined && reputationScore !== null
+                          ? formatScore(reputationScore)
+                          : 'N/A'}
+                      </Text>
+                      <View style={styles.reputationStars}>
+                        <Text style={styles.reputationCount}>
+                          {reputationScore !== undefined && reputationScore !== null
+                            ? 'Reputation Score'
+                            : 'No ratings yet'}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.reputationTagline}>Their score travels with them.</Text>
+                  </View>
+                </View>
 
-            {/* About Me */}
-            {bio ? (
-              <View style={styles.skillsSection}>
-                <Text style={styles.sectionEyebrow}>About Me</Text>
-                <Text
-                  style={{
-                    fontFamily: fonts.body,
-                    fontSize: 14,
-                    color: colors.ink,
-                    marginTop: 4,
-                    lineHeight: 22,
-                  }}
-                >
-                  {bio}
-                </Text>
-              </View>
-            ) : null}
-
-            {/* Skills */}
-            <View style={styles.skillsSection}>
-              <Text style={styles.sectionEyebrow}>Skills</Text>
-              <View style={styles.skillsList}>
-                {!skills || skills.length === 0 ? (
-                  <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
-                    No skills added yet.
-                  </Text>
-                ) : (
-                  skills.map((skillName: string, index: number) => {
-                    const isEven = index % 2 === 0;
-                    const chipBg = isEven ? '#F8FAFC' : '#F1F5F9';
-                    const chipBorder = isEven ? '#E2E8F0' : '#CBD5E1';
-                    const chipTextColor = '#334155';
-                    const iconColor = '#64748B';
-
-                    return (
+                {/* Stats Grid - Macaron Colors */}
+                <View style={styles.statsWrapper}>
+                  <View style={styles.statsGrid}>
+                    <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
                       <View
-                        key={index}
                         style={[
-                          styles.chip,
-                          {
-                            backgroundColor: chipBg,
-                            borderWidth: 1,
-                            borderColor: chipBorder,
-                          },
+                          styles.statIconCircle,
+                          { backgroundColor: 'rgba(255, 255, 255, 0.65)' },
                         ]}
                       >
-                        <Ionicons name="construct-outline" size={13} color={iconColor} />
-                        <Text style={[styles.chipText, { color: chipTextColor }]}>{skillName}</Text>
+                        <Ionicons name="checkmark-done-outline" size={18} color={colors.mintDeep} />
                       </View>
-                    );
-                  })
-                )}
-              </View>
-            </View>
+                      <Text style={[styles.statValue, { color: colors.mintDeep }]}>
+                        {appData?.worker?.completed_jobs_count ?? 0}
+                      </Text>
+                      <Text style={[styles.statLabel, { color: colors.mintDeep }]}>
+                        Completed Jobs
+                      </Text>
+                    </View>
 
-            {/* Work History */}
-            <View style={styles.skillsSection}>
-              <Text style={styles.sectionEyebrow}>Work History</Text>
-              <View style={{ marginTop: 10, gap: 12 }}>
-                {!experiences || experiences.length === 0 ? (
-                  <Text style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}>
-                    No work history added yet.
-                  </Text>
-                ) : (
-                  experiences.map((exp: any) => {
-                    const isExpanded = !!expandedExpIds[exp.id];
-                    return (
-                      <TouchableOpacity
-                        key={exp.id}
-                        activeOpacity={0.7}
-                        onPress={() => {
-                          setExpandedExpIds((prev) => ({ ...prev, [exp.id]: !prev[exp.id] }));
-                        }}
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'flex-start',
-                          gap: 12,
-                          padding: 12,
-                          backgroundColor: colors.paperBright,
-                          borderRadius: 14,
-                          borderWidth: 1,
-                          borderColor: colors.inkFaint,
-                        }}
+                    <View style={[styles.statBox, { backgroundColor: colors.sky }]}>
+                      <View
+                        style={[
+                          styles.statIconCircle,
+                          { backgroundColor: 'rgba(255, 255, 255, 0.65)' },
+                        ]}
                       >
+                        <Ionicons name="shield-outline" size={18} color={colors.skyDeep} />
+                      </View>
+                      <Text style={[styles.statValue, { color: colors.skyDeep }]}>Active</Text>
+                      <Text style={[styles.statLabel, { color: colors.skyDeep }]}>
+                        Worker Status
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Worker Reviews List */}
+                <View style={styles.skillsSection}>
+                  <Text style={styles.sectionEyebrow}>Employer Reviews</Text>
+                  <View style={{ marginTop: 10, gap: 12 }}>
+                    {!reviews || reviews.length === 0 ? (
+                      <Text
+                        style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}
+                      >
+                        No feedback reviews yet.
+                      </Text>
+                    ) : (
+                      reviews.map((rev: any) => (
                         <View
+                          key={rev.id}
                           style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 20,
-                            backgroundColor: colors.butter,
-                            alignItems: 'center',
-                            justifyContent: 'center',
+                            backgroundColor: colors.paperBright,
+                            padding: 14,
+                            borderRadius: 16,
+                            borderWidth: 1,
+                            borderColor: colors.inkFaint,
+                            gap: 6,
                           }}
                         >
-                          <Ionicons name="briefcase" size={18} color={colors.inkSoft} />
-                        </View>
-                        <View style={{ flex: 1 }}>
                           <View
                             style={{
                               flexDirection: 'row',
@@ -996,49 +903,240 @@ const ApplicantDetailScreen: React.FC = () => {
                                 fontFamily: fonts.bodyBold,
                                 fontSize: 14,
                                 color: colors.ink,
-                                flex: 1,
                               }}
                             >
-                              {exp.job_title}
+                              {rev.reviewer_name}
                             </Text>
-                            <Ionicons
-                              name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                              size={16}
-                              color={colors.inkMuted}
-                              style={{ marginLeft: 6 }}
-                            />
+                            <Text
+                              style={{
+                                fontFamily: fonts.body,
+                                fontSize: 12,
+                                color: colors.inkMuted,
+                              }}
+                            >
+                              {rev.created_at}
+                            </Text>
                           </View>
-                          <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.ink }}>
-                            {exp.company || exp.employer_name}
-                          </Text>
-                          <Text
-                            style={{ fontFamily: fonts.body, fontSize: 12, color: colors.inkMuted }}
-                          >
-                            {exp.duration}
-                          </Text>
-                          {isExpanded && exp.description ? (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                            <Ionicons
+                              name="star"
+                              size={14}
+                              color={colors.butter}
+                              style={{
+                                textShadowColor: 'rgba(0,0,0,0.1)',
+                                textShadowOffset: { width: 0, height: 1 },
+                                textShadowRadius: 1,
+                              }}
+                            />
+                            <Text
+                              style={{
+                                fontFamily: fonts.bodyBold,
+                                fontSize: 13,
+                                color: colors.ink,
+                              }}
+                            >
+                              {rev.overall_rating} / 5.0
+                            </Text>
+                          </View>
+                          {rev.comment ? (
                             <Text
                               style={{
                                 fontFamily: fonts.body,
                                 fontSize: 13,
                                 color: colors.inkSoft,
-                                marginTop: 8,
-                                paddingTop: 8,
-                                borderTopWidth: 1,
-                                borderTopColor: colors.inkFaint,
+                                marginTop: 4,
                                 lineHeight: 18,
                               }}
                             >
-                              {exp.description}
+                              "{rev.comment}"
                             </Text>
                           ) : null}
                         </View>
-                      </TouchableOpacity>
-                    );
-                  })
+                      ))
+                    )}
+                  </View>
+                </View>
+
+                {/* About Me */}
+                {bio ? (
+                  <View style={styles.skillsSection}>
+                    <Text style={styles.sectionEyebrow}>About Me</Text>
+                    <Text
+                      style={{
+                        fontFamily: fonts.body,
+                        fontSize: 14,
+                        color: colors.ink,
+                        marginTop: 4,
+                        lineHeight: 22,
+                      }}
+                    >
+                      {bio}
+                    </Text>
+                  </View>
+                ) : null}
+
+                {/* Skills */}
+                <View style={styles.skillsSection}>
+                  <Text style={styles.sectionEyebrow}>Skills</Text>
+                  <View style={styles.skillsList}>
+                    {!skills || skills.length === 0 ? (
+                      <Text
+                        style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}
+                      >
+                        No skills added yet.
+                      </Text>
+                    ) : (
+                      skills.map((skillName: string, index: number) => {
+                        const isEven = index % 2 === 0;
+                        const chipBg = isEven ? '#F8FAFC' : '#F1F5F9';
+                        const chipBorder = isEven ? '#E2E8F0' : '#CBD5E1';
+                        const chipTextColor = '#334155';
+                        const iconColor = '#64748B';
+
+                        return (
+                          <View
+                            key={index}
+                            style={[
+                              styles.chip,
+                              {
+                                backgroundColor: chipBg,
+                                borderWidth: 1,
+                                borderColor: chipBorder,
+                              },
+                            ]}
+                          >
+                            <Ionicons name="construct-outline" size={13} color={iconColor} />
+                            <Text style={[styles.chipText, { color: chipTextColor }]}>
+                              {skillName}
+                            </Text>
+                          </View>
+                        );
+                      })
+                    )}
+                  </View>
+                </View>
+
+                {/* Work History */}
+                <View style={styles.skillsSection}>
+                  <Text style={styles.sectionEyebrow}>Work History</Text>
+                  <View style={{ marginTop: 10, gap: 12 }}>
+                    {!experiences || experiences.length === 0 ? (
+                      <Text
+                        style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}
+                      >
+                        No work history added yet.
+                      </Text>
+                    ) : (
+                      experiences.map((exp: any) => {
+                        const isExpanded = !!expandedExpIds[exp.id];
+                        return (
+                          <TouchableOpacity
+                            key={exp.id}
+                            activeOpacity={0.7}
+                            onPress={() => {
+                              setExpandedExpIds((prev) => ({ ...prev, [exp.id]: !prev[exp.id] }));
+                            }}
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'flex-start',
+                              gap: 12,
+                              padding: 12,
+                              backgroundColor: colors.paperBright,
+                              borderRadius: 14,
+                              borderWidth: 1,
+                              borderColor: colors.inkFaint,
+                            }}
+                          >
+                            <View
+                              style={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 20,
+                                backgroundColor: colors.butter,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <Ionicons name="briefcase" size={18} color={colors.inkSoft} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <Text
+                                  style={{
+                                    fontFamily: fonts.bodyBold,
+                                    fontSize: 14,
+                                    color: colors.ink,
+                                    flex: 1,
+                                  }}
+                                >
+                                  {exp.job_title}
+                                </Text>
+                                <Ionicons
+                                  name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                                  size={16}
+                                  color={colors.inkMuted}
+                                  style={{ marginLeft: 6 }}
+                                />
+                              </View>
+                              <Text
+                                style={{ fontFamily: fonts.body, fontSize: 13, color: colors.ink }}
+                              >
+                                {exp.company || exp.employer_name}
+                              </Text>
+                              <Text
+                                style={{
+                                  fontFamily: fonts.body,
+                                  fontSize: 12,
+                                  color: colors.inkMuted,
+                                }}
+                              >
+                                {exp.duration}
+                              </Text>
+                              {isExpanded && exp.description ? (
+                                <Text
+                                  style={{
+                                    fontFamily: fonts.body,
+                                    fontSize: 13,
+                                    color: colors.inkSoft,
+                                    marginTop: 8,
+                                    paddingTop: 8,
+                                    borderTopWidth: 1,
+                                    borderTopColor: colors.inkFaint,
+                                    lineHeight: 18,
+                                  }}
+                                >
+                                  {exp.description}
+                                </Text>
+                              ) : null}
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })
+                    )}
+                  </View>
+                </View>
+
+                {stage === 1 && (
+                  <TouchableOpacity
+                    style={styles.collapseProfileBtn}
+                    onPress={() => setShowProfile(false)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="chevron-up" size={16} color={colors.inkSoft} />
+                    <Text style={styles.collapseProfileBtnText}>
+                      {t('collapse_worker_profile')}
+                    </Text>
+                  </TouchableOpacity>
                 )}
-              </View>
-            </View>
+              </>
+            )}
+
             {/* Character References */}
             {status !== 'completed' &&
               (isReferencesLocked ? (
@@ -1168,14 +1266,13 @@ const ApplicantDetailScreen: React.FC = () => {
                   <View style={styles.shieldIcon}>
                     <Ionicons name="lock-closed" size={16} color={colors.primary} />
                   </View>
-                  <View>
+                  <View style={{ flex: 1 }}>
                     <Text style={styles.shieldTitle}>Privacy Shield Active</Text>
-                    <Text style={styles.shieldSub}>Contact details hidden</Text>
+                    <Text style={styles.shieldSub}>{t('contact_locked_phone_sub')}</Text>
                   </View>
                 </View>
                 <Text style={styles.shieldDesc}>
-                  Shortlist worker to unlock direct phone numbers, in-app chat, and character
-                  references for negotiation.
+                  {stage < 2 ? t('contact_locked_stage1_desc') : t('contact_locked_stage2_desc')}
                 </Text>
               </View>
             ) : (
@@ -1184,7 +1281,7 @@ const ApplicantDetailScreen: React.FC = () => {
                   <View style={[styles.shieldIcon, { backgroundColor: colors.mint }]}>
                     <Ionicons name="call" size={16} color={colors.mintDeep} />
                   </View>
-                  <View>
+                  <View style={{ flex: 1 }}>
                     <Text style={styles.shieldTitle}>Contact Details</Text>
                     <Text style={[styles.shieldSub, { color: colors.mintDeep }]}>
                       {stage >= 4 ? 'Hired worker contact number' : 'Direct contact number'}
@@ -1374,11 +1471,13 @@ const ApplicantDetailScreen: React.FC = () => {
               <Text
                 style={{
                   fontFamily: fonts.body,
-                  fontSize: 12,
+                  fontSize: 11,
+                  lineHeight: 15,
                   color: colors.inkSoft,
                   textAlign: 'center',
                   marginTop: 2,
                 }}
+                numberOfLines={2}
               >
                 {hasRealMessageFromEmployer
                   ? 'Send a formal price offer. The worker must accept before the hire is confirmed.'
@@ -1387,13 +1486,36 @@ const ApplicantDetailScreen: React.FC = () => {
             </View>
           )}
           {status === 'employer_confirmed' && (
-            <View style={{ gap: 6 }}>
+            <View style={styles.footerRow}>
+              <View
+                style={{
+                  flex: 1.2,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingHorizontal: 6,
+                }}
+              >
+                <Ionicons name="time-outline" size={16} color={colors.warning} />
+                <Text
+                  style={{
+                    fontFamily: fonts.bodyMedium,
+                    fontSize: 12,
+                    color: colors.inkMuted,
+                    flex: 1,
+                  }}
+                  numberOfLines={2}
+                >
+                  {t('hiring_waiting_for_worker')}
+                </Text>
+              </View>
               <Button
-                label={t('hiring_waiting_for_worker')}
+                label={t('cancel') || 'Cancel Offer'}
                 variant="outline"
-                size="lg"
-                fullWidth
-                disabled
+                size="base"
+                style={{ flex: 1, borderColor: colors.error }}
+                labelStyle={{ color: colors.error }}
+                onPress={navigateToCancelHire}
               />
             </View>
           )}
@@ -1822,6 +1944,77 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
+  },
+  profileHeaderTogglePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.primaryTint,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.primaryLight,
+  },
+  profileHeaderToggleText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.primary,
+  },
+  viewProfileBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.paperBright,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    ...shadows.sm,
+  },
+  viewProfileBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+    paddingRight: 8,
+  },
+  viewProfileIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primaryTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  viewProfileBannerTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.ink,
+  },
+  viewProfileBannerSub: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkSoft,
+    marginTop: 2,
+  },
+  collapseProfileBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: colors.paperBright,
+    borderRadius: 12,
+    paddingVertical: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
+  collapseProfileBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.inkSoft,
   },
 });
 

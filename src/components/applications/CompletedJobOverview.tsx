@@ -610,7 +610,7 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingBottom: 28,
   },
   receiptCaptureWrapper: {

@@ -90,6 +90,7 @@ describe('ActionCard Job Request Component', () => {
           conversationId={5}
           conversationStatus="open"
           applicationStatus="pending_negotiation"
+          hasRealMessageFromEmployer={true}
           onActionComplete={jest.fn()}
         />,
       );
@@ -101,6 +102,7 @@ describe('ActionCard Job Request Component', () => {
 
     // Next Steps Guidance for employer
     expect(getByText('Next Steps')).toBeTruthy();
+    await fireEvent.press(getByText('Next Steps'));
     expect(getByText('Message the Worker')).toBeTruthy();
     expect(getByText('Agree on Final Price')).toBeTruthy();
     expect(getByText('Set Price & Confirm')).toBeTruthy();

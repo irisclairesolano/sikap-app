@@ -106,6 +106,14 @@ export const JobStatusManagementScreen: React.FC = () => {
     return applications.filter((a) => a.status === 'completed');
   }, [applications]);
 
+  const activeApps = React.useMemo(() => {
+    return applications.filter((a) =>
+      ['employer_requested', 'pending_negotiation', 'employer_confirmed', 'accepted'].includes(
+        a.status,
+      ),
+    );
+  }, [applications]);
+
   const completedCount =
     completedApps.length > 0
       ? completedApps.length
@@ -590,14 +598,6 @@ export const JobStatusManagementScreen: React.FC = () => {
             )}
 
             {(() => {
-              const activeApps = applications.filter((a) =>
-                [
-                  'employer_requested',
-                  'pending_negotiation',
-                  'employer_confirmed',
-                  'accepted',
-                ].includes(a.status),
-              );
               if (activeApps.length === 0) return null;
 
               const getStageTitle = (st: string) => {
@@ -638,7 +638,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                       style={{
                         backgroundColor: colors.paperBright,
                         borderRadius: 16,
-                        padding: 16,
+                        padding: 14,
                         marginBottom: 12,
                         borderWidth: 1.5,
                         borderColor: colors.primary,
@@ -651,16 +651,17 @@ export const JobStatusManagementScreen: React.FC = () => {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           gap: 8,
-                          marginBottom: 8,
+                          marginBottom: 10,
                         }}
                       >
                         <Text
                           style={{
                             flex: 1,
                             fontFamily: fonts.bodyBold,
-                            fontSize: 13,
+                            fontSize: 12,
                             color: colors.primaryDark,
                           }}
+                          numberOfLines={1}
                         >
                           {getStageTitle(activeApp.status)}
                         </Text>
@@ -669,8 +670,8 @@ export const JobStatusManagementScreen: React.FC = () => {
                             flexShrink: 0,
                             backgroundColor: colors.primaryTint,
                             paddingHorizontal: 8,
-                            paddingVertical: 3,
-                            borderRadius: 12,
+                            paddingVertical: 2,
+                            borderRadius: 10,
                           }}
                         >
                           <Text
@@ -685,58 +686,73 @@ export const JobStatusManagementScreen: React.FC = () => {
                         </View>
                       </View>
 
-                      <Text
+                      <View
                         style={{
-                          fontFamily: fonts.display,
-                          fontSize: 16,
-                          color: colors.ink,
-                          marginBottom: 4,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 12,
                         }}
                       >
-                        {activeApp.worker?.name || 'Worker'}
-                      </Text>
-                      <Text
-                        style={{
-                          fontFamily: fonts.body,
-                          fontSize: 12,
-                          color: colors.inkSoft,
-                          marginBottom: 12,
-                        }}
-                      >
-                        {activeApp.worker?.barangay
-                          ? `${activeApp.worker.barangay}, ${activeApp.worker.municipality}`
-                          : t('pipeline_worker_applicant_default')}
-                      </Text>
-
-                      <Button
-                        label={getActionLabel(activeApp.status)}
-                        variant="primary"
-                        size="base"
-                        fullWidth
-                        onPress={() =>
-                          navigation.navigate('ApplicantDetail', {
-                            applicantId: activeApp.id,
-                            applicantName: activeApp.worker?.name || 'Worker Applicant',
-                            jobTitle: job?.title || '',
-                            status: activeApp.status,
-                            barangay: activeApp.worker?.barangay,
-                            municipality: activeApp.worker?.municipality,
-                            reputationScore: activeApp.worker?.reputation_score,
-                            bio:
-                              activeApp.worker?.workerProfile?.bio ||
-                              (activeApp.worker as any)?.bio,
-                            skills: activeApp.worker?.skills,
-                            experiences: activeApp.worker?.experiences,
-                            characterReferences:
-                              activeApp.worker?.character_references || undefined,
-                            phone: activeApp.worker?.phone || undefined,
-                            emergencyContactName: (activeApp.worker as any)?.emergency_contact_name,
-                            emergencyContactPhone: (activeApp.worker as any)
-                              ?.emergency_contact_phone,
-                            coverNote: activeApp.cover_note || undefined,
-                          })
-                        }
-                      />
+                        <View style={styles.applicantAvatar}>
+                          <Text style={styles.avatarInitial}>
+                            {(activeApp.worker?.name || 'W').charAt(0).toUpperCase()}
+                          </Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={{
+                              fontFamily: fonts.bodyBold,
+                              fontSize: 15,
+                              color: colors.ink,
+                            }}
+                            numberOfLines={1}
+                          >
+                            {activeApp.worker?.name || 'Worker'}
+                          </Text>
+                          <Text
+                            style={{
+                              fontFamily: fonts.body,
+                              fontSize: 12,
+                              color: colors.inkSoft,
+                              marginTop: 2,
+                            }}
+                            numberOfLines={1}
+                          >
+                            {activeApp.worker?.barangay
+                              ? `${activeApp.worker.barangay}, ${activeApp.worker.municipality}`
+                              : t('pipeline_worker_applicant_default')}
+                          </Text>
+                        </View>
+                        <Button
+                          label={getActionLabel(activeApp.status)}
+                          variant="primary"
+                          size="sm"
+                          onPress={() =>
+                            navigation.navigate('ApplicantDetail', {
+                              applicantId: activeApp.id,
+                              applicantName: activeApp.worker?.name || 'Worker Applicant',
+                              jobTitle: job?.title || '',
+                              status: activeApp.status,
+                              barangay: activeApp.worker?.barangay,
+                              municipality: activeApp.worker?.municipality,
+                              reputationScore: activeApp.worker?.reputation_score,
+                              bio:
+                                activeApp.worker?.workerProfile?.bio ||
+                                (activeApp.worker as any)?.bio,
+                              skills: activeApp.worker?.skills,
+                              experiences: activeApp.worker?.experiences,
+                              characterReferences:
+                                activeApp.worker?.character_references || undefined,
+                              phone: activeApp.worker?.phone || undefined,
+                              emergencyContactName: (activeApp.worker as any)
+                                ?.emergency_contact_name,
+                              emergencyContactPhone: (activeApp.worker as any)
+                                ?.emergency_contact_phone,
+                              coverNote: activeApp.cover_note || undefined,
+                            })
+                          }
+                        />
+                      </View>
                     </View>
                   ))}
                 </View>
@@ -901,72 +917,92 @@ export const JobStatusManagementScreen: React.FC = () => {
             </View>
 
             {/* Applicants List Section */}
-            {job.status !== 'cancelled' && (job.status as string) !== 'suspended' && (
-              <View style={styles.card}>
-                <Text style={styles.sectionTitle}>
-                  {t('job_applicants_header', { count: applications.length })}
-                </Text>
-                {applications.length === 0 ? (
-                  <Text style={styles.noApplicantsText}>{t('job_no_applicants_text')}</Text>
-                ) : (
-                  <View style={styles.applicantsList}>
-                    {applications.map((app) => (
-                      <TouchableOpacity
-                        key={app.id}
-                        style={styles.applicantRow}
-                        onPress={() =>
-                          navigation.navigate('ApplicantDetail', {
-                            applicantId: app.id,
-                            applicantName:
-                              app.worker?.name || t('pipeline_worker_applicant_default'),
-                            jobTitle: job?.title || '',
-                            status: app.status,
-                            barangay: app.worker?.barangay,
-                            municipality: app.worker?.municipality,
-                            reputationScore: app.worker?.reputation_score,
-                            bio: app.worker?.workerProfile?.bio || (app.worker as any)?.bio,
-                            skills: app.worker?.skills,
-                            experiences: app.worker?.experiences,
-                            characterReferences: app.worker?.character_references || undefined,
-                            phone: app.worker?.phone || undefined,
-                            emergencyContactName: (app.worker as any)?.emergency_contact_name,
-                            emergencyContactPhone: (app.worker as any)?.emergency_contact_phone,
-                          })
-                        }
-                      >
-                        <View style={styles.applicantLeft}>
-                          <View style={styles.applicantAvatar}>
-                            <Text style={styles.avatarInitial}>
-                              {app.worker?.name?.charAt(0) || 'W'}
-                            </Text>
-                          </View>
-                          <View style={{ flex: 1 }}>
-                            <Text style={styles.applicantName}>
-                              {app.worker?.name || t('pipeline_worker_applicant_default')}
-                            </Text>
-                            <Text style={styles.applicantSub} numberOfLines={1}>
-                              {app.worker?.barangay
-                                ? `${app.worker.barangay}, ${app.worker.municipality}`
-                                : t('pipeline_worker_applicant_default')}
-                            </Text>
-                          </View>
-                        </View>
-                        <View
-                          style={[
-                            styles.statusBadgeSmall,
-                            { backgroundColor: getStageColor(app.status) },
-                          ]}
-                        >
-                          <Text style={styles.statusBadgeTextSmall}>
-                            {getStageLabel(app.status)}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    ))}
+            {job.status !== 'cancelled' &&
+              (job.status as string) !== 'suspended' &&
+              (() => {
+                const otherApplications =
+                  activeApps.length > 0
+                    ? applications.filter(
+                        (app) => !activeApps.some((active: any) => active.id === app.id),
+                      )
+                    : applications;
+                return (
+                  <View style={styles.card}>
+                    <Text style={styles.sectionTitle}>
+                      {activeApps.length > 0
+                        ? `Other Applicants (${otherApplications.length})`
+                        : t('job_applicants_header', { count: applications.length })}
+                    </Text>
+                    {otherApplications.length === 0 ? (
+                      <Text style={styles.noApplicantsText}>
+                        {activeApps.length > 0
+                          ? 'No other applicants for this job.'
+                          : t('job_no_applicants_text')}
+                      </Text>
+                    ) : (
+                      <View style={styles.applicantsList}>
+                        {otherApplications.map((app) => (
+                          <TouchableOpacity
+                            key={app.id}
+                            style={styles.applicantRow}
+                            onPress={() =>
+                              navigation.navigate('ApplicantDetail', {
+                                applicantId: app.id,
+                                applicantName:
+                                  app.worker?.name || t('pipeline_worker_applicant_default'),
+                                jobTitle: job?.title || '',
+                                status: app.status,
+                                barangay: app.worker?.barangay,
+                                municipality: app.worker?.municipality,
+                                reputationScore: app.worker?.reputation_score,
+                                bio: app.worker?.workerProfile?.bio || (app.worker as any)?.bio,
+                                skills: app.worker?.skills,
+                                experiences: app.worker?.experiences,
+                                characterReferences: app.worker?.character_references || undefined,
+                                phone: app.worker?.phone || undefined,
+                                emergencyContactName: (app.worker as any)?.emergency_contact_name,
+                                emergencyContactPhone: (app.worker as any)?.emergency_contact_phone,
+                              })
+                            }
+                          >
+                            <View style={styles.applicantLeft}>
+                              <View style={styles.applicantAvatar}>
+                                <Text style={styles.avatarInitial}>
+                                  {app.worker?.name?.charAt(0) || 'W'}
+                                </Text>
+                              </View>
+                              <View style={{ flex: 1 }}>
+                                <Text style={styles.applicantName}>
+                                  {app.worker?.name || t('pipeline_worker_applicant_default')}
+                                </Text>
+                                <Text style={styles.applicantSub} numberOfLines={1}>
+                                  {app.worker?.barangay
+                                    ? `${app.worker.barangay}, ${app.worker.municipality}`
+                                    : t('pipeline_worker_applicant_default')}
+                                </Text>
+                              </View>
+                            </View>
+                            <View
+                              style={[
+                                styles.statusBadgeSmall,
+                                { backgroundColor: getStageColor(app.status) },
+                              ]}
+                            >
+                              <Text
+                                style={styles.statusBadgeTextSmall}
+                                numberOfLines={1}
+                                adjustsFontSizeToFit
+                              >
+                                {getStageLabel(app.status)}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
                   </View>
-                )}
-              </View>
-            )}
+                );
+              })()}
 
             <View style={styles.actionsCard}>
               {job.status === 'open' && (
@@ -1484,6 +1520,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
+    maxWidth: '42%',
   },
   statusBadgeTextSmall: {
     fontFamily: fonts.bodyBold,

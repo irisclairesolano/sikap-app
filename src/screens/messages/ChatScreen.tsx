@@ -165,6 +165,11 @@ export function deduplicateActionCardMessages(
     (m) => m.card_type === 'flag_offline' && Boolean(m.card_data?.is_flagged),
   );
 
+  // Check if there is an active/unresolved accept_or_reject card
+  const hasActiveAcceptOrReject = uniqueById.some(
+    (m) => m.card_type === 'accept_or_reject' && !m.card_resolved,
+  );
+
   // Filter messages: keep non-action_cards and only the latest card per action
   return uniqueById.filter((m) => {
     const group = getActionGroup(m);
@@ -175,10 +180,10 @@ export function deduplicateActionCardMessages(
       return false;
     }
 
-    // If cancel_hire is present but job is already accepted or completed, omit it
+    // If cancel_hire is present but job is already accepted, completed, or active accept_or_reject is present
     if (
       m.card_type === 'cancel_hire' &&
-      ['accepted', 'completed'].includes(applicationStatus || '')
+      (['accepted', 'completed'].includes(applicationStatus || '') || hasActiveAcceptOrReject)
     ) {
       return false;
     }
@@ -559,9 +564,15 @@ const ChatScreen: React.FC = () => {
           !['accepted', 'completed', 'rejected', 'cancelled'].includes(appStatus || '')
         );
 
-      case 'cancel_hire':
+      case 'cancel_hire': {
+        // Suppress standalone cancel_hire from actionable banner if accept_or_reject card is present
+        const hasAcceptOrReject = messages.some(
+          (other) => other.card_type === 'accept_or_reject' && !other.card_resolved,
+        );
+        if (hasAcceptOrReject) return false;
         // Only employer can cancel hire before worker accepts
         return role === 'employer' && appStatus === 'employer_confirmed';
+      }
 
       case 'mark_complete': {
         // Only employer can mark job complete while job is in progress and not locked

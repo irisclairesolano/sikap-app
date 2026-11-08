@@ -523,7 +523,9 @@ const ApplicationDetailScreen: React.FC = () => {
                   </Text>
                 )}
               </View>
-              <Text style={styles.stageLabel}>{t('stepper_applied')}</Text>
+              <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                {t('stepper_applied')}
+              </Text>
             </View>
             <View style={styles.stageDivider}>
               {stage > 1 ? (
@@ -548,7 +550,9 @@ const ApplicationDetailScreen: React.FC = () => {
                   </Text>
                 )}
               </View>
-              <Text style={styles.stageLabel}>{t('stepper_shortlisted')}</Text>
+              <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                {t('stepper_shortlisted')}
+              </Text>
             </View>
             <View style={styles.stageDivider}>
               {stage > 2 ? (
@@ -573,7 +577,9 @@ const ApplicationDetailScreen: React.FC = () => {
                   </Text>
                 )}
               </View>
-              <Text style={styles.stageLabel}>{t('stepper_offer')}</Text>
+              <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                {t('stepper_offer')}
+              </Text>
             </View>
             <View style={styles.stageDivider}>
               {stage > 3 ? (
@@ -598,7 +604,9 @@ const ApplicationDetailScreen: React.FC = () => {
                   </Text>
                 )}
               </View>
-              <Text style={styles.stageLabel}>{t('stepper_hired')}</Text>
+              <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                {t('stepper_hired')}
+              </Text>
             </View>
             <View style={styles.stageDivider}>
               {stage > 4 ? (
@@ -612,7 +620,9 @@ const ApplicationDetailScreen: React.FC = () => {
               <View style={styles.stageCircle}>
                 <Text style={styles.stageCircleText}>5</Text>
               </View>
-              <Text style={styles.stageLabel}>{t('stepper_done')}</Text>
+              <Text style={styles.stageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                {t('stepper_done')}
+              </Text>
             </View>
           </View>
         )}
@@ -721,7 +731,11 @@ const ApplicationDetailScreen: React.FC = () => {
               <Text style={styles.mintNoticeText}>{t('hiring_slot_locked_guarantee')}</Text>
             </View>
 
-            <View style={styles.employerContactCard}>
+            <TouchableOpacity
+              style={styles.employerContactCard}
+              onPress={handleOpenChat}
+              activeOpacity={0.8}
+            >
               <View style={styles.avatarSmall}>
                 <Text style={styles.avatarSmallText}>{(employerName || 'Employer').charAt(0)}</Text>
               </View>
@@ -729,8 +743,8 @@ const ApplicationDetailScreen: React.FC = () => {
                 <Text style={styles.employerNameCard}>{employerName || 'Employer'}</Text>
                 <Text style={styles.employerSubCard}>{t('hiring_offer_active_status')}</Text>
               </View>
-              <Ionicons name="call-outline" size={22} color={colors.primary} />
-            </View>
+              <Ionicons name="chatbubble-ellipses-outline" size={22} color={colors.primary} />
+            </TouchableOpacity>
           </View>
         )}
 
@@ -756,19 +770,19 @@ const ApplicationDetailScreen: React.FC = () => {
       </ScrollView>
 
       {/* FOOTER ACTIONS */}
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-        {stage === 1 && status !== 'withdrawn' && (
-          <Button
-            label={isWithdrawing ? 'Withdrawing...' : t('withdraw_application')}
-            variant="ghost"
-            size="lg"
-            fullWidth
-            onPress={handleWithdraw}
-            loading={isWithdrawing}
-          />
-        )}
-        {stage === 2 && status !== 'withdrawn' && (
-          <>
+      {stage !== 5 && (
+        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+          {stage === 1 && status !== 'withdrawn' && (
+            <Button
+              label={isWithdrawing ? 'Withdrawing...' : t('withdraw_application')}
+              variant="ghost"
+              size="lg"
+              fullWidth
+              onPress={handleWithdraw}
+              loading={isWithdrawing}
+            />
+          )}
+          {stage === 2 && status !== 'withdrawn' && (
             <Button
               label={t('open_chat')}
               variant="primary"
@@ -776,18 +790,8 @@ const ApplicationDetailScreen: React.FC = () => {
               fullWidth
               onPress={handleOpenChat}
             />
-            <Button
-              label={isWithdrawing ? 'Withdrawing...' : t('withdraw_application')}
-              variant="ghost"
-              size="base"
-              fullWidth
-              onPress={handleWithdraw}
-              loading={isWithdrawing}
-            />
-          </>
-        )}
-        {stage === 3 && (
-          <>
+          )}
+          {stage === 3 && (
             <View style={styles.footerRow}>
               <Button
                 label={t('hiring_decline_offer_btn')}
@@ -808,52 +812,40 @@ const ApplicationDetailScreen: React.FC = () => {
                 onPress={handleAcceptOffer}
               />
             </View>
+          )}
+          {stage === 4 && (
+            <>
+              <Button
+                label={t('open_chat')}
+                variant="primary"
+                size="lg"
+                fullWidth
+                onPress={handleOpenChat}
+              />
+              <Text
+                style={{
+                  fontFamily: fonts.body,
+                  fontSize: 12,
+                  color: colors.inkSoft,
+                  textAlign: 'center',
+                  marginTop: 2,
+                }}
+              >
+                {t('hiring_job_in_progress_btn')}
+              </Text>
+            </>
+          )}
+          {status === 'rejected' && (
             <Button
               label={t('open_chat')}
-              variant="ghost"
-              size="base"
-              fullWidth
-              onPress={handleOpenChat}
-            />
-          </>
-        )}
-        {stage === 4 && (
-          <>
-            <Button
-              label={t('open_chat')}
-              variant="primary"
+              variant="outline"
               size="lg"
               fullWidth
               onPress={handleOpenChat}
             />
-            <Button
-              label={t('hiring_job_in_progress_btn')}
-              variant="ghost"
-              size="base"
-              fullWidth
-              disabled
-            />
-          </>
-        )}
-        {stage === 5 && (
-          <Button
-            label={t('open_chat')}
-            variant="outline"
-            size="lg"
-            fullWidth
-            onPress={handleOpenChat}
-          />
-        )}
-        {status === 'rejected' && (
-          <Button
-            label={t('open_chat')}
-            variant="outline"
-            size="lg"
-            fullWidth
-            onPress={handleOpenChat}
-          />
-        )}
-      </View>
+          )}
+        </View>
+      )}
       <Modal visible={isMenuVisible} transparent animationType="fade">
         <TouchableOpacity
           style={styles.modalOverlay}
@@ -924,6 +916,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 24,
+    backgroundColor: colors.paperBright,
+    padding: 14,
+    borderRadius: 16,
+    ...shadows.sm,
   },
   stage: { alignItems: 'center', opacity: 0.5 },
   stageActive: { alignItems: 'center', opacity: 1 },
@@ -949,7 +945,7 @@ const styles = StyleSheet.create({
   },
   stageCircleText: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.inkMuted },
   stageCircleTextActive: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.mintDeep },
-  stageLabel: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.ink },
+  stageLabel: { fontFamily: fonts.bodyBold, fontSize: 10, color: colors.ink, textAlign: 'center' },
   stageDivider: {
     height: 3,
     flex: 1,
