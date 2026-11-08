@@ -664,6 +664,7 @@ export const tl: Record<TranslationKey, string> = {
   notif_mod_report_account_title: 'Update sa Report Tungkol sa Account Mo',
   notif_mod_report_account_msg: '{actionLabel} na ng admin ang pagsusuri tungkol sa account mo.',
   notif_new_message_title: 'Bagong Message mula kay {senderName}',
+  notif_new_message_msg: '{preview}',
   notif_new_message_image_preview: 'Nagpadala ng picture',
   notif_identity_verified_title: 'Aprubado na ang Account Mo',
   notif_identity_verified_msg:

@@ -642,6 +642,7 @@ export const en = {
   notif_mod_report_account_msg:
     'The moderation inquiry regarding your account has been {actionLabel}.',
   notif_new_message_title: 'New message from {senderName}',
+  notif_new_message_msg: '{preview}',
   notif_new_message_image_preview: 'Sent an image',
   notif_identity_verified_title: 'Identity Verified',
   notif_identity_verified_msg:

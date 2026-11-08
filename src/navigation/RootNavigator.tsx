@@ -573,7 +573,24 @@ const RootNavigator: React.FC = () => {
       {activeBanner && (
         <TouchableOpacity
           activeOpacity={0.9}
-          onPress={() => setActiveBanner(null)}
+          onPress={() => {
+            const bannerData = activeBanner.data;
+            setActiveBanner(null);
+            if (bannerData?.conversation_id) {
+              try {
+                const { navigate } = require('../../App');
+                navigate('Messages', {
+                  screen: 'Chat',
+                  params: { conversationId: bannerData.conversation_id },
+                });
+              } catch (_) {}
+            } else if (bannerData?.type === 'notification' || bannerData?.notification_id) {
+              try {
+                const { navigate } = require('../../App');
+                navigate('Notifications');
+              } catch (_) {}
+            }
+          }}
           style={{
             position: 'absolute',
             top: Platform.OS === 'ios' ? 54 : 38,

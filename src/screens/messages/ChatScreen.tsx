@@ -77,6 +77,7 @@ import { TypingIndicator } from '../../components/chat/TypingIndicator';
 import { useRealtimeChat } from '../../services/realtime';
 import { messagesApi } from '../../api/messages';
 import { triggerHaptic } from '../../utils/haptics';
+import { setActiveChatConversationId } from '../../utils/activeChatTracker';
 import { colors, fonts } from '../../theme';
 
 const EMPLOYER_OUTREACH_CARD_TYPES = [
@@ -254,6 +255,13 @@ const ChatScreen: React.FC = () => {
     currentUserId: user?.id,
     onTyping: handlePartnerTyping,
   });
+
+  useEffect(() => {
+    setActiveChatConversationId(conversationId);
+    return () => {
+      setActiveChatConversationId(null);
+    };
+  }, [conversationId]);
 
   const blockUserMutation = useBlockUser();
   const unblockUserMutation = useUnblockUser();

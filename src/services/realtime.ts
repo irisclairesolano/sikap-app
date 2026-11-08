@@ -420,6 +420,11 @@ export function useRealtimeUserEvents(userId?: number) {
 
       // If incoming from another user, provide a light haptic pulse + system/in-app notification
       if (data.sender_id && data.sender_id !== userId) {
+        const { getActiveChatConversationId } = require('../utils/activeChatTracker');
+        if (getActiveChatConversationId() === data.conversation_id) {
+          return;
+        }
+
         triggerHaptic('light');
         try {
           const { triggerSystemNotification } = require('../hooks/usePushNotifications');
@@ -430,8 +435,10 @@ export function useRealtimeUserEvents(userId?: number) {
           const lang = getActiveLanguage();
           const senderName = data.sender_name || data.sender?.name || 'SIKAP';
           const imageFallback = translateForLanguage(lang, 'notif_new_message_image_preview');
-          const preview =
-            data.message || data.body || (data.image_url ? imageFallback : imageFallback);
+          let preview = data.message || data.body;
+          if (!preview) {
+            preview = data.image_url ? imageFallback : 'New message';
+          }
           const localizedTitle = translateForLanguage(lang, 'notif_new_message_title', {
             senderName,
           });

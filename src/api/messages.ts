@@ -78,11 +78,23 @@ export const messagesApi = {
 
   /**
    * Get total unread message count across all conversations, optionally filtered by role.
+   * Also returns the latest unread message snippet to trigger foreground in-app toasts.
    */
   getUnreadCount: (role?: 'worker' | 'employer' | 'all' | string) =>
-    apiClient<{ unread_count: number }>(
-      `/conversations/unread-count${role ? `?role=${role}` : ''}`,
-    ),
+    apiClient<{
+      unread_count: number;
+      latest_message?: {
+        id: number;
+        conversation_id: number;
+        sender_id: number;
+        sender_name: string;
+        body: string | null;
+        image_url: string | null;
+        message_type: string;
+        card_type: string | null;
+        created_at: string;
+      } | null;
+    }>(`/conversations/unread-count${role ? `?role=${role}` : ''}`),
 
   /**
    * Employer unlocks a locked conversation.
