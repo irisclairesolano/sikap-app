@@ -282,6 +282,12 @@ export const en = {
   no_reviews_employer_desc:
     'Reviews from workers who have completed jobs with {employerName} will appear here once submitted.',
   verified_worker: 'Verified Worker',
+  unverified_worker: 'Unverified Worker',
+  worker_profile: 'Worker Profile',
+  worker_reputation: 'Worker Reputation',
+  overall_worker_rating: 'Overall Worker Rating',
+  view_application_btn: 'View Application',
+  message_worker_btn: 'Message Worker',
   completed_job: 'Completed Job',
 
   // Group 2: Reporting Module & Sheets
@@ -1349,6 +1355,11 @@ export const en = {
     'Shortlist worker to unlock character references and in-app negotiation chat.',
   contact_locked_stage2_desc:
     'Direct phone number and emergency contacts will be unlocked once hire offer is accepted.',
+  about_worker: 'About the Worker',
+  work_history: 'Work History',
+  privacy_shield_title: 'Protected by SIKAP Privacy Shield',
+  privacy_shield_desc:
+    'Character references and contact details are unlocked as you progress through the hiring pipeline.',
 };
 
 export type TranslationKey = keyof typeof en;

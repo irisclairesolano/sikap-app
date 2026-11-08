@@ -297,11 +297,15 @@ const ChatScreen: React.FC = () => {
     if (isOtherUserDeleted) return;
     if (conversationUserRole === 'employer') {
       const appId = conversation?.application_id;
-      if (appId) {
-        (navigation as any).navigate('ApplicantDetail', {
-          applicantId: appId,
-          applicantName: otherUserName || conversation?.other_user?.name,
+      const workerId = conversation?.other_user?.id;
+      if (workerId || appId) {
+        (navigation as any).navigate('WorkerPublicProfile', {
+          workerId: workerId || 0,
+          applicationId: appId,
+          workerName: otherUserName || conversation?.other_user?.name,
+          avatarUrl: conversation?.other_user?.avatar_url,
           jobTitle: jobTitle || conversation?.job_title,
+          status: conversation?.application_status,
         });
       }
     } else {

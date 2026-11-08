@@ -693,36 +693,63 @@ export const JobStatusManagementScreen: React.FC = () => {
                           gap: 12,
                         }}
                       >
-                        <View style={styles.applicantAvatar}>
-                          <Text style={styles.avatarInitial}>
-                            {(activeApp.worker?.name || 'W').charAt(0).toUpperCase()}
-                          </Text>
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text
-                            style={{
-                              fontFamily: fonts.bodyBold,
-                              fontSize: 15,
-                              color: colors.ink,
-                            }}
-                            numberOfLines={1}
-                          >
-                            {activeApp.worker?.name || 'Worker'}
-                          </Text>
-                          <Text
-                            style={{
-                              fontFamily: fonts.body,
-                              fontSize: 12,
-                              color: colors.inkSoft,
-                              marginTop: 2,
-                            }}
-                            numberOfLines={1}
-                          >
-                            {activeApp.worker?.barangay
-                              ? `${activeApp.worker.barangay}, ${activeApp.worker.municipality}`
-                              : t('pipeline_worker_applicant_default')}
-                          </Text>
-                        </View>
+                        <TouchableOpacity
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 12,
+                            flex: 1,
+                          }}
+                          onPress={() =>
+                            (navigation as any).navigate('WorkerPublicProfile', {
+                              workerId: activeApp.worker?.id || 0,
+                              applicationId: activeApp.id,
+                              workerName: activeApp.worker?.name,
+                              avatarUrl: activeApp.worker?.avatar_url,
+                              jobTitle: job?.title,
+                              status: activeApp.status,
+                              barangay: activeApp.worker?.barangay,
+                              municipality: activeApp.worker?.municipality,
+                              reputationScore: activeApp.worker?.reputation_score,
+                              skills: activeApp.worker?.skills,
+                              experiences: activeApp.worker?.experiences,
+                              characterReferences: activeApp.worker?.character_references,
+                              phone: activeApp.worker?.phone,
+                            })
+                          }
+                          activeOpacity={0.7}
+                        >
+                          <View style={styles.applicantAvatar}>
+                            <Text style={styles.avatarInitial}>
+                              {(activeApp.worker?.name || 'W').charAt(0).toUpperCase()}
+                            </Text>
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={{
+                                fontFamily: fonts.bodyBold,
+                                fontSize: 15,
+                                color: colors.ink,
+                              }}
+                              numberOfLines={1}
+                            >
+                              {activeApp.worker?.name || 'Worker'}
+                            </Text>
+                            <Text
+                              style={{
+                                fontFamily: fonts.body,
+                                fontSize: 12,
+                                color: colors.inkSoft,
+                                marginTop: 2,
+                              }}
+                              numberOfLines={1}
+                            >
+                              {activeApp.worker?.barangay
+                                ? `${activeApp.worker.barangay}, ${activeApp.worker.municipality}`
+                                : t('pipeline_worker_applicant_default')}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
                         <Button
                           label={getActionLabel(activeApp.status)}
                           variant="primary"

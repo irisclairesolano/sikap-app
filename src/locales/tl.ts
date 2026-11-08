@@ -289,6 +289,12 @@ export const tl: Record<TranslationKey, string> = {
   no_reviews_employer_desc:
     'Lalabas dito ang mga review ng mga manggagawang nakatapos na ng trabaho para kay {employerName} kapag naisumite na ang mga ito.',
   verified_worker: 'Beripikadong Manggagawa',
+  unverified_worker: 'Hindi Beripikadong Manggagawa',
+  worker_profile: 'Profile ng Manggagawa',
+  worker_reputation: 'Reputasyon ng Manggagawa',
+  overall_worker_rating: 'Pangkalahatang Rating ng Manggagawa',
+  view_application_btn: 'Tingnan ang Aplikasyon',
+  message_worker_btn: 'I-message ang Manggagawa',
   completed_job: 'Natapos na Trabaho',
 
   // Group 2: Reporting Module & Sheets
@@ -1385,4 +1391,9 @@ export const tl: Record<TranslationKey, string> = {
     'I-shortlist ang manggagawa para ma-unlock ang character references at in-app chat.',
   contact_locked_stage2_desc:
     'Maa-unlock ang direktang numero at emergency contact kapag tinanggap na ang alok sa trabaho.',
+  about_worker: 'Tungkol sa Manggagawa',
+  work_history: 'Kasaysayan ng Trabaho',
+  privacy_shield_title: 'Protektado ng SIKAP Privacy Shield',
+  privacy_shield_desc:
+    'Maa-unlock ang mga character reference at detalye ng pakikipag-ugnayan habang umuusad ka sa proseso ng pagkuha.',
 };

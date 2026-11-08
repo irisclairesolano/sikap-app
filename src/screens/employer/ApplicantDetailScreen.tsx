@@ -692,9 +692,24 @@ const ApplicantDetailScreen: React.FC = () => {
             {/* Profile Header */}
             <TouchableOpacity
               style={styles.profileHeader}
-              disabled={stage !== 1}
-              onPress={() => setShowProfile((prev) => !prev)}
-              activeOpacity={stage === 1 ? 0.7 : 1}
+              onPress={() => {
+                navigation.navigate('WorkerPublicProfile', {
+                  workerId: appData?.worker?.id || 0,
+                  applicationId: appId,
+                  workerName: applicantName,
+                  avatarUrl: appData?.worker?.avatar_url,
+                  jobTitle,
+                  status,
+                  barangay,
+                  municipality,
+                  reputationScore,
+                  skills,
+                  experiences,
+                  characterReferences,
+                  phone,
+                });
+              }}
+              activeOpacity={0.7}
             >
               <Avatar
                 url={appData?.worker?.avatar_url}
@@ -713,18 +728,10 @@ const ApplicantDetailScreen: React.FC = () => {
                   {barangay ? `${barangay}, ${municipality}` : 'Worker'}
                 </Text>
               </View>
-              {stage === 1 && (
-                <View style={styles.profileHeaderTogglePill}>
-                  <Text style={styles.profileHeaderToggleText}>
-                    {isProfileVisible ? 'Hide' : 'Profile'}
-                  </Text>
-                  <Ionicons
-                    name={isProfileVisible ? 'chevron-up' : 'chevron-down'}
-                    size={14}
-                    color={colors.primary}
-                  />
-                </View>
-              )}
+              <View style={styles.profileHeaderTogglePill}>
+                <Text style={styles.profileHeaderToggleText}>Profile</Text>
+                <Ionicons name="chevron-forward" size={14} color={colors.primary} />
+              </View>
               {((status === 'pending_negotiation' && hasRealMessageFromEmployer) ||
                 status === 'employer_confirmed' ||
                 status === 'accepted') && (

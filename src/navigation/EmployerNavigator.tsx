@@ -25,6 +25,7 @@ import { JobDetailsScreen } from '../screens/worker/JobDetailsScreen';
 
 import { PostJobScreen } from '../screens/employer/PostJobScreen';
 import ApplicantDetailScreen from '../screens/employer/ApplicantDetailScreen';
+import WorkerPublicProfileScreen from '../screens/employer/WorkerPublicProfileScreen';
 import ConfirmHireScreen from '../screens/employer/ConfirmHireScreen';
 import SendRequestScreen from '../screens/employer/SendRequestScreen';
 import CancelHireScreen from '../screens/employer/CancelHireScreen';
@@ -42,6 +43,25 @@ export type EmployerStackParamList = {
   EmployerDashboard: undefined;
   PostJob?: { job?: any } | undefined;
   JobDetails: { id: number };
+  WorkerPublicProfile: {
+    workerId: number;
+    applicationId?: number;
+    workerName?: string;
+    avatarUrl?: string;
+    verificationBadge?: boolean;
+    reputationScore?: number;
+    completedJobsCount?: number;
+    barangay?: string;
+    municipality?: string;
+    bio?: string;
+    skills?: string[];
+    experiences?: any[];
+    characterReferences?: any[];
+    phone?: string;
+    reviews?: any[];
+    status?: string;
+    jobTitle?: string;
+  };
   ApplicantDetail: {
     applicantId: number;
     jobTitle?: string;
@@ -134,6 +154,7 @@ const MessagesStack: React.FC = () => (
     <Stack.Screen name="Chat" component={ChatScreen} />
     <Stack.Screen name="RateWorker" component={RateWorkerScreen} />
     <Stack.Screen name="RateWorkerList" component={RateWorkerListScreen} />
+    <Stack.Screen name="WorkerPublicProfile" component={WorkerPublicProfileScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
     <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
     <Stack.Screen name="SendRequest" component={SendRequestScreen} />
@@ -154,6 +175,7 @@ const HomeStack: React.FC = () => (
     <Stack.Screen name="PostJob" component={PostJobScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
+    <Stack.Screen name="WorkerPublicProfile" component={WorkerPublicProfileScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
     <Stack.Screen name="SendRequest" component={SendRequestScreen} />
     <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
@@ -179,6 +201,7 @@ const MyJobsStack: React.FC = () => (
     <Stack.Screen name="PostJob" component={PostJobScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
+    <Stack.Screen name="WorkerPublicProfile" component={WorkerPublicProfileScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
     <Stack.Screen name="ConfirmHire" component={ConfirmHireScreen} />
     <Stack.Screen name="RateWorkerList" component={RateWorkerListScreen} />
@@ -201,6 +224,7 @@ const MyJobsStack: React.FC = () => (
 const NotificationsStack: React.FC = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="NotificationsList">
     <Stack.Screen name="NotificationsList" component={NotificationsScreen} />
+    <Stack.Screen name="WorkerPublicProfile" component={WorkerPublicProfileScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
@@ -233,6 +257,7 @@ const ProfileStack: React.FC = () => (
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="JobStatusManagement" component={JobStatusManagementScreen} />
+    <Stack.Screen name="WorkerPublicProfile" component={WorkerPublicProfileScreen} />
     <Stack.Screen name="ApplicantDetail" component={ApplicantDetailScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />

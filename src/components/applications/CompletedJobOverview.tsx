@@ -150,18 +150,16 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
   };
 
   const handleCounterpartyPress = () => {
-    if (onViewProfile) {
-      onViewProfile();
-      return;
-    }
-
     if (viewerRole === 'employer') {
-      if (application) {
-        navigation.navigate('ApplicantDetail', {
-          applicantId: application.id,
-          applicantName: counterparty?.name || 'Worker',
+      const targetWorkerId = worker?.id || counterparty?.id;
+      if (targetWorkerId || application) {
+        (navigation as any).navigate('WorkerPublicProfile', {
+          workerId: targetWorkerId || 0,
+          applicationId: application?.id,
+          workerName: counterparty?.name || 'Worker',
+          avatarUrl: counterparty?.avatar_url,
           jobTitle: job?.title || 'Job',
-          status: application.status,
+          status: application?.status || 'completed',
           barangay: counterparty?.barangay,
           municipality: counterparty?.municipality,
           reputationScore: (counterparty as any)?.reputation_score,
@@ -169,7 +167,6 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           experiences: (counterparty as any)?.experiences,
           characterReferences: (counterparty as any)?.character_references,
           phone: (counterparty as any)?.phone,
-          viewProfile: true,
         });
       }
     } else {
