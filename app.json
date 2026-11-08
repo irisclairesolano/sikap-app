@@ -22,7 +22,8 @@
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
-        "POST_NOTIFICATIONS"
+        "POST_NOTIFICATIONS",
+        "VIBRATE"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -44,7 +45,8 @@
       "expo-asset",
       "expo-sharing",
       "expo-media-library",
-      "expo-notifications"
+      "expo-notifications",
+      "expo-audio"
     ],
     "extra": {
       "eas": {

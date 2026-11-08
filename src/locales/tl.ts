@@ -248,6 +248,7 @@ export const tl: Record<TranslationKey, string> = {
   job_offer_received: 'May Alok na Trabaho',
   block_user: 'I-block ang User',
   unblock_user: 'I-unblock ang User',
+  draft: 'Draft',
   no_conversations_yet: 'Wala pang usapan',
   no_messages_here:
     'Kapag nag-apply ka o nagkaroon ng tugma sa trabaho, lalabas dito ang mga pag-uusap ninyo.',
@@ -427,6 +428,12 @@ export const tl: Record<TranslationKey, string> = {
   set_final_price_confirm_hire: 'I-set ang Bayad at I-hire',
   set_final_agreed_price: 'Itakda ang Napagkasunduang Bayad',
   enter_agreed_price_placeholder: 'Ilagay ang bayad (₱)...',
+  agreed_price_helper_note:
+    'Kabuuang bayad para sa buong trabaho/proyekto (hal., 3 araw sa ₱650/araw = ₱1,950 kabuuan).',
+  agreed_price_total_tag: '(Kabuuang bayad)',
+  offer_total_amount_notice:
+    'Ito ang kabuuang napagkasunduang bayad para sa buong trabaho/proyekto kapag natapos.',
+  offer_total_amount_sublabel: 'Kabuuang bayad para sa buong trabaho / proyekto',
   shortlisted_application: 'Napiling Application',
   stage_2: 'Yugto 2',
   next_steps: 'Mga Susunod na Hakbang',

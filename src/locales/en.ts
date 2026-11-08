@@ -243,6 +243,7 @@ export const en = {
   job_offer_received: 'Job Offer Received',
   block_user: 'Block User',
   unblock_user: 'Unblock User',
+  draft: 'Draft',
   no_conversations_yet: 'No conversations yet',
   no_messages_here: 'When you apply or match with jobs, your conversations will appear here.',
   withdraw_confirm:
@@ -411,6 +412,12 @@ export const en = {
   set_final_price_confirm_hire: 'Set Price & Confirm',
   set_final_agreed_price: 'Set Final Agreed Price',
   enter_agreed_price_placeholder: 'Enter agreed price (₱)...',
+  agreed_price_helper_note:
+    'Total amount for the entire job/duration (e.g., 3 days at ₱650/day = ₱1,950 total).',
+  agreed_price_total_tag: '(Total for job)',
+  offer_total_amount_notice:
+    'This is the total agreed amount for the entire duration of the job/project upon completion.',
+  offer_total_amount_sublabel: 'Total amount for the entire job / project',
   shortlisted_application: 'Shortlisted Application',
   stage_2: 'Stage 2',
   next_steps: 'Next Steps',

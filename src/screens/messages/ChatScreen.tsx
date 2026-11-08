@@ -79,6 +79,8 @@ import { TypingIndicator } from '../../components/chat/TypingIndicator';
 import { useRealtimeChat } from '../../services/realtime';
 import { messagesApi } from '../../api/messages';
 import { triggerHaptic } from '../../utils/haptics';
+import { getDraft, loadDraft, saveDraft, clearDraft } from '../../utils/chatDrafts';
+import { playMessageSentSound, playMessageReceivedSound } from '../../utils/sound';
 import { setActiveChatConversationId } from '../../utils/activeChatTracker';
 import { colors, fonts } from '../../theme';
 
@@ -230,6 +232,49 @@ const ChatScreen: React.FC = () => {
   const { user } = useAuth();
 
   const [inputText, setInputText] = useState('');
+  const inputTextRef = useRef(inputText);
+  inputTextRef.current = inputText;
+
+  // Restore saved draft upon entering this conversation
+  useEffect(() => {
+    let isMounted = true;
+    const initialDraft = getDraft(conversationId);
+    if (initialDraft && !inputTextRef.current) {
+      setInputText(initialDraft);
+      inputTextRef.current = initialDraft;
+    } else if (!inputTextRef.current) {
+      loadDraft(conversationId).then((draft) => {
+        if (isMounted && draft && !inputTextRef.current) {
+          setInputText(draft);
+          inputTextRef.current = draft;
+        }
+      });
+    }
+
+    return () => {
+      isMounted = false;
+      const current = inputTextRef.current;
+      if (current && current.trim().length > 0) {
+        saveDraft(conversationId, current);
+      } else {
+        clearDraft(conversationId);
+      }
+    };
+  }, [conversationId]);
+
+  // Persist draft on screen exit (back button, gesture, etc.)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      const current = inputTextRef.current;
+      if (current && current.trim().length > 0) {
+        saveDraft(conversationId, current);
+      } else {
+        clearDraft(conversationId);
+      }
+    });
+    return unsubscribe;
+  }, [navigation, conversationId]);
+
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showQuickReplies, setShowQuickReplies] = useState(true);
   const [showScrollBottomFab, setShowScrollBottomFab] = useState(false);
@@ -259,8 +304,14 @@ const ChatScreen: React.FC = () => {
   });
 
   const handleGoBack = useCallback(() => {
+    const current = inputTextRef.current;
+    if (current && current.trim().length > 0) {
+      saveDraft(conversationId, current);
+    } else {
+      clearDraft(conversationId);
+    }
     safeGoBack(navigation, 'ConversationsList');
-  }, [navigation]);
+  }, [navigation, conversationId]);
 
   useEffect(() => {
     const onBackPress = () => {
@@ -491,6 +542,7 @@ const ChatScreen: React.FC = () => {
 
       if (isIncoming && isFocused) {
         triggerHaptic('medium');
+        playMessageReceivedSound();
       }
 
       // Automatically scroll to bottom on new message if already near bottom
@@ -524,12 +576,17 @@ const ChatScreen: React.FC = () => {
     if (!textToSend) return;
     isNearBottomRef.current = true;
     triggerHaptic('light');
+    playMessageSentSound();
+    clearDraft(conversationId);
+    inputTextRef.current = '';
     setInputError(null);
     setInputText('');
     setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
     sendMessage.mutate(textToSend, {
       onError: (err: any) => {
         setInputText(textToSend);
+        inputTextRef.current = textToSend;
+        saveDraft(conversationId, textToSend);
         if (
           err.status === 422 ||
           (err.message && /prohibited|inappropriate|profanity|flagged/i.test(err.message))
@@ -565,6 +622,8 @@ const ChatScreen: React.FC = () => {
       }
 
       isNearBottomRef.current = true;
+      triggerHaptic('light');
+      playMessageSentSound();
       sendImage.mutate(finalUri, {
         onError: (err: any) => {
           showAlert(
@@ -1202,6 +1261,8 @@ const ChatScreen: React.FC = () => {
                   userRole={conversationUserRole}
                   onSelectChip={(text) => {
                     setInputText(text);
+                    inputTextRef.current = text;
+                    saveDraft(conversationId, text);
                     if (inputError) setInputError(null);
                   }}
                   disabled={!isWorkerReplyAllowed}
@@ -1242,7 +1303,13 @@ const ChatScreen: React.FC = () => {
                   value={inputText}
                   onChangeText={(text) => {
                     setInputText(text);
+                    inputTextRef.current = text;
                     if (inputError) setInputError(null);
+                    if (text.trim().length > 0) {
+                      saveDraft(conversationId, text);
+                    } else {
+                      clearDraft(conversationId);
+                    }
                     const now = Date.now();
                     if (text.trim().length > 0 && now - lastTypingPingRef.current > 2500) {
                       lastTypingPingRef.current = now;

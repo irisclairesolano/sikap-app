@@ -161,8 +161,12 @@ export const usePushNotifications = (): PushNotificationState => {
             name: 'SIKAP Notifications',
             importance: Notifications.AndroidImportance.MAX,
             vibrationPattern: [0, 250, 250, 250],
+            enableVibrate: true,
+            enableLights: true,
             lightColor: '#1E40AF',
             sound: 'default',
+            showBadge: true,
+            lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
           });
         }
 

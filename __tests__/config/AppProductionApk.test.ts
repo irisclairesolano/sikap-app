@@ -24,6 +24,7 @@ describe('Production APK Readiness & Configuration Tests', () => {
     expect(permissions).toContain('CAMERA');
     expect(permissions).toContain('READ_EXTERNAL_STORAGE');
     expect(permissions).toContain('WRITE_EXTERNAL_STORAGE');
+    expect(permissions).toContain('VIBRATE');
   });
 
   it('handles SecureStore setItemAsync errors gracefully without crashing', async () => {
