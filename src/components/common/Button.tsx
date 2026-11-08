@@ -153,8 +153,8 @@ const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   base: {
-    height: 48,
     minHeight: 48,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -170,15 +170,14 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   sm: {
-    height: 38,
     minHeight: 38,
+    paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 10,
   },
   lg: {
-    height: 50,
     minHeight: 50,
-    maxHeight: 52,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 12,
   },

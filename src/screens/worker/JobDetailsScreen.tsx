@@ -340,7 +340,14 @@ export const JobDetailsScreen: React.FC = () => {
             <View style={styles.infoIconBox}>
               <Ionicons name="location" size={20} color={colors.primaryDark} />
             </View>
-            <Text style={styles.infoLabel}>{t('location')}</Text>
+            <Text
+              style={styles.infoLabel}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {t('location')}
+            </Text>
             <Text style={styles.infoValue} numberOfLines={2}>
               {job.municipality}
             </Text>
@@ -350,7 +357,14 @@ export const JobDetailsScreen: React.FC = () => {
             <View style={styles.infoIconBox}>
               <Ionicons name="time" size={20} color={colors.primaryDark} />
             </View>
-            <Text style={styles.infoLabel}>{t('duration')}</Text>
+            <Text
+              style={styles.infoLabel}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {t('duration')}
+            </Text>
             <Text style={styles.infoValue} numberOfLines={2}>
               {job.duration ? `${job.duration} ${job.duration_unit || 'Days'}` : t('flexible')}
             </Text>
@@ -360,7 +374,14 @@ export const JobDetailsScreen: React.FC = () => {
             <View style={styles.infoIconBox}>
               <Ionicons name="people" size={20} color={colors.primaryDark} />
             </View>
-            <Text style={styles.infoLabel}>{t('slots_available')}</Text>
+            <Text
+              style={styles.infoLabel}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {t('slots_available')}
+            </Text>
             <Text style={styles.infoValue}>
               {filledSlots} / {totalSlots}
             </Text>
@@ -812,6 +833,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.paperBright,
     borderRadius: 16,
     padding: 16,
+    justifyContent: 'space-between',
     shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,

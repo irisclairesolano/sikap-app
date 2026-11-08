@@ -227,7 +227,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
         'Application Declined',
         'This application was declined and conversation is closed.',
         'close-circle-outline',
-        'Declined',
+        t('card_status_declined'),
         colors.error,
         '#FEE2E2',
       );
@@ -243,7 +243,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
         'Hire Confirmed by Employer',
         displayPrice ? `Agreed Price: ${formatCurrency(displayPrice)}` : 'Agreed price confirmed.',
         'cash-outline',
-        'Confirmed',
+        t('card_status_confirmed'),
         colors.primary,
         colors.peach,
       );
@@ -314,11 +314,13 @@ const ActionCard: React.FC<ActionCardProps> = ({
               <Ionicons name="compass-outline" size={15} color={colors.primary} />
               <Text style={styles.guideTitle}>{t('next_steps')}</Text>
               <View style={styles.guideCountBadge}>
-                <Text style={styles.guideCountText}>3 steps</Text>
+                <Text style={styles.guideCountText}>{t('guide_step_count')}</Text>
               </View>
             </View>
             <View style={styles.guideToggle}>
-              <Text style={styles.guideToggleText}>{isGuideMinimized ? 'Show' : 'Minimize'}</Text>
+              <Text style={styles.guideToggleText}>
+                {isGuideMinimized ? t('guide_show') : t('guide_minimize')}
+              </Text>
               <Ionicons
                 name={isGuideMinimized ? 'chevron-down' : 'chevron-up'}
                 size={14}
@@ -336,11 +338,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       <Text style={styles.stepNumText}>1</Text>
                     </View>
                     <View style={styles.stepContent}>
-                      <Text style={styles.stepTitle}>Discuss Details in Chat</Text>
-                      <Text style={styles.stepDesc}>
-                        The employer will send the first message. Discuss schedule, tasks, and
-                        negotiate your agreed rate.
-                      </Text>
+                      <Text style={styles.stepTitle}>{t('guide_worker_step1_title')}</Text>
+                      <Text style={styles.stepDesc}>{t('guide_worker_step1_desc')}</Text>
                     </View>
                   </View>
 
@@ -349,11 +348,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       <Text style={styles.stepNumText}>2</Text>
                     </View>
                     <View style={styles.stepContent}>
-                      <Text style={styles.stepTitle}>Wait for Final Offer</Text>
-                      <Text style={styles.stepDesc}>
-                        Once you both agree on terms, {employerName} will set the final price and
-                        submit the official hire offer.
-                      </Text>
+                      <Text style={styles.stepTitle}>{t('guide_worker_step2_title')}</Text>
+                      <Text style={styles.stepDesc}>{t('guide_worker_step2_desc')}</Text>
                     </View>
                   </View>
 
@@ -362,11 +358,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       <Text style={styles.stepNumText}>3</Text>
                     </View>
                     <View style={styles.stepContent}>
-                      <Text style={styles.stepTitle}>Review & Accept</Text>
-                      <Text style={styles.stepDesc}>
-                        Review the offer card that appears in this chat and accept to officially
-                        start the job.
-                      </Text>
+                      <Text style={styles.stepTitle}>{t('guide_worker_step3_title')}</Text>
+                      <Text style={styles.stepDesc}>{t('guide_worker_step3_desc')}</Text>
                     </View>
                   </View>
                 </>
@@ -377,10 +370,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       <Text style={styles.stepNumText}>1</Text>
                     </View>
                     <View style={styles.stepContent}>
-                      <Text style={styles.stepTitle}>Message the Worker</Text>
+                      <Text style={styles.stepTitle}>{t('guide_employer_step1_title')}</Text>
                       <Text style={styles.stepDesc}>
-                        Send a message below to discuss availability, tasks, and negotiate the rate
-                        with {workerName}.
+                        {t('guide_employer_step1_desc', {
+                          workerName: otherUserName || 'the worker',
+                        })}
                       </Text>
                     </View>
                   </View>
@@ -390,10 +384,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       <Text style={styles.stepNumText}>2</Text>
                     </View>
                     <View style={styles.stepContent}>
-                      <Text style={styles.stepTitle}>Agree on Final Price</Text>
-                      <Text style={styles.stepDesc}>
-                        Agree on the work scope and compensation terms before confirming the hire.
-                      </Text>
+                      <Text style={styles.stepTitle}>{t('guide_employer_step2_title')}</Text>
+                      <Text style={styles.stepDesc}>{t('guide_employer_step2_desc')}</Text>
                     </View>
                   </View>
 
@@ -402,10 +394,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       <Text style={styles.stepNumText}>3</Text>
                     </View>
                     <View style={styles.stepContent}>
-                      <Text style={styles.stepTitle}>Set Price & Confirm</Text>
+                      <Text style={styles.stepTitle}>{t('guide_employer_step3_title')}</Text>
                       <Text style={styles.stepDesc}>
-                        When you both agree, set the final price below. {workerName} will then
-                        accept to officially start.
+                        {t('guide_employer_step3_desc', {
+                          workerName: otherUserName || 'the worker',
+                        })}
                       </Text>
                     </View>
                   </View>
@@ -481,7 +474,14 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       setIsPriceInputVisible(true);
                     }}
                   >
-                    <Text style={styles.actionBtnText}>{t('hire_worker')}</Text>
+                    <Text
+                      style={styles.actionBtnText}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.8}
+                    >
+                      {t('hire_worker')}
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
@@ -522,7 +522,12 @@ const ActionCard: React.FC<ActionCardProps> = ({
                     {loadingAction === 'decline' ? (
                       <ActivityIndicator color={colors.error} />
                     ) : (
-                      <Text style={[styles.actionBtnText, { color: colors.error }]}>
+                      <Text
+                        style={[styles.actionBtnText, { color: colors.error }]}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.8}
+                      >
                         {t('decline')}
                       </Text>
                     )}
@@ -538,7 +543,14 @@ const ActionCard: React.FC<ActionCardProps> = ({
               >
                 <View style={styles.togglePriceLeft}>
                   <Ionicons name="cash-outline" size={17} color={colors.primary} />
-                  <Text style={styles.togglePriceBtnText}>{t('set_final_price_confirm_hire')}</Text>
+                  <Text
+                    style={styles.togglePriceBtnText}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.8}
+                  >
+                    {t('set_final_price_confirm_hire')}
+                  </Text>
                 </View>
                 <Ionicons name="chevron-down" size={17} color={colors.primary} />
               </TouchableOpacity>
@@ -619,7 +631,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           t('job_offer_declined'),
           `Offer of ${formatCurrency(effectivePrice)} was declined.`,
           'close-circle-outline',
-          'Declined',
+          t('card_status_declined'),
           colors.error,
           '#FEE2E2',
         );
@@ -628,7 +640,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
         t('job_offer_accepted'),
         `Agreed Price: ${formatCurrency(effectivePrice)}`,
         'checkmark-done-circle-outline',
-        'Accepted',
+        t('card_status_accepted'),
         colors.success,
         '#DCFCE7',
       );
@@ -649,7 +661,9 @@ const ActionCard: React.FC<ActionCardProps> = ({
               </Text>
             </View>
             <View style={[styles.headerTag, { backgroundColor: '#FEF3C7' }]}>
-              <Text style={[styles.headerTagText, { color: '#B45309' }]}>Pending</Text>
+              <Text style={[styles.headerTagText, { color: '#B45309' }]}>
+                {t('card_status_pending')}
+              </Text>
             </View>
           </View>
           <View style={styles.frostedWaitingPill}>
@@ -1054,7 +1068,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           'Work Flagged as Done',
           'Waiting for employer confirmation.',
           'time-outline',
-          'Pending Confirmation',
+          t('card_status_pending_confirmation'),
           colors.warning,
           '#FEF3C7',
         );
@@ -1310,7 +1324,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
       'Reopen Request Sent',
       'Waiting for employer approval to reopen this conversation.',
       'time-outline',
-      'Pending',
+      t('card_status_pending'),
       colors.warning,
       '#FEF3C7',
     );

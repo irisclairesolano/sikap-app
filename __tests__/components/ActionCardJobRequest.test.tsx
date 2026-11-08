@@ -107,12 +107,12 @@ describe('ActionCard Job Request Component', () => {
 
     // D6 Hire Decision Gate is present
     expect(getByText('Hire Decision')).toBeTruthy();
-    expect(getByText('Hire Worker')).toBeTruthy();
+    expect(getByText('Hire')).toBeTruthy();
     expect(getByText('Decline')).toBeTruthy();
     expect(queryByPlaceholderText('Enter agreed price (₱)...')).toBeNull();
 
-    // Tapping Hire Worker reveals the price input and confirm button
-    await fireEvent.press(getByText('Hire Worker'));
+    // Tapping Hire reveals the price input and confirm button
+    await fireEvent.press(getByText('Hire'));
     expect(getByPlaceholderText('Enter agreed price (₱)...')).toBeTruthy();
     expect(getByText('Confirm Hire')).toBeTruthy();
   }, 15000);

@@ -70,7 +70,7 @@ export const en = {
   per_day: 'per day',
   per_hour: 'per hour',
   fixed_per_project: 'per project',
-  slots_available: 'Slots Available',
+  slots_available: 'Slots',
   filled_slots: 'Filled Slots',
   location: 'Location',
   posted_by: 'Posted by',
@@ -400,9 +400,9 @@ export const en = {
   hire_decision: 'Hire Decision',
   hire_decision_prompt:
     'Do you want to proceed with hiring this applicant or decline their application?',
-  hire_worker: 'Hire Worker',
-  decline_applicant: 'Decline Applicant',
-  set_final_price_confirm_hire: 'Set Final Price & Confirm Hire',
+  hire_worker: 'Hire',
+  decline_applicant: 'Decline',
+  set_final_price_confirm_hire: 'Set Price & Confirm',
   set_final_agreed_price: 'Set Final Agreed Price',
   enter_agreed_price_placeholder: 'Enter agreed price (₱)...',
   shortlisted_application: 'Shortlisted Application',
@@ -777,7 +777,7 @@ export const en = {
   // Common UI & Navigation
   chat: 'Chat',
   open_chat: 'Open Chat',
-  application_tracking: 'Application Tracking',
+  application_tracking: 'Application Status',
 
   // Profile Onboarding (RoleOnboardingScreen)
   onboarding_header_pill: 'Almost There',
@@ -958,7 +958,7 @@ export const en = {
   employer_dash_no_ratings_yet: 'No ratings yet',
 
   // Digital Job Receipt (CompletedJobOverview)
-  receipt_official_header: 'Official Hiring Receipt',
+  receipt_official_header: 'Job Receipt',
   receipt_official_subtitle: 'Digital Job Completion Record • Province of Sorsogon',
   receipt_ref_label: 'REF #',
   receipt_status_completed: 'COMPLETED',
@@ -1199,6 +1199,65 @@ export const en = {
   saved_jobs_empty_sub:
     "You don't have any saved jobs yet. Browse the job feed to save jobs you're interested in.",
   saved_jobs_browse_btn: 'Browse Jobs',
+
+  // 5-Stage Stepper
+  stepper_applied: 'Applied',
+  stepper_shortlisted: 'Shortlist',
+  stepper_offer: 'Offer',
+  stepper_hired: 'Hired',
+  stepper_done: 'Done',
+
+  // Employer Navigator
+  nav_dashboard: 'Dashboard',
+
+  // Chat Guide & Badges (ActionCard)
+  guide_step_count: '3 steps',
+  guide_show: 'Show',
+  guide_minimize: 'Minimize',
+  guide_worker_step1_title: 'Discuss Details in Chat',
+  guide_worker_step1_desc:
+    'The employer will send the first message. Discuss schedule, tasks, and negotiate your agreed rate.',
+  guide_worker_step2_title: 'Wait for Final Offer',
+  guide_worker_step2_desc:
+    'Once you both agree on terms, {employerName} will set the final price and submit the official hire offer.',
+  guide_worker_step3_title: 'Review & Accept',
+  guide_worker_step3_desc:
+    'Review the offer card that appears in this chat and accept to officially start the job.',
+  guide_employer_step1_title: 'Message the Worker',
+  guide_employer_step1_desc:
+    'Send a message below to discuss availability, tasks, and negotiate the rate with {workerName}.',
+  guide_employer_step2_title: 'Agree on Final Price',
+  guide_employer_step2_desc:
+    'Agree on the work scope and compensation terms before confirming the hire.',
+  guide_employer_step3_title: 'Set Price & Confirm',
+  guide_employer_step3_desc:
+    'When you both agree, set the final price below. {workerName} will then accept to officially start.',
+
+  card_status_confirmed: 'Confirmed',
+  card_status_accepted: 'Accepted',
+  card_status_declined: 'Declined',
+  card_status_pending: 'Pending',
+  card_status_pending_confirmation: 'Pending Confirmation',
+  card_status_reopen_declined: 'Reopen Request Declined',
+
+  // My Jobs Action Sheet & Badges
+  my_jobs_manage_pipeline: 'Manage Applicants & Pipeline',
+  my_jobs_manage_pipeline_sub: 'Review candidates, negotiation, and stage progress',
+  my_jobs_view_receipt: 'View Completion Receipt',
+  my_jobs_view_receipt_sub: 'Inspect digital receipt, payment summary, and ratings',
+  my_jobs_view_post: 'View Job Post',
+  my_jobs_view_post_sub: 'Inspect the public job post with all details',
+  my_jobs_edit_post: 'Edit Job Post',
+  my_jobs_edit_post_sub: 'Update requirements, compensation, or schedule',
+  my_jobs_restore_post: 'Restore Job Post',
+  my_jobs_restore_post_sub: 'Reactivate this job and return it to your active posts',
+  my_jobs_archive_post: 'Archive Job Post',
+  my_jobs_archive_post_sub: 'Remove this job from public listings and archive candidate history',
+  my_jobs_badge_open: 'OPEN',
+  my_jobs_badge_in_progress: 'IN PROGRESS',
+  my_jobs_badge_completed: 'COMPLETED',
+  my_jobs_badge_archived: 'ARCHIVED',
+  my_jobs_badge_cancelled: 'CANCELLED',
 };
 
 export type TranslationKey = keyof typeof en;

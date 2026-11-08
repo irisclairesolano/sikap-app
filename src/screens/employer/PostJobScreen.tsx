@@ -1012,6 +1012,8 @@ export const PostJobScreen: React.FC = () => {
                             styles.rateUnitBtnText,
                             isSelected && styles.rateUnitBtnTextActive,
                           ]}
+                          numberOfLines={1}
+                          adjustsFontSizeToFit
                         >
                           {t(item.labelKey)}
                         </Text>
@@ -1020,6 +1022,8 @@ export const PostJobScreen: React.FC = () => {
                             styles.rateUnitSubtext,
                             isSelected && styles.rateUnitSubtextActive,
                           ]}
+                          numberOfLines={1}
+                          adjustsFontSizeToFit
                         >
                           {t(item.sublabelKey)}
                         </Text>
@@ -1084,19 +1088,17 @@ export const PostJobScreen: React.FC = () => {
               />
             </View>
 
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <CustomInput
-                  label={t('duration_label')}
-                  value={durationUnit === 'None' ? '' : duration}
-                  onChangeText={setDuration}
-                  placeholder={durationUnit === 'None' ? 'N/A' : 'E.g. 5'}
-                  keyboardType="numeric"
-                  icon="time-outline"
-                  editable={durationUnit !== 'None'}
-                />
-              </View>
-              <View style={{ flex: 1.4 }}>
+            <View style={styles.fieldBlock}>
+              <CustomInput
+                label={t('duration_label')}
+                value={durationUnit === 'None' ? '' : duration}
+                onChangeText={setDuration}
+                placeholder={durationUnit === 'None' ? 'N/A' : 'E.g. 5'}
+                keyboardType="numeric"
+                icon="time-outline"
+                editable={durationUnit !== 'None'}
+              />
+              <View style={{ marginTop: 10 }}>
                 <Text style={styles.label}>{t('duration_unit_label')}</Text>
                 <View style={styles.unitSelector}>
                   {DURATION_UNITS_CONFIG.map((item) => (
@@ -1112,6 +1114,8 @@ export const PostJobScreen: React.FC = () => {
                       }}
                     >
                       <Text
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
                         style={[
                           styles.unitBtnText,
                           durationUnit === item.unit && styles.unitBtnTextActive,
@@ -1612,16 +1616,19 @@ const styles = StyleSheet.create({
   },
   unitSelector: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 6,
+    marginTop: 6,
   },
   unitBtn: {
-    paddingHorizontal: 10,
+    flex: 1,
+    paddingHorizontal: 4,
     paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.inkFaint,
     backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   unitBtnActive: {
     backgroundColor: colors.primary,

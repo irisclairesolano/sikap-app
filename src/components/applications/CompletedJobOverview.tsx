@@ -288,7 +288,9 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
               <View style={styles.brandSeal}>
                 <Ionicons name="shield-checkmark" size={14} color={colors.primaryDark} />
               </View>
-              <Text style={styles.brandTitle}>{t('receipt_official_header')}</Text>
+              <Text style={styles.brandTitle} numberOfLines={1} adjustsFontSizeToFit>
+                {t('receipt_official_header')}
+              </Text>
             </View>
             <Text style={styles.brandSubtitle}>{t('receipt_official_subtitle')}</Text>
 
@@ -686,7 +688,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 13,
     color: colors.ink,
-    letterSpacing: 1.4,
+    letterSpacing: 1.2,
+    flexShrink: 1,
   },
   brandSubtitle: {
     fontFamily: fonts.body,

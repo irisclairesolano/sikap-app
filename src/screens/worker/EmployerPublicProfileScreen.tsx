@@ -89,7 +89,9 @@ export const EmployerPublicProfileScreen: React.FC = () => {
         <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.appBarTitle}>{t('employer_profile')}</Text>
+        <Text style={styles.appBarTitle} numberOfLines={1} adjustsFontSizeToFit>
+          {t('employer_profile')}
+        </Text>
         <TouchableOpacity
           style={styles.iconButton}
           onPress={handleReportEmployer}
@@ -169,7 +171,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
                       : Number(currentReputation).toString()
                     : 'N/A'}
                 </Text>
-                <View style={{ gap: 4 }}>
+                <View style={{ flex: 1, gap: 4 }}>
                   {reviewsCount > 0 ? (
                     <View style={{ flexDirection: 'row', gap: 3 }}>
                       {[1, 2, 3, 4, 5].map((s) => (
@@ -404,6 +406,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   appBarTitle: {
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: 8,
     fontFamily: fonts.bodyBold,
     fontSize: 16,
     color: colors.ink,
@@ -533,6 +538,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   docTitle: {
+    flex: 1,
     fontFamily: fonts.bodyBold,
     fontSize: 14,
     color: colors.ink,

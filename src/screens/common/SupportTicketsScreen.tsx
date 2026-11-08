@@ -140,9 +140,13 @@ export const SupportTicketsScreen: React.FC = () => {
             <View style={styles.replyHeader}>
               <View style={styles.adminTag}>
                 <Ionicons name="shield-checkmark" size={13} color="#0D9488" />
-                <Text style={styles.adminTagText}>{t('sikap_admin_team')}</Text>
+                <Text style={styles.adminTagText} numberOfLines={1}>
+                  {t('sikap_admin_team')}
+                </Text>
               </View>
-              <Text style={styles.replyStatusResolved}>{t('response_available')}</Text>
+              <Text style={styles.replyStatusResolved} numberOfLines={1}>
+                {t('response_available')}
+              </Text>
             </View>
             <Text style={styles.replyText}>{item.admin_reply}</Text>
           </View>
@@ -478,22 +482,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
     marginBottom: 6,
   },
   adminTag: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    flexShrink: 1,
   },
   adminTagText: {
     fontFamily: fonts.bodyBold,
     fontSize: 12,
     color: '#0F766E',
+    flexShrink: 1,
   },
   replyStatusResolved: {
     fontFamily: fonts.body,
     fontSize: 11,
     color: '#047857',
+    flexShrink: 0,
   },
   replyText: {
     fontFamily: fonts.body,
@@ -503,7 +511,7 @@ const styles = StyleSheet.create({
   },
   pendingReplyBox: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 6,
     backgroundColor: '#F9FAFB',
     borderRadius: 10,
@@ -518,6 +526,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.inkMuted,
     flex: 1,
+    lineHeight: 18,
   },
   cardFooter: {
     flexDirection: 'row',

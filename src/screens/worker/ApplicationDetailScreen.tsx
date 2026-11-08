@@ -447,7 +447,12 @@ const ApplicationDetailScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>
+          <Text
+            style={styles.headerPillText}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.8}
+          >
             {status === 'withdrawn'
               ? t('status_withdrawn')
               : stage === 1
@@ -458,7 +463,7 @@ const ApplicationDetailScreen: React.FC = () => {
                     ? t('status_job_offer_received')
                     : stage === 4
                       ? t('status_hired')
-                      : t('hiring_receipt_official_header') || 'Job Receipt'}
+                      : t('receipt_official_header') || 'Job Receipt'}
           </Text>
         </View>
         {status !== 'withdrawn' ? (
@@ -518,7 +523,7 @@ const ApplicationDetailScreen: React.FC = () => {
                   </Text>
                 )}
               </View>
-              <Text style={styles.stageLabel}>Applied</Text>
+              <Text style={styles.stageLabel}>{t('stepper_applied')}</Text>
             </View>
             <View style={styles.stageDivider}>
               {stage > 1 ? (
@@ -543,7 +548,7 @@ const ApplicationDetailScreen: React.FC = () => {
                   </Text>
                 )}
               </View>
-              <Text style={styles.stageLabel}>Shortlisted</Text>
+              <Text style={styles.stageLabel}>{t('stepper_shortlisted')}</Text>
             </View>
             <View style={styles.stageDivider}>
               {stage > 2 ? (
@@ -568,7 +573,7 @@ const ApplicationDetailScreen: React.FC = () => {
                   </Text>
                 )}
               </View>
-              <Text style={styles.stageLabel}>Offer</Text>
+              <Text style={styles.stageLabel}>{t('stepper_offer')}</Text>
             </View>
             <View style={styles.stageDivider}>
               {stage > 3 ? (
@@ -593,7 +598,7 @@ const ApplicationDetailScreen: React.FC = () => {
                   </Text>
                 )}
               </View>
-              <Text style={styles.stageLabel}>Hired</Text>
+              <Text style={styles.stageLabel}>{t('stepper_hired')}</Text>
             </View>
             <View style={styles.stageDivider}>
               {stage > 4 ? (
@@ -607,7 +612,7 @@ const ApplicationDetailScreen: React.FC = () => {
               <View style={styles.stageCircle}>
                 <Text style={styles.stageCircleText}>5</Text>
               </View>
-              <Text style={styles.stageLabel}>Done</Text>
+              <Text style={styles.stageLabel}>{t('stepper_done')}</Text>
             </View>
           </View>
         )}
@@ -630,7 +635,7 @@ const ApplicationDetailScreen: React.FC = () => {
                 <View style={[styles.shieldBadge, { backgroundColor: colors.sky }]}>
                   <Ionicons name="shield-checkmark" size={18} color={colors.skyDeep} />
                 </View>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={[styles.shieldSub, { color: colors.skyDeep }]}>
                     {t('hiring_privacy_shield_on')}
                   </Text>
@@ -783,24 +788,26 @@ const ApplicationDetailScreen: React.FC = () => {
         )}
         {stage === 3 && (
           <>
-            <Button
-              label={t('hiring_accept_offer_btn')}
-              variant="primary"
-              size="lg"
-              fullWidth
-              loading={acceptOfferMutation.isPending}
-              disabled={acceptOfferMutation.isPending || rejectOfferMutation.isPending}
-              onPress={handleAcceptOffer}
-            />
-            <Button
-              label={t('hiring_decline_offer_btn')}
-              variant="outline"
-              size="lg"
-              fullWidth
-              loading={rejectOfferMutation.isPending}
-              disabled={acceptOfferMutation.isPending || rejectOfferMutation.isPending}
-              onPress={handleRejectOffer}
-            />
+            <View style={styles.footerRow}>
+              <Button
+                label={t('hiring_decline_offer_btn')}
+                variant="outline"
+                size="base"
+                style={{ flex: 1 }}
+                loading={rejectOfferMutation.isPending}
+                disabled={acceptOfferMutation.isPending || rejectOfferMutation.isPending}
+                onPress={handleRejectOffer}
+              />
+              <Button
+                label={t('hiring_accept_offer_btn')}
+                variant="primary"
+                size="base"
+                style={{ flex: 1 }}
+                loading={acceptOfferMutation.isPending}
+                disabled={acceptOfferMutation.isPending || rejectOfferMutation.isPending}
+                onPress={handleAcceptOffer}
+              />
+            </View>
             <Button
               label={t('open_chat')}
               variant="ghost"
@@ -896,13 +903,21 @@ const styles = StyleSheet.create({
   },
   iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   headerPill: {
+    maxWidth: '72%',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.paperBright,
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 20,
     ...shadows.sm,
   },
-  headerPillText: { fontFamily: fonts.bodyBold, fontSize: 11, color: colors.primary },
+  headerPillText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.primary,
+    textAlign: 'center',
+  },
   scrollContent: { padding: 20, paddingBottom: 40 },
   stages: {
     flexDirection: 'row',
@@ -939,7 +954,7 @@ const styles = StyleSheet.create({
     height: 3,
     flex: 1,
     backgroundColor: colors.inkFaint,
-    marginHorizontal: -4,
+    marginHorizontal: 4,
     marginBottom: 16,
     borderRadius: 2,
     overflow: 'hidden',
@@ -1144,6 +1159,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.inkFaint,
     gap: 8,
+  },
+  footerRow: {
+    flexDirection: 'row',
+    gap: 10,
   },
   modalOverlay: {
     flex: 1,

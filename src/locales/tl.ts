@@ -72,7 +72,7 @@ export const tl: Record<TranslationKey, string> = {
   per_day: 'kada araw',
   per_hour: 'kada oras',
   fixed_per_project: 'kada proyekto',
-  slots_available: 'Bukas Pang Puwesto',
+  slots_available: 'Bakante',
   filled_slots: 'Napunan nang Puwesto',
   location: 'Lokasyon',
   posted_by: 'Nag-post',
@@ -322,7 +322,7 @@ export const tl: Record<TranslationKey, string> = {
     'Nakapag-report ka na tungkol dito. Kasalukuyan na itong sinusuri ng aming team.',
 
   // Group 3: Jobs, Details, Applications
-  duration: 'Tagal ng Trabaho',
+  duration: 'Tagal',
   flexible: 'Maaaring Pag-usapan',
   tools_required: 'Mga Kagamitang Kailangan',
   attachments_media: 'Mga Kalakip at Media',
@@ -416,9 +416,9 @@ export const tl: Record<TranslationKey, string> = {
   hire_decision: 'Desisyon sa Pagkuha',
   hire_decision_prompt:
     'Gusto mo bang kunin ang aplikanteng ito o tanggihan ang kanyang application?',
-  hire_worker: 'Kunin ang Manggagawa',
-  decline_applicant: 'Tanggihan ang Application',
-  set_final_price_confirm_hire: 'Itakda ang Napagkasunduang Bayad at Kumpirmahin ang Pagkuha',
+  hire_worker: 'Kunin',
+  decline_applicant: 'Tanggihan',
+  set_final_price_confirm_hire: 'Itakda ang Bayad at Kunin',
   set_final_agreed_price: 'Itakda ang Napagkasunduang Bayad',
   enter_agreed_price_placeholder: 'Ilagay ang bayad (₱)...',
   shortlisted_application: 'Napiling Application',
@@ -801,7 +801,7 @@ export const tl: Record<TranslationKey, string> = {
   // Common UI & Navigation
   chat: 'Makipag-chat',
   open_chat: 'Buksan ang Chat',
-  application_tracking: 'Subaybayan ang Application',
+  application_tracking: 'Status ng Aplikasyon',
 
   // Profile Onboarding (RoleOnboardingScreen)
   onboarding_header_pill: 'Malapit na!',
@@ -987,7 +987,7 @@ export const tl: Record<TranslationKey, string> = {
   employer_dash_no_ratings_yet: 'Wala Pang Rating',
 
   // Digital Job Receipt (CompletedJobOverview)
-  receipt_official_header: 'Opisyal na Resibo ng Trabaho',
+  receipt_official_header: 'Resibo ng Trabaho',
   receipt_official_subtitle: 'Digital na Talaan ng Natapos na Trabaho • Lalawigan ng Sorsogon',
   receipt_ref_label: 'Reference No.',
   receipt_status_completed: 'TAPOS NA',
@@ -1235,4 +1235,63 @@ export const tl: Record<TranslationKey, string> = {
   saved_jobs_empty_sub:
     'Wala ka pang na-save na trabaho. Maghanap sa job feed para mag-save ng mga trabahong gusto mo.',
   saved_jobs_browse_btn: 'Maghanap ng Trabaho',
+
+  // 5-Stage Stepper
+  stepper_applied: 'Nag-apply',
+  stepper_shortlisted: 'Shortlist',
+  stepper_offer: 'Alok',
+  stepper_hired: 'Tanggap',
+  stepper_done: 'Tapos',
+
+  // Employer Navigator
+  nav_dashboard: 'Dashboard',
+
+  // Chat Guide & Action Card Statuses
+  guide_step_count: '3 hakbang',
+  guide_show: 'Ipakita',
+  guide_minimize: 'Itago',
+  guide_worker_step1_title: 'Pag-usapan sa Chat',
+  guide_worker_step1_desc:
+    'Magtanong tungkol sa lokasyon, kailangang gamit, at makipagkasundo sa bayad kung kailangan.',
+  guide_worker_step2_title: 'Hintayin ang Pinal na Alok',
+  guide_worker_step2_desc:
+    'Magpapadala ang employer ng opisyal na alok kasama ang napagkasunduang bayad.',
+  guide_worker_step3_title: 'Suriin at Tanggapin',
+  guide_worker_step3_desc: 'Tanggapin ang alok sa ibaba upang opisyal na masimulan ang trabaho.',
+  guide_employer_step1_title: 'Pag-usapan sa Chat',
+  guide_employer_step1_desc:
+    'Linawin ang oras, lokasyon, kagamitan, at bayad kasama si {workerName}.',
+  guide_employer_step2_title: 'Magkasundo sa Kasunduan',
+  guide_employer_step2_desc:
+    'Magkasundo sa saklaw ng trabaho at bayad bago kumpirmahin ang pagkuha.',
+  guide_employer_step3_title: 'Itakda ang Bayad at Kunin',
+  guide_employer_step3_desc:
+    'Kapag nagkasundo na, itakda ang pinal na bayad sa ibaba. Tatanggapin ito ni {workerName} para opisyal na magsimula.',
+
+  card_status_confirmed: 'Kumpirmado',
+  card_status_accepted: 'Tinanggap',
+  card_status_declined: 'Tinanggihan',
+  card_status_pending: 'Nakabinbin',
+  card_status_pending_confirmation: 'Naghihintay ng Kumpirmasyon',
+  card_status_reopen_declined: 'Tinanggihang Buksan Muli',
+
+  // My Jobs Action Sheet & Badges
+  my_jobs_manage_pipeline: 'Pamahalaan ang mga Aplikante',
+  my_jobs_manage_pipeline_sub: 'Suriin ang mga kandidato, negosasyon, at progreso ng yugto',
+  my_jobs_view_receipt: 'Tingnan ang Resibo ng Pagtatapos',
+  my_jobs_view_receipt_sub: 'Suriin ang digital na resibo, buod ng bayad, at mga rating',
+  my_jobs_view_post: 'Tingnan ang Job Post',
+  my_jobs_view_post_sub: 'Suriin ang pampublikong job post kasama ang lahat ng detalye',
+  my_jobs_edit_post: 'I-edit ang Job Post',
+  my_jobs_edit_post_sub: 'I-update ang mga kailangan, bayad, o iskedyul',
+  my_jobs_restore_post: 'Ibalik ang Job Post',
+  my_jobs_restore_post_sub: 'Muling i-activate ang trabahong ito sa iyong mga aktibong post',
+  my_jobs_archive_post: 'I-archive ang Job Post',
+  my_jobs_archive_post_sub:
+    'Alisin ang trabahong ito sa listahan at i-archive ang kasaysayan ng aplikante',
+  my_jobs_badge_open: 'BUKAS',
+  my_jobs_badge_in_progress: 'KASALUKUYAN',
+  my_jobs_badge_completed: 'TAPOS NA',
+  my_jobs_badge_archived: 'NA-ARCHIVE',
+  my_jobs_badge_cancelled: 'KINANSELA',
 };

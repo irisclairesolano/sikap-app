@@ -207,18 +207,22 @@ export const MyJobsScreen: React.FC = () => {
 
       const getStatusBadge = () => {
         if (item.deleted_at) {
-          return { label: 'ARCHIVED', bg: '#F1F5F9', color: '#64748B' };
+          return { label: t('my_jobs_badge_archived'), bg: '#F1F5F9', color: '#64748B' };
         }
         if (item.status === 'completed') {
-          return { label: 'COMPLETED', bg: '#DCFCE7', color: '#15803D' };
+          return { label: t('my_jobs_badge_completed'), bg: '#DCFCE7', color: '#15803D' };
         }
         if (item.status === 'in_progress' || item.status === 'closed_in_progress') {
-          return { label: 'IN PROGRESS', bg: '#E0F2FE', color: '#0369A1' };
+          return { label: t('my_jobs_badge_in_progress'), bg: '#E0F2FE', color: '#0369A1' };
         }
         if (item.status === 'cancelled') {
-          return { label: 'CANCELLED', bg: '#FEE2E2', color: '#DC2626' };
+          return { label: t('my_jobs_badge_cancelled'), bg: '#FEE2E2', color: '#DC2626' };
         }
-        return { label: 'OPEN', bg: colors.status.accepted.bg, color: colors.status.accepted.text };
+        return {
+          label: t('my_jobs_badge_open'),
+          bg: colors.status.accepted.bg,
+          color: colors.status.accepted.text,
+        };
       };
 
       const statusBadge = getStatusBadge();
@@ -573,7 +577,16 @@ export const MyJobsScreen: React.FC = () => {
                       },
                     ]}
                   >
-                    {menuJob?.deleted_at ? 'ARCHIVED' : (menuJob?.status || 'OPEN').toUpperCase()}
+                    {menuJob?.deleted_at
+                      ? t('my_jobs_badge_archived')
+                      : menuJob?.status === 'completed'
+                        ? t('my_jobs_badge_completed')
+                        : menuJob?.status === 'in_progress' ||
+                            menuJob?.status === 'closed_in_progress'
+                          ? t('my_jobs_badge_in_progress')
+                          : menuJob?.status === 'cancelled'
+                            ? t('my_jobs_badge_cancelled')
+                            : t('my_jobs_badge_open')}
                   </Text>
                 </View>
               </View>
@@ -620,13 +633,13 @@ export const MyJobsScreen: React.FC = () => {
                   <View style={styles.modalMenuTextBox}>
                     <Text style={styles.modalMenuTitle}>
                       {menuJob?.status === 'completed'
-                        ? 'View Completion Receipt'
-                        : 'Manage Applicants & Pipeline'}
+                        ? t('my_jobs_view_receipt')
+                        : t('my_jobs_manage_pipeline')}
                     </Text>
                     <Text style={styles.modalMenuSub}>
                       {menuJob?.status === 'completed'
-                        ? 'Inspect digital receipt, payment summary, and ratings'
-                        : 'Review candidates, negotiation, and stage progress'}
+                        ? t('my_jobs_view_receipt_sub')
+                        : t('my_jobs_manage_pipeline_sub')}
                     </Text>
                   </View>
                   <Ionicons name="chevron-forward" size={16} color={colors.inkLight} />
@@ -649,10 +662,8 @@ export const MyJobsScreen: React.FC = () => {
                   <Ionicons name="eye-outline" size={18} color={colors.mintDeep} />
                 </View>
                 <View style={styles.modalMenuTextBox}>
-                  <Text style={styles.modalMenuTitle}>View Job Post</Text>
-                  <Text style={styles.modalMenuSub}>
-                    Inspect the public job post with all details
-                  </Text>
+                  <Text style={styles.modalMenuTitle}>{t('my_jobs_view_post')}</Text>
+                  <Text style={styles.modalMenuSub}>{t('my_jobs_view_post_sub')}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={16} color={colors.inkLight} />
               </TouchableOpacity>
@@ -676,10 +687,8 @@ export const MyJobsScreen: React.FC = () => {
                     <Ionicons name="create-outline" size={18} color={colors.gold} />
                   </View>
                   <View style={styles.modalMenuTextBox}>
-                    <Text style={styles.modalMenuTitle}>Edit Job Post</Text>
-                    <Text style={styles.modalMenuSub}>
-                      Update requirements, compensation, or schedule
-                    </Text>
+                    <Text style={styles.modalMenuTitle}>{t('my_jobs_edit_post')}</Text>
+                    <Text style={styles.modalMenuSub}>{t('my_jobs_edit_post_sub')}</Text>
                   </View>
                   <Ionicons name="chevron-forward" size={16} color={colors.inkLight} />
                 </TouchableOpacity>
@@ -703,11 +712,9 @@ export const MyJobsScreen: React.FC = () => {
                   </View>
                   <View style={styles.modalMenuTextBox}>
                     <Text style={[styles.modalMenuTitle, { color: '#15803D' }]}>
-                      Restore Job Post
+                      {t('my_jobs_restore_post')}
                     </Text>
-                    <Text style={styles.modalMenuSub}>
-                      Reactivate this job and return it to your active posts
-                    </Text>
+                    <Text style={styles.modalMenuSub}>{t('my_jobs_restore_post_sub')}</Text>
                   </View>
                   <Ionicons name="chevron-forward" size={16} color={colors.inkLight} />
                 </TouchableOpacity>
@@ -728,9 +735,9 @@ export const MyJobsScreen: React.FC = () => {
                   </View>
                   <View style={styles.modalMenuTextBox}>
                     <Text style={[styles.modalMenuTitle, { color: colors.error }]}>
-                      Archive Job Post
+                      {t('my_jobs_archive_post')}
                     </Text>
-                    <Text style={styles.modalMenuSub}>Move this listing to the archive</Text>
+                    <Text style={styles.modalMenuSub}>{t('my_jobs_archive_post_sub')}</Text>
                   </View>
                   <Ionicons name="chevron-forward" size={16} color={colors.inkLight} />
                 </TouchableOpacity>

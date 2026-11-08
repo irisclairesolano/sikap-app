@@ -560,7 +560,7 @@ const ApplicantDetailScreen: React.FC = () => {
                       </Text>
                     )}
                   </View>
-                  <Text style={styles.stageLabel}>Applied</Text>
+                  <Text style={styles.stageLabel}>{t('stepper_applied')}</Text>
                 </View>
                 <View style={styles.stageDivider}>
                   {stage > 1 ? (
@@ -587,7 +587,7 @@ const ApplicantDetailScreen: React.FC = () => {
                       </Text>
                     )}
                   </View>
-                  <Text style={styles.stageLabel}>Shortlist</Text>
+                  <Text style={styles.stageLabel}>{t('stepper_shortlisted')}</Text>
                 </View>
                 <View style={styles.stageDivider}>
                   {stage > 2 ? (
@@ -614,7 +614,7 @@ const ApplicantDetailScreen: React.FC = () => {
                       </Text>
                     )}
                   </View>
-                  <Text style={styles.stageLabel}>Offer</Text>
+                  <Text style={styles.stageLabel}>{t('stepper_offer')}</Text>
                 </View>
                 <View style={styles.stageDivider}>
                   {stage > 3 ? (
@@ -641,7 +641,7 @@ const ApplicantDetailScreen: React.FC = () => {
                       </Text>
                     )}
                   </View>
-                  <Text style={styles.stageLabel}>Hired</Text>
+                  <Text style={styles.stageLabel}>{t('stepper_hired')}</Text>
                 </View>
                 <View style={styles.stageDivider}>
                   {stage > 4 ? (
@@ -672,7 +672,7 @@ const ApplicantDetailScreen: React.FC = () => {
                       </Text>
                     )}
                   </View>
-                  <Text style={styles.stageLabel}>Done</Text>
+                  <Text style={styles.stageLabel}>{t('stepper_done')}</Text>
                 </View>
               </View>
             )}
@@ -686,7 +686,9 @@ const ApplicantDetailScreen: React.FC = () => {
               />
               <View style={styles.profileInfo}>
                 <View style={styles.nameRow}>
-                  <Text style={styles.nameText}>{applicantName}</Text>
+                  <Text style={styles.nameText} numberOfLines={1}>
+                    {applicantName}
+                  </Text>
                   <Ionicons name="checkmark-circle" size={18} color={colors.mintDeep} />
                 </View>
                 <Text style={styles.locationText}>
@@ -1047,7 +1049,7 @@ const ApplicantDetailScreen: React.FC = () => {
                       <View style={styles.shieldIcon}>
                         <Ionicons name="lock-closed" size={16} color={colors.primary} />
                       </View>
-                      <View>
+                      <View style={{ flex: 1 }}>
                         <Text style={styles.shieldTitle}>References Locked</Text>
                         <Text style={styles.shieldSub}>Shortlist worker to unlock references</Text>
                       </View>
@@ -1335,29 +1337,40 @@ const ApplicantDetailScreen: React.FC = () => {
           {status === 'pending_negotiation' && (
             <View style={{ gap: 6 }}>
               {hasRealMessageFromEmployer ? (
-                <Button
-                  label={t('hiring_send_offer_btn')}
-                  variant="primary"
-                  size="lg"
-                  fullWidth
-                  onPress={navigateToConfirmHire}
-                />
+                <View style={styles.footerRow}>
+                  <Button
+                    label={t('cancel') || 'Cancel'}
+                    variant="ghost"
+                    size="base"
+                    style={{ flex: 1 }}
+                    onPress={navigateToCancelHire}
+                  />
+                  <Button
+                    label={t('hiring_send_offer_btn')}
+                    variant="primary"
+                    size="base"
+                    style={{ flex: 2 }}
+                    onPress={navigateToConfirmHire}
+                  />
+                </View>
               ) : (
-                <Button
-                  label={t('hiring_chat_first_btn')}
-                  variant="primary"
-                  size="lg"
-                  fullWidth
-                  onPress={handleOpenChat}
-                />
+                <View style={styles.footerRow}>
+                  <Button
+                    label={t('cancel') || 'Cancel'}
+                    variant="ghost"
+                    size="base"
+                    style={{ flex: 1 }}
+                    onPress={navigateToCancelHire}
+                  />
+                  <Button
+                    label={t('hiring_chat_first_btn')}
+                    variant="primary"
+                    size="base"
+                    style={{ flex: 2 }}
+                    onPress={handleOpenChat}
+                  />
+                </View>
               )}
-              <Button
-                label={t('cancel') || 'Cancel'}
-                variant="ghost"
-                size="base"
-                fullWidth
-                onPress={navigateToCancelHire}
-              />
               <Text
                 style={{
                   fontFamily: fonts.body,
@@ -1506,12 +1519,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    flexShrink: 1,
   },
   nameText: {
     fontFamily: fonts.bodyBold,
     fontSize: 20,
     letterSpacing: -0.5,
     color: colors.ink,
+    flexShrink: 1,
   },
   locationText: {
     fontFamily: fonts.body,

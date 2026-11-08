@@ -13,6 +13,7 @@ import { profileApi } from '../../api/profile';
 import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
 import { useTriggerInitialTutorial } from '../../hooks/useTriggerInitialTutorial';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useNotifications } from '../../hooks/useNotifications';
 
 export const HomeEmptyScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
@@ -25,6 +26,14 @@ export const HomeEmptyScreen: React.FC = () => {
     queryFn: profileApi.getProfile,
     enabled: isFocused,
   });
+
+  const { data: notificationsData } = useNotifications();
+  const unreadCount =
+    typeof (notificationsData as any)?.unread_count === 'number'
+      ? (notificationsData as any).unread_count
+      : Array.isArray(notificationsData)
+        ? (notificationsData as any[]).filter((n: any) => !n.read_at && !n.read).length
+        : 0;
 
   const getInitial = (name?: string) => (name ? name.charAt(0).toUpperCase() : 'M');
 
@@ -70,7 +79,11 @@ export const HomeEmptyScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <View style={styles.appBar}>
-          <View style={styles.appBarLeft}>
+          <TouchableOpacity
+            style={styles.appBarLeft}
+            activeOpacity={0.7}
+            onPress={() => (navigation as any).navigate('Profile')}
+          >
             <View style={styles.avatar}>
               {user?.avatar_url ? (
                 <Image
@@ -94,9 +107,18 @@ export const HomeEmptyScreen: React.FC = () => {
                 {user?.name ? user.name.split(' ')[0] : 'Worker'}
               </Text>
             </View>
-          </View>
-          <TouchableOpacity style={styles.iconButton}>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconButton}
+            activeOpacity={0.7}
+            onPress={() => (navigation as any).navigate('Notifications')}
+          >
             <Ionicons name="notifications-outline" size={24} color={colors.ink} />
+            {unreadCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -297,6 +319,24 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'flex-end',
     justifyContent: 'center',
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: 4,
+    right: 0,
+    backgroundColor: colors.error,
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: colors.white,
+    fontSize: 9,
+    fontFamily: fonts.bodyBold,
   },
   scrollContent: {
     paddingHorizontal: 20,

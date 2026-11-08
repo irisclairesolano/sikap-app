@@ -23,6 +23,7 @@ import { useJobApplications } from '../../hooks/useJobApplications';
 import { useReviews } from '../../hooks/useReviews';
 import { MediaViewerModal } from '../../components/common/MediaViewerModal';
 import { CompletedJobOverview } from '../../components/applications/CompletedJobOverview';
+import { formatRateUnit } from '../../components/jobs/JobCard';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 type JobStatusScreenRouteProp = RouteProp<EmployerStackParamList, 'JobStatusManagement'>;
@@ -776,7 +777,7 @@ export const JobStatusManagementScreen: React.FC = () => {
                 <View style={styles.metaItem}>
                   <Ionicons name="cash-outline" size={16} color={colors.inkSoft} />
                   <Text style={styles.metaValue}>
-                    ₱{job.compensation} / {job.duration_type === 'daily' ? 'day' : 'project'}
+                    ₱{job.compensation} / {formatRateUnit(job.rate_unit, job.duration_type)}
                   </Text>
                 </View>
 

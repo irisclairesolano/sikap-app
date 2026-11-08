@@ -292,7 +292,7 @@ const EmployerNavigator: React.FC = () => {
         name="Home"
         component={HomeStack}
         options={{
-          tabBarLabel: 'Dashboard',
+          tabBarLabel: t('nav_dashboard'),
         }}
         listeners={popTabStackOnPress}
       />

@@ -197,7 +197,7 @@ export const EditProfileScreen: React.FC = () => {
           return;
         }
 
-        if (calculateAge(parsed.date) < 15) {
+        if (calculateAge(parsed.date) < 18) {
           showAlert(t('alert_profile_invalid_age_title'), t('alert_profile_invalid_age_msg'));
           return;
         }
@@ -457,13 +457,13 @@ export const EditProfileScreen: React.FC = () => {
                   value={emergencyContactName}
                   onChangeText={(text) => {
                     const cleaned = text.replace(/[^a-zA-Z\s\-\.ñÑ]/g, '');
-                    setEmergencyContactName(cleaned.slice(0, 5));
+                    setEmergencyContactName(cleaned.slice(0, 50));
                   }}
-                  placeholder="Juan"
-                  maxLength={5}
+                  placeholder="Juan Dela Cruz"
+                  maxLength={50}
                 />
                 <Text style={styles.helperText}>
-                  {emergencyContactName.length} / 5 characters (letters only)
+                  {emergencyContactName.length} / 50 characters (letters only)
                 </Text>
               </View>
               <View style={styles.formGroup}>

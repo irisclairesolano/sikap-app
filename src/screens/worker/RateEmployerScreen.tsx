@@ -154,7 +154,9 @@ export const RateEmployerScreen: React.FC = () => {
         {/* Employer Info */}
         <View style={styles.employerInfoCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{employerName.charAt(0)}</Text>
+            <Text style={styles.avatarText}>
+              {(employerName || 'Employer').charAt(0).toUpperCase()}
+            </Text>
           </View>
           <View style={styles.employerDetails}>
             <Text style={styles.employerName}>{employerName}</Text>
