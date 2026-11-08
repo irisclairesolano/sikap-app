@@ -500,6 +500,24 @@ const ApplicantDetailScreen: React.FC = () => {
     });
   };
 
+  const handleOpenPublicProfile = () => {
+    navigation.navigate('WorkerPublicProfile', {
+      workerId: appData?.worker?.id || 0,
+      applicationId: appId,
+      workerName: applicantName,
+      avatarUrl: appData?.worker?.avatar_url,
+      jobTitle,
+      status,
+      barangay,
+      municipality,
+      reputationScore,
+      skills,
+      experiences,
+      characterReferences,
+      phone,
+    });
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -712,62 +730,59 @@ const ApplicantDetailScreen: React.FC = () => {
               </View>
             )}
 
-            {/* Profile Header */}
-            <TouchableOpacity
-              style={styles.profileHeader}
-              onPress={() => {
-                navigation.navigate('WorkerPublicProfile', {
-                  workerId: appData?.worker?.id || 0,
-                  applicationId: appId,
-                  workerName: applicantName,
-                  avatarUrl: appData?.worker?.avatar_url,
-                  jobTitle,
-                  status,
-                  barangay,
-                  municipality,
-                  reputationScore,
-                  skills,
-                  experiences,
-                  characterReferences,
-                  phone,
-                });
-              }}
-              activeOpacity={0.7}
-            >
-              <Avatar
-                url={appData?.worker?.avatar_url}
-                name={applicantName || 'Worker'}
-                size={52}
-              />
-              <View style={styles.profileInfo}>
-                <View style={styles.nameRow}>
-                  <Text style={styles.nameText} numberOfLines={1}>
-                    {applicantName}
-                  </Text>
-                  <Ionicons name="checkmark-circle" size={18} color={colors.mintDeep} />
+            {/* Profile Header Card */}
+            <View style={styles.profileHeaderCard}>
+              <TouchableOpacity
+                style={styles.profileHeaderIdentity}
+                onPress={handleOpenPublicProfile}
+                activeOpacity={0.7}
+              >
+                <Avatar
+                  url={appData?.worker?.avatar_url}
+                  name={applicantName || 'Worker'}
+                  size={56}
+                />
+                <View style={styles.profileInfo}>
+                  <View style={styles.nameRow}>
+                    <Text style={styles.nameText} numberOfLines={1}>
+                      {applicantName}
+                    </Text>
+                    <Ionicons name="checkmark-circle" size={18} color={colors.mintDeep} />
+                  </View>
+                  <View style={styles.locationRow}>
+                    <Ionicons name="location-sharp" size={14} color={colors.primary} />
+                    <Text style={styles.locationText} numberOfLines={1}>
+                      {barangay ? `${barangay}, ${municipality}` : municipality || 'Sorsogon'}
+                    </Text>
+                  </View>
                 </View>
-                <Text style={styles.locationText}>
-                  <Ionicons name="location" size={12} color={colors.primary} />{' '}
-                  {barangay ? `${barangay}, ${municipality}` : 'Worker'}
-                </Text>
-              </View>
-              <View style={styles.profileHeaderTogglePill}>
-                <Text style={styles.profileHeaderToggleText}>Profile</Text>
-                <Ionicons name="chevron-forward" size={14} color={colors.primary} />
-              </View>
-              {((status === 'pending_negotiation' && hasRealMessageFromEmployer) ||
-                status === 'employer_confirmed' ||
-                status === 'accepted') && (
+              </TouchableOpacity>
+
+              <View style={styles.profileActionsRow}>
                 <TouchableOpacity
-                  style={styles.profileMessageBtn}
-                  onPress={handleOpenChat}
-                  activeOpacity={0.8}
+                  style={styles.profileHeaderTogglePill}
+                  onPress={handleOpenPublicProfile}
+                  activeOpacity={0.7}
                 >
-                  <Ionicons name="chatbubble-ellipses" size={16} color={colors.primary} />
-                  <Text style={styles.profileMessageBtnText}>Message</Text>
+                  <Ionicons name="person-outline" size={14} color={colors.primary} />
+                  <Text style={styles.profileHeaderToggleText}>View Profile</Text>
+                  <Ionicons name="chevron-forward" size={14} color={colors.primary} />
                 </TouchableOpacity>
-              )}
-            </TouchableOpacity>
+
+                {((status === 'pending_negotiation' && hasRealMessageFromEmployer) ||
+                  status === 'employer_confirmed' ||
+                  status === 'accepted') && (
+                  <TouchableOpacity
+                    style={styles.profileMessageBtn}
+                    onPress={handleOpenChat}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="chatbubble-ellipses" size={15} color="#1D4ED8" />
+                    <Text style={styles.profileMessageBtnText}>Message</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
 
             {/* Applicant Cover Note */}
             {status !== 'completed' && !!coverNote && (
@@ -1645,6 +1660,20 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
+  profileHeaderCard: {
+    backgroundColor: colors.paperBright,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+    ...shadows.sm,
+  },
+  profileHeaderIdentity: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
   profileHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1666,41 +1695,57 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     flex: 1,
+    justifyContent: 'center',
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    flexShrink: 1,
   },
   nameText: {
     fontFamily: fonts.bodyBold,
     fontSize: 20,
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
     color: colors.ink,
-    flexShrink: 1,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
   },
   locationText: {
     fontFamily: fonts.body,
     fontSize: 13,
     color: colors.inkSoft,
-    marginTop: 4,
+    flexShrink: 1,
   },
-  profileMessageBtn: {
+  profileActionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+  },
+  profileMessageBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: colors.primaryTint,
+    paddingVertical: 9,
+    borderRadius: 12,
+    backgroundColor: '#EFF6FF',
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: '#93C5FD',
   },
   profileMessageBtnText: {
     fontFamily: fonts.bodyBold,
     fontSize: 13,
-    color: colors.primary,
+    color: '#1D4ED8',
   },
   verifiedBadge: {
     backgroundColor: colors.mint,
@@ -1976,19 +2021,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   profileHeaderTogglePill: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
+    gap: 6,
     backgroundColor: colors.primaryTint,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.primaryLight,
   },
   profileHeaderToggleText: {
     fontFamily: fonts.bodyBold,
-    fontSize: 12,
+    fontSize: 13,
     color: colors.primary,
   },
   viewProfileBanner: {
