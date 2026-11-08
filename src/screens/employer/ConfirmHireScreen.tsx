@@ -263,9 +263,7 @@ const ConfirmHireScreen: React.FC = () => {
                 />
               </View>
             </View>
-            <Text style={styles.priceHelper}>
-              Total amount for the job. For 3 days at ₱600/day, enter ₱1,800.
-            </Text>
+            <Text style={styles.priceHelper}>{t('agreed_price_helper_note')}</Text>
           </View>
 
           {/* What Happens Next */}

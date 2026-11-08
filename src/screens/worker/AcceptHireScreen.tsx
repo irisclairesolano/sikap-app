@@ -129,6 +129,7 @@ const AcceptHireScreen: React.FC = () => {
               {t('hiring_final_agreed_price_eyebrow') || 'Agreed Price'}
             </Text>
             <Text style={styles.priceValue}>₱{offeredPrice}</Text>
+            <Text style={styles.priceSubLabel}>{t('offer_total_amount_sublabel')}</Text>
           </View>
         )}
 
@@ -226,6 +227,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   priceValue: { fontFamily: fonts.display, fontSize: 30, color: '#0F172A' },
+  priceSubLabel: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkMuted,
+    marginTop: 4,
+  },
   infoText: {
     fontFamily: fonts.body,
     fontSize: 14,

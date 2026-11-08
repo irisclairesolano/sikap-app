@@ -531,6 +531,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
                   onChangeText={setPriceInput}
                   autoFocus
                 />
+                <Text style={styles.priceHelperText}>{t('agreed_price_helper_note')}</Text>
                 <View style={styles.priceActionsRow}>
                   <TouchableOpacity
                     style={[styles.primaryButton, { flex: 1, marginTop: 0 }]}
@@ -614,7 +615,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
               <Text style={styles.title}>{t('hire_offer_sent')}</Text>
               <Text style={styles.subtitle}>
                 Agreed price:{' '}
-                <Text style={styles.priceHighlight}>{formatCurrency(effectivePrice)}</Text>
+                <Text style={styles.priceHighlight}>{formatCurrency(effectivePrice)}</Text>{' '}
+                <Text style={styles.priceTag}>{t('agreed_price_total_tag')}</Text>
               </Text>
             </View>
             <View style={[styles.headerTag, { backgroundColor: '#FEF3C7' }]}>
@@ -712,9 +714,15 @@ const ActionCard: React.FC<ActionCardProps> = ({
             <Text style={styles.title}>{t('job_offer_received')}</Text>
             <Text style={styles.subtitle}>
               Agreed price:{' '}
-              <Text style={styles.priceHighlight}>{formatCurrency(effectivePrice)}</Text>
+              <Text style={styles.priceHighlight}>{formatCurrency(effectivePrice)}</Text>{' '}
+              <Text style={styles.priceTag}>{t('agreed_price_total_tag')}</Text>
             </Text>
           </View>
+        </View>
+
+        <View style={styles.offerTotalNotice}>
+          <Ionicons name="information-circle-outline" size={16} color="#166534" />
+          <Text style={styles.offerTotalNoticeText}>{t('offer_total_amount_notice')}</Text>
         </View>
         <View style={styles.rowButtons}>
           <TouchableOpacity
@@ -1782,6 +1790,38 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.inkMuted,
     flex: 1,
+  },
+  priceHelperText: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkSoft,
+    marginTop: 4,
+    lineHeight: 16,
+  },
+  priceTag: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 11,
+    color: colors.inkMuted,
+  },
+  offerTotalNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    marginTop: 10,
+    marginBottom: 12,
+  },
+  offerTotalNoticeText: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: '#166534',
+    lineHeight: 16,
   },
 });
 
