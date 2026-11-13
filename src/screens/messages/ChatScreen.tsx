@@ -1040,6 +1040,7 @@ const ChatScreen: React.FC = () => {
         <FlatList
           ref={flatListRef}
           data={messages}
+          style={styles.messageList}
           keyExtractor={(item) => item.id.toString()}
           inverted={false}
           initialNumToRender={30}
@@ -1369,6 +1370,7 @@ const ChatScreen: React.FC = () => {
                     }
                   }}
                   multiline
+                  scrollEnabled={true}
                   maxLength={1000}
                   editable={isWorkerReplyAllowed}
                 />
@@ -1606,9 +1608,13 @@ const styles = StyleSheet.create({
     color: '#D97706',
     opacity: 0.7,
   },
+  messageList: {
+    flex: 1,
+    flexShrink: 1,
+  },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     paddingHorizontal: 8,
     paddingTop: 8,
     backgroundColor: '#FFFFFF',
@@ -1619,6 +1625,8 @@ const styles = StyleSheet.create({
     padding: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    height: 40,
+    width: 40,
   },
   input: {
     flex: 1,
@@ -1628,13 +1636,14 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 9 : 8,
     paddingBottom: Platform.OS === 'ios' ? 9 : 8,
     minHeight: 40,
-    maxHeight: 100,
+    maxHeight: 120,
     borderWidth: 1,
     borderColor: 'rgba(226, 232, 240, 0.85)',
     fontFamily: fonts.body,
     fontSize: 14,
     color: colors.ink,
     marginHorizontal: 4,
+    textAlignVertical: 'top',
   },
   firstMsgNotice: {
     flexDirection: 'row',
@@ -1657,8 +1666,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 10,
     color: colors.inkMuted,
-    alignSelf: 'center',
+    alignSelf: 'flex-end',
     paddingHorizontal: 4,
+    marginBottom: 10,
   },
   headerMoreBtn: {
     padding: 6,

@@ -75,7 +75,6 @@ const ApplicantDetailScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { showAlert } = useAlert();
   const [isMenuVisible, setMenuVisible] = useState(false);
-  const [expandedExpIds, setExpandedExpIds] = useState<Record<number, boolean>>({});
 
   const rawAppId = route.params.applicantId || (route.params as any).applicationId;
   const appId = rawAppId ? Number(rawAppId) : 0;
@@ -120,6 +119,8 @@ const ApplicantDetailScreen: React.FC = () => {
 
   const barangay = appData?.worker?.barangay || route.params.barangay;
   const municipality = appData?.worker?.municipality || route.params.municipality;
+  const isVerified =
+    appData?.worker?.verification_badge ?? (route.params as any)?.verificationBadge ?? true;
   const reputationScore =
     appData?.worker?.reputation_score !== undefined && appData?.worker?.reputation_score !== null
       ? appData.worker.reputation_score
@@ -145,13 +146,31 @@ const ApplicantDetailScreen: React.FC = () => {
   const emergencyContactPhone =
     appData?.worker?.emergency_contact_phone || route.params?.emergencyContactPhone;
 
-  const [showProfile, setShowProfile] = React.useState<boolean>(
-    Boolean((route.params as any)?.viewProfile),
-  );
+  const handleOpenPublicProfile = () => {
+    navigation.navigate('WorkerPublicProfile', {
+      workerId: appData?.worker?.id || 0,
+      applicationId: appId,
+      workerName: applicantName,
+      avatarUrl: appData?.worker?.avatar_url,
+      verificationBadge: isVerified,
+      reputationScore,
+      completedJobsCount: appData?.worker?.completed_jobs_count ?? 0,
+      jobTitle,
+      status,
+      barangay,
+      municipality,
+      bio,
+      skills,
+      experiences,
+      characterReferences,
+      phone: appData?.worker?.phone || phone,
+      reviews,
+    });
+  };
 
   React.useEffect(() => {
     if ((route.params as any)?.viewProfile) {
-      setShowProfile(true);
+      handleOpenPublicProfile();
     }
   }, [(route.params as any)?.viewProfile]);
 
@@ -425,8 +444,6 @@ const ApplicantDetailScreen: React.FC = () => {
     appData?.worker?.contact_locked ??
     (status === 'pending' || status === 'withdrawn' || stage < 4);
 
-  const isProfileVisible = stage >= 2 || showProfile;
-
   const handleReport = () => {
     setMenuVisible(false);
     const workerUserId =
@@ -500,24 +517,6 @@ const ApplicantDetailScreen: React.FC = () => {
     });
   };
 
-  const handleOpenPublicProfile = () => {
-    navigation.navigate('WorkerPublicProfile', {
-      workerId: appData?.worker?.id || 0,
-      applicationId: appId,
-      workerName: applicantName,
-      avatarUrl: appData?.worker?.avatar_url,
-      jobTitle,
-      status,
-      barangay,
-      municipality,
-      reputationScore,
-      skills,
-      experiences,
-      characterReferences,
-      phone,
-    });
-  };
-
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -526,11 +525,7 @@ const ApplicantDetailScreen: React.FC = () => {
         </TouchableOpacity>
         <View style={styles.headerPill}>
           <Text style={styles.headerPillText}>
-            {status === 'completed'
-              ? showProfile
-                ? 'Worker Profile'
-                : 'Completion Receipt'
-              : 'Applicant profile'}
+            {status === 'completed' ? 'Completion Receipt' : 'Applicant profile'}
           </Text>
         </View>
         <TouchableOpacity style={styles.iconBtn} onPress={() => setMenuVisible(true)}>
@@ -551,39 +546,16 @@ const ApplicantDetailScreen: React.FC = () => {
         }
       >
         {/* 5-Stage Tracker or Completed Job Overview */}
-        {status === 'completed' && !showProfile ? (
+        {status === 'completed' ? (
           <CompletedJobOverview
             viewerRole="employer"
             application={appData}
             job={appData?.job}
             onOpenChat={handleOpenChat}
-            onViewProfile={() => setShowProfile(true)}
+            onViewProfile={handleOpenPublicProfile}
           />
         ) : (
           <>
-            {status === 'completed' && showProfile && (
-              <TouchableOpacity
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6,
-                  paddingVertical: 10,
-                  paddingHorizontal: 14,
-                  backgroundColor: colors.paperCream,
-                  borderRadius: 12,
-                  marginBottom: 16,
-                  borderWidth: 1,
-                  borderColor: colors.inkFaint,
-                }}
-                onPress={() => setShowProfile(false)}
-              >
-                <Ionicons name="arrow-back" size={16} color={colors.primary} />
-                <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.primary }}>
-                  Back to Completion Receipt
-                </Text>
-              </TouchableOpacity>
-            )}
-
             {status !== 'completed' && (
               <View style={styles.stages}>
                 <View style={stage >= 1 ? styles.stageActive : styles.stage}>
@@ -824,362 +796,6 @@ const ApplicantDetailScreen: React.FC = () => {
                   {coverNote}
                 </Text>
               </View>
-            )}
-
-            {/* Stage 1: Tap to view full profile if collapsed */}
-            {stage === 1 && !isProfileVisible && (
-              <TouchableOpacity
-                style={styles.viewProfileBanner}
-                onPress={() => setShowProfile(true)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.viewProfileBannerLeft}>
-                  <View style={styles.viewProfileIconBox}>
-                    <Ionicons name="person-circle-outline" size={24} color={colors.primary} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.viewProfileBannerTitle}>{t('view_worker_profile')}</Text>
-                    <Text style={styles.viewProfileBannerSub}>{t('view_worker_profile_sub')}</Text>
-                  </View>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={colors.inkMuted} />
-              </TouchableOpacity>
-            )}
-
-            {/* Full Worker Profile - Visible in Stage 2+ or when explicitly viewed */}
-            {isProfileVisible && (
-              <>
-                {/* Reputation Card - Macaron Peach */}
-                <View style={styles.reputationCardWrapper}>
-                  <View style={styles.reputationCard}>
-                    <View style={styles.reputationHeaderRow}>
-                      <View style={styles.reputationBadge}>
-                        <Ionicons name="shield-checkmark" size={13} color={colors.primaryDark} />
-                      </View>
-                      <Text style={styles.reputationEyebrow}>Worker Reputation</Text>
-                    </View>
-                    <View style={styles.reputationRow}>
-                      <Text style={styles.reputationScore}>
-                        {reputationScore !== undefined && reputationScore !== null
-                          ? formatScore(reputationScore)
-                          : 'N/A'}
-                      </Text>
-                      <View style={styles.reputationStars}>
-                        <Text style={styles.reputationCount}>
-                          {reputationScore !== undefined && reputationScore !== null
-                            ? 'Reputation Score'
-                            : 'No ratings yet'}
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={styles.reputationTagline}>Their score travels with them.</Text>
-                  </View>
-                </View>
-
-                {/* Stats Grid - Macaron Colors */}
-                <View style={styles.statsWrapper}>
-                  <View style={styles.statsGrid}>
-                    <View style={[styles.statBox, { backgroundColor: colors.mint }]}>
-                      <View
-                        style={[
-                          styles.statIconCircle,
-                          { backgroundColor: 'rgba(255, 255, 255, 0.65)' },
-                        ]}
-                      >
-                        <Ionicons name="checkmark-done-outline" size={18} color={colors.mintDeep} />
-                      </View>
-                      <Text style={[styles.statValue, { color: colors.mintDeep }]}>
-                        {appData?.worker?.completed_jobs_count ?? 0}
-                      </Text>
-                      <Text style={[styles.statLabel, { color: colors.mintDeep }]}>
-                        Completed Jobs
-                      </Text>
-                    </View>
-
-                    <View style={[styles.statBox, { backgroundColor: colors.sky }]}>
-                      <View
-                        style={[
-                          styles.statIconCircle,
-                          { backgroundColor: 'rgba(255, 255, 255, 0.65)' },
-                        ]}
-                      >
-                        <Ionicons name="shield-outline" size={18} color={colors.skyDeep} />
-                      </View>
-                      <Text style={[styles.statValue, { color: colors.skyDeep }]}>Active</Text>
-                      <Text style={[styles.statLabel, { color: colors.skyDeep }]}>
-                        Worker Status
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-
-                {/* Worker Reviews List */}
-                <View style={styles.skillsSection}>
-                  <Text style={styles.sectionEyebrow}>Employer Reviews</Text>
-                  <View style={{ marginTop: 10, gap: 12 }}>
-                    {!reviews || reviews.length === 0 ? (
-                      <Text
-                        style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}
-                      >
-                        No feedback reviews yet.
-                      </Text>
-                    ) : (
-                      reviews.map((rev: any) => (
-                        <View
-                          key={rev.id}
-                          style={{
-                            backgroundColor: colors.paperBright,
-                            padding: 14,
-                            borderRadius: 16,
-                            borderWidth: 1,
-                            borderColor: colors.inkFaint,
-                            gap: 6,
-                          }}
-                        >
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <Text
-                              style={{
-                                fontFamily: fonts.bodyBold,
-                                fontSize: 14,
-                                color: colors.ink,
-                              }}
-                            >
-                              {rev.reviewer_name}
-                            </Text>
-                            <Text
-                              style={{
-                                fontFamily: fonts.body,
-                                fontSize: 12,
-                                color: colors.inkMuted,
-                              }}
-                            >
-                              {rev.created_at}
-                            </Text>
-                          </View>
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                            <Ionicons
-                              name="star"
-                              size={14}
-                              color={colors.butter}
-                              style={{
-                                textShadowColor: 'rgba(0,0,0,0.1)',
-                                textShadowOffset: { width: 0, height: 1 },
-                                textShadowRadius: 1,
-                              }}
-                            />
-                            <Text
-                              style={{
-                                fontFamily: fonts.bodyBold,
-                                fontSize: 13,
-                                color: colors.ink,
-                              }}
-                            >
-                              {rev.overall_rating} / 5.0
-                            </Text>
-                          </View>
-                          {rev.comment ? (
-                            <Text
-                              style={{
-                                fontFamily: fonts.body,
-                                fontSize: 13,
-                                color: colors.inkSoft,
-                                marginTop: 4,
-                                lineHeight: 18,
-                              }}
-                            >
-                              "{rev.comment}"
-                            </Text>
-                          ) : null}
-                        </View>
-                      ))
-                    )}
-                  </View>
-                </View>
-
-                {/* About Me */}
-                {bio ? (
-                  <View style={styles.skillsSection}>
-                    <Text style={styles.sectionEyebrow}>About Me</Text>
-                    <Text
-                      style={{
-                        fontFamily: fonts.body,
-                        fontSize: 14,
-                        color: colors.ink,
-                        marginTop: 4,
-                        lineHeight: 22,
-                      }}
-                    >
-                      {bio}
-                    </Text>
-                  </View>
-                ) : null}
-
-                {/* Skills */}
-                <View style={styles.skillsSection}>
-                  <Text style={styles.sectionEyebrow}>Skills</Text>
-                  <View style={styles.skillsList}>
-                    {!skills || skills.length === 0 ? (
-                      <Text
-                        style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}
-                      >
-                        No skills added yet.
-                      </Text>
-                    ) : (
-                      skills.map((skillName: string, index: number) => {
-                        const isEven = index % 2 === 0;
-                        const chipBg = isEven ? '#F8FAFC' : '#F1F5F9';
-                        const chipBorder = isEven ? '#E2E8F0' : '#CBD5E1';
-                        const chipTextColor = '#334155';
-                        const iconColor = '#64748B';
-
-                        return (
-                          <View
-                            key={index}
-                            style={[
-                              styles.chip,
-                              {
-                                backgroundColor: chipBg,
-                                borderWidth: 1,
-                                borderColor: chipBorder,
-                              },
-                            ]}
-                          >
-                            <Ionicons name="construct-outline" size={13} color={iconColor} />
-                            <Text style={[styles.chipText, { color: chipTextColor }]}>
-                              {skillName}
-                            </Text>
-                          </View>
-                        );
-                      })
-                    )}
-                  </View>
-                </View>
-
-                {/* Work History */}
-                <View style={styles.skillsSection}>
-                  <Text style={styles.sectionEyebrow}>Work History</Text>
-                  <View style={{ marginTop: 10, gap: 12 }}>
-                    {!experiences || experiences.length === 0 ? (
-                      <Text
-                        style={{ fontFamily: fonts.body, color: colors.inkMuted, fontSize: 13 }}
-                      >
-                        No work history added yet.
-                      </Text>
-                    ) : (
-                      experiences.map((exp: any) => {
-                        const isExpanded = !!expandedExpIds[exp.id];
-                        return (
-                          <TouchableOpacity
-                            key={exp.id}
-                            activeOpacity={0.7}
-                            onPress={() => {
-                              setExpandedExpIds((prev) => ({ ...prev, [exp.id]: !prev[exp.id] }));
-                            }}
-                            style={{
-                              flexDirection: 'row',
-                              alignItems: 'flex-start',
-                              gap: 12,
-                              padding: 12,
-                              backgroundColor: colors.paperBright,
-                              borderRadius: 14,
-                              borderWidth: 1,
-                              borderColor: colors.inkFaint,
-                            }}
-                          >
-                            <View
-                              style={{
-                                width: 40,
-                                height: 40,
-                                borderRadius: 20,
-                                backgroundColor: colors.butter,
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              <Ionicons name="briefcase" size={18} color={colors.inkSoft} />
-                            </View>
-                            <View style={{ flex: 1 }}>
-                              <View
-                                style={{
-                                  flexDirection: 'row',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                }}
-                              >
-                                <Text
-                                  style={{
-                                    fontFamily: fonts.bodyBold,
-                                    fontSize: 14,
-                                    color: colors.ink,
-                                    flex: 1,
-                                  }}
-                                >
-                                  {exp.job_title}
-                                </Text>
-                                <Ionicons
-                                  name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                                  size={16}
-                                  color={colors.inkMuted}
-                                  style={{ marginLeft: 6 }}
-                                />
-                              </View>
-                              <Text
-                                style={{ fontFamily: fonts.body, fontSize: 13, color: colors.ink }}
-                              >
-                                {exp.company || exp.employer_name}
-                              </Text>
-                              <Text
-                                style={{
-                                  fontFamily: fonts.body,
-                                  fontSize: 12,
-                                  color: colors.inkMuted,
-                                }}
-                              >
-                                {exp.duration}
-                              </Text>
-                              {isExpanded && exp.description ? (
-                                <Text
-                                  style={{
-                                    fontFamily: fonts.body,
-                                    fontSize: 13,
-                                    color: colors.inkSoft,
-                                    marginTop: 8,
-                                    paddingTop: 8,
-                                    borderTopWidth: 1,
-                                    borderTopColor: colors.inkFaint,
-                                    lineHeight: 18,
-                                  }}
-                                >
-                                  {exp.description}
-                                </Text>
-                              ) : null}
-                            </View>
-                          </TouchableOpacity>
-                        );
-                      })
-                    )}
-                  </View>
-                </View>
-
-                {stage === 1 && (
-                  <TouchableOpacity
-                    style={styles.collapseProfileBtn}
-                    onPress={() => setShowProfile(false)}
-                    activeOpacity={0.8}
-                  >
-                    <Ionicons name="chevron-up" size={16} color={colors.inkSoft} />
-                    <Text style={styles.collapseProfileBtnText}>
-                      {t('collapse_worker_profile')}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </>
             )}
 
             {/* Character References */}

@@ -7,8 +7,10 @@ import {
   TouchableOpacity,
   TextInput,
   BackHandler,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -63,6 +65,7 @@ const RatingCategory = ({
 
 export const RateWorkerScreen: React.FC = () => {
   const { t } = useLanguage();
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<RateWorkerScreenNavigationProp>();
   const route = useRoute<RateWorkerScreenRouteProp>();
   const { id, workerName, jobTitle } = route.params; // this is the applicationId
@@ -168,87 +171,102 @@ export const RateWorkerScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom', 'left', 'right']}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
-          <Ionicons name="arrow-back" size={24} color={colors.ink} />
-        </TouchableOpacity>
-        <View style={styles.headerPill}>
-          <Text style={styles.headerPillText}>{t('rate_worker_pill')}</Text>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
+            <Ionicons name="arrow-back" size={24} color={colors.ink} />
+          </TouchableOpacity>
+          <View style={styles.headerPill}>
+            <Text style={styles.headerPillText}>{t('rate_worker_pill')}</Text>
+          </View>
+          <View style={{ width: 40 }} />
         </View>
-        <View style={{ width: 40 }} />
-      </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Worker Info */}
-        <View style={styles.workerInfoCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {(workerName || 'Worker').charAt(0).toUpperCase()}
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: Math.max(insets.bottom + 24, 40) },
+          ]}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Worker Info */}
+          <View style={styles.workerInfoCard}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {(workerName || 'Worker').charAt(0).toUpperCase()}
+              </Text>
+            </View>
+            <View style={styles.workerDetails}>
+              <Text style={styles.workerName}>{workerName || 'Worker'}</Text>
+              <Text style={styles.jobMeta}>{jobTitle || 'Job'}</Text>
+            </View>
+          </View>
+
+          {/* Rating Categories */}
+          <View style={styles.categoriesContainer}>
+            <RatingCategory title={t('rate_quality')} rating={quality} onRate={setQuality} />
+            <RatingCategory
+              title={t('rate_punctuality')}
+              rating={punctuality}
+              onRate={setPunctuality}
+            />
+            <RatingCategory
+              title={t('rate_communication')}
+              rating={communication}
+              onRate={setCommunication}
+            />
+            <RatingCategory title={t('rate_behavior')} rating={behavior} onRate={setBehavior} />
+          </View>
+
+          {/* Note Field */}
+          <View style={styles.noteField}>
+            <Text style={styles.noteLabel}>
+              {t('rate_review_feedback')} <Text style={{ color: colors.error }}>*</Text>
             </Text>
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="chatbubble-outline"
+                size={20}
+                color={colors.inkLight}
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={styles.textInput}
+                placeholder={t('rate_review_placeholder')}
+                placeholderTextColor={colors.inkLight}
+                multiline
+                scrollEnabled={true}
+                value={note}
+                onChangeText={setNote}
+              />
+            </View>
           </View>
-          <View style={styles.workerDetails}>
-            <Text style={styles.workerName}>{workerName || 'Worker'}</Text>
-            <Text style={styles.jobMeta}>{jobTitle || 'Job'}</Text>
-          </View>
-        </View>
 
-        {/* Rating Categories */}
-        <View style={styles.categoriesContainer}>
-          <RatingCategory title={t('rate_quality')} rating={quality} onRate={setQuality} />
-          <RatingCategory
-            title={t('rate_punctuality')}
-            rating={punctuality}
-            onRate={setPunctuality}
-          />
-          <RatingCategory
-            title={t('rate_communication')}
-            rating={communication}
-            onRate={setCommunication}
-          />
-          <RatingCategory title={t('rate_behavior')} rating={behavior} onRate={setBehavior} />
-        </View>
-
-        {/* Note Field */}
-        <View style={styles.noteField}>
-          <Text style={styles.noteLabel}>
-            {t('rate_review_feedback')} <Text style={{ color: colors.error }}>*</Text>
-          </Text>
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="chatbubble-outline"
-              size={20}
-              color={colors.inkLight}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={styles.textInput}
-              placeholder={t('rate_review_placeholder')}
-              placeholderTextColor={colors.inkLight}
-              multiline
-              value={note}
-              onChangeText={setNote}
+          {/* Submit Button */}
+          <View style={styles.submitContainer}>
+            <Button
+              title={t('rate_submit_btn')}
+              onPress={handleSubmit}
+              disabled={!isFormValid || isPending || isSubmitted}
+              loading={isPending || isSubmitted}
+              style={styles.submitBtn}
             />
           </View>
-        </View>
-
-        {/* Submit Button */}
-        <View style={styles.submitContainer}>
-          <Button
-            title={t('rate_submit_btn')}
-            onPress={handleSubmit}
-            disabled={!isFormValid || isPending || isSubmitted}
-            loading={isPending || isSubmitted}
-            style={styles.submitBtn}
-          />
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.paper },
+  keyboardAvoidingView: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
