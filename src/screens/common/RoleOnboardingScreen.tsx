@@ -151,16 +151,6 @@ export const RoleOnboardingScreen: React.FC = () => {
   const [customSkillsList, setCustomSkillsList] = useState<Skill[]>([]);
   const MAX_SIZE_MB = 5;
 
-  const createSkillMutation = useMutation({
-    mutationFn: (name: string) => skillsApi.createSkill(name),
-    onSuccess: (newSkill) => {
-      // Handled optimistically, success will swap the temp ID in handleAddCustomSkill callbacks
-    },
-    onError: (err: any) => {
-      console.error('Failed to create skill', err);
-    },
-  });
-
   const handleAddCustomSkill = () => {
     const trimmed = customSkill.trim();
     if (!trimmed) return;
@@ -180,23 +170,10 @@ export const RoleOnboardingScreen: React.FC = () => {
     const tempId = -Date.now();
     const tempSkill: Skill = { id: tempId, name: trimmed };
 
-    // Optimistically add to lists
     setCustomSkillsList((prev) => [...prev, tempSkill]);
     setSelectedSkills((prev) => [...prev, tempId]);
     setCustomSkill('');
     setCustomSkillError('');
-
-    createSkillMutation.mutate(trimmed, {
-      onSuccess: (newSkill) => {
-        if (newSkill && newSkill.id) {
-          setCustomSkillsList((prev) => prev.map((s) => (s.id === tempId ? newSkill : s)));
-          setSelectedSkills((prev) => prev.map((id) => (id === tempId ? newSkill.id : id)));
-        }
-      },
-      onError: (err: any) => {
-        // Keep in list as a client-side custom skill that will be submitted on Complete Setup
-      },
-    });
   };
 
   const { data: skills = [] } = useQuery({
