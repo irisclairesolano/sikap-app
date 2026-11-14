@@ -15,6 +15,7 @@ import { CharacterReference, Skill, WorkerExperience } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useOnboardingTutorial } from '../../contexts/OnboardingTutorialContext';
 import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
+import { useReportsBadge } from '../../hooks/useReports';
 type ProfileScreenNavigationProp = NativeStackNavigationProp<WorkerStackParamList, 'ProfileMain'>;
 
 export const ProfileScreen: React.FC = () => {
@@ -26,6 +27,7 @@ export const ProfileScreen: React.FC = () => {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const scrollViewRef = useRef<ScrollView | null>(null);
+  const hasReportsBadge = useReportsBadge();
 
   const {
     data: user,
@@ -154,6 +156,7 @@ export const ProfileScreen: React.FC = () => {
         </View>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Settings')}>
           <Ionicons name="settings-outline" size={24} color={colors.ink} />
+          {hasReportsBadge && <View style={styles.headerRedDot} />}
         </TouchableOpacity>
       </View>
 
@@ -566,11 +569,17 @@ export const ProfileScreen: React.FC = () => {
           onPress={() => navigation.navigate('MyReports' as any)}
           activeOpacity={0.8}
         >
-          <View style={[styles.supportIconCircle, { backgroundColor: '#FEF3C7' }]}>
-            <Ionicons name="flag" size={18} color="#B45309" />
+          <View style={{ position: 'relative' }}>
+            <View style={[styles.supportIconCircle, { backgroundColor: '#FEF3C7' }]}>
+              <Ionicons name="flag" size={18} color="#B45309" />
+            </View>
+            {hasReportsBadge && <View style={styles.cardRedDot} />}
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.supportTitle}>{t('my_reports') || 'My Reports'}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.supportTitle}>{t('my_reports') || 'My Reports'}</Text>
+              {hasReportsBadge && <View style={styles.titleRedDot} />}
+            </View>
             <Text style={styles.supportSubtitle}>
               {t('my_reports_desc') || 'View submitted reports and admin responses'}
             </Text>
@@ -591,7 +600,41 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
   },
-  iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  headerRedDot: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  cardRedDot: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#EF4444',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  titleRedDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: '#EF4444',
+  },
   headerPill: {
     backgroundColor: colors.paperBright,
     paddingVertical: 6,

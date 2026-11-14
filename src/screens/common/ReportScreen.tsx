@@ -17,6 +17,7 @@ import { useAlert } from '../../contexts/AlertContext';
 import { colors, fonts, shadows } from '../../theme';
 import Button from '../../components/common/Button';
 import { useSubmitReport } from '../../hooks/useReports';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { normalizeReportableType, ReportReasonType } from '../../api/reports';
 import { triggerHaptic } from '../../utils/haptics';
@@ -46,6 +47,7 @@ const REASONS: { key: string; labelKey: TranslationKey }[] = [
 
 export const ReportScreen: React.FC = () => {
   const { t } = useLanguage();
+  const queryClient = useQueryClient();
   const navigation = useNavigation<ReportScreenNavigationProp>();
   const route = useRoute<ReportScreenRouteProp>();
   const rawParams = (route.params || {}) as any;
@@ -133,6 +135,9 @@ export const ReportScreen: React.FC = () => {
       {
         onSuccess: (res: any) => {
           triggerHaptic('medium');
+          queryClient.invalidateQueries({ queryKey: ['my-reports'] });
+          queryClient.refetchQueries({ queryKey: ['my-reports'] });
+          queryClient.invalidateQueries({ queryKey: ['reports-badge'] });
           let alertTitle = t('report_submitted_title');
           let alertMsg = t('report_submitted_desc');
 

@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
   Image,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -13,9 +15,11 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useMyReports } from '../../hooks/useReports';
+import { markReportsViewed, useMyReports } from '../../hooks/useReports';
 import { colors, fonts, shadows } from '../../theme';
 import { UserReportItem } from '../../api/reports';
+
+type StatusFilter = 'all' | 'pending' | 'investigating' | 'resolved' | 'dismissed';
 
 const formatReportDate = (dateStr?: string | null) => {
   if (!dateStr) return '';
@@ -24,7 +28,7 @@ const formatReportDate = (dateStr?: string | null) => {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-const formatReasonLabel = (type?: string, t?: any, language?: string) => {
+const formatReasonLabel = (type?: string, language?: string) => {
   if (!type) return '';
   switch (type.toLowerCase()) {
     case 'harassment':
@@ -45,46 +49,82 @@ export const MyReportsScreen: React.FC = () => {
   const { t, language } = useLanguage();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
+  const isTagalog = language === 'tl';
+
   const [expandedReportId, setExpandedReportId] = useState<number | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<StatusFilter>('all');
 
   const { data, isLoading, isError, isFetching, refetch } = useMyReports();
-  const reports: UserReportItem[] = data?.data || [];
+  const rawReports = Array.isArray(data) ? data : (data as any)?.data;
+  const reports: UserReportItem[] = Array.isArray(rawReports) ? rawReports : [];
 
-  const getStatusBadge = (status: UserReportItem['status']) => {
+  // Refetch immediately when screen is focused and clear the red dot badge
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+      markReportsViewed();
+      queryClient.setQueryData(['reports-badge'], false);
+      queryClient.invalidateQueries({ queryKey: ['reports-badge'] });
+    }, [refetch, queryClient]),
+  );
+
+  // Status mapping and styling
+  const getStatusDetails = (status: UserReportItem['status']) => {
     switch (status) {
       case 'resolved':
         return {
-          label: t('report_status_resolved') || 'Resolved',
+          key: 'resolved',
+          label: isTagalog ? 'Naaksyunan Na' : 'Resolved',
+          shortLabel: isTagalog ? 'Naaksyunan' : 'Resolved',
           bg: '#DCFCE7',
           text: '#15803D',
           border: '#86EFAC',
-          icon: 'checkmark-circle-outline' as const,
+          icon: 'checkmark-circle' as const,
+          explanation: isTagalog
+            ? 'Nasuri na ng admin at naisagawa na ang kaukulang aksyon sa iniulat.'
+            : 'Moderation review complete. Admin has taken appropriate action regarding this report.',
         };
       case 'investigating':
         return {
-          label: t('report_status_investigating') || 'Investigating',
+          key: 'investigating',
+          label: isTagalog ? 'Iniimbestigahan' : 'Under Investigation',
+          shortLabel: isTagalog ? 'Sinisiyasat' : 'Investigating',
           bg: '#DBEAFE',
           text: '#1D4ED8',
           border: '#93C5FD',
-          icon: 'search-outline' as const,
+          icon: 'search' as const,
+          explanation: isTagalog
+            ? 'Kasalukuyang sinusuri at iniimbestigahan ng moderation team ang iniulat na gawain o nilalaman.'
+            : 'Moderation team is actively investigating the reported user, activity, or job posting.',
         };
       case 'dismissed':
         return {
-          label: t('report_status_dismissed') || 'Dismissed',
+          key: 'dismissed',
+          label: isTagalog ? 'Hindi Pinagtibay' : 'Dismissed',
+          shortLabel: isTagalog ? 'Dismissed' : 'Dismissed',
           bg: '#F1F5F9',
           text: '#64748B',
           border: '#CBD5E1',
-          icon: 'close-circle-outline' as const,
+          icon: 'close-circle' as const,
+          explanation: isTagalog
+            ? 'Natapos ang pagsusuri at napag-alamang walang paglabag sa mga patakaran ng komunidad.'
+            : 'Review completed. Moderation concluded that no violation of community guidelines occurred.',
         };
       case 'open':
       case 'pending':
       default:
         return {
-          label: t('report_status_pending') || 'Pending',
+          key: 'pending',
+          label: isTagalog ? 'Kasalukuyang Sinusuri' : 'Pending Review',
+          shortLabel: isTagalog ? 'Pending' : 'Pending',
           bg: '#FEF3C7',
           text: '#B45309',
           border: '#FCD34D',
-          icon: 'time-outline' as const,
+          icon: 'time' as const,
+          explanation: isTagalog
+            ? 'Naisumite na ang ulat at nakapila para sa pagsusuri ng aming moderation team.'
+            : 'Your report has been submitted and is queued for moderation review.',
         };
     }
   };
@@ -93,21 +133,41 @@ export const MyReportsScreen: React.FC = () => {
     const norm = (reportableType || '').toLowerCase();
     if (norm.includes('job')) {
       return {
-        label: t('report_type_job') || 'Job Post',
+        label: isTagalog ? 'Ulat sa Job Post' : 'Job Post',
         icon: 'briefcase-outline' as const,
       };
     }
     return {
-      label: t('report_type_user') || 'User',
+      label: isTagalog ? 'Ulat sa Gumagamit' : 'User',
       icon: 'person-outline' as const,
     };
   };
 
+  // Filtered reports
+  const filteredReports = useMemo(() => {
+    if (selectedFilter === 'all') return reports;
+    if (selectedFilter === 'pending') {
+      return reports.filter((r) => r.status === 'open' || r.status === 'pending');
+    }
+    return reports.filter((r) => r.status === selectedFilter);
+  }, [reports, selectedFilter]);
+
+  // Counts for tabs
+  const counts = useMemo(() => {
+    return {
+      all: reports.length,
+      pending: reports.filter((r) => r.status === 'open' || r.status === 'pending').length,
+      investigating: reports.filter((r) => r.status === 'investigating').length,
+      resolved: reports.filter((r) => r.status === 'resolved').length,
+      dismissed: reports.filter((r) => r.status === 'dismissed').length,
+    };
+  }, [reports]);
+
   const renderReportItem = ({ item }: { item: UserReportItem }) => {
     const isExpanded = expandedReportId === item.id;
-    const badge = getStatusBadge(item.status);
+    const statusDetails = getStatusDetails(item.status);
     const targetInfo = getTargetTypeBadge(item.reportable_type);
-    const reasonLabel = formatReasonLabel(item.type, t, language);
+    const reasonLabel = formatReasonLabel(item.type, language);
 
     return (
       <View style={styles.card}>
@@ -139,25 +199,53 @@ export const MyReportsScreen: React.FC = () => {
 
           {/* Status Badge */}
           <View
-            style={[styles.statusBadge, { backgroundColor: badge.bg, borderColor: badge.border }]}
+            style={[
+              styles.statusBadge,
+              { backgroundColor: statusDetails.bg, borderColor: statusDetails.border },
+            ]}
           >
-            <Ionicons name={badge.icon} size={12} color={badge.text} style={{ marginRight: 4 }} />
-            <Text style={[styles.statusBadgeText, { color: badge.text }]}>{badge.label}</Text>
+            <Ionicons
+              name={statusDetails.icon}
+              size={12}
+              color={statusDetails.text}
+              style={{ marginRight: 4 }}
+            />
+            <Text style={[styles.statusBadgeText, { color: statusDetails.text }]}>
+              {statusDetails.label}
+            </Text>
           </View>
         </TouchableOpacity>
 
-        {/* Details & Description */}
+        {/* Details & Status Context */}
         <View style={styles.cardBody}>
           <Text style={styles.descriptionText} numberOfLines={isExpanded ? undefined : 3}>
             {item.description ||
-              (language === 'tl' ? 'Walang karagdagang detalye.' : 'No description provided.')}
+              (isTagalog ? 'Walang karagdagang detalye.' : 'No description provided.')}
           </Text>
+
+          {/* Status Explanation Box */}
+          <View
+            style={[
+              styles.statusContextBox,
+              { backgroundColor: statusDetails.bg + '40', borderColor: statusDetails.border },
+            ]}
+          >
+            <Ionicons
+              name={statusDetails.icon}
+              size={15}
+              color={statusDetails.text}
+              style={{ marginTop: 1 }}
+            />
+            <Text style={[styles.statusContextText, { color: statusDetails.text }]}>
+              {statusDetails.explanation}
+            </Text>
+          </View>
 
           {/* Screenshots Preview if any */}
           {item.evidence_urls && item.evidence_urls.length > 0 && isExpanded && (
             <View style={styles.evidenceContainer}>
               <Text style={styles.evidenceTitle}>
-                {language === 'tl' ? 'Mga Naka-attach na Screenshot:' : 'Attached Evidence:'}
+                {isTagalog ? 'Mga Naka-attach na Screenshot:' : 'Attached Evidence:'}
               </Text>
               <View style={styles.evidenceGrid}>
                 {item.evidence_urls.map((url, idx) => (
@@ -167,44 +255,24 @@ export const MyReportsScreen: React.FC = () => {
             </View>
           )}
 
-          {/* Admin Response Box */}
+          {/* Reporter-visible Admin Response Box */}
           {item.admin_response ? (
             <View style={styles.adminResponseBox}>
               <View style={styles.adminResponseHeader}>
-                <Ionicons name="shield-checkmark" size={16} color={colors.primary} />
+                <Ionicons name="shield-checkmark" size={16} color="#15803D" />
                 <Text style={styles.adminResponseTitle}>
-                  {t('admin_response') || (language === 'tl' ? 'Tugon ng Admin' : 'Admin Response')}
+                  {isTagalog ? 'Tugon ng Administrator' : 'Administrator Response'}
                 </Text>
               </View>
               <Text style={styles.adminResponseText}>{item.admin_response}</Text>
               {item.resolved_at && (
                 <Text style={styles.resolvedDateText}>
-                  {language === 'tl' ? 'Naaksyunan noong ' : 'Action taken on '}
+                  {isTagalog ? 'Naaksyunan noong ' : 'Action taken on '}
                   {formatReportDate(item.resolved_at)}
                 </Text>
               )}
             </View>
-          ) : item.status === 'resolved' || item.status === 'dismissed' ? (
-            <View style={styles.adminResolvedNote}>
-              <Ionicons name="checkmark-done-circle-outline" size={16} color={colors.mintDeep} />
-              <Text style={styles.adminResolvedNoteText}>
-                {t('notif_report_action_msg') ||
-                  (language === 'tl'
-                    ? 'Nasuri na ang iyong ulat at naisagawa na ang nararapat na aksyon.'
-                    : 'Your report has been reviewed and appropriate action has been taken.')}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.underReviewBox}>
-              <Ionicons name="shield-outline" size={15} color={colors.inkMuted} />
-              <Text style={styles.underReviewText}>
-                {t('under_review') ||
-                  (language === 'tl'
-                    ? 'Kasalukuyang sinusuri ng moderation team'
-                    : 'Under review by moderation team')}
-              </Text>
-            </View>
-          )}
+          ) : null}
 
           {/* Expand / Collapse toggle */}
           {item.description && item.description.length > 100 && (
@@ -215,10 +283,10 @@ export const MyReportsScreen: React.FC = () => {
             >
               <Text style={styles.expandToggleText}>
                 {isExpanded
-                  ? language === 'tl'
+                  ? isTagalog
                     ? 'Ipakita nang mas maikli'
                     : 'Show less'
-                  : language === 'tl'
+                  : isTagalog
                     ? 'Ipakita ang buong detalye'
                     : 'View full details'}
               </Text>
@@ -233,6 +301,18 @@ export const MyReportsScreen: React.FC = () => {
       </View>
     );
   };
+
+  const filterTabs: { key: StatusFilter; label: string; count: number }[] = [
+    { key: 'all', label: isTagalog ? 'Lahat' : 'All', count: counts.all },
+    { key: 'pending', label: isTagalog ? 'Pending' : 'Pending', count: counts.pending },
+    {
+      key: 'investigating',
+      label: isTagalog ? 'Iniimbestigahan' : 'In Review',
+      count: counts.investigating,
+    },
+    { key: 'resolved', label: isTagalog ? 'Naaksyunan' : 'Resolved', count: counts.resolved },
+    { key: 'dismissed', label: isTagalog ? 'Dismissed' : 'Dismissed', count: counts.dismissed },
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -251,6 +331,47 @@ export const MyReportsScreen: React.FC = () => {
         <View style={{ width: 40 }} />
       </View>
 
+      {/* Status Filter Tabs */}
+      {reports.length > 0 && (
+        <View style={styles.filterScrollWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterRow}
+          >
+            {filterTabs.map((tab) => {
+              const isActive = selectedFilter === tab.key;
+              return (
+                <TouchableOpacity
+                  key={tab.key}
+                  style={[styles.filterChip, isActive && styles.filterChipActive]}
+                  onPress={() => setSelectedFilter(tab.key)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
+                    {tab.label}
+                  </Text>
+                  {tab.count > 0 && (
+                    <View
+                      style={[styles.filterBadgeCount, isActive && styles.filterBadgeCountActive]}
+                    >
+                      <Text
+                        style={[
+                          styles.filterBadgeCountText,
+                          isActive && styles.filterBadgeCountTextActive,
+                        ]}
+                      >
+                        {tab.count}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
+
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -261,26 +382,15 @@ export const MyReportsScreen: React.FC = () => {
             <Ionicons name="alert-circle-outline" size={32} color={colors.error} />
           </View>
           <Text style={styles.emptyTitle}>
-            {language === 'tl' ? 'Hindi ma-load ang mga ulat' : 'Failed to load reports'}
+            {isTagalog ? 'Hindi ma-load ang mga ulat' : 'Failed to load reports'}
           </Text>
           <Text style={styles.emptySubtitle}>
-            {language === 'tl'
+            {isTagalog
               ? 'Nagkaroon ng problema sa pagkuha ng iyong mga ulat. Pakisubukan muli.'
               : 'There was a problem loading your reports. Please try again.'}
           </Text>
-          <TouchableOpacity
-            onPress={() => refetch()}
-            style={{
-              marginTop: 16,
-              backgroundColor: colors.primary,
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-              borderRadius: 10,
-            }}
-          >
-            <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.white }}>
-              {language === 'tl' ? 'Subukan Muli' : 'Retry'}
-            </Text>
+          <TouchableOpacity onPress={() => refetch()} style={styles.retryBtn}>
+            <Text style={styles.retryBtnText}>{isTagalog ? 'Subukan Muli' : 'Retry'}</Text>
           </TouchableOpacity>
         </View>
       ) : reports.length === 0 ? (
@@ -290,18 +400,32 @@ export const MyReportsScreen: React.FC = () => {
           </View>
           <Text style={styles.emptyTitle}>
             {t('no_reports_yet') ||
-              (language === 'tl' ? 'Wala pang naisumiteng ulat' : 'No reports submitted')}
+              (isTagalog ? 'Wala pang naisumiteng ulat' : 'No reports submitted')}
           </Text>
           <Text style={styles.emptySubtitle}>
             {t('no_reports_yet_desc') ||
-              (language === 'tl'
+              (isTagalog
                 ? 'Wala ka pang naisusumiteng ulat. Dito lalabas ang mga ulat na ipapadala mo tungkol sa mga user o job post.'
                 : 'You have not submitted any reports yet. Reports you submit on users or job posts will appear here.')}
           </Text>
         </View>
+      ) : filteredReports.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <View style={[styles.emptyIconCircle, { backgroundColor: colors.paperCream }]}>
+            <Ionicons name="filter-outline" size={30} color={colors.inkMuted} />
+          </View>
+          <Text style={styles.emptyTitle}>
+            {isTagalog ? 'Walang ulat sa kategoryang ito' : 'No reports in this status'}
+          </Text>
+          <Text style={styles.emptySubtitle}>
+            {isTagalog
+              ? 'Wala kang ulat na may ganitong status sa kasalukuyan.'
+              : 'You do not have any reports under the selected status filter.'}
+          </Text>
+        </View>
       ) : (
         <FlatList
-          data={reports}
+          data={filteredReports}
           keyExtractor={(item) => String(item.id)}
           renderItem={renderReportItem}
           contentContainerStyle={[
@@ -355,6 +479,56 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: colors.ink,
   },
+  filterScrollWrapper: {
+    backgroundColor: colors.paperBright,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(226, 232, 240, 0.60)',
+  },
+  filterRow: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: colors.paperCream,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.80)',
+    gap: 6,
+  },
+  filterChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  filterChipText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.inkSoft,
+  },
+  filterChipTextActive: {
+    color: '#FFFFFF',
+  },
+  filterBadgeCount: {
+    backgroundColor: 'rgba(15, 23, 42, 0.08)',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 10,
+  },
+  filterBadgeCountActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  filterBadgeCountText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 10,
+    color: colors.ink,
+  },
+  filterBadgeCountTextActive: {
+    color: '#FFFFFF',
+  },
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
@@ -370,7 +544,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: colors.primaryTint,
+    backgroundColor: colors.peach,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -388,6 +562,18 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  retryBtn: {
+    marginTop: 16,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  retryBtnText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.white,
   },
   listContent: {
     padding: 16,
@@ -480,6 +666,21 @@ const styles = StyleSheet.create({
     color: colors.ink,
     lineHeight: 19,
   },
+  statusContextBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 10,
+    marginTop: 10,
+    gap: 8,
+  },
+  statusContextText: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    flex: 1,
+    lineHeight: 17,
+  },
   evidenceContainer: {
     marginTop: 12,
   },
@@ -531,32 +732,6 @@ const styles = StyleSheet.create({
     color: '#15803D',
     marginTop: 6,
     opacity: 0.8,
-  },
-  adminResolvedNote: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-    padding: 10,
-    marginTop: 10,
-    gap: 8,
-  },
-  adminResolvedNoteText: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.inkSoft,
-    flex: 1,
-  },
-  underReviewBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 10,
-  },
-  underReviewText: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.inkMuted,
   },
   expandToggle: {
     flexDirection: 'row',

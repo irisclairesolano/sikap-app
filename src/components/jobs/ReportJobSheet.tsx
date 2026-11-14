@@ -14,6 +14,7 @@ import { useSubmitReport } from '../../hooks/useReports';
 import { useAlert } from '../../contexts/AlertContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { TranslationKey } from '../../locales/en';
+import { useQueryClient } from '@tanstack/react-query';
 
 const REASONS: {
   labelKey: TranslationKey;
@@ -41,6 +42,7 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
   jobTitle,
 }) => {
   const { t } = useLanguage();
+  const queryClient = useQueryClient();
   const [selectedReason, setSelectedReason] = useState<ReasonType | null>(null);
   const [description, setDescription] = useState('');
   const { mutate: submitReport, isPending } = useSubmitReport();
@@ -63,6 +65,9 @@ export const ReportJobSheet: React.FC<ReportJobSheetProps> = ({
           setSelectedReason(null);
           setDescription('');
           onClose();
+          queryClient.invalidateQueries({ queryKey: ['my-reports'] });
+          queryClient.refetchQueries({ queryKey: ['my-reports'] });
+          queryClient.invalidateQueries({ queryKey: ['reports-badge'] });
           showAlert(t('report_submitted_title'), t('report_submitted_desc'));
         },
         onError: () => {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ReportScreen from '../../../src/screens/common/ReportScreen';
 import { useSubmitReport } from '../../../src/hooks/useReports';
 import { useAlert } from '../../../src/contexts/AlertContext';
@@ -92,7 +93,12 @@ describe('ReportScreen Component', () => {
       params: { id: 42, type: 'user' },
     });
 
-    const { getByText, getByPlaceholderText, getByTestId } = await render(<ReportScreen />);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { getByText, getByPlaceholderText, getByTestId } = await render(
+      <QueryClientProvider client={queryClient}>
+        <ReportScreen />
+      </QueryClientProvider>,
+    );
 
     // Select reason
     await fireEvent.press(getByText('Harassment'));
@@ -125,7 +131,12 @@ describe('ReportScreen Component', () => {
       params: { reportable_id: 88, reportable_type: 'job' },
     });
 
-    const { getByText, getByPlaceholderText, getByTestId } = await render(<ReportScreen />);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { getByText, getByPlaceholderText, getByTestId } = await render(
+      <QueryClientProvider client={queryClient}>
+        <ReportScreen />
+      </QueryClientProvider>,
+    );
 
     // Select reason
     await fireEvent.press(getByText('Scam or Fraud'));
@@ -158,7 +169,12 @@ describe('ReportScreen Component', () => {
       params: { id: 0, type: 'user' },
     });
 
-    const { getByText, getByPlaceholderText, getByTestId } = await render(<ReportScreen />);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { getByText, getByPlaceholderText, getByTestId } = await render(
+      <QueryClientProvider client={queryClient}>
+        <ReportScreen />
+      </QueryClientProvider>,
+    );
 
     // Select reason and fill description so form is valid
     await fireEvent.press(getByText('Other'));

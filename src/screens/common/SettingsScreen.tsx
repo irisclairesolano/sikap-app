@@ -26,6 +26,7 @@ import { colors, fonts, shadows } from '../../theme';
 import * as SecureStore from '../../utils/storage';
 import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
 import { PRIVACY_SECTIONS_EN, PRIVACY_SECTIONS_TL } from '../../constants/privacyPolicy';
+import { useReportsBadge } from '../../hooks/useReports';
 
 // ─── Static content modal ────────────────────────────────────────────────────
 
@@ -356,6 +357,7 @@ const SettingRow = ({
   onToggle,
   onPress,
   isDestructive = false,
+  hasBadge = false,
 }: any) => (
   <TouchableOpacity
     style={styles.settingRow}
@@ -363,11 +365,38 @@ const SettingRow = ({
     disabled={type !== 'nav'}
   >
     <View style={styles.settingRowLeft}>
-      <Ionicons name={icon} size={22} color={isDestructive ? colors.error : colors.ink} />
+      <View style={{ position: 'relative' }}>
+        <Ionicons name={icon} size={22} color={isDestructive ? colors.error : colors.ink} />
+        {hasBadge && (
+          <View
+            style={{
+              position: 'absolute',
+              top: -2,
+              right: -2,
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: '#EF4444',
+            }}
+          />
+        )}
+      </View>
       <View>
-        <Text style={[styles.settingRowTitle, isDestructive && { color: colors.error }]}>
-          {title}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Text style={[styles.settingRowTitle, isDestructive && { color: colors.error }]}>
+            {title}
+          </Text>
+          {hasBadge && (
+            <View
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: 3.5,
+                backgroundColor: '#EF4444',
+              }}
+            />
+          )}
+        </View>
         {subtitle && (
           <Text
             style={{ fontFamily: fonts.body, fontSize: 13, color: colors.inkMuted, marginTop: 2 }}
@@ -396,6 +425,7 @@ export const SettingsScreen: React.FC = () => {
   const bottomInset = Math.max(insets.bottom, Platform.OS === 'android' ? 28 : 16);
   const { showAlert } = useAlert();
   const { language, setLanguage, t } = useLanguage();
+  const hasReportsBadge = useReportsBadge();
 
   const isTagalog = language === 'tl';
   const deleteReasons = isTagalog ? DELETE_REASONS_TL : DELETE_REASONS_EN;
@@ -609,6 +639,7 @@ export const SettingsScreen: React.FC = () => {
             <SettingRow
               icon="flag-outline"
               title={t('my_reports')}
+              hasBadge={hasReportsBadge}
               onPress={() => navigation.navigate('MyReports' as never)}
             />
             <View style={styles.divider} />
