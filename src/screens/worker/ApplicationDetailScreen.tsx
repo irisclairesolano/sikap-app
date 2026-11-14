@@ -81,7 +81,9 @@ const ApplicationDetailScreen: React.FC = () => {
     isError,
     error,
     refetch,
-  } = useApplication(applicationId);
+  } = useApplication(applicationId, {
+    refetchInterval: 3500,
+  });
   const appData = ((rawAppData as any)?.data ?? rawAppData) as any;
 
   useFocusEffect(
@@ -120,11 +122,13 @@ const ApplicationDetailScreen: React.FC = () => {
 
   const handleOpenChat = async () => {
     try {
+      const isJobDone = stage === 5 || appData?.status === 'completed';
       if (appData?.conversation_id) {
         navigation.navigate('Chat', {
           conversationId: appData.conversation_id,
           jobTitle: appData.job?.title || jobTitle,
           otherUserName: employerName,
+          isReadOnly: isJobDone,
         });
         return;
       }
@@ -136,6 +140,7 @@ const ApplicationDetailScreen: React.FC = () => {
           conversationId: conv.id,
           jobTitle: conv.job_title || appData?.job?.title || jobTitle,
           otherUserName: conv.other_user?.name || employerName,
+          isReadOnly: isJobDone,
         });
       }
     } catch {
@@ -443,6 +448,17 @@ const ApplicationDetailScreen: React.FC = () => {
   };
 
   const stage = getStage();
+
+  const isSlotLocked =
+    Boolean(appData?.slots_filled_notified_at) ||
+    (status !== 'accepted' &&
+      status !== 'completed' &&
+      (status === 'rejected' ||
+        appData?.job?.status === 'closed_in_progress' ||
+        appData?.job?.status === 'filled' ||
+        (appData?.job?.slots !== undefined &&
+          appData?.job?.accepted_count !== undefined &&
+          appData?.job?.accepted_count >= appData?.job?.slots)));
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -795,7 +811,32 @@ const ApplicationDetailScreen: React.FC = () => {
               onPress={handleOpenChat}
             />
           )}
-          {stage === 3 && (
+          {isSlotLocked ? (
+            <View style={{ alignItems: 'center', paddingVertical: 4 }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: '#F1F5F9',
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  gap: 8,
+                }}
+              >
+                <Ionicons name="lock-closed" size={16} color={colors.inkMuted} />
+                <Text
+                  style={{
+                    fontFamily: fonts.bodySemiBold,
+                    fontSize: 13,
+                    color: colors.inkMuted,
+                  }}
+                >
+                  {t('slots_full_no_negotiation') || 'All slots for this job have been filled.'}
+                </Text>
+              </View>
+            </View>
+          ) : stage === 3 ? (
             <View style={styles.footerRow}>
               <Button
                 label={t('hiring_decline_offer_btn')}
@@ -816,7 +857,7 @@ const ApplicationDetailScreen: React.FC = () => {
                 onPress={handleAcceptOffer}
               />
             </View>
-          )}
+          ) : null}
           {stage === 4 && (
             <>
               <Button

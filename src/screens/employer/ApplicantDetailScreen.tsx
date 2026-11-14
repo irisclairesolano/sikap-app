@@ -146,7 +146,7 @@ const ApplicantDetailScreen: React.FC = () => {
   const emergencyContactPhone =
     appData?.worker?.emergency_contact_phone || route.params?.emergencyContactPhone;
 
-  const handleOpenPublicProfile = () => {
+  const handleOpenPublicProfile = React.useCallback(() => {
     navigation.navigate('WorkerPublicProfile', {
       workerId: appData?.worker?.id || 0,
       applicationId: appId,
@@ -166,13 +166,34 @@ const ApplicantDetailScreen: React.FC = () => {
       phone: appData?.worker?.phone || phone,
       reviews,
     });
-  };
+  }, [
+    navigation,
+    appData?.worker?.id,
+    appData?.worker?.avatar_url,
+    appData?.worker?.completed_jobs_count,
+    appData?.worker?.phone,
+    appId,
+    applicantName,
+    isVerified,
+    reputationScore,
+    jobTitle,
+    status,
+    barangay,
+    municipality,
+    bio,
+    skills,
+    experiences,
+    characterReferences,
+    phone,
+    reviews,
+  ]);
 
+  const shouldAutoViewProfile = Boolean((route.params as any)?.viewProfile);
   React.useEffect(() => {
-    if ((route.params as any)?.viewProfile) {
+    if (shouldAutoViewProfile) {
       handleOpenPublicProfile();
     }
-  }, [(route.params as any)?.viewProfile]);
+  }, [shouldAutoViewProfile, handleOpenPublicProfile]);
 
   const { data: conversations } = useConversations('employer');
   const matchedConv = conversations?.find((c) => c.application_id === appId);
@@ -191,11 +212,13 @@ const ApplicantDetailScreen: React.FC = () => {
 
   const handleOpenChat = async () => {
     try {
+      const isJobCompleted = status === 'completed';
       if (activeConversationId) {
         navigation.navigate('Chat', {
           conversationId: activeConversationId,
           jobTitle: appData?.job?.title || jobTitle,
           otherUserName: applicantName,
+          isReadOnly: isJobCompleted,
         });
         return;
       }
@@ -212,6 +235,7 @@ const ApplicantDetailScreen: React.FC = () => {
           conversationId: conv.id,
           jobTitle: conv.job_title || appData?.job?.title || jobTitle,
           otherUserName: conv.other_user?.name || applicantName,
+          isReadOnly: isJobCompleted,
         });
       } else {
         showAlert(

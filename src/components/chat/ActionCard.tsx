@@ -22,6 +22,9 @@ import { useMarkJobComplete } from '../../hooks/useJobs';
 import { useAcceptOffer, useRejectOffer, useFlagOffline } from '../../hooks/useApply';
 import { triggerHaptic } from '../../utils/haptics';
 
+export const DOLE_DAILY_MINIMUM = 455;
+export const DOLE_HOURLY_MINIMUM = 56.88;
+
 interface ActionCardProps {
   message: Message;
   currentUserId: number;
@@ -34,6 +37,8 @@ interface ActionCardProps {
   otherUserName?: string;
   jobTitle?: string;
   jobId?: number;
+  jobCompensation?: number | null;
+  jobRateUnit?: string | null;
   finalAgreedPrice?: number | null;
   hasRealMessageFromEmployer?: boolean;
   isBlocked?: boolean;
@@ -58,6 +63,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
   otherUserName,
   jobTitle,
   jobId,
+  jobCompensation,
+  jobRateUnit,
   finalAgreedPrice,
   hasRealMessageFromEmployer,
   isBlocked = false,
@@ -135,6 +142,15 @@ const ActionCard: React.FC<ActionCardProps> = ({
     card_data?.final_agreed_price ??
     (card_data as any)?.agreed_price ??
     finalAgreedPrice;
+
+  const effectiveJobCompensation =
+    jobCompensation ??
+    (card_data?.compensation as number | undefined) ??
+    (applicationObj?.job?.compensation as number | undefined);
+  const effectiveJobRateUnit =
+    jobRateUnit ??
+    (card_data?.rate_unit as string | undefined) ??
+    (applicationObj?.job?.rate_unit as string | undefined);
 
   const applyOptimisticCardUpdate = (patch: {
     cardResolved?: boolean;
@@ -547,6 +563,52 @@ const ActionCard: React.FC<ActionCardProps> = ({
           )}
         </View>
 
+        {/* DOLE Region V Suggested Wage Advisory Guide */}
+        {!isSlotLocked && (
+          <View style={styles.doleWageBox} testID="dole-wage-guide-box">
+            <View style={styles.doleWageHeader}>
+              <View style={styles.doleWageBadge}>
+                <Ionicons name="shield-checkmark" size={13} color="#047857" />
+                <Text style={styles.doleWageBadgeText}>{t('dole_wage_guide_title')}</Text>
+              </View>
+              <Text style={styles.doleWageSubtext}>{t('dole_wage_region_tag')}</Text>
+            </View>
+
+            <View style={styles.doleWageRow}>
+              <View style={styles.doleWageCol}>
+                <Text style={styles.doleWageLabel}>{t('dole_wage_suggested_label')}</Text>
+                <Text style={styles.doleWageValue}>{t('dole_wage_daily_baseline')}</Text>
+                <Text style={styles.doleWageEq}>{t('dole_wage_hourly_baseline')}</Text>
+              </View>
+              {effectiveJobCompensation != null && Number(effectiveJobCompensation) > 0 ? (
+                <View style={[styles.doleWageCol, styles.doleWageColBorder]}>
+                  <Text style={styles.doleWageLabel}>{t('dole_wage_posted_rate')}</Text>
+                  <Text style={styles.doleWagePostedValue}>
+                    ₱{Number(effectiveJobCompensation).toLocaleString()}
+                    {effectiveJobRateUnit === 'per_hour'
+                      ? ' / hr'
+                      : effectiveJobRateUnit === 'per_day'
+                        ? ' / day'
+                        : ''}
+                  </Text>
+                  <Text style={styles.doleWageEq}>
+                    {effectiveJobRateUnit === 'per_hour'
+                      ? '≈ ₱' + (Number(effectiveJobCompensation) * 8).toLocaleString() + ' / day'
+                      : effectiveJobRateUnit === 'per_day'
+                        ? '≈ ₱' + (Number(effectiveJobCompensation) / 8).toFixed(2) + ' / hr'
+                        : 'Fixed Project'}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+            <Text style={styles.doleWageHint}>
+              {currentUserRole === 'worker'
+                ? t('dole_wage_negotiation_worker_hint')
+                : t('dole_wage_negotiation_employer_hint')}
+            </Text>
+          </View>
+        )}
+
         {/* Worker Footer Notice */}
         {currentUserRole === 'worker' && !isSlotLocked && (
           <View style={styles.chatReadyPill}>
@@ -722,6 +784,58 @@ const ActionCard: React.FC<ActionCardProps> = ({
                   onChangeText={setPriceInput}
                   autoFocus
                 />
+
+                {/* DOLE Quick Fill Pills */}
+                <View style={styles.dolePillRow}>
+                  <TouchableOpacity
+                    testID="dole-quick-pill-min"
+                    style={styles.doleQuickPill}
+                    onPress={() => {
+                      triggerHaptic('light');
+                      setPriceInput('455');
+                    }}
+                  >
+                    <Ionicons name="sparkles" size={12} color={colors.primary} />
+                    <Text style={styles.doleQuickPillText}>{t('dole_wage_use_suggested')}</Text>
+                  </TouchableOpacity>
+                  {effectiveJobCompensation && Number(effectiveJobCompensation) !== 455 ? (
+                    <TouchableOpacity
+                      testID="dole-quick-pill-posted"
+                      style={styles.doleQuickPill}
+                      onPress={() => {
+                        triggerHaptic('light');
+                        setPriceInput(String(effectiveJobCompensation));
+                      }}
+                    >
+                      <Ionicons name="pricetag-outline" size={12} color={colors.ink} />
+                      <Text style={[styles.doleQuickPillText, { color: colors.ink }]}>
+                        {t('dole_wage_use_posted', {
+                          amount: Number(effectiveJobCompensation).toLocaleString(),
+                        })}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+
+                {/* Real-time Sanity / DOLE benchmark warning / validation */}
+                {parseFloat(priceInput) > 0 && parseFloat(priceInput) < 455 ? (
+                  <View style={styles.doleInputWarningBox} testID="dole-input-warning-box">
+                    <Ionicons name="warning-outline" size={14} color="#B45309" />
+                    <Text style={styles.doleInputWarningText}>
+                      {t('dole_wage_offer_below_warning', {
+                        amount: parseFloat(priceInput).toLocaleString(),
+                      })}
+                    </Text>
+                  </View>
+                ) : parseFloat(priceInput) >= 455 ? (
+                  <View style={styles.doleInputSuccessBox} testID="dole-input-success-box">
+                    <Ionicons name="checkmark-circle" size={14} color="#047857" />
+                    <Text style={styles.doleInputSuccessText}>
+                      {t('dole_wage_offer_meets_badge')}
+                    </Text>
+                  </View>
+                ) : null}
+
                 <Text style={styles.priceHelperText}>{t('agreed_price_helper_note')}</Text>
                 <View style={styles.priceActionsRow}>
                   <TouchableOpacity
@@ -831,6 +945,29 @@ const ActionCard: React.FC<ActionCardProps> = ({
               </Text>
             </View>
           </View>
+
+          {/* DOLE Region V Benchmark Comparison for Sent Offer */}
+          {effectivePrice != null && Number(effectivePrice) >= 455 ? (
+            <View style={styles.doleOfferBadgeSuccess}>
+              <Ionicons name="checkmark-circle" size={13} color="#047857" />
+              <Text style={styles.doleOfferBadgeSuccessText}>
+                {t('dole_wage_offer_meets_badge')}
+              </Text>
+            </View>
+          ) : effectivePrice != null && Number(effectivePrice) < 455 ? (
+            <View style={styles.doleOfferBadgeNotice}>
+              <Ionicons name="information-circle" size={13} color="#B45309" />
+              <Text style={styles.doleOfferBadgeNoticeText}>
+                {t('dole_wage_offer_below_notice', {
+                  amount: Number(effectivePrice).toLocaleString('en-PH', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }),
+                })}
+              </Text>
+            </View>
+          ) : null}
+
           <View style={styles.frostedWaitingPill}>
             <Ionicons name="time-outline" size={14} color={colors.inkMuted} />
             <Text style={styles.frostedWaitingText}>
@@ -932,6 +1069,26 @@ const ActionCard: React.FC<ActionCardProps> = ({
             </Text>
           </View>
         </View>
+
+        {/* DOLE Region V Benchmark Comparison for Received Offer */}
+        {effectivePrice != null && Number(effectivePrice) >= 455 ? (
+          <View style={styles.doleOfferBadgeSuccess}>
+            <Ionicons name="checkmark-circle" size={13} color="#047857" />
+            <Text style={styles.doleOfferBadgeSuccessText}>{t('dole_wage_offer_meets_badge')}</Text>
+          </View>
+        ) : effectivePrice != null && Number(effectivePrice) < 455 ? (
+          <View style={styles.doleOfferBadgeNotice}>
+            <Ionicons name="information-circle" size={13} color="#B45309" />
+            <Text style={styles.doleOfferBadgeNoticeText}>
+              {t('dole_wage_offer_below_notice', {
+                amount: Number(effectivePrice).toLocaleString('en-PH', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }),
+              })}
+            </Text>
+          </View>
+        ) : null}
 
         <View style={styles.offerTotalNotice}>
           <Ionicons name="information-circle-outline" size={16} color="#166534" />
@@ -1233,12 +1390,15 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 text: 'Yes, Mark Complete',
                 onPress: () => {
                   const targetJobId = Number(card_data?.job_id || jobId);
+                  const completePayload = targetAppId
+                    ? { jobId: targetJobId, applicationId: targetAppId }
+                    : targetJobId;
                   triggerHaptic('success');
                   applyOptimisticCardUpdate({
                     cardResolved: true,
                     applicationStatus: 'completed',
                   });
-                  markJobCompleteMutation.mutate(targetJobId, {
+                  markJobCompleteMutation.mutate(completePayload, {
                     onSuccess: () => {
                       showAlert(
                         'Job Completed',
@@ -1420,12 +1580,15 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 text: t('confirm') || 'Confirm',
                 onPress: () => {
                   const targetJobId = Number(card_data?.job_id || jobId);
+                  const completePayload = targetAppId
+                    ? { jobId: targetJobId, applicationId: targetAppId }
+                    : targetJobId;
                   triggerHaptic('success');
                   applyOptimisticCardUpdate({
                     cardResolved: true,
                     applicationStatus: 'completed',
                   });
-                  markJobCompleteMutation.mutate(targetJobId, {
+                  markJobCompleteMutation.mutate(completePayload, {
                     onSuccess: () => {
                       showAlert(t('job_completed_title'), t('job_completed_review_msg'));
                       onActionComplete();
@@ -2091,6 +2254,187 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#166534',
     lineHeight: 16,
+  },
+  doleWageBox: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 12,
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  doleWageHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  doleWageBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  doleWageBadgeText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: '#065F46',
+  },
+  doleWageSubtext: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 10,
+    color: colors.inkMuted,
+  },
+  doleWageRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    gap: 12,
+  },
+  doleWageCol: {
+    flex: 1,
+  },
+  doleWageColBorder: {
+    borderLeftWidth: 1,
+    borderLeftColor: '#E2E8F0',
+    paddingLeft: 12,
+  },
+  doleWageLabel: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 10,
+    color: colors.inkMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    marginBottom: 2,
+  },
+  doleWageValue: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: '#0F172A',
+  },
+  doleWagePostedValue: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 13,
+    color: colors.primary,
+  },
+  doleWageEq: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    color: colors.inkMuted,
+    marginTop: 1,
+  },
+  doleWageHint: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkSoft,
+    marginTop: 8,
+    lineHeight: 15,
+  },
+  dolePillRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+    marginBottom: 6,
+  },
+  doleQuickPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  doleQuickPillText: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 11,
+    color: colors.primary,
+  },
+  doleInputWarningBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 8,
+    padding: 8,
+    marginTop: 8,
+  },
+  doleInputWarningText: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: '#92400E',
+    lineHeight: 15,
+  },
+  doleInputSuccessBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    borderRadius: 8,
+    padding: 8,
+    marginTop: 8,
+  },
+  doleInputSuccessText: {
+    flex: 1,
+    fontFamily: fonts.bodyMedium,
+    fontSize: 11,
+    color: '#065F46',
+    lineHeight: 15,
+  },
+  doleOfferBadgeSuccess: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginTop: 8,
+  },
+  doleOfferBadgeSuccessText: {
+    flex: 1,
+    fontFamily: fonts.bodyMedium,
+    fontSize: 11,
+    color: '#065F46',
+  },
+  doleOfferBadgeNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginTop: 8,
+  },
+  doleOfferBadgeNoticeText: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: '#92400E',
+    lineHeight: 15,
   },
 });
 

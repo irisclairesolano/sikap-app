@@ -107,6 +107,8 @@ export interface Application {
     | 'employer_requested';
   cover_note: string | null;
   applied_at: string;
+  shortlisted_at?: string | null;
+  slots_filled_notified_at?: string | null;
   completed_at?: string | null;
   created_at?: string;
   updated_at?: string;

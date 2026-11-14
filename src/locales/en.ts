@@ -525,6 +525,26 @@ export const en = {
   wage_warn_project_unusually_low:
     '⚠️ Estimated hourly equivalent is unusually low for this project duration.',
 
+  // DOLE Wage in Chat Negotiation & Final Price
+  dole_wage_guide_title: 'DOLE Region V Wage Guide',
+  dole_wage_region_tag: 'Sorsogon Baseline',
+  dole_wage_daily_baseline: '₱455 / day',
+  dole_wage_hourly_baseline: '≈ ₱56.88 / hr (8-hr standard)',
+  dole_wage_suggested_label: 'Suggested Baseline',
+  dole_wage_posted_rate: 'Posted Rate',
+  dole_wage_use_suggested: '₱455 (DOLE Min.)',
+  dole_wage_use_posted: '₱{amount} (Posted)',
+  dole_wage_negotiation_worker_hint:
+    'DOLE Region V minimum wage is ₱455/day (₱56.88/hr) in Sorsogon. Discuss your final pay based on task scope and agreed hours.',
+  dole_wage_negotiation_employer_hint:
+    'DOLE Region V baseline is ₱455/day (₱56.88/hr) for an 8-hour workday. Rates can be adjusted for agreed part-time hours or task complexity.',
+  dole_wage_offer_below_warning:
+    '⚠️ ₱{amount} is below the DOLE Region V daily minimum wage (₱455/day). Ensure both parties agree on part-time hours or task scope.',
+  dole_wage_offer_meets_badge: 'Meets DOLE Region V daily minimum wage baseline (₱455/day)',
+  dole_wage_offer_below_notice:
+    'ℹ ₱{amount} is below the full-day DOLE baseline (₱455/day). Verify this matches your agreed working hours or task scope.',
+  dole_wage_official_ref_note: 'Official Reference: DOLE RTWPB-V Wage Order No. RBV-23 (₱455/day)',
+
   // Slots, Schedule, Duration & Media
   slots_workers_needed_label: 'Slots (Workers Needed) *',
   schedule_date_label: 'Schedule Date *',
@@ -1424,6 +1444,29 @@ export const en = {
   mark_complete_failed_error: 'Failed to mark job as complete.',
   mark_complete_rate_worker_btn: 'Rate worker',
   mark_complete_later_btn: 'Later',
+
+  // Batch 1 additions: Language, Privacy, My Reports
+  my_reports: 'My Reports',
+  my_reports_desc: 'View reports you have submitted and moderator responses.',
+  no_reports_yet: 'No reports submitted',
+  no_reports_yet_desc:
+    'You have not submitted any reports yet. Reports you submit on users or job posts will appear here.',
+  report_status_pending: 'Pending',
+  report_status_investigating: 'Investigating',
+  report_status_resolved: 'Resolved',
+  report_status_dismissed: 'Dismissed',
+  admin_response: 'Admin Response',
+  under_review: 'Under review by moderation team',
+  privacy_consent: 'I have read and agree to the',
+  privacy_consent_required: 'You must agree to the Privacy Policy to create an account.',
+  language_selection: 'Language',
+  select_language: 'Select Language',
+  report_type_user: 'User Report',
+  report_type_job: 'Job Post Report',
+  report_date: 'Submitted on',
+  report_details: 'Details',
+  error: 'Error',
+  conversation_not_found: 'Conversation not found.',
 };
 
 export type TranslationKey = keyof typeof en;

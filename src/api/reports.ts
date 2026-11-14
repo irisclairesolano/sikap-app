@@ -29,7 +29,29 @@ export interface SubmitReportPayload {
   screenshots?: string[];
 }
 
+export interface UserReportItem {
+  id: number;
+  type: string;
+  reportable_type: string;
+  reportable_id: number;
+  target_label: string | null;
+  description: string | null;
+  evidence_urls: string[];
+  status: 'open' | 'pending' | 'investigating' | 'resolved' | 'dismissed';
+  admin_response: string | null;
+  created_at: string;
+  resolved_at: string | null;
+}
+
 export const reportsApi = {
+  getMyReports: async () => {
+    return apiClient<{ data: UserReportItem[] }>('/reports/my');
+  },
+
+  getMyReport: async (id: number) => {
+    return apiClient<{ data: UserReportItem }>(`/reports/${id}`);
+  },
+
   submitReport: async (payload: SubmitReportPayload) => {
     if (payload.screenshots && payload.screenshots.length > 0) {
       const formData = new FormData();

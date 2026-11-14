@@ -80,7 +80,16 @@ export const JobDetailsScreen: React.FC = () => {
     return () => sub.remove();
   }, [handleGoBack]);
 
-  const { data: job, isLoading, isError, error, refetch, isFetching } = useJob(id);
+  const {
+    data: job,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useJob(id, {
+    refetchInterval: 4000,
+  });
 
   // Refetch job status whenever the screen regains focus (e.g., after applying or withdrawing)
   useFocusEffect(

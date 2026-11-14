@@ -17,6 +17,7 @@ import { Avatar } from '../common/Avatar';
 import { useAlert } from '../../contexts/AlertContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { Application, JobPost } from '../../types';
+import { messagesApi } from '../../api/messages';
 
 export interface CompletedJobOverviewProps {
   viewerRole: 'employer' | 'worker';
@@ -201,6 +202,56 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
         businessDocuments:
           job?.employer?.business_documents || (counterparty as any)?.business_documents || [],
       });
+    }
+  };
+
+  const handleChatPress = async () => {
+    if (onOpenChat) {
+      onOpenChat();
+      return;
+    }
+    try {
+      const activeConvId = application?.conversation_id || (job as any)?.conversation_id;
+      if (activeConvId) {
+        (navigation as any).navigate('Chat', {
+          conversationId: activeConvId,
+          jobTitle: job?.title || 'Job',
+          otherUserName: counterparty?.name || (viewerRole === 'employer' ? 'Worker' : 'Employer'),
+          isReadOnly: true,
+        });
+        return;
+      }
+      const res = await messagesApi.getConversations(viewerRole);
+      const list: any[] = Array.isArray((res as any)?.data)
+        ? (res as any).data
+        : Array.isArray(res)
+          ? (res as any)
+          : [];
+      const currentAppId = application?.id;
+      const currentJobId = job?.id || application?.job_post_id;
+      const conv = list.find(
+        (c: any) =>
+          (currentAppId && c.application_id === currentAppId) ||
+          (currentJobId && c.job_post_id === currentJobId),
+      );
+      if (conv) {
+        (navigation as any).navigate('Chat', {
+          conversationId: conv.id,
+          jobTitle: conv.job_title || job?.title || 'Job',
+          otherUserName: conv.other_user?.name || counterparty?.name || 'User',
+          isReadOnly: true,
+        });
+      } else {
+        showAlert(
+          t('error') || 'Error',
+          t('conversation_not_found') || 'No conversation found for this completed job.',
+        );
+      }
+    } catch {
+      showAlert(
+        t('error') || 'Error',
+        t('conversation_not_found') || 'Unable to open conversation.',
+      );
     }
   };
 
@@ -747,12 +798,14 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           </TouchableOpacity>
         ) : null}
 
-        {onOpenChat && (
-          <TouchableOpacity style={styles.chatHistoryBtn} onPress={onOpenChat} activeOpacity={0.78}>
-            <Ionicons name="chatbubbles-outline" size={16} color={colors.primaryDark} />
-            <Text style={styles.chatHistoryText}>{t('receipt_btn_chat_history')}</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={styles.chatHistoryBtn}
+          onPress={handleChatPress}
+          activeOpacity={0.78}
+        >
+          <Ionicons name="chatbubbles-outline" size={16} color={colors.primaryDark} />
+          <Text style={styles.chatHistoryText}>{t('receipt_btn_chat_history')}</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

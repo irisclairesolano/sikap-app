@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { JobPost } from '../types';
 
-export const useJob = (id: number) => {
+export const useJob = (id: number, options?: any) => {
   const queryClient = useQueryClient();
 
   return useQuery<JobPost, Error>({
@@ -12,6 +12,7 @@ export const useJob = (id: number) => {
       return response;
     },
     enabled: !!id,
+    ...options,
     initialData: () => {
       // Find the job from existing lists
       const jobQueries = queryClient.getQueriesData<any>({ queryKey: ['jobs'] });

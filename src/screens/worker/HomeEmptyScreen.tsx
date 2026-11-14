@@ -179,13 +179,13 @@ export const HomeEmptyScreen: React.FC = () => {
               <View
                 style={[
                   styles.taskIconBox,
-                  { backgroundColor: hasSkills ? colors.mint : colors.peach },
+                  { backgroundColor: hasSkills ? colors.mint : '#DCFCE7' },
                 ]}
               >
                 <Ionicons
                   name={hasSkills ? 'checkmark' : 'construct'}
                   size={16}
-                  color={hasSkills ? colors.mintDeep : colors.primary}
+                  color={colors.mintDeep}
                 />
               </View>
               <View style={styles.taskTextContainer}>
@@ -197,7 +197,7 @@ export const HomeEmptyScreen: React.FC = () => {
               <Ionicons
                 name={hasSkills ? 'pencil' : 'chevron-forward'}
                 size={18}
-                color={hasSkills ? colors.inkLight : colors.primary}
+                color={hasSkills ? colors.inkLight : colors.mintDeep}
               />
             </TouchableOpacity>
 
@@ -376,6 +376,7 @@ const styles = StyleSheet.create({
   },
   progressAccent: {
     fontFamily: fonts.displayItalic,
+    color: '#4ADE80',
   },
   progressBarBg: {
     height: 6,
@@ -387,13 +388,13 @@ const styles = StyleSheet.create({
   progressBarFill: {
     width: '20%',
     height: '100%',
-    backgroundColor: colors.white,
+    backgroundColor: '#4ADE80',
     borderRadius: 3,
   },
   sectionTitle: {
     fontFamily: fonts.bodyBold,
     fontSize: 13,
-    color: colors.primary,
+    color: colors.mintDeep,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginTop: 24,
@@ -416,7 +417,7 @@ const styles = StyleSheet.create({
   },
   activeTaskCard: {
     borderWidth: 1.5,
-    borderColor: colors.primary,
+    borderColor: colors.mintDeep,
   },
   taskIconBox: {
     width: 32,

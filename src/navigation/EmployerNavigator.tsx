@@ -19,6 +19,7 @@ import EditProfileScreen from '../screens/common/EditProfileScreen';
 import SettingsScreen from '../screens/common/SettingsScreen';
 import ReportScreen from '../screens/common/ReportScreen';
 import SupportTicketsScreen from '../screens/common/SupportTicketsScreen';
+import MyReportsScreen from '../screens/common/MyReportsScreen';
 import RoleOnboardingScreen from '../screens/common/RoleOnboardingScreen';
 import ReviewsScreen from '../screens/worker/ReviewsScreen';
 import { JobDetailsScreen } from '../screens/worker/JobDetailsScreen';
@@ -39,6 +40,7 @@ import SuccessScreen, { SuccessParams } from '../screens/common/SuccessScreen';
 export type EmployerStackParamList = {
   Success: SuccessParams;
   SupportTickets: undefined;
+  MyReports: undefined;
   Home: undefined;
   EmployerDashboard: undefined;
   PostJob?: { job?: any } | undefined;
@@ -115,7 +117,7 @@ export type EmployerStackParamList = {
   RoleOnboarding: { targetRole: 'worker' | 'employer' };
   Messages: undefined;
   ConversationsList: { role?: 'worker' | 'employer' } | undefined;
-  Chat: { conversationId: number; jobTitle?: string; otherUserName?: string };
+  Chat: { conversationId: number; jobTitle?: string; otherUserName?: string; isReadOnly?: boolean };
 };
 
 export type EmployerTabParamList = {
@@ -192,6 +194,7 @@ const HomeStack: React.FC = () => (
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="SupportTickets" component={SupportTicketsScreen} />
+    <Stack.Screen name="MyReports" component={MyReportsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
@@ -218,6 +221,7 @@ const MyJobsStack: React.FC = () => (
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="SupportTickets" component={SupportTicketsScreen} />
+    <Stack.Screen name="MyReports" component={MyReportsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
@@ -244,6 +248,7 @@ const NotificationsStack: React.FC = () => (
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="SupportTickets" component={SupportTicketsScreen} />
+    <Stack.Screen name="MyReports" component={MyReportsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
     <Stack.Screen name="Chat" component={ChatScreen} />
@@ -258,6 +263,7 @@ const ProfileStack: React.FC = () => (
     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     <Stack.Screen name="Settings" component={SettingsScreen} />
     <Stack.Screen name="SupportTickets" component={SupportTicketsScreen} />
+    <Stack.Screen name="MyReports" component={MyReportsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
     <Stack.Screen name="RoleOnboarding" component={RoleOnboardingScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />

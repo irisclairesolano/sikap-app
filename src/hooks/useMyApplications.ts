@@ -9,7 +9,7 @@ interface PaginatedResponse<T> {
   total: number;
 }
 
-export const useMyApplications = (statusFilter?: string) => {
+export const useMyApplications = (statusFilter?: string, options?: any) => {
   return useInfiniteQuery<PaginatedResponse<Application>, Error>({
     queryKey: ['my-applications', statusFilter],
     queryFn: async ({ pageParam = 1 }) => {
@@ -44,5 +44,6 @@ export const useMyApplications = (statusFilter?: string) => {
       return undefined;
     },
     initialPageParam: 1,
+    ...options,
   });
 };

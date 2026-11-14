@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/authTypes';
@@ -9,11 +9,14 @@ import { Wordmark } from '../../components/common/Wordmark';
 import Button from '../../components/common/Button';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from '../../utils/storage';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type WelcomeScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Welcome'>;
 
 const WelcomeScreen: React.FC = () => {
   const navigation = useNavigation<WelcomeScreenNavigationProp>();
+  const { language, setLanguage } = useLanguage();
+  const isTagalog = language === 'tl';
 
   React.useEffect(() => {
     // Proactively clear any stale user profile cache when landing on welcome
@@ -35,20 +38,56 @@ const WelcomeScreen: React.FC = () => {
         <View style={styles.topSection}>
           <View style={styles.header}>
             <Wordmark size={28} />
+            {/* Language Selector */}
+            <View style={styles.langSelector}>
+              <TouchableOpacity
+                style={[styles.langBtn, language === 'en' && styles.langBtnActive]}
+                onPress={() => setLanguage('en')}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.langText, language === 'en' && styles.langTextActive]}>
+                  EN
+                </Text>
+              </TouchableOpacity>
+              <View style={styles.langDivider} />
+              <TouchableOpacity
+                style={[styles.langBtn, language === 'tl' && styles.langBtnActive]}
+                onPress={() => setLanguage('tl')}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.langText, language === 'tl' && styles.langTextActive]}>
+                  TL
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <View style={styles.heroCardWrapper}>
             <View style={styles.ambientGlowPeach} />
             <View style={styles.ambientGlowSky} />
             <View style={styles.heroCard}>
-              <Text style={styles.eyebrow}>BUILT FOR INFORMAL WORK</Text>
+              <Text style={styles.eyebrow}>
+                {isTagalog ? 'PARA SA IMPORMAL NA TRABAHO' : 'BUILT FOR INFORMAL WORK'}
+              </Text>
               <Text style={styles.title}>
-                Find Work.{'\n'}
-                Build Your{'\n'}
-                <Text style={styles.titleItalic}>Kabuhayan.</Text>
+                {isTagalog ? (
+                  <>
+                    Maghanap ng Trabaho.{'\n'}
+                    Ipagpatuloy ang{'\n'}
+                    <Text style={styles.titleItalic}>Kabuhayan.</Text>
+                  </>
+                ) : (
+                  <>
+                    Find Work.{'\n'}
+                    Build Your{'\n'}
+                    <Text style={styles.titleItalic}>Kabuhayan.</Text>
+                  </>
+                )}
               </Text>
               <Text style={styles.lede}>
-                Trusted local employers. Privacy every step. Free for workers, always.
+                {isTagalog
+                  ? 'Mapagkakatiwalaang employer. Protektado ang privacy. Libre para sa manggagawa, palagi.'
+                  : 'Trusted local employers. Privacy every step. Free for workers, always.'}
               </Text>
             </View>
           </View>
@@ -56,22 +95,22 @@ const WelcomeScreen: React.FC = () => {
           <View style={styles.valueProps}>
             <View style={styles.valueItem}>
               <Ionicons name="checkmark-circle" size={14} color={colors.mintDeep} />
-              <Text style={styles.valueText}>Free</Text>
+              <Text style={styles.valueText}>{isTagalog ? 'Libre' : 'Free'}</Text>
             </View>
             <View style={styles.valueItem}>
               <Ionicons name="shield-checkmark" size={14} color={colors.mintDeep} />
-              <Text style={styles.valueText}>Private</Text>
+              <Text style={styles.valueText}>{isTagalog ? 'Pribado' : 'Private'}</Text>
             </View>
             <View style={styles.valueItem}>
               <Ionicons name="location" size={14} color={colors.mintDeep} />
-              <Text style={styles.valueText}>Sorsogon-wide</Text>
+              <Text style={styles.valueText}>{isTagalog ? 'Buong Sorsogon' : 'Sorsogon-wide'}</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.footer}>
           <Button
-            label="I'm a Worker"
+            label={isTagalog ? 'Ako ay Manggagawa' : "I'm a Worker"}
             variant="primary"
             size="lg"
             fullWidth
@@ -79,7 +118,7 @@ const WelcomeScreen: React.FC = () => {
           />
           <View style={{ height: 12 }} />
           <Button
-            label="I'm an Employer"
+            label={isTagalog ? 'Ako ay Employer' : "I'm an Employer"}
             variant="secondary"
             size="lg"
             fullWidth
@@ -87,9 +126,11 @@ const WelcomeScreen: React.FC = () => {
           />
 
           <View style={styles.loginRow}>
-            <Text style={styles.loginText}>Already have an account? </Text>
+            <Text style={styles.loginText}>
+              {isTagalog ? 'Mayroon nang account? ' : 'Already have an account? '}
+            </Text>
             <Text style={styles.loginLink} onPress={() => navigation.navigate('Login')}>
-              Log in
+              {isTagalog ? 'Mag-log in' : 'Log in'}
             </Text>
           </View>
         </View>
@@ -114,7 +155,45 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   header: {
-    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  langSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.85)',
+    padding: 3,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  langBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+  },
+  langBtnActive: {
+    backgroundColor: colors.primary,
+  },
+  langText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.inkSoft,
+  },
+  langTextActive: {
+    color: '#FFFFFF',
+  },
+  langDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: 'rgba(226, 232, 240, 0.85)',
+    marginHorizontal: 1,
   },
   heroCardWrapper: {
     position: 'relative',

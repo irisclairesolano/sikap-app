@@ -27,6 +27,7 @@ import { MediaViewerModal } from '../../components/common/MediaViewerModal';
 import { CompletedJobOverview } from '../../components/applications/CompletedJobOverview';
 import { formatRateUnit } from '../../components/jobs/JobCard';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { messagesApi } from '../../api/messages';
 
 type JobStatusScreenRouteProp = RouteProp<EmployerStackParamList, 'JobStatusManagement'>;
 type JobStatusScreenNavigationProp = NativeStackNavigationProp<
@@ -129,7 +130,27 @@ export const JobStatusManagementScreen: React.FC = () => {
           'accepted',
         ].includes(a.status),
       )
-      .sort((a, b) => (STAGE_PRIORITY[b.status] || 0) - (STAGE_PRIORITY[a.status] || 0));
+      .sort((a, b) => {
+        const stageDiff = (STAGE_PRIORITY[b.status] || 0) - (STAGE_PRIORITY[a.status] || 0);
+        if (stageDiff !== 0) return stageDiff;
+
+        // For applications within the same stage (specifically shortlisted / negotiation):
+        // 1. Highest rating first
+        const ratingA = Number(a.worker?.reputation_score ?? (a as any).reputation_score ?? 0);
+        const ratingB = Number(b.worker?.reputation_score ?? (b as any).reputation_score ?? 0);
+        if (ratingB !== ratingA) {
+          return ratingB - ratingA;
+        }
+
+        // 2. Ties go to whoever was shortlisted earlier (verifying actual shortlist timestamp)
+        const timeA = (a as any).shortlisted_at
+          ? new Date((a as any).shortlisted_at).getTime()
+          : new Date((a as any).updated_at || (a as any).created_at || 0).getTime();
+        const timeB = (b as any).shortlisted_at
+          ? new Date((b as any).shortlisted_at).getTime()
+          : new Date((b as any).updated_at || (b as any).created_at || 0).getTime();
+        return timeA - timeB;
+      });
   }, [applications]);
 
   const completedCount =
@@ -405,16 +426,36 @@ export const JobStatusManagementScreen: React.FC = () => {
                   viewerRole="employer"
                   application={app}
                   job={job}
-                  onOpenChat={
-                    app.conversation_id
-                      ? () =>
-                          (navigation as any).navigate('Chat', {
-                            conversationId: app.conversation_id,
-                            jobTitle: job.title,
-                            otherUserName: app.worker?.name || 'Worker',
-                          })
-                      : undefined
-                  }
+                  onOpenChat={async () => {
+                    if (app.conversation_id) {
+                      (navigation as any).navigate('Chat', {
+                        conversationId: app.conversation_id,
+                        jobTitle: job.title,
+                        otherUserName: app.worker?.name || 'Worker',
+                        isReadOnly: true,
+                      });
+                      return;
+                    }
+                    try {
+                      const res = await messagesApi.getConversations('employer');
+                      const list: any[] = Array.isArray((res as any)?.data)
+                        ? (res as any).data
+                        : Array.isArray(res)
+                          ? (res as any)
+                          : [];
+                      const conv = list.find(
+                        (c: any) => c.application_id === app.id || c.job_post_id === job.id,
+                      );
+                      if (conv) {
+                        (navigation as any).navigate('Chat', {
+                          conversationId: conv.id,
+                          jobTitle: conv.job_title || job.title,
+                          otherUserName: conv.other_user?.name || app.worker?.name || 'Worker',
+                          isReadOnly: true,
+                        });
+                      }
+                    } catch {}
+                  }}
                   onViewProfile={() =>
                     navigation.navigate('ApplicantDetail', {
                       applicantId: app.id,
@@ -434,7 +475,29 @@ export const JobStatusManagementScreen: React.FC = () => {
                 />
               ))
             ) : (
-              <CompletedJobOverview viewerRole="employer" job={job} />
+              <CompletedJobOverview
+                viewerRole="employer"
+                job={job}
+                onOpenChat={async () => {
+                  try {
+                    const res = await messagesApi.getConversations('employer');
+                    const list: any[] = Array.isArray((res as any)?.data)
+                      ? (res as any).data
+                      : Array.isArray(res)
+                        ? (res as any)
+                        : [];
+                    const conv = list.find((c: any) => c.job_post_id === job.id);
+                    if (conv) {
+                      (navigation as any).navigate('Chat', {
+                        conversationId: conv.id,
+                        jobTitle: conv.job_title || job.title,
+                        otherUserName: conv.other_user?.name || 'Worker',
+                        isReadOnly: true,
+                      });
+                    }
+                  } catch {}
+                }}
+              />
             )}
 
             {/* Bottom Actions for Completed Job */}

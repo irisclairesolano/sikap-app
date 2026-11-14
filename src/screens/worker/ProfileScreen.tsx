@@ -175,13 +175,13 @@ export const ProfileScreen: React.FC = () => {
             onPress={() => (navigation as any).navigate('Find', { screen: 'HomeEmpty' })}
           >
             <View style={styles.setupBannerIcon}>
-              <Ionicons name="alert-circle" size={24} color={colors.primaryDark} />
+              <Ionicons name="alert-circle" size={24} color={colors.mintDeep} />
             </View>
             <View style={styles.setupBannerText}>
               <Text style={styles.setupBannerTitle}>{t('profile_finish_setup')}</Text>
               <Text style={styles.setupBannerSubtitle}>{t('profile_missing_details_sub')}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.primaryDark} />
+            <Ionicons name="chevron-forward" size={20} color={colors.mintDeep} />
           </TouchableOpacity>
         )}
 
@@ -559,6 +559,24 @@ export const ProfileScreen: React.FC = () => {
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />
         </TouchableOpacity>
+
+        {/* My Reports Quick Entry */}
+        <TouchableOpacity
+          style={[styles.supportCard, { marginTop: 10 }]}
+          onPress={() => navigation.navigate('MyReports' as any)}
+          activeOpacity={0.8}
+        >
+          <View style={[styles.supportIconCircle, { backgroundColor: '#FEF3C7' }]}>
+            <Ionicons name="flag" size={18} color="#B45309" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.supportTitle}>{t('my_reports') || 'My Reports'}</Text>
+            <Text style={styles.supportSubtitle}>
+              {t('my_reports_desc') || 'View submitted reports and admin responses'}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -774,12 +792,12 @@ const styles = StyleSheet.create({
   setupBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.peach,
+    backgroundColor: '#DCFCE7',
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: colors.peachBright,
+    borderColor: '#86EFAC',
   },
   setupBannerIcon: {
     width: 40,
@@ -794,14 +812,14 @@ const styles = StyleSheet.create({
   setupBannerTitle: {
     fontFamily: fonts.bodyBold,
     fontSize: 14,
-    color: colors.primaryDark,
+    color: colors.mintDeep,
     marginBottom: 2,
   },
   setupBannerSubtitle: {
     fontFamily: fonts.body,
     fontSize: 12,
-    color: colors.primaryDark,
-    opacity: 0.8,
+    color: colors.mintDeep,
+    opacity: 0.85,
   },
   supportCard: {
     flexDirection: 'row',

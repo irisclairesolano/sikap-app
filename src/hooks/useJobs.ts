@@ -52,18 +52,67 @@ export const useDeleteJob = () => {
   });
 };
 
+export type MarkJobCompleteVariables = number | { jobId: number; applicationId?: number | null };
+
 export const useMarkJobComplete = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, number>({
-    mutationFn: async (id) => {
-      return apiClient<{ message: string }>(`/jobs/${id}/complete`, { method: 'PATCH' });
+  return useMutation<{ message: string }, Error, MarkJobCompleteVariables>({
+    mutationFn: async (variables) => {
+      const jobId = typeof variables === 'number' ? variables : variables.jobId;
+      const applicationId =
+        typeof variables === 'number' ? undefined : (variables.applicationId ?? undefined);
+
+      if (applicationId) {
+        return apiClient<{ message: string }>(`/jobs/${jobId}/complete`, {
+          method: 'PATCH',
+          body: JSON.stringify({ application_id: applicationId }),
+        });
+      }
+
+      return apiClient<{ message: string }>(`/jobs/${jobId}/complete`, { method: 'PATCH' });
     },
-    onSuccess: (_, jobId) => {
+    onSuccess: (_, variables) => {
+      const jobId = typeof variables === 'number' ? variables : variables.jobId;
+      const applicationId =
+        typeof variables === 'number' ? undefined : (variables.applicationId ?? undefined);
+
       // 1. Immediately update matching job and applications in myJobs in-memory cache
       queryClient.setQueriesData({ queryKey: ['myJobs'] }, (old: any) => {
         if (!old) return old;
         const updateJobItem = (job: any) => {
           if (Number(job.id) !== Number(jobId)) return job;
+
+          if (applicationId) {
+            const updatedApps = (job.applications || []).map((app: any) => {
+              if (Number(app.id) === Number(applicationId) && app.status === 'accepted') {
+                return { ...app, status: 'completed' };
+              }
+              return app;
+            });
+            const completedCount = updatedApps.filter((a: any) => a.status === 'completed').length;
+            const totalSlots = Math.max(1, Number(job.slots ?? 1));
+            const allCompleted = completedCount >= totalSlots;
+
+            return {
+              ...job,
+              status: allCompleted ? 'completed' : job.status,
+              rating_window_expires_at: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(),
+              applications: allCompleted
+                ? updatedApps.map((app: any) =>
+                    [
+                      'pending',
+                      'shortlisted',
+                      'employer_requested',
+                      'pending_negotiation',
+                      'employer_confirmed',
+                    ].includes(app.status)
+                      ? { ...app, status: 'rejected' }
+                      : app,
+                  )
+                : updatedApps,
+            };
+          }
+
           const updatedApps = (job.applications || []).map((app: any) => {
             if (app.status === 'accepted') {
               return { ...app, status: 'completed' };

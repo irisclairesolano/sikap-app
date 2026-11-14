@@ -10,6 +10,7 @@ import Input from '../../components/common/Input';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
 type RouteProps = RouteProp<AuthStackParamList, 'Register'>;
@@ -19,6 +20,8 @@ const RegisterScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const { role } = route.params;
   const insets = useSafeAreaInsets();
+  const { language, setLanguage, t } = useLanguage();
+  const isTagalog = language === 'tl';
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -137,7 +140,23 @@ const RegisterScreen: React.FC = () => {
         <View style={styles.stepBadge}>
           <Text style={styles.stepBadgeText}>1 of 4</Text>
         </View>
-        <View style={{ width: 40 }} />
+        <View style={styles.langSelector}>
+          <TouchableOpacity
+            style={[styles.langBtn, language === 'en' && styles.langBtnActive]}
+            onPress={() => setLanguage('en')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.langText, language === 'en' && styles.langTextActive]}>EN</Text>
+          </TouchableOpacity>
+          <View style={styles.langDivider} />
+          <TouchableOpacity
+            style={[styles.langBtn, language === 'tl' && styles.langBtnActive]}
+            onPress={() => setLanguage('tl')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.langText, language === 'tl' && styles.langTextActive]}>TL</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <KeyboardAwareScrollView
@@ -160,7 +179,16 @@ const RegisterScreen: React.FC = () => {
         </View>
 
         <Text style={styles.title}>
-          Tell us about{'\n'}your <Text style={styles.titleItalic}>identity.</Text>
+          {isTagalog ? (
+            <>
+              Ibahagi ang iyong{'\n'}
+              <Text style={styles.titleItalic}>pagkakakilanlan.</Text>
+            </>
+          ) : (
+            <>
+              Tell us about{'\n'}your <Text style={styles.titleItalic}>identity.</Text>
+            </>
+          )}
         </Text>
 
         <View style={styles.formCardWrapper}>
@@ -301,7 +329,12 @@ const RegisterScreen: React.FC = () => {
         </View>
 
         <View style={styles.footer}>
-          <Button label="Next" size="lg" fullWidth onPress={handleSubmit(onSubmit)} />
+          <Button
+            label={isTagalog ? 'Susunod' : 'Next'}
+            size="lg"
+            fullWidth
+            onPress={handleSubmit(onSubmit)}
+          />
         </View>
       </KeyboardAwareScrollView>
     </View>
@@ -346,6 +379,42 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 11,
     color: colors.inkMuted,
+  },
+  langSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.85)',
+    padding: 2,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  langBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
+  },
+  langBtnActive: {
+    backgroundColor: colors.primary,
+  },
+  langText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.inkSoft,
+  },
+  langTextActive: {
+    color: '#FFFFFF',
+  },
+  langDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: 'rgba(226, 232, 240, 0.85)',
+    marginHorizontal: 1,
   },
   scroll: {
     paddingHorizontal: 26,

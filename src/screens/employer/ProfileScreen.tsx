@@ -353,6 +353,24 @@ export const ProfileScreen: React.FC = () => {
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />
         </TouchableOpacity>
+
+        {/* My Reports Quick Entry */}
+        <TouchableOpacity
+          style={[styles.supportCard, { marginTop: 10 }]}
+          onPress={() => navigation.navigate('MyReports' as any)}
+          activeOpacity={0.8}
+        >
+          <View style={[styles.supportIconCircle, { backgroundColor: '#FEF3C7' }]}>
+            <Ionicons name="flag" size={18} color="#B45309" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.supportTitle}>{t('my_reports') || 'My Reports'}</Text>
+            <Text style={styles.supportSubtitle}>
+              {t('my_reports_desc') || 'View submitted reports and admin responses'}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />
+        </TouchableOpacity>
       </RefreshableContainer>
     </SafeAreaView>
   );

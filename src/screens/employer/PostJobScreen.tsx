@@ -188,9 +188,12 @@ export const PostJobScreen: React.FC = () => {
 
   // ==========================================================================
   // DOLE REGION V WAGE ADVISORY & REAL-TIME EQUIVALENCE CALCULATOR
+  // Official Reference: DOLE RTWPB-V Wage Order No. RBV-23 (Effective Apr 8, 2026)
+  // Unified minimum wage for Region V (Bicol Region, including Sorsogon): ₱455/day
+  // Standard 8-hour workday hourly equivalent: ₱455 ÷ 8 = ₱56.88/hour
   // ==========================================================================
-  const DOLE_DAILY_MINIMUM = 395;
-  const DOLE_HOURLY_MINIMUM = 49.38;
+  const DOLE_DAILY_MINIMUM = 455;
+  const DOLE_HOURLY_MINIMUM = 56.88;
 
   // Wage conversion & sanity check helper
   const getWageEquivalentInfo = () => {
@@ -198,7 +201,7 @@ export const PostJobScreen: React.FC = () => {
 
     if (rateUnit === 'per_hour') {
       const dailyEq = parsedPay * 8;
-      const isSuspectLow = parsedPay < 50;
+      const isSuspectLow = parsedPay < 56.88;
       return {
         equivalent: t('wage_eq_daily_workday', {
           amount: dailyEq.toLocaleString('en-US', {
@@ -214,7 +217,7 @@ export const PostJobScreen: React.FC = () => {
 
     if (rateUnit === 'per_day') {
       const hourlyEq = parsedPay / 8;
-      const isSuspectLow = parsedPay < 395;
+      const isSuspectLow = parsedPay < 455;
       return {
         equivalent: t('wage_eq_hourly_basis', { amount: hourlyEq.toFixed(2) }),
         isWarning: isSuspectLow,
@@ -252,8 +255,8 @@ export const PostJobScreen: React.FC = () => {
             duration: parsedDur,
             unit: localizedUnit.toLowerCase(),
           }),
-          isWarning: hourlyEq < 50,
-          warningText: hourlyEq < 50 ? t('wage_warn_project_unusually_low') : undefined,
+          isWarning: hourlyEq < 56.88,
+          warningText: hourlyEq < 56.88 ? t('wage_warn_project_unusually_low') : undefined,
           note: t('wage_eq_fixed_payout'),
         };
       }

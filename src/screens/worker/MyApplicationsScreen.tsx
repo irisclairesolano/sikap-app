@@ -34,7 +34,9 @@ export const MyApplicationsScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
 
-  const { data, isLoading, isError, error, refetch, isRefetching } = useMyApplications('All');
+  const { data, isLoading, isError, error, refetch, isRefetching } = useMyApplications('All', {
+    refetchInterval: 4000,
+  });
 
   const applications = useMemo(() => {
     return data?.pages.flatMap((page) => page.data) || [];

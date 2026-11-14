@@ -21,6 +21,8 @@ import LocationPicker from '../../components/common/LocationPicker';
 import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { PrivacyPolicyModal } from '../../components/common/PrivacyPolicyModal';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'RegisterStep2'>;
 type RouteProps = RouteProp<AuthStackParamList, 'RegisterStep2'>;
@@ -30,11 +32,15 @@ const RegisterStep2Screen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const { role, name, email, phone, password, password_confirmation } = route.params;
   const insets = useSafeAreaInsets();
+  const { language, setLanguage, t } = useLanguage();
+  const isTagalog = language === 'tl';
 
   const [banner, setBanner] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [birthDateText, setBirthDateText] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [privacyConsent, setPrivacyConsent] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const {
     control,
@@ -104,6 +110,16 @@ const RegisterStep2Screen: React.FC = () => {
 
   const onSubmit = async (values: any) => {
     setBanner('');
+    if (!privacyConsent) {
+      setBanner(
+        t('privacy_consent_required') ||
+          (isTagalog
+            ? 'Kailangang sumang-ayon sa Patakaran sa Privacy upang makagawa ng account.'
+            : 'You must agree to the Privacy Policy to create an account.'),
+      );
+      return;
+    }
+
     if (!values.municipality || !values.barangay) {
       setBanner('Please select a municipality and barangay.');
       return;
@@ -153,7 +169,23 @@ const RegisterStep2Screen: React.FC = () => {
         <View style={styles.stepBadge}>
           <Text style={styles.stepBadgeText}>2 of 4</Text>
         </View>
-        <View style={{ width: 40 }} />
+        <View style={styles.langSelector}>
+          <TouchableOpacity
+            style={[styles.langBtn, language === 'en' && styles.langBtnActive]}
+            onPress={() => setLanguage('en')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.langText, language === 'en' && styles.langTextActive]}>EN</Text>
+          </TouchableOpacity>
+          <View style={styles.langDivider} />
+          <TouchableOpacity
+            style={[styles.langBtn, language === 'tl' && styles.langBtnActive]}
+            onPress={() => setLanguage('tl')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.langText, language === 'tl' && styles.langTextActive]}>TL</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <KeyboardAwareScrollView
@@ -286,9 +318,42 @@ const RegisterStep2Screen: React.FC = () => {
           </View>
         </View>
 
+        {/* Privacy Policy Consent Checkbox */}
+        <View style={styles.consentCard}>
+          <TouchableOpacity
+            style={styles.checkboxTouch}
+            onPress={() => setPrivacyConsent((prev) => !prev)}
+            activeOpacity={0.7}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: privacyConsent }}
+          >
+            <View style={[styles.checkbox, privacyConsent && styles.checkboxChecked]}>
+              {privacyConsent && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+            </View>
+          </TouchableOpacity>
+          <View style={styles.consentTextContainer}>
+            <Text style={styles.consentText}>
+              {t('privacy_consent') ||
+                (isTagalog ? 'Nabasa at sumasang-ayon ako sa ' : 'I have read and agree to the ')}
+              <Text style={styles.consentLink} onPress={() => setShowPrivacyModal(true)}>
+                {t('privacy_policy') || (isTagalog ? 'Patakaran sa Privacy' : 'Privacy Policy')}
+              </Text>
+              .
+            </Text>
+          </View>
+        </View>
+
         <View style={styles.footer}>
           <Button
-            label={registerMutation.isPending ? 'Creating account...' : 'Next'}
+            label={
+              registerMutation.isPending
+                ? isTagalog
+                  ? 'Ginagawa ang account...'
+                  : 'Creating account...'
+                : isTagalog
+                  ? 'Susunod'
+                  : 'Next'
+            }
             size="lg"
             fullWidth
             loading={registerMutation.isPending}
@@ -296,6 +361,14 @@ const RegisterStep2Screen: React.FC = () => {
           />
         </View>
       </KeyboardAwareScrollView>
+
+      {/* Scrollable Privacy Policy Pop-up reusing Settings policy */}
+      <PrivacyPolicyModal
+        visible={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+        onAccept={() => setPrivacyConsent(true)}
+        showAcceptButton={true}
+      />
     </View>
   );
 };
@@ -338,6 +411,42 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 11,
     color: colors.inkMuted,
+  },
+  langSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.85)',
+    padding: 2,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  langBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
+  },
+  langBtnActive: {
+    backgroundColor: colors.primary,
+  },
+  langText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    color: colors.inkSoft,
+  },
+  langTextActive: {
+    color: '#FFFFFF',
+  },
+  langDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: 'rgba(226, 232, 240, 0.85)',
+    marginHorizontal: 1,
   },
   scroll: {
     paddingHorizontal: 26,
@@ -476,6 +585,49 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 16,
     color: colors.ink,
+  },
+  consentCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.70)',
+    padding: 14,
+    marginTop: 10,
+    marginBottom: 4,
+    gap: 12,
+  },
+  checkboxTouch: {
+    paddingTop: 1,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: colors.inkMuted,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  consentTextContainer: {
+    flex: 1,
+  },
+  consentText: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkSoft,
+    lineHeight: 18,
+  },
+  consentLink: {
+    fontFamily: fonts.bodyBold,
+    color: colors.primary,
+    textDecorationLine: 'underline',
   },
   footer: {
     marginTop: 20,

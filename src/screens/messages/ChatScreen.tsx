@@ -350,9 +350,10 @@ const ChatScreen: React.FC = () => {
   const unblockUserMutation = useUnblockUser();
 
   const conversation = directConv || convData?.find((c) => c.id === conversationId);
-  const status = conversation?.status || 'open';
-  const isLocked = status === 'locked';
-  const isUnlockRequested = status === 'unlock_requested';
+  const isReadOnlyParam = Boolean((route.params as any)?.isReadOnly);
+  const status = isReadOnlyParam ? 'locked' : conversation?.status || 'open';
+  const isLocked = status === 'locked' || isReadOnlyParam;
+  const isUnlockRequested = !isReadOnlyParam && status === 'unlock_requested';
   const isSlotLocked =
     Boolean((conversation as any)?.is_slot_locked) ||
     (conversation as any)?.slots_full === true ||
@@ -1118,6 +1119,8 @@ const ChatScreen: React.FC = () => {
                   otherUserName={conversation?.other_user?.name || ''}
                   jobTitle={jobTitle || conversation?.job_title || ''}
                   jobId={conversation?.job_id}
+                  jobCompensation={(conversation as any)?.job_compensation}
+                  jobRateUnit={(conversation as any)?.job_rate_unit}
                   finalAgreedPrice={conversation?.final_agreed_price}
                   applicationId={conversation?.application_id}
                   hasReviewed={conversation?.has_reviewed}
@@ -1252,7 +1255,7 @@ const ChatScreen: React.FC = () => {
                   : t('chat_locked_concluded')}
               </Text>
             </View>
-            {conversationUserRole === 'employer' ? (
+            {!isReadOnlyParam && conversationUserRole === 'employer' ? (
               <TouchableOpacity
                 style={styles.lockedBottomBtn}
                 onPress={() =>
@@ -1272,7 +1275,7 @@ const ChatScreen: React.FC = () => {
                   <Text style={styles.lockedBottomBtnText}>{t('unlock_chat')}</Text>
                 )}
               </TouchableOpacity>
-            ) : isLocked ? (
+            ) : !isReadOnlyParam && isLocked ? (
               <TouchableOpacity
                 style={styles.lockedBottomBtn}
                 onPress={() =>

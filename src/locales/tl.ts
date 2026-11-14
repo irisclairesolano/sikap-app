@@ -543,6 +543,27 @@ export const tl: Record<TranslationKey, string> = {
   wage_warn_project_unusually_low:
     '⚠️ Masyadong mababa ang katumbas na bayad kada oras para sa tagal ng proyektong ito.',
 
+  // DOLE Wage in Chat Negotiation & Final Price
+  dole_wage_guide_title: 'Gabay sa Sahod ng DOLE Region V',
+  dole_wage_region_tag: 'Batayan sa Sorsogon',
+  dole_wage_daily_baseline: '₱455 / araw',
+  dole_wage_hourly_baseline: '≈ ₱56.88 / oras (karaniwang 8 oras)',
+  dole_wage_suggested_label: 'Mungkahing Batayan',
+  dole_wage_posted_rate: 'Nai-post na Sahod',
+  dole_wage_use_suggested: '₱455 (DOLE Min.)',
+  dole_wage_use_posted: '₱{amount} (Nai-post)',
+  dole_wage_negotiation_worker_hint:
+    'Ang opisyal na minimum wage ng DOLE Region V sa Sorsogon ay ₱455/araw (₱56.88/oras). Pag-usapan ang bayad batay sa saklaw ng trabaho at oras.',
+  dole_wage_negotiation_employer_hint:
+    'Ang batayan ng DOLE Region V ay ₱455/araw (₱56.88/oras) sa Sorsogon para sa 8 oras na trabaho. Maaaring ibagay kung part-time o ayon sa usapan.',
+  dole_wage_offer_below_warning:
+    '⚠️ Ang ₱{amount} ay mas mababa sa daily minimum wage ng DOLE Region V (₱455/araw). Tiyaking malinaw ang napagkasunduang oras o trabaho.',
+  dole_wage_offer_meets_badge: 'Pasok sa batayan ng DOLE Region V daily minimum wage (₱455/araw)',
+  dole_wage_offer_below_notice:
+    'ℹ Ang ₱{amount} ay mas mababa sa buong araw na batayan ng DOLE (₱455/araw). Siguraduhing tugma ito sa napagkasunduang oras o trabaho.',
+  dole_wage_official_ref_note:
+    'Opisyal na Sanggunian: DOLE RTWPB-V Wage Order No. RBV-23 (₱455/araw)',
+
   // Slots, Schedule, Duration & Media
   slots_workers_needed_label: 'Bilang ng Manggagawang Kailangan *',
   schedule_date_label: 'Petsa ng Trabaho *',
@@ -1463,4 +1484,28 @@ export const tl: Record<TranslationKey, string> = {
   mark_complete_failed_error: 'Hindi nagawang markahan ang trabaho bilang tapos na.',
   mark_complete_rate_worker_btn: 'I-rate ang Worker',
   mark_complete_later_btn: 'Mamaya',
+
+  // Batch 1 additions: Language, Privacy, My Reports
+  my_reports: 'Aking mga Ulat',
+  my_reports_desc: 'Tingnan ang iyong mga isinumiteng ulat at tugon ng moderator.',
+  no_reports_yet: 'Wala pang naisumiteng ulat',
+  no_reports_yet_desc:
+    'Wala ka pang naisusumiteng ulat. Dito lalabas ang mga ulat na ipapadala mo tungkol sa mga user o job post.',
+  report_status_pending: 'Kasalukuyang sinusuri',
+  report_status_investigating: 'Iniimbestigahan',
+  report_status_resolved: 'Naaksyunan na',
+  report_status_dismissed: 'Hindi pinagtibay',
+  admin_response: 'Tugon ng Admin',
+  under_review: 'Kasalukuyang sinusuri ng moderation team',
+  privacy_consent: 'Nabasa at sumasang-ayon ako sa',
+  privacy_consent_required:
+    'Kailangang sumang-ayon sa Patakaran sa Privacy upang makagawa ng account.',
+  language_selection: 'Wika',
+  select_language: 'Pumili ng Wika',
+  report_type_user: 'Ulat sa Gumagamit',
+  report_type_job: 'Ulat sa Job Post',
+  report_date: 'Isinumite noong',
+  report_details: 'Mga Detalye',
+  error: 'May Error',
+  conversation_not_found: 'Hindi nahanap ang usapan.',
 };

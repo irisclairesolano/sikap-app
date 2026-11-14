@@ -263,6 +263,57 @@ const ConfirmHireScreen: React.FC = () => {
                 />
               </View>
             </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
+              <TouchableOpacity
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                  backgroundColor: '#EFF6FF',
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: '#BFDBFE',
+                }}
+                onPress={() => {
+                  triggerHaptic('light');
+                  setPrice('455');
+                }}
+              >
+                <Ionicons name="sparkles" size={12} color={colors.primary} />
+                <Text
+                  style={{ fontFamily: fonts.bodySemiBold, fontSize: 11, color: colors.primary }}
+                >
+                  {t('dole_wage_use_suggested')}
+                </Text>
+              </TouchableOpacity>
+              <Text style={{ fontFamily: fonts.body, fontSize: 11, color: colors.inkMuted }}>
+                DOLE Region V: ₱455/day
+              </Text>
+            </View>
+            {parseFloat(price) > 0 && parseFloat(price) < 455 ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  backgroundColor: '#FEF3C7',
+                  borderWidth: 1,
+                  borderColor: '#FDE68A',
+                  borderRadius: 8,
+                  padding: 8,
+                  marginTop: 8,
+                }}
+              >
+                <Ionicons name="warning-outline" size={14} color="#B45309" />
+                <Text style={{ flex: 1, fontFamily: fonts.body, fontSize: 11, color: '#92400E' }}>
+                  {t('dole_wage_offer_below_warning', {
+                    amount: parseFloat(price).toLocaleString(),
+                  })}
+                </Text>
+              </View>
+            ) : null}
             <Text style={styles.priceHelper}>{t('agreed_price_helper_note')}</Text>
           </View>
 
