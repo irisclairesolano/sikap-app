@@ -208,7 +208,7 @@ export const MyApplicationsScreen: React.FC = () => {
               onPress={() => setActiveFilter('Needs Action')}
             >
               <View style={styles.urgentIconBox}>
-                <Ionicons name="flash" size={20} color={colors.white} />
+                <Ionicons name="document-text" size={20} color={colors.white} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.urgentTitle}>
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   urgentBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E11D48',
+    backgroundColor: '#1D4ED8',
     borderRadius: 14,
     padding: 12,
     gap: 12,
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
   urgentBadgeText: {
     fontFamily: fonts.bodyBold,
     fontSize: 12,
-    color: '#E11D48',
+    color: '#1D4ED8',
   },
   completedNoticeBanner: {
     flexDirection: 'row',
@@ -715,14 +715,14 @@ const styles = StyleSheet.create({
     borderColor: colors.ink,
   },
   chipNeedsAction: {
-    borderColor: '#FECDD3',
-    backgroundColor: '#FFF1F2',
+    borderColor: '#93C5FD',
+    backgroundColor: '#DBEAFE',
   },
   redDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#E11D48',
+    backgroundColor: '#1D4ED8',
     marginRight: 6,
   },
   chipText: {
@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   chipTextNeedsAction: {
-    color: '#E11D48',
+    color: '#1D4ED8',
   },
   chipCount: {
     fontFamily: fonts.numericBold,

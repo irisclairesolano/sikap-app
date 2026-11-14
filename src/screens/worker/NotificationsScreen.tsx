@@ -226,7 +226,7 @@ export const NotificationsScreen: React.FC = () => {
         <View
           style={[styles.iconBubble, isUnread ? styles.unreadIconBubble : styles.readIconBubble]}
         >
-          <Ionicons name="notifications" size={18} color={isUnread ? colors.primary : '#475569'} />
+          <Ionicons name="notifications" size={18} color={isUnread ? '#1D4ED8' : '#475569'} />
         </View>
         <View style={styles.notificationContent}>
           <Text
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   unreadIconBubble: {
-    backgroundColor: colors.peach,
+    backgroundColor: '#DBEAFE',
   },
   readIconBubble: {
     backgroundColor: '#F1F5F9',

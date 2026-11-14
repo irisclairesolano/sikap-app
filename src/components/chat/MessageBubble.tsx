@@ -133,7 +133,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       <View style={[styles.footer, isOwnMessage ? styles.ownFooter : styles.otherFooter]}>
         {isPending ? (
           <View style={styles.pendingRow}>
-            <Ionicons name="time-outline" size={10} color={colors.inkLight} />
+            <Ionicons name="time-outline" size={10} color="#475569" />
             <Text style={styles.pendingText}>Sending...</Text>
           </View>
         ) : (
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   timestamp: {
     fontFamily: fonts.body,
     fontSize: 10,
-    color: colors.inkLight,
+    color: '#475569',
   },
   pendingRow: {
     flexDirection: 'row',
@@ -284,16 +284,16 @@ const styles = StyleSheet.create({
   pendingText: {
     fontFamily: fonts.body,
     fontSize: 10,
-    color: colors.inkLight,
+    color: '#475569',
     fontStyle: 'italic',
   },
   receipt: {
     fontFamily: fonts.body,
     fontSize: 10,
-    color: colors.inkLight,
+    color: '#475569',
   },
   receiptRead: {
-    color: '#3B82F6',
+    color: '#1D4ED8',
   },
 });
 

@@ -47,7 +47,7 @@ export const MyReportsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const [expandedReportId, setExpandedReportId] = useState<number | null>(null);
 
-  const { data, isLoading, isFetching, refetch } = useMyReports();
+  const { data, isLoading, isError, isFetching, refetch } = useMyReports();
   const reports: UserReportItem[] = data?.data || [];
 
   const getStatusBadge = (status: UserReportItem['status']) => {
@@ -255,6 +255,34 @@ export const MyReportsScreen: React.FC = () => {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
+      ) : isError && reports.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <View style={[styles.emptyIconCircle, { backgroundColor: '#FEE2E2' }]}>
+            <Ionicons name="alert-circle-outline" size={32} color={colors.error} />
+          </View>
+          <Text style={styles.emptyTitle}>
+            {language === 'tl' ? 'Hindi ma-load ang mga ulat' : 'Failed to load reports'}
+          </Text>
+          <Text style={styles.emptySubtitle}>
+            {language === 'tl'
+              ? 'Nagkaroon ng problema sa pagkuha ng iyong mga ulat. Pakisubukan muli.'
+              : 'There was a problem loading your reports. Please try again.'}
+          </Text>
+          <TouchableOpacity
+            onPress={() => refetch()}
+            style={{
+              marginTop: 16,
+              backgroundColor: colors.primary,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              borderRadius: 10,
+            }}
+          >
+            <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.white }}>
+              {language === 'tl' ? 'Subukan Muli' : 'Retry'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       ) : reports.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconCircle}>
@@ -342,7 +370,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: colors.peach,
+    backgroundColor: colors.primaryTint,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,

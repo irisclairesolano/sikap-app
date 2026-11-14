@@ -648,7 +648,7 @@ export const SettingsScreen: React.FC = () => {
         onClose={() => setShowHelp(false)}
         icon="help-circle-outline"
         iconColor={colors.primary}
-        iconBg={colors.peach}
+        iconBg={colors.primaryTint}
         title={t('help_center')}
         sections={isTagalog ? HELP_SECTIONS_TL : HELP_SECTIONS_EN}
         closeLabel={t('close')}
@@ -694,7 +694,7 @@ export const SettingsScreen: React.FC = () => {
           <View style={[cStyles.sheet, { paddingBottom: bottomInset + 20 }]}>
             <View style={cStyles.handle} />
             <View style={cStyles.sheetHeader}>
-              <View style={[cStyles.iconCircle, { backgroundColor: colors.peach }]}>
+              <View style={[cStyles.iconCircle, { backgroundColor: colors.primaryTint }]}>
                 <Ionicons name="language-outline" size={22} color={colors.primary} />
               </View>
               <Text style={cStyles.sheetTitle}>

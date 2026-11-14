@@ -41,12 +41,17 @@ export const SupportTicketsScreen: React.FC = () => {
   const [message, setMessage] = useState('');
   const [expandedTicketId, setExpandedTicketId] = useState<number | null>(null);
 
-  const { data: tickets = [], isLoading, isFetching, refetch } = useMySupportTickets();
+  const { data: tickets = [], isLoading, isError, isFetching, refetch } = useMySupportTickets();
   const { mutate: createTicket, isPending: isSubmitting } = useCreateSupportTicket();
 
   const handleCreateTicket = () => {
     if (!subject.trim() || !message.trim()) {
-      showAlert('Required Fields', 'Please enter both a subject and a description of your issue.');
+      showAlert(
+        'Required Fields',
+        'Please enter both a subject and a description of your issue.',
+        undefined,
+        'warning',
+      );
       return;
     }
 
@@ -226,6 +231,21 @@ export const SupportTicketsScreen: React.FC = () => {
             <View style={styles.centerContainer}>
               <ActivityIndicator size="large" color={colors.primary} />
               <Text style={styles.loadingText}>Loading...</Text>
+            </View>
+          ) : isError && tickets.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <View style={[styles.emptyIconCircle, { backgroundColor: '#FEE2E2' }]}>
+                <Ionicons name="alert-circle-outline" size={38} color={colors.error} />
+              </View>
+              <Text style={styles.emptyTitle}>Failed to load support tickets</Text>
+              <Text style={styles.emptySubtitle}>Please check your connection and try again.</Text>
+              <Button
+                label="Retry"
+                variant="primary"
+                size="base"
+                onPress={() => refetch()}
+                style={{ marginTop: 18 }}
+              />
             </View>
           ) : (
             <FlatList
@@ -551,7 +571,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: colors.peach,
+    backgroundColor: colors.primaryTint,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,

@@ -205,16 +205,32 @@ export const MyJobsScreen: React.FC = () => {
 
       const getStatusBadge = () => {
         if (item.deleted_at) {
-          return { label: t('my_jobs_badge_archived'), bg: '#F1F5F9', color: '#64748B' };
+          return {
+            label: t('my_jobs_badge_archived'),
+            bg: colors.status.closed.bg,
+            color: colors.status.closed.text,
+          };
         }
         if (item.status === 'completed') {
-          return { label: t('my_jobs_badge_completed'), bg: '#DCFCE7', color: '#15803D' };
+          return {
+            label: t('my_jobs_badge_completed'),
+            bg: colors.status.completed.bg,
+            color: colors.status.completed.text,
+          };
         }
         if (item.status === 'in_progress' || item.status === 'closed_in_progress') {
-          return { label: t('my_jobs_badge_in_progress'), bg: '#E0F2FE', color: '#0369A1' };
+          return {
+            label: t('my_jobs_badge_in_progress'),
+            bg: colors.status.info.bg,
+            color: colors.status.info.text,
+          };
         }
         if (item.status === 'cancelled') {
-          return { label: t('my_jobs_badge_cancelled'), bg: '#FEE2E2', color: '#DC2626' };
+          return {
+            label: t('my_jobs_badge_cancelled'),
+            bg: colors.status.rejected.bg,
+            color: colors.status.rejected.text,
+          };
         }
         return {
           label: t('my_jobs_badge_open'),

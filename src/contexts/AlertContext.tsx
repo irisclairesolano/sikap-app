@@ -1,16 +1,17 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import CustomAlert, { AlertButton } from '../components/common/CustomAlert';
+import CustomAlert, { AlertButton, AlertType } from '../components/common/CustomAlert';
 import { sanitizeErrorMessage, sanitizeErrorTitle } from '../utils/errorSanitizer';
 
 interface AlertConfig {
   title: string;
   message?: string;
   buttons?: AlertButton[];
+  type?: AlertType;
   onRequestClose?: () => void;
 }
 
 interface AlertContextType {
-  showAlert: (title: string, message?: string, buttons?: AlertButton[]) => void;
+  showAlert: (title: string, message?: string, buttons?: AlertButton[], type?: AlertType) => void;
   hideAlert: () => void;
 }
 
@@ -20,10 +21,15 @@ export const AlertProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [visible, setVisible] = useState(false);
   const [config, setConfig] = useState<AlertConfig>({ title: '' });
 
-  const showAlert = (title: string, message?: string, buttons?: AlertButton[]) => {
+  const showAlert = (
+    title: string,
+    message?: string,
+    buttons?: AlertButton[],
+    type?: AlertType,
+  ) => {
     const cleanTitle = sanitizeErrorTitle(title);
     const cleanMessage = message ? sanitizeErrorMessage(message) : undefined;
-    setConfig({ title: cleanTitle, message: cleanMessage, buttons });
+    setConfig({ title: cleanTitle, message: cleanMessage, buttons, type });
     setVisible(true);
   };
 
@@ -38,6 +44,7 @@ export const AlertProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         visible={visible}
         title={config.title}
         message={config.message}
+        type={config.type}
         buttons={
           config.buttons?.map((btn) => ({
             ...btn,

@@ -620,12 +620,12 @@ const RootNavigator: React.FC = () => {
               width: 36,
               height: 36,
               borderRadius: 18,
-              backgroundColor: colors.peach,
+              backgroundColor: '#DBEAFE',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <Ionicons name="notifications" size={18} color={colors.primary} />
+            <Ionicons name="notifications" size={18} color="#1D4ED8" />
           </View>
           <View style={{ flex: 1 }}>
             <Text

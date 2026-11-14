@@ -255,7 +255,7 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.statsGrid}>
           <View style={styles.statBox}>
             <View style={styles.statIconCircle}>
-              <Ionicons name="briefcase-outline" size={16} color="#E11D48" />
+              <Ionicons name="briefcase-outline" size={16} color={colors.primary} />
             </View>
             <Text style={styles.statValue}>{employer.activeJobs}</Text>
             <Text
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.peach,
+    backgroundColor: colors.primaryTint,
     alignItems: 'center',
     justifyContent: 'center',
   },

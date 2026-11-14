@@ -13,7 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { colors, fonts } from '../../theme';
+import { colors, fonts, getCategoryBadgeStyle } from '../../theme';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { useJob } from '../../hooks/useJob';
 import { useApply, useWithdrawApplication } from '../../hooks/useApply';
@@ -32,20 +32,7 @@ import { safeGoBack } from '../../utils/navigation';
 
 type ApplyRouteProp = RouteProp<WorkerStackParamList, 'Apply'>;
 
-const getCategoryStyles = (category: string) => {
-  switch (category) {
-    case 'Construction':
-      return { icon: 'hammer', bg: colors.peach, color: colors.primary };
-    case 'Domestic':
-      return { icon: 'home', bg: colors.mint, color: colors.mintDeep };
-    case 'Agriculture':
-      return { icon: 'leaf', bg: colors.paperCream, color: colors.inkSoft };
-    case 'Skilled Trade':
-      return { icon: 'construct', bg: colors.sky, color: colors.skyDeep };
-    default:
-      return { icon: 'briefcase', bg: colors.paperCream, color: colors.inkSoft };
-  }
-};
+const getCategoryStyles = (category: string) => getCategoryBadgeStyle(category);
 
 export const ApplyScreen: React.FC = () => {
   const { t } = useLanguage();
@@ -474,9 +461,9 @@ export const ApplyScreen: React.FC = () => {
           {currentStage === 2 && (
             <>
               {/* Shortlisted Hero Card */}
-              <View style={[styles.successCard, { backgroundColor: colors.peachBright }]}>
+              <View style={[styles.successCard, { backgroundColor: '#CCFBF1' }]}>
                 <View style={styles.successIconBox}>
-                  <Ionicons name="chatbubbles" size={22} color={colors.primary} />
+                  <Ionicons name="chatbubbles" size={22} color="#0F766E" />
                 </View>
                 <Text style={styles.successHeadline}>
                   {job.employer?.name || 'The employer'}

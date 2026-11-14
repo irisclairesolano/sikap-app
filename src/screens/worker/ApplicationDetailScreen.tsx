@@ -1052,7 +1052,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: colors.peach,
+    backgroundColor: '#DBEAFE',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
@@ -1225,7 +1225,7 @@ const styles = StyleSheet.create({
   withdrawnNoticeText: {
     fontFamily: fonts.body,
     fontSize: 13,
-    color: colors.warning,
+    color: colors.status.pending.text,
     flex: 1,
   },
   menuContainer: {

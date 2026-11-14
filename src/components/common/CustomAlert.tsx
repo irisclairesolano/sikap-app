@@ -6,6 +6,8 @@ import Button from './Button';
 import { sanitizeErrorMessage, sanitizeErrorTitle } from '../../utils/errorSanitizer';
 import { blurActiveElementOnWeb } from '../../utils/webA11yFix';
 
+export type AlertType = 'info' | 'success' | 'warning' | 'error';
+
 export interface AlertButton {
   text: string;
   style?: 'default' | 'cancel' | 'destructive';
@@ -17,6 +19,7 @@ interface CustomAlertProps {
   title: string;
   message?: string;
   buttons?: AlertButton[];
+  type?: AlertType;
   onRequestClose?: () => void;
 }
 
@@ -25,6 +28,7 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
   title,
   message,
   buttons = [{ text: 'OK' }],
+  type,
   onRequestClose,
 }) => {
   const cleanTitle = sanitizeErrorTitle(title);
@@ -35,31 +39,30 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
   const hasDestructive = buttons.some((b) => b.style === 'destructive');
 
   let iconName: keyof typeof Ionicons.glyphMap = 'information-circle-outline';
-  let iconColor: string = colors.primary;
-  let iconBg: string = colors.peach;
+  let iconColor: string = '#1D4ED8';
+  let iconBg: string = '#DBEAFE';
 
-  if (
-    hasDestructive ||
-    lowerTitle.includes('cancel') ||
-    lowerTitle.includes('decline') ||
-    lowerTitle.includes('delete')
-  ) {
+  const resolvedType: AlertType | null = type
+    ? type
+    : hasDestructive || /\b(cancel|decline|delete)\b/.test(lowerTitle)
+      ? 'warning'
+      : /\b(incomplete|missing|required)\b/.test(lowerTitle)
+        ? 'warning'
+        : /\b(error|fail|failed|invalid)\b/.test(lowerTitle)
+          ? 'error'
+          : /\b(success|successful|complete|completed|confirmed)\b/.test(lowerTitle)
+            ? 'success'
+            : null;
+
+  if (resolvedType === 'warning') {
     iconName = 'warning-outline';
-    iconColor = colors.error;
-    iconBg = '#FEE2E2';
-  } else if (
-    lowerTitle.includes('error') ||
-    lowerTitle.includes('fail') ||
-    lowerTitle.includes('invalid')
-  ) {
+    iconColor = colors.warning;
+    iconBg = '#FEF3C7';
+  } else if (resolvedType === 'error') {
     iconName = 'alert-circle-outline';
     iconColor = colors.error;
     iconBg = '#FEE2E2';
-  } else if (
-    lowerTitle.includes('success') ||
-    lowerTitle.includes('complete') ||
-    lowerTitle.includes('confirmed')
-  ) {
+  } else if (resolvedType === 'success') {
     iconName = 'checkmark-circle-outline';
     iconColor = colors.success;
     iconBg = '#DCFCE7';

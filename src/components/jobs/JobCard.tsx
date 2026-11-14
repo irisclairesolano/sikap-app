@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fonts } from '../../theme';
+import { colors, fonts, getCategoryBadgeStyle } from '../../theme';
 import { JobPost } from '../../types';
 import { useReactToJob } from '../../hooks/useReactToJob';
 import { ReportJobSheet } from './ReportJobSheet';
@@ -17,20 +17,7 @@ interface JobCardProps {
   isSaved?: boolean;
 }
 
-export const getCategoryStyles = (category?: string) => {
-  switch (category) {
-    case 'Construction':
-      return { icon: 'hammer', bg: colors.peach, color: colors.primary };
-    case 'Domestic':
-      return { icon: 'home', bg: colors.mint, color: colors.mintDeep };
-    case 'Agriculture':
-      return { icon: 'leaf', bg: colors.paperCream, color: colors.inkSoft };
-    case 'Skilled Trade':
-      return { icon: 'construct', bg: colors.sky, color: colors.skyDeep };
-    default:
-      return { icon: 'briefcase', bg: colors.paperCream, color: colors.inkSoft };
-  }
-};
+export const getCategoryStyles = (category?: string) => getCategoryBadgeStyle(category);
 
 export const getRelativeTime = (dateString?: string) => {
   if (!dateString) return 'Just now';
@@ -161,7 +148,7 @@ export const JobCard = React.memo(function JobCard({
                     <Ionicons
                       name="checkmark-circle"
                       size={15}
-                      color="#22C55E"
+                      color={colors.success}
                       style={styles.verifiedIcon}
                     />
                   )}

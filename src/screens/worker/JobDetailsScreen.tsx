@@ -334,7 +334,7 @@ export const JobDetailsScreen: React.FC = () => {
         {/* Title */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
           <Text style={[styles.title, { flex: 1 }]}>{job.title}</Text>
-          {isVerified && <Ionicons name="checkmark-circle" size={20} color="#22C55E" />}
+          {isVerified && <Ionicons name="checkmark-circle" size={20} color={colors.success} />}
         </View>
 
         {/* Peach Pay Card Hero */}
@@ -811,7 +811,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   payCard: {
-    backgroundColor: colors.peach,
+    backgroundColor: '#DBEAFE',
+    borderWidth: 1,
+    borderColor: '#93C5FD',
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',

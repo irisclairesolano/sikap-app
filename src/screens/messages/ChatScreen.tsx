@@ -761,8 +761,8 @@ const ChatScreen: React.FC = () => {
         return {
           icon: 'briefcase-outline' as const,
           label: 'Job Request · Set Final Price',
-          color: colors.primary,
-          bg: colors.peach,
+          color: '#1D4ED8',
+          bg: '#DBEAFE',
         };
       case 'accept_or_reject':
         return {
@@ -802,8 +802,8 @@ const ChatScreen: React.FC = () => {
         return {
           icon: 'lock-open-outline' as const,
           label: 'Review Reopen Request',
-          color: colors.primary,
-          bg: colors.peach,
+          color: '#1D4ED8',
+          bg: '#DBEAFE',
         };
       default:
         return {
@@ -1441,7 +1441,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: colors.peach,
+    backgroundColor: colors.primaryTint,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,

@@ -880,12 +880,12 @@ const ApplicantDetailScreen: React.FC = () => {
                                   width: 40,
                                   height: 40,
                                   borderRadius: 20,
-                                  backgroundColor: colors.peach,
+                                  backgroundColor: '#DBEAFE',
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                 }}
                               >
-                                <Ionicons name="person" size={18} color={colors.primary} />
+                                <Ionicons name="person" size={18} color="#1D4ED8" />
                               </View>
                               <View style={{ flex: 1 }}>
                                 <Text
@@ -1552,7 +1552,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.peach,
+    backgroundColor: '#DBEAFE',
     alignItems: 'center',
     justifyContent: 'center',
   },

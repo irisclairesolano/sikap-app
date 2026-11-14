@@ -48,7 +48,12 @@ const ContactSupportScreen: React.FC = () => {
 
   const handleSubmit = () => {
     if (!subject.trim() || !message.trim()) {
-      showAlert('Incomplete', 'Please fill in both the subject and the message.');
+      showAlert(
+        'Incomplete',
+        'Please fill in both the subject and the message.',
+        undefined,
+        'warning',
+      );
       return;
     }
     submitMutation.mutate();

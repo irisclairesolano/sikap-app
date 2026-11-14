@@ -399,8 +399,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
         displayPrice ? `Agreed Price: ${formatCurrency(displayPrice)}` : 'Agreed price confirmed.',
         'cash-outline',
         t('card_status_confirmed'),
-        colors.primary,
-        colors.peach,
+        '#1D4ED8',
+        '#DBEAFE',
       );
     }
 
@@ -417,8 +417,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <View style={[styles.cardIconBadge, { backgroundColor: colors.peach }]}>
-            <Ionicons name="briefcase-outline" size={20} color={colors.primary} />
+          <View style={[styles.cardIconBadge, { backgroundColor: '#DBEAFE' }]}>
+            <Ionicons name="briefcase-outline" size={20} color="#1D4ED8" />
           </View>
           <View style={styles.cardHeaderText}>
             <Text style={styles.title}>{t('shortlisted_application')}</Text>
@@ -1651,8 +1651,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
       return (
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <View style={[styles.cardIconBadge, { backgroundColor: colors.peach }]}>
-              <Ionicons name="lock-open-outline" size={20} color={colors.primary} />
+            <View style={[styles.cardIconBadge, { backgroundColor: '#DBEAFE' }]}>
+              <Ionicons name="lock-open-outline" size={20} color="#1D4ED8" />
             </View>
             <View style={styles.cardHeaderText}>
               <Text style={styles.title}>Reopen Chat Request</Text>
@@ -2105,7 +2105,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: colors.peach,
+    backgroundColor: '#DBEAFE',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1,
@@ -2113,7 +2113,7 @@ const styles = StyleSheet.create({
   stepNumText: {
     fontFamily: fonts.bodyBold,
     fontSize: 11,
-    color: colors.primary,
+    color: '#1D4ED8',
   },
   stepContent: {
     flex: 1,

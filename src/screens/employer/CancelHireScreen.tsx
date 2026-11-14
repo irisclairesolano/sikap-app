@@ -55,6 +55,7 @@ const CancelHireScreen: React.FC = () => {
           t('alert_cancel_hire_title'),
           t('alert_cancel_hire_success_msg').replace('{name}', applicantName || ''),
           [{ text: 'OK', onPress: handleGoBack }],
+          'success',
         );
       },
       onError: (err: any) => {

@@ -111,10 +111,10 @@ export const EmployerDashboardScreen: React.FC = () => {
       let title = 'Review application';
       let description = `${app.worker?.name || 'Worker'} applied for ${job.title}`;
       let stageBadge = 'Stage 1 · Review';
-      let badgeBg: string = colors.urgentSoft;
-      let badgeColor: string = colors.urgent;
+      let badgeBg: string = colors.status.info.bg;
+      let badgeColor: string = colors.status.info.text;
       let iconName: any = 'person-outline';
-      let borderColor: string = colors.urgentSoft;
+      let borderColor: string = colors.status.info.bg;
 
       switch (app.status as string) {
         case 'pending':
@@ -123,10 +123,10 @@ export const EmployerDashboardScreen: React.FC = () => {
             .replace('{name}', app.worker?.name || 'Worker')
             .replace('{job}', job.title);
           stageBadge = t('employer_dash_stage_1');
-          badgeBg = colors.urgentSoft;
-          badgeColor = colors.urgent;
+          badgeBg = colors.status.info.bg;
+          badgeColor = colors.status.info.text;
           iconName = 'people-outline';
-          borderColor = colors.urgentSoft;
+          borderColor = '#BFDBFE';
           break;
         case 'shortlisted':
         case 'employer_requested':
@@ -136,10 +136,10 @@ export const EmployerDashboardScreen: React.FC = () => {
             .replace('{name}', app.worker?.name || 'Worker')
             .replace('{job}', job.title);
           stageBadge = t('employer_dash_stage_2');
-          badgeBg = colors.peach;
-          badgeColor = colors.primaryDark;
+          badgeBg = colors.status.shortlisted.bg;
+          badgeColor = colors.status.shortlisted.text;
           iconName = 'chatbubbles-outline';
-          borderColor = colors.peach;
+          borderColor = '#99F6E4';
           break;
         case 'employer_confirmed':
           title = t('employer_dash_action_offer_title');
@@ -321,7 +321,7 @@ export const EmployerDashboardScreen: React.FC = () => {
             <View style={styles.statCard}>
               <View style={styles.statTopRow}>
                 <View style={styles.statIconCircle}>
-                  <Ionicons name="briefcase-outline" size={15} color="#E11D48" />
+                  <Ionicons name="briefcase-outline" size={15} color={colors.primary} />
                 </View>
                 <Text
                   style={styles.statLabel}

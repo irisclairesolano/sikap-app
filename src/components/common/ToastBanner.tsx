@@ -87,21 +87,21 @@ export const ToastBanner: React.FC<ToastBannerProps> = ({ toast, onDismiss }) =>
   const typeConfig = {
     success: {
       icon: 'checkmark-circle' as const,
-      color: '#10B981',
+      color: '#166534',
       bgColor: '#DCFCE7',
-      borderColor: 'rgba(16, 185, 129, 0.3)',
+      borderColor: 'rgba(22, 101, 52, 0.3)',
     },
     info: {
       icon: 'information-circle' as const,
-      color: colors.primary,
-      bgColor: colors.primaryTint,
-      borderColor: 'rgba(232, 116, 74, 0.3)',
+      color: '#1D4ED8',
+      bgColor: '#DBEAFE',
+      borderColor: 'rgba(29, 78, 216, 0.3)',
     },
     warning: {
       icon: 'warning' as const,
-      color: '#F59E0B',
+      color: '#92400E',
       bgColor: '#FEF3C7',
-      borderColor: 'rgba(245, 158, 11, 0.3)',
+      borderColor: 'rgba(146, 64, 14, 0.3)',
     },
     error: {
       icon: 'alert-circle' as const,

@@ -17,7 +17,7 @@ import { safeGoBack } from '../../utils/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fonts, shadows } from '../../theme';
+import { colors, fonts, shadows, getPipelineStageBadgeStyle } from '../../theme';
 import Button from '../../components/common/Button';
 import { useDeleteJob } from '../../hooks/useJobs';
 import { useJob } from '../../hooks/useJob';
@@ -192,24 +192,7 @@ export const JobStatusManagementScreen: React.FC = () => {
     }
   };
 
-  const getStageColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return colors.sky;
-      case 'employer_requested':
-        return colors.butter;
-      case 'employer_confirmed':
-        return colors.peach;
-      case 'accepted':
-        return colors.mint;
-      case 'completed':
-        return colors.mintDeep;
-      case 'rejected':
-        return colors.error;
-      default:
-        return colors.inkFaint;
-    }
-  };
+  const getStageStyle = (status: string) => getPipelineStageBadgeStyle(status);
 
   const handleEditJob = () => {
     if (!job) return;
@@ -1125,20 +1108,28 @@ export const JobStatusManagementScreen: React.FC = () => {
                                 </Text>
                               </View>
                             </View>
-                            <View
-                              style={[
-                                styles.statusBadgeSmall,
-                                { backgroundColor: getStageColor(app.status) },
-                              ]}
-                            >
-                              <Text
-                                style={styles.statusBadgeTextSmall}
-                                numberOfLines={1}
-                                adjustsFontSizeToFit
-                              >
-                                {getStageLabel(app.status)}
-                              </Text>
-                            </View>
+                            {(() => {
+                              const stageStyle = getStageStyle(app.status);
+                              return (
+                                <View
+                                  style={[
+                                    styles.statusBadgeSmall,
+                                    { backgroundColor: stageStyle.bg },
+                                  ]}
+                                >
+                                  <Text
+                                    style={[
+                                      styles.statusBadgeTextSmall,
+                                      { color: stageStyle.text },
+                                    ]}
+                                    numberOfLines={1}
+                                    adjustsFontSizeToFit
+                                  >
+                                    {getStageLabel(app.status)}
+                                  </Text>
+                                </View>
+                              );
+                            })()}
                           </TouchableOpacity>
                         ))}
                       </View>
@@ -1676,7 +1667,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.peach,
+    backgroundColor: colors.primaryTint,
     alignItems: 'center',
     justifyContent: 'center',
   },

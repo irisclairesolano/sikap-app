@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fonts } from '../../theme';
+import { colors, fonts, getCategoryBadgeStyle } from '../../theme';
 import { Application } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -12,20 +12,7 @@ export interface ApplicationCardProps {
   onRateEmployer?: (application: Application) => void;
 }
 
-export const getCategoryStyles = (category?: string) => {
-  switch (category) {
-    case 'Construction':
-      return { icon: 'hammer', bg: colors.peach, color: colors.primary };
-    case 'Domestic':
-      return { icon: 'home', bg: colors.mint, color: colors.mintDeep };
-    case 'Agriculture':
-      return { icon: 'leaf', bg: colors.butter, color: colors.warning };
-    case 'Skilled Trade':
-      return { icon: 'construct', bg: colors.sky, color: colors.skyDeep };
-    default:
-      return { icon: 'briefcase', bg: colors.primaryTint, color: colors.primary };
-  }
-};
+export const getCategoryStyles = (category?: string) => getCategoryBadgeStyle(category);
 
 export const getApplicationStageInfo = (
   status: string,
@@ -39,7 +26,7 @@ export const getApplicationStageInfo = (
         badgeLabel: t ? t('status_under_review') : 'Under Review',
         badgeIcon: 'hourglass-outline' as const,
         badgeBg: '#FEF3C7',
-        badgeColor: '#D97706',
+        badgeColor: '#92400E',
         stepLabel: t ? t('my_apps_stage_applied') : 'Step 1 of 5: Under Review',
         nextStep: t
           ? t('my_apps_next_waiting_review')
@@ -53,8 +40,8 @@ export const getApplicationStageInfo = (
         stage: 2,
         badgeLabel: t ? t('status_shortlisted') : 'Shortlisted',
         badgeIcon: 'chatbubble-ellipses-outline' as const,
-        badgeBg: '#F3E8FF',
-        badgeColor: '#7E22CE',
+        badgeBg: '#CCFBF1',
+        badgeColor: '#0F766E',
         stepLabel: t ? t('my_apps_stage_shortlisted') : 'Step 2 of 5: Discussion & Chat',
         nextStep: t
           ? t('my_apps_next_under_consideration')
@@ -65,9 +52,9 @@ export const getApplicationStageInfo = (
       return {
         stage: 3,
         badgeLabel: t ? t('status_job_offer') : 'Offer Received',
-        badgeIcon: 'flash-outline' as const,
-        badgeBg: '#FFE4E6',
-        badgeColor: '#E11D48',
+        badgeIcon: 'document-text-outline' as const,
+        badgeBg: '#DBEAFE',
+        badgeColor: '#1D4ED8',
         stepLabel: t ? t('my_apps_stage_Offer_Received') : 'Step 3 of 5: Formal Offer Ready',
         nextStep: t
           ? t('my_apps_next_accept_or_decline')
@@ -81,7 +68,7 @@ export const getApplicationStageInfo = (
         badgeLabel: t ? t('status_hired') : 'Hired · Active',
         badgeIcon: 'checkmark-circle' as const,
         badgeBg: '#DCFCE7',
-        badgeColor: '#15803D',
+        badgeColor: '#166534',
         stepLabel: t ? t('my_apps_stage_hired') : 'Step 4 of 5: Job in Progress',
         nextStep: t
           ? t('my_apps_next_job_in_progress')
@@ -99,8 +86,8 @@ export const getApplicationStageInfo = (
             ? 'Done · Rated'
             : 'Done',
         badgeIcon: hasReviewed ? ('checkmark-circle' as const) : ('ribbon-outline' as const),
-        badgeBg: hasReviewed ? '#DCFCE7' : '#E0F2FE',
-        badgeColor: hasReviewed ? '#15803D' : '#0369A1',
+        badgeBg: hasReviewed ? '#DCFCE7' : '#DBEAFE',
+        badgeColor: hasReviewed ? '#166534' : '#1D4ED8',
         stepLabel: t
           ? t('my_apps_stage_completed')
           : hasReviewed
@@ -121,7 +108,7 @@ export const getApplicationStageInfo = (
         badgeLabel: t ? t('status_withdrawn') : 'Withdrawn',
         badgeIcon: 'arrow-undo-outline' as const,
         badgeBg: '#FFEDD5',
-        badgeColor: '#EA580C',
+        badgeColor: '#9A3412',
         stepLabel: t ? t('my_apps_stage_withdrawn') : 'Application Withdrawn',
         nextStep: t ? t('my_apps_next_withdrawn') : 'You withdrew this application.',
         isUrgent: false,
@@ -132,7 +119,7 @@ export const getApplicationStageInfo = (
         badgeLabel: t ? t('status_declined') : 'Closed',
         badgeIcon: 'close-circle-outline' as const,
         badgeBg: '#F1F5F9',
-        badgeColor: '#64748B',
+        badgeColor: '#475569',
         stepLabel: t ? t('my_apps_stage_not_selected') : 'Position Filled',
         nextStep: t
           ? t('my_apps_next_reviewed_all')
@@ -145,7 +132,7 @@ export const getApplicationStageInfo = (
         badgeLabel: t ? t('status_under_review') : 'Submitted',
         badgeIcon: 'document-text-outline' as const,
         badgeBg: '#FEF3C7',
-        badgeColor: '#D97706',
+        badgeColor: '#92400E',
         stepLabel: t ? t('my_apps_stage_applied') : 'Step 1 of 5: Submitted',
         nextStep: t ? t('my_apps_next_waiting_review') : 'Application submitted to employer.',
         isUrgent: false,
@@ -239,7 +226,7 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
               <Ionicons
                 name="checkmark-circle"
                 size={14}
-                color="#22C55E"
+                color={colors.success}
                 style={{ marginLeft: 3 }}
               />
             )}
@@ -310,11 +297,11 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
               let fillColor: string = colors.inkFaint;
               if (isPassedOrCurrent) {
                 if (stageInfo.stage === 3)
-                  fillColor = '#E11D48'; // Urgent Offer
+                  fillColor = '#1D4ED8'; // Formal Offer Ready
                 else if (stageInfo.stage === 4)
-                  fillColor = '#15803D'; // Active Hire
+                  fillColor = '#166534'; // Active Hire
                 else if (stageInfo.stage === 5)
-                  fillColor = application.has_reviewed ? '#15803D' : '#0369A1'; // Completed / Rated
+                  fillColor = application.has_reviewed ? '#166534' : '#1D4ED8'; // Completed / Rated
                 else fillColor = colors.primary; // Step 1 & 2
               }
 
@@ -558,19 +545,19 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   nextStepBoxUrgent: {
-    backgroundColor: '#FFF1F2',
+    backgroundColor: '#DBEAFE',
     borderLeftWidth: 3,
-    borderLeftColor: '#E11D48',
+    borderLeftColor: '#1D4ED8',
   },
   nextStepBoxActive: {
     backgroundColor: '#F0FDF4',
     borderLeftWidth: 3,
-    borderLeftColor: '#15803D',
+    borderLeftColor: '#166534',
   },
   nextStepBoxDone: {
     backgroundColor: '#F0F9FF',
     borderLeftWidth: 3,
-    borderLeftColor: '#0369A1',
+    borderLeftColor: '#1D4ED8',
   },
   nextStepText: {
     fontFamily: fonts.body,
@@ -579,7 +566,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   nextStepTextUrgent: {
-    color: '#9F1239',
+    color: '#1E3A8A',
     fontFamily: fonts.bodyBold,
   },
   nextStepTextActive: {
@@ -589,7 +576,7 @@ const styles = StyleSheet.create({
     color: '#075985',
   },
   quickActionBtnUrgent: {
-    backgroundColor: '#E11D48',
+    backgroundColor: '#1D4ED8',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 14,
