@@ -304,7 +304,7 @@ export const AddSkillsScreen: React.FC = () => {
                     onPress={() => toggleSkill(skill)}
                   >
                     <Ionicons
-                      name="sparkles-outline"
+                      name="add-circle-outline"
                       size={14}
                       color={colors.primary}
                       style={{ marginRight: 4 }}
