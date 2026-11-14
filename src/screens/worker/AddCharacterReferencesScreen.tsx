@@ -54,14 +54,14 @@ export const AddCharacterReferencesScreen: React.FC = () => {
   const [relationship, setRelationship] = useState('');
 
   const handleNameChange = (text: string) => {
-    // Strip out numbers and symbols (allow letters, spaces, hyphens, periods, and ñ/Ñ)
-    setName(text.replace(/[^a-zA-Z\s\-\.ñÑ]/g, ''));
+    // Strip out numbers and symbols (allow letters, spaces, hyphens, periods, and Spanish characters like ñ/Ñ, á, é, etc.)
+    setName(text.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\u00C0-\u017F\s\-\.]/g, ''));
     setNameError('');
   };
 
   const handleRelationshipChange = (text: string) => {
-    // Strip out numbers and symbols (allow letters, spaces, hyphens, periods, and ñ/Ñ)
-    setRelationship(text.replace(/[^a-zA-Z\s\-\.ñÑ]/g, ''));
+    // Strip out numbers and symbols (allow letters, spaces, hyphens, periods, and Spanish characters like ñ/Ñ, á, é, etc.)
+    setRelationship(text.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\u00C0-\u017F\s\-\.]/g, ''));
     setRelationshipError('');
   };
 

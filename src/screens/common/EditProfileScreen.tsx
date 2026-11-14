@@ -456,7 +456,7 @@ export const EditProfileScreen: React.FC = () => {
                 <Input
                   value={emergencyContactName}
                   onChangeText={(text) => {
-                    const cleaned = text.replace(/[^a-zA-Z\s\-\.ñÑ]/g, '');
+                    const cleaned = text.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\u00C0-\u017F\s\-\.]/g, '');
                     setEmergencyContactName(cleaned.slice(0, 50));
                   }}
                   placeholder="Juan Dela Cruz"

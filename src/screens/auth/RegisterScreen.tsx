@@ -41,7 +41,7 @@ const RegisterScreen: React.FC = () => {
     if (!name) return { status: null, message: '' };
     if (name.length < 2)
       return { status: 'invalid', message: 'Name must be at least 2 characters' };
-    if (!/^[a-zA-Z\s.'-]+$/.test(name))
+    if (!/^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\u00C0-\u017F\s.'-]+$/.test(name))
       return { status: 'invalid', message: 'Name can only contain letters, dots, and hyphens' };
     return { status: 'valid', message: '' };
   };
