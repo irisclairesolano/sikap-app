@@ -117,6 +117,10 @@ export function useConversation(conversationId: number) {
   return useQuery({
     queryKey: ['conversation', conversationId],
     queryFn: () => messagesApi.getConversation(conversationId),
-    staleTime: 1000 * 60 * 5,
+    enabled: Boolean(conversationId && conversationId > 0),
+    staleTime: 1000 * 5,
+    refetchInterval: 5000,
+    refetchIntervalInBackground: false,
+    refetchOnMount: 'always',
   });
 }

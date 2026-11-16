@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -66,6 +66,7 @@ const RatingCategory = ({
 export const RateEmployerScreen: React.FC = () => {
   const { t } = useLanguage();
   const insets = useSafeAreaInsets();
+  const scrollViewRef = useRef<ScrollView>(null);
   const navigation = useNavigation<RateEmployerScreenNavigationProp>();
   const route = useRoute<RateEmployerScreenRouteProp>();
   const { id, employerName, jobTitle } = route.params;
@@ -176,10 +177,7 @@ export const RateEmployerScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoidingView style={styles.keyboardAvoidingView} behavior="padding">
         <View style={styles.header}>
           <TouchableOpacity style={styles.iconBtn} onPress={handleGoBack}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
@@ -191,6 +189,7 @@ export const RateEmployerScreen: React.FC = () => {
         </View>
 
         <ScrollView
+          ref={scrollViewRef}
           contentContainerStyle={[
             styles.scrollContent,
             { paddingBottom: Math.max(insets.bottom + 24, 40) },
@@ -244,6 +243,11 @@ export const RateEmployerScreen: React.FC = () => {
                 scrollEnabled={true}
                 value={note}
                 onChangeText={setNote}
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                  }, 150);
+                }}
               />
             </View>
           </View>

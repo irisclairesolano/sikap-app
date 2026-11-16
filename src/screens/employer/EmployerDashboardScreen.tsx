@@ -17,6 +17,7 @@ import { colors, fonts } from '../../theme';
 import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { useAuthCheck } from '../../hooks/useAuthCheck';
 import Button from '../../components/common/Button';
+import { Avatar } from '../../components/common/Avatar';
 import { Image } from 'expo-image';
 
 import { useFocusEffect } from '@react-navigation/native';
@@ -607,11 +608,7 @@ export const EmployerDashboardScreen: React.FC = () => {
                 activeOpacity={0.7}
                 onPress={() => navigateToApplicantDetail(app, (app as any).jobTitle || '')}
               >
-                <View style={styles.applicantAvatar}>
-                  <Text style={styles.applicantAvatarText}>
-                    {(app.worker?.name || 'W').charAt(0).toUpperCase()}
-                  </Text>
-                </View>
+                <Avatar name={app.worker?.name || 'W'} url={app.worker?.avatar_url} size={48} />
                 <View style={styles.jobDetails}>
                   <Text style={styles.jobTitle}>{app.worker?.name || 'Worker Applicant'}</Text>
                   <Text style={styles.jobSubtitle}>

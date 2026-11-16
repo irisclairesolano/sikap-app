@@ -225,7 +225,7 @@ const ChatScreen: React.FC = () => {
   const sendImage = useSendImage(conversationId);
   const markRead = useMarkRead(conversationId);
 
-  const { data: directConv } = useConversation(conversationId);
+  const { data: directConv, refetch: refetchConversation } = useConversation(conversationId);
   const { data: convData } = useConversations();
   const unlockConversation = useUnlockConversation();
   const requestUnlock = useRequestUnlock();
@@ -594,7 +594,14 @@ const ChatScreen: React.FC = () => {
 
     prevMessagesLengthRef.current = messages.length;
     lastMessageIdRef.current = latestMessage?.id ?? null;
-  }, [messages, user?.id, isFocused]);
+
+    if (
+      latestMessage &&
+      (latestMessage.message_type === 'system' || latestMessage.message_type === 'action_card')
+    ) {
+      refetchConversation();
+    }
+  }, [messages, user?.id, isFocused, refetchConversation]);
 
   const handleSendText = () => {
     const textToSend = inputText.trim();
@@ -716,6 +723,9 @@ const ChatScreen: React.FC = () => {
       }
 
       case 'mark_complete': {
+        if (appStatus === 'completed' && !conversation?.has_reviewed) {
+          return true;
+        }
         // Only employer can mark job complete while job is in progress and not locked
         const hasFlaggedCard = messages.some(
           (other) =>
@@ -732,6 +742,9 @@ const ChatScreen: React.FC = () => {
       }
 
       case 'flag_offline':
+        if (appStatus === 'completed' && !conversation?.has_reviewed) {
+          return true;
+        }
         // Worker can flag as complete if not flagged yet; Employer can confirm if flagged
         if (appStatus !== 'accepted') return false;
         if (role === 'worker') {
@@ -779,6 +792,14 @@ const ChatScreen: React.FC = () => {
           bg: '#FEE2E2',
         };
       case 'mark_complete':
+        if (conversation?.application_status === 'completed' && !conversation?.has_reviewed) {
+          return {
+            icon: 'star-outline' as const,
+            label: conversationUserRole === 'worker' ? t('rate_employer') : t('rate_worker'),
+            color: colors.success,
+            bg: '#DCFCE7',
+          };
+        }
         return {
           icon: 'checkmark-circle-outline' as const,
           label: t('pinned_mark_job_complete'),
@@ -786,6 +807,14 @@ const ChatScreen: React.FC = () => {
           bg: '#DCFCE7',
         };
       case 'flag_offline':
+        if (conversation?.application_status === 'completed' && !conversation?.has_reviewed) {
+          return {
+            icon: 'star-outline' as const,
+            label: conversationUserRole === 'worker' ? t('rate_employer') : t('rate_worker'),
+            color: colors.success,
+            bg: '#DCFCE7',
+          };
+        }
         return {
           icon: 'flag-outline' as const,
           label: card.card_data?.is_flagged
@@ -869,10 +898,7 @@ const ChatScreen: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>

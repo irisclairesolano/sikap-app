@@ -59,6 +59,30 @@ export const SuccessScreen: React.FC = () => {
         const targetName = action.navigateTo.name;
         const targetParams = action.navigateTo.params;
 
+        const tabRoutes = new Set([
+          'Find',
+          'Mine',
+          'Messages',
+          'Alerts',
+          'Profile',
+          'MyJobs',
+          'Workers',
+          'Home',
+        ]);
+
+        if (tabRoutes.has(targetName)) {
+          if (typeof navigation.popToTop === 'function') {
+            navigation.popToTop();
+          }
+          const parentNav = navigation.getParent?.();
+          if (parentNav && typeof parentNav.navigate === 'function') {
+            parentNav.navigate(targetName, targetParams);
+          } else {
+            navigation.navigate(targetName, targetParams);
+          }
+          return;
+        }
+
         // 1. If target screen is already in our backstack, pop back to it directly
         const targetIndex = routes.findIndex((r: any) => r.name === targetName);
         if (

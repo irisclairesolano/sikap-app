@@ -11,6 +11,7 @@ import { useJobApplications } from '../../hooks/useJobApplications';
 import { useReviews } from '../../hooks/useReviews';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import Button from '../../components/common/Button';
+import { Avatar } from '../../components/common/Avatar';
 import { safeGoBack } from '../../utils/navigation';
 
 type RateWorkerListScreenRouteProp = RouteProp<EmployerStackParamList, 'RateWorkerList'>;
@@ -77,9 +78,7 @@ const RateWorkerListScreen: React.FC = () => {
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{workerName.charAt(0).toUpperCase()}</Text>
-          </View>
+          <Avatar name={workerName} url={item.worker?.avatar_url} size={48} />
           <View style={styles.workerInfo}>
             <Text style={styles.workerName}>{workerName}</Text>
             <Text style={styles.jobTitle}>{jobTitle}</Text>

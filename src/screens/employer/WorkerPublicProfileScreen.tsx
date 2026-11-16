@@ -23,6 +23,7 @@ import Button from '../../components/common/Button';
 import { useReviews } from '../../hooks/useReviews';
 import { useApplication } from '../../hooks/useJobApplications';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { sortWorkExperiences } from '../../utils/workExperience';
 import { useAlert } from '../../contexts/AlertContext';
 import { messagesApi } from '../../api/messages';
 
@@ -132,12 +133,13 @@ export const WorkerPublicProfileScreen: React.FC = () => {
     passedSkills ||
     [];
 
-  const experiences: any[] =
+  const experiences: any[] = sortWorkExperiences(
     publicProfile?.experiences ||
-    appData?.worker?.experiences ||
-    appData?.worker?.workerProfile?.experiences ||
-    passedExperiences ||
-    [];
+      appData?.worker?.experiences ||
+      appData?.worker?.workerProfile?.experiences ||
+      passedExperiences ||
+      [],
+  );
 
   const status = appData?.status || passedStatus || 'pending';
 

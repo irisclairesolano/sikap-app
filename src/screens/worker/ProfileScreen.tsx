@@ -13,6 +13,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useReviews } from '../../hooks/useReviews';
 import { CharacterReference, Skill, WorkerExperience } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { sortWorkExperiences } from '../../utils/workExperience';
 import { useOnboardingTutorial } from '../../contexts/OnboardingTutorialContext';
 import { TutorialTarget } from '../../components/tutorial/TutorialTarget';
 import { useReportsBadge } from '../../hooks/useReports';
@@ -90,7 +91,7 @@ export const ProfileScreen: React.FC = () => {
     memberSince: (user as any).member_since || 'New',
     skills: allSkills,
     bio: (workerProfile?.bio || '') as string,
-    experiences: (workerProfile?.experiences || []) as WorkerExperience[],
+    experiences: sortWorkExperiences(workerProfile?.experiences || []) as WorkerExperience[],
     recentReview: (() => {
       const receivedReviews = (reviewsData?.reviews || []).filter(
         (r) =>

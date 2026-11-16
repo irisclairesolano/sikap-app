@@ -19,6 +19,7 @@ import { EmployerStackParamList } from '../../navigation/EmployerNavigator';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, shadows, getPipelineStageBadgeStyle } from '../../theme';
 import Button from '../../components/common/Button';
+import { Avatar } from '../../components/common/Avatar';
 import { useDeleteJob } from '../../hooks/useJobs';
 import { useJob } from '../../hooks/useJob';
 import { useJobApplications } from '../../hooks/useJobApplications';
@@ -810,11 +811,11 @@ export const JobStatusManagementScreen: React.FC = () => {
                         }
                         activeOpacity={0.7}
                       >
-                        <View style={styles.applicantAvatar}>
-                          <Text style={styles.avatarInitial}>
-                            {(activeApp.worker?.name || 'W').charAt(0).toUpperCase()}
-                          </Text>
-                        </View>
+                        <Avatar
+                          name={activeApp.worker?.name || 'W'}
+                          url={activeApp.worker?.avatar_url}
+                          size={36}
+                        />
                         <View style={{ flex: 1 }}>
                           <Text
                             style={{
@@ -1092,11 +1093,11 @@ export const JobStatusManagementScreen: React.FC = () => {
                             }
                           >
                             <View style={styles.applicantLeft}>
-                              <View style={styles.applicantAvatar}>
-                                <Text style={styles.avatarInitial}>
-                                  {app.worker?.name?.charAt(0) || 'W'}
-                                </Text>
-                              </View>
+                              <Avatar
+                                name={app.worker?.name || 'W'}
+                                url={app.worker?.avatar_url}
+                                size={36}
+                              />
                               <View style={{ flex: 1 }}>
                                 <Text style={styles.applicantName}>
                                   {app.worker?.name || t('pipeline_worker_applicant_default')}

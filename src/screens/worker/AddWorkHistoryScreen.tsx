@@ -24,6 +24,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { TranslationKey } from '../../locales/en';
 import { WorkerStackParamList } from '../../navigation/WorkerNavigator';
 import { colors, fonts } from '../../theme';
+import { sortWorkExperiences } from '../../utils/workExperience';
 
 const MONTH_NAMES_SHORT = [
   'Jan',
@@ -106,7 +107,7 @@ export const AddWorkHistoryScreen: React.FC = () => {
 
   useEffect(() => {
     if (profile?.worker_profile?.experiences) {
-      setExperiences(profile.worker_profile.experiences);
+      setExperiences(sortWorkExperiences(profile.worker_profile.experiences));
     }
   }, [profile?.worker_profile?.experiences]);
 
@@ -158,9 +159,11 @@ export const AddWorkHistoryScreen: React.FC = () => {
       };
 
       if (isEditing) {
-        setExperiences((prev) => prev.map((exp) => (exp.id === targetId ? optimisticItem : exp)));
+        setExperiences((prev) =>
+          sortWorkExperiences(prev.map((exp) => (exp.id === targetId ? optimisticItem : exp))),
+        );
       } else {
-        setExperiences((prev) => [...prev, optimisticItem]);
+        setExperiences((prev) => sortWorkExperiences([optimisticItem, ...prev]));
       }
 
       handleCancel();
@@ -172,11 +175,15 @@ export const AddWorkHistoryScreen: React.FC = () => {
       if (realExp && typeof realExp === 'object' && 'id' in realExp) {
         if (!context?.isEditing) {
           setExperiences((prev) =>
-            prev.map((exp) => (exp.id === context?.tempId ? (realExp as any) : exp)),
+            sortWorkExperiences(
+              prev.map((exp) => (exp.id === context?.tempId ? (realExp as any) : exp)),
+            ),
           );
         } else {
           setExperiences((prev) =>
-            prev.map((exp) => (exp.id === context?.targetId ? (realExp as any) : exp)),
+            sortWorkExperiences(
+              prev.map((exp) => (exp.id === context?.targetId ? (realExp as any) : exp)),
+            ),
           );
         }
       }

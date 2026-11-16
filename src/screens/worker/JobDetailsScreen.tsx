@@ -540,7 +540,11 @@ export const JobDetailsScreen: React.FC = () => {
               });
             }}
           >
-            <Avatar name={job.employer?.name || 'Unknown'} size={48} />
+            <Avatar
+              name={job.employer?.name || 'Unknown'}
+              url={job.employer?.avatar_url}
+              size={48}
+            />
 
             <View style={[styles.employerInfo, { flex: 1 }]}>
               <View style={styles.employerNameRow}>
