@@ -121,3 +121,31 @@ export function calculateAge(birthDate: Date): number {
   }
   return age;
 }
+
+export const MIN_USER_AGE = 18;
+export const MAX_USER_AGE = 90;
+
+/**
+ * Returns [minBirthDate, maxBirthDate] corresponding to ages 18–90.
+ */
+export function getBirthDateBounds(): { minBirthDate: Date; maxBirthDate: Date } {
+  const today = new Date();
+  return {
+    minBirthDate: new Date(today.getFullYear() - MAX_USER_AGE, today.getMonth(), today.getDate()),
+    maxBirthDate: new Date(today.getFullYear() - MIN_USER_AGE, today.getMonth(), today.getDate()),
+  };
+}
+
+/**
+ * Validates that a birth date corresponds to an age between 18 and 90 inclusive.
+ */
+export function validateBirthDateAge(birthDate: Date): string | null {
+  const age = calculateAge(birthDate);
+  if (age < MIN_USER_AGE) {
+    return 'You must be at least 18 years old.';
+  }
+  if (age > MAX_USER_AGE) {
+    return 'Age must be 90 years old or younger.';
+  }
+  return null;
+}

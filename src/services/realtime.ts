@@ -366,6 +366,8 @@ export function useRealtimeUserEvents(userId?: number) {
         queryClient.invalidateQueries({ queryKey: ['employer-stats'] }),
         queryClient.invalidateQueries({ queryKey: ['profile'] }),
         queryClient.invalidateQueries({ queryKey: ['reviews'] }),
+        queryClient.invalidateQueries({ queryKey: ['workerPublicProfile'] }),
+        queryClient.invalidateQueries({ queryKey: ['employerPublicProfile'] }),
       ]);
     };
 
@@ -598,6 +600,9 @@ export function useRealtimeUserEvents(userId?: number) {
       queryClient.invalidateQueries({ queryKey: ['job'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       queryClient.invalidateQueries({ queryKey: ['employer-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['workerPublicProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['employerPublicProfile'] });
       triggerHaptic('medium');
 
       try {

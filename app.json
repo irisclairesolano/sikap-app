@@ -2,6 +2,7 @@
   "expo": {
     "name": "sikap",
     "slug": "sikap",
+    "owner": "iris_claire",
     "version": "1.0.0",
     "scheme": "sikap",
     "sdkVersion": "57.0.0",
@@ -23,7 +24,17 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "POST_NOTIFICATIONS",
-        "VIBRATE"
+        "VIBRATE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -51,7 +62,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "e7a8724a-76c3-4415-8aa7-8dc2dd4f986d"
+        "projectId": "4aa4e5b6-57c2-47ec-b869-2f48e127bcfc"
       }
     }
   }

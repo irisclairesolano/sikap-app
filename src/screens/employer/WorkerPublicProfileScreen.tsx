@@ -72,6 +72,8 @@ export const WorkerPublicProfileScreen: React.FC = () => {
     queryKey: ['workerPublicProfile', targetWorkerId],
     queryFn: () => apiClient<any>(`/workers/${targetWorkerId}/public-profile`),
     enabled: !!targetWorkerId,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   // 3. Fetch reviews for this worker
@@ -122,6 +124,8 @@ export const WorkerPublicProfileScreen: React.FC = () => {
     appData?.worker?.completed_jobs_count ??
     passedCompletedJobsCount ??
     0;
+
+  const recentWorkHistory: any[] = publicProfile?.recent_work_history || [];
 
   const bio =
     publicProfile?.bio || appData?.worker?.workerProfile?.bio || appData?.worker?.bio || passedBio;
@@ -400,6 +404,111 @@ export const WorkerPublicProfileScreen: React.FC = () => {
                   </View>
                 ))}
               </View>
+            </View>
+          </View>
+        )}
+
+        {/* Verified Platform Work History */}
+        {recentWorkHistory.length > 0 && (
+          <View style={styles.section}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 10,
+              }}
+            >
+              <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>
+                Verified SIKAP Work History
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Ionicons name="shield-checkmark" size={14} color={colors.mintDeep} />
+                <Text style={{ fontFamily: fonts.bodyBold, fontSize: 11, color: colors.mintDeep }}>
+                  Verified
+                </Text>
+              </View>
+            </View>
+            <View style={styles.contentCard}>
+              {recentWorkHistory.map((item: any, index: number) => {
+                const dateLabel = item.completed_at
+                  ? new Date(item.completed_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      year: 'numeric',
+                    })
+                  : null;
+                const metaLine = [item.category, item.municipality, dateLabel]
+                  .filter(Boolean)
+                  .join(' · ');
+
+                return (
+                  <View
+                    key={item.id || index}
+                    style={[
+                      index > 0 && {
+                        borderTopWidth: 1,
+                        borderTopColor: colors.inkFaint,
+                        paddingTop: 12,
+                        marginTop: 12,
+                      },
+                    ]}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 8,
+                      }}
+                    >
+                      <Text style={[styles.expTitle, { flex: 1 }]} numberOfLines={1}>
+                        {item.job_title}
+                      </Text>
+                      {item.rating_received !== null && item.rating_received !== undefined ? (
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 3,
+                            backgroundColor: colors.paperCream,
+                            paddingHorizontal: 8,
+                            paddingVertical: 3,
+                            borderRadius: 10,
+                          }}
+                        >
+                          <Ionicons name="star" size={12} color={colors.gold} />
+                          <Text
+                            style={{
+                              fontFamily: fonts.numericBold,
+                              fontSize: 12,
+                              color: colors.ink,
+                            }}
+                          >
+                            {Number(item.rating_received).toFixed(1)}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text
+                          style={{
+                            fontFamily: fonts.bodyBold,
+                            fontSize: 11,
+                            color: colors.mintDeep,
+                          }}
+                        >
+                          Completed
+                        </Text>
+                      )}
+                    </View>
+                    {metaLine ? <Text style={styles.expDates}>{metaLine}</Text> : null}
+                  </View>
+                );
+              })}
+              {completedJobsCount > recentWorkHistory.length && (
+                <Text style={[styles.expDates, { marginTop: 12, textAlign: 'center' }]}>
+                  + {completedJobsCount - recentWorkHistory.length} more completed{' '}
+                  {completedJobsCount - recentWorkHistory.length === 1 ? 'job' : 'jobs'} on SIKAP
+                </Text>
+              )}
             </View>
           </View>
         )}

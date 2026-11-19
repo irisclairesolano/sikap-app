@@ -13,6 +13,8 @@ import {
   parseBirthDateInput,
   formatDateToMMDDYYYY,
   calculateAge,
+  getBirthDateBounds,
+  MAX_USER_AGE,
 } from '../../utils/dateFormat';
 import React, { useState } from 'react';
 import {
@@ -197,8 +199,16 @@ export const EditProfileScreen: React.FC = () => {
           return;
         }
 
-        if (calculateAge(parsed.date) < 18) {
+        const age = calculateAge(parsed.date);
+        if (age < 18) {
           showAlert(t('alert_profile_invalid_age_title'), t('alert_profile_invalid_age_msg'));
+          return;
+        }
+        if (age > MAX_USER_AGE) {
+          showAlert(
+            t('alert_profile_invalid_age_title'),
+            `Age must be ${MAX_USER_AGE} years old or younger.`,
+          );
           return;
         }
 
@@ -435,8 +445,9 @@ export const EditProfileScreen: React.FC = () => {
               <DateTimePicker
                 value={dateOfBirth}
                 mode="date"
-                display="default"
-                maximumDate={new Date()}
+                display={Platform.OS === 'android' ? 'spinner' : 'default'}
+                minimumDate={getBirthDateBounds().minBirthDate}
+                maximumDate={getBirthDateBounds().maxBirthDate}
                 onValueChange={(_event, selectedDate) => {
                   setShowDatePicker(false);
                   if (selectedDate) {

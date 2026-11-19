@@ -47,7 +47,13 @@ export const EmployerPublicProfileScreen: React.FC = () => {
     queryKey: ['employerPublicProfile', employerId],
     queryFn: () => apiClient<any>(`/employers/${employerId}/public-profile`),
     enabled: !!employerId,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
+
+  const recentJobPosts: any[] = publicProfile?.recent_job_posts || [];
+  const totalPublicJobsCount: number =
+    publicProfile?.total_public_jobs_count ?? recentJobPosts.length;
 
   const effectiveDocs: string[] =
     publicProfile?.business_documents && publicProfile.business_documents.length > 0
@@ -316,6 +322,121 @@ export const EmployerPublicProfileScreen: React.FC = () => {
             )}
           </View>
         </View>
+
+        {/* Public Job Posts Section */}
+        {recentJobPosts.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Job Posts ({totalPublicJobsCount})</Text>
+            <View style={styles.docCard}>
+              {recentJobPosts.map((job: any, index: number) => {
+                const isOpen = job.status === 'open';
+                const dateLabel = job.created_at
+                  ? new Date(job.created_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      year: 'numeric',
+                    })
+                  : null;
+                const metaLine = [
+                  job.category,
+                  job.municipality,
+                  dateLabel ? `Posted ${dateLabel}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ');
+
+                const rowContent = (
+                  <View
+                    style={[
+                      index > 0 && {
+                        borderTopWidth: 1,
+                        borderTopColor: colors.inkFaint,
+                        paddingTop: 12,
+                        marginTop: 12,
+                      },
+                    ]}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 8,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          flex: 1,
+                          fontFamily: fonts.bodyBold,
+                          fontSize: 14,
+                          color: colors.ink,
+                        }}
+                        numberOfLines={1}
+                      >
+                        {job.title}
+                      </Text>
+                      <View
+                        style={{
+                          paddingHorizontal: 8,
+                          paddingVertical: 3,
+                          borderRadius: 10,
+                          backgroundColor: isOpen ? '#ECFDF5' : colors.paperCream,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontFamily: fonts.bodyBold,
+                            fontSize: 11,
+                            color: isOpen ? colors.mintDeep : colors.inkMuted,
+                          }}
+                        >
+                          {isOpen ? 'Open' : 'Completed'}
+                        </Text>
+                      </View>
+                    </View>
+                    {metaLine ? (
+                      <Text
+                        style={{
+                          fontFamily: fonts.body,
+                          fontSize: 12,
+                          color: colors.inkMuted,
+                          marginTop: 2,
+                        }}
+                      >
+                        {metaLine}
+                      </Text>
+                    ) : null}
+                  </View>
+                );
+
+                return isOpen ? (
+                  <TouchableOpacity
+                    key={job.id}
+                    activeOpacity={0.7}
+                    onPress={() => navigation.navigate('JobDetails' as any, { jobId: job.id })}
+                  >
+                    {rowContent}
+                  </TouchableOpacity>
+                ) : (
+                  <View key={job.id}>{rowContent}</View>
+                );
+              })}
+              {totalPublicJobsCount > recentJobPosts.length && (
+                <Text
+                  style={{
+                    fontFamily: fonts.body,
+                    fontSize: 12,
+                    color: colors.inkMuted,
+                    textAlign: 'center',
+                    marginTop: 12,
+                  }}
+                >
+                  + {totalPublicJobsCount - recentJobPosts.length} more job{' '}
+                  {totalPublicJobsCount - recentJobPosts.length === 1 ? 'post' : 'posts'}
+                </Text>
+              )}
+            </View>
+          </View>
+        )}
 
         {/* Worker Reviews & Feedback Section */}
         <View style={styles.section}>

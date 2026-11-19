@@ -91,6 +91,7 @@ export const ProfileScreen: React.FC = () => {
     memberSince: (user as any).member_since || 'New',
     skills: allSkills,
     bio: (workerProfile?.bio || '') as string,
+    platformHistory: ((user as any).recent_work_history || []) as any[],
     experiences: sortWorkExperiences(workerProfile?.experiences || []) as WorkerExperience[],
     recentReview: (() => {
       const receivedReviews = (reviewsData?.reviews || []).filter(
@@ -314,6 +315,129 @@ export const ProfileScreen: React.FC = () => {
             </Text>
           </View>
         ) : null}
+
+        {/* Verified Platform Work History (Auto-updated, non-deletable) */}
+        {worker.platformHistory.length > 0 && (
+          <View style={styles.skillsSection}>
+            <View style={styles.reviewHeader}>
+              <Text style={styles.sectionEyebrow} numberOfLines={2}>
+                Verified SIKAP Work History
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Ionicons name="shield-checkmark" size={14} color={colors.mintDeep} />
+                <Text style={{ fontFamily: fonts.bodyBold, fontSize: 11, color: colors.mintDeep }}>
+                  Verified
+                </Text>
+              </View>
+            </View>
+            <View style={{ marginTop: 10, gap: 12 }}>
+              {worker.platformHistory.map((item: any, index: number) => {
+                const dateLabel = item.completed_at
+                  ? new Date(item.completed_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      year: 'numeric',
+                    })
+                  : null;
+                const metaLine = [item.category, item.municipality, dateLabel]
+                  .filter(Boolean)
+                  .join(' · ');
+
+                return (
+                  <View
+                    key={item.id || index}
+                    style={[
+                      index > 0 && {
+                        borderTopWidth: 1,
+                        borderTopColor: colors.inkFaint,
+                        paddingTop: 12,
+                      },
+                    ]}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 8,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          flex: 1,
+                          fontFamily: fonts.bodyBold,
+                          fontSize: 14,
+                          color: colors.ink,
+                        }}
+                        numberOfLines={1}
+                      >
+                        {item.job_title}
+                      </Text>
+                      {item.rating_received !== null && item.rating_received !== undefined ? (
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 3,
+                            backgroundColor: colors.butter,
+                            paddingHorizontal: 8,
+                            paddingVertical: 3,
+                            borderRadius: 10,
+                          }}
+                        >
+                          <Ionicons name="star" size={12} color={colors.gold} />
+                          <Text
+                            style={{
+                              fontFamily: fonts.numericBold,
+                              fontSize: 12,
+                              color: colors.ink,
+                            }}
+                          >
+                            {Number(item.rating_received).toFixed(1)}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text
+                          style={{
+                            fontFamily: fonts.bodyBold,
+                            fontSize: 11,
+                            color: colors.mintDeep,
+                          }}
+                        >
+                          Completed
+                        </Text>
+                      )}
+                    </View>
+                    {metaLine ? (
+                      <Text
+                        style={{
+                          fontFamily: fonts.body,
+                          fontSize: 12,
+                          color: colors.inkMuted,
+                          marginTop: 2,
+                        }}
+                      >
+                        {metaLine}
+                      </Text>
+                    ) : null}
+                  </View>
+                );
+              })}
+              {worker.jobsDone > worker.platformHistory.length && (
+                <Text
+                  style={{
+                    fontFamily: fonts.body,
+                    fontSize: 12,
+                    color: colors.inkMuted,
+                    textAlign: 'center',
+                  }}
+                >
+                  + {worker.jobsDone - worker.platformHistory.length} more completed{' '}
+                  {worker.jobsDone - worker.platformHistory.length === 1 ? 'job' : 'jobs'} on SIKAP
+                </Text>
+              )}
+            </View>
+          </View>
+        )}
 
         {/* Work History */}
         <View style={styles.skillsSection}>

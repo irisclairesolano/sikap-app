@@ -14,7 +14,8 @@ import {
   formatBirthDateInput,
   parseBirthDateInput,
   formatDateToMMDDYYYY,
-  calculateAge,
+  getBirthDateBounds,
+  validateBirthDateAge,
 } from '../../utils/dateFormat';
 import Button from '../../components/common/Button';
 import LocationPicker from '../../components/common/LocationPicker';
@@ -131,8 +132,9 @@ const RegisterStep2Screen: React.FC = () => {
       return;
     }
 
-    if (calculateAge(parsed.date) < 15) {
-      setBanner('You must be at least 15 years old to register.');
+    const ageError = validateBirthDateAge(parsed.date);
+    if (ageError) {
+      setBanner(ageError);
       return;
     }
 
@@ -247,7 +249,8 @@ const RegisterStep2Screen: React.FC = () => {
                   <input
                     type="date"
                     value={dateOfBirth.toISOString().split('T')[0]}
-                    max={new Date().toISOString().split('T')[0]}
+                    min={getBirthDateBounds().minBirthDate.toISOString().split('T')[0]}
+                    max={getBirthDateBounds().maxBirthDate.toISOString().split('T')[0]}
                     onChange={(e) => {
                       if (e.target.value) {
                         const d = new Date(e.target.value);
@@ -291,8 +294,9 @@ const RegisterStep2Screen: React.FC = () => {
                       <DateTimePicker
                         value={dateOfBirth}
                         mode="date"
-                        display="default"
-                        maximumDate={new Date()}
+                        display={Platform.OS === 'android' ? 'spinner' : 'default'}
+                        minimumDate={getBirthDateBounds().minBirthDate}
+                        maximumDate={getBirthDateBounds().maxBirthDate}
                         onValueChange={(_event, selectedDate) => {
                           setShowDatePicker(false);
                           if (selectedDate) {
