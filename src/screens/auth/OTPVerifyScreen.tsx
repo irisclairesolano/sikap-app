@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { OtpInput } from 'react-native-otp-entry';
 import { clearIdSubmitted, notifyAuthChanged } from '../../store/authEvents';
 import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'OTPVerify'>;
 type RouteProps = RouteProp<AuthStackParamList, 'OTPVerify'>;
@@ -26,6 +27,8 @@ const OTPVerifyScreen: React.FC = () => {
   const { userId, email, role } = route.params;
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const { language } = useLanguage();
+  const isTagalog = language === 'tl';
 
   const [currentEmail, setCurrentEmail] = useState(email);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
@@ -170,9 +173,17 @@ const OTPVerifyScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.stepBadge}>
-          <Text style={styles.stepBadgeText}>3 of 4</Text>
+          <Text style={styles.stepBadgeText}>{isTagalog ? '3 sa 4' : '3 of 4'}</Text>
         </View>
         <View style={{ width: 40 }} />
+      </View>
+
+      {/* Progress Bar */}
+      <View style={styles.progressBar}>
+        <View style={styles.progressActive} />
+        <View style={styles.progressActive} />
+        <View style={styles.progressActive} />
+        <View style={styles.progressInactive} />
       </View>
 
       <KeyboardAwareScrollView
@@ -380,6 +391,25 @@ const styles = StyleSheet.create({
   scroll: {
     paddingHorizontal: 26,
     paddingTop: 12,
+  },
+  progressBar: {
+    flexDirection: 'row',
+    gap: 4,
+    paddingHorizontal: 26,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  progressActive: {
+    flex: 1,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: colors.primary,
+  },
+  progressInactive: {
+    flex: 1,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: colors.inkFaint,
   },
   headerCentered: {
     alignItems: 'center',

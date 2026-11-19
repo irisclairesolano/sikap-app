@@ -9,12 +9,15 @@ import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { useAuth } from '../../hooks/useAuth';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { AuthStackParamList } from '../../navigation/authTypes';
+import { setGuestInitialRoute } from '../../store/authEvents';
 import { colors, fonts } from '../../theme';
 import { LoginRequest } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 import { Wordmark } from '../../components/common/Wordmark';
 import { sanitizeErrorMessage } from '../../utils/errorSanitizer';
+import { LegalConsentCheckbox } from '../../components/common/LegalConsentCheckbox';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -22,10 +25,25 @@ const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const { loginMutation } = useAuth();
   const { showAlert } = useAlert();
+  const { t, language } = useLanguage();
+  const isTagalog = language === 'tl';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [banner, setBanner] = useState('');
+
+  const handleBack = () => {
+    setGuestInitialRoute('Welcome');
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Welcome' }],
+      });
+    }
+  };
 
   const handleLogin = () => {
     setBanner('');
@@ -35,7 +53,16 @@ const LoginScreen: React.FC = () => {
     };
 
     if (!credentials.email || !credentials.password) {
-      setBanner('Please fill in all fields.');
+      setBanner(t('login_fill_all_fields'));
+      return;
+    }
+
+    if (!agreedToTerms) {
+      setBanner(
+        isTagalog
+          ? 'Kailangang sumang-ayon sa Mga Tuntunin at Kundisyon at Patakaran sa Privacy upang mag-log in.'
+          : 'Please agree to the Terms & Conditions and Privacy Policy to sign in.',
+      );
       return;
     }
 
@@ -95,19 +122,17 @@ const LoginScreen: React.FC = () => {
             err.metadata?.registration_status === 'rejected' ||
             err.message.includes('registration was rejected')
           ) {
-            setBanner(
-              'Your previous application was rejected. Please log in to re-upload your ID.',
-            );
+            setBanner(t('login_rejected_notice'));
             return;
           }
           setBanner(
             err.message === 'UNAUTHORIZED'
-              ? 'Invalid credentials.'
+              ? t('login_invalid_credentials')
               : sanitizeErrorMessage(err.message),
           );
           return;
         }
-        setBanner(sanitizeErrorMessage(err instanceof Error ? err.message : 'Login failed'));
+        setBanner(sanitizeErrorMessage(err instanceof Error ? err.message : t('login_failed')));
       },
     });
   };
@@ -117,7 +142,7 @@ const LoginScreen: React.FC = () => {
       <View style={styles.container}>
         {/* App Bar */}
         <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
+          <TouchableOpacity onPress={handleBack} style={styles.iconBtn}>
             <Ionicons name="arrow-back" size={24} color={colors.ink} />
           </TouchableOpacity>
           <View style={{ width: 40 }} />
@@ -137,12 +162,13 @@ const LoginScreen: React.FC = () => {
 
           <View style={styles.header}>
             <View style={styles.eyebrowContainer}>
-              <Text style={styles.eyebrow}>Sign in</Text>
+              <Text style={styles.eyebrow}>{t('login_eyebrow')}</Text>
             </View>
             <Text style={styles.title}>
-              Welcome <Text style={styles.titleItalic}>back.</Text>
+              {t('login_welcome_prefix')}{' '}
+              <Text style={styles.titleItalic}>{t('login_welcome_accent')}</Text>
             </Text>
-            <Text style={styles.subtitle}>Sign in to manage your account.</Text>
+            <Text style={styles.subtitle}>{t('login_subtitle')}</Text>
           </View>
 
           {banner ? (
@@ -157,16 +183,16 @@ const LoginScreen: React.FC = () => {
             <View style={styles.formCard}>
               <View style={styles.form}>
                 <Input
-                  label="Email"
+                  label={t('login_email_label')}
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
-                  placeholder="you@example.com"
+                  placeholder={t('login_email_placeholder')}
                 />
 
                 <View>
                   <Input
-                    label="Password"
+                    label={t('login_password_label')}
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
@@ -175,22 +201,30 @@ const LoginScreen: React.FC = () => {
                       type: 'ionicon',
                       onPress: () => setShowPassword(!showPassword),
                     }}
-                    placeholder="Your password"
+                    placeholder={t('login_password_placeholder')}
                   />
                   <TouchableOpacity
                     style={styles.forgotBtn}
                     onPress={() => navigation.navigate('ForgotPassword')}
                   >
-                    <Text style={styles.forgotText}>Forgot password?</Text>
+                    <Text style={styles.forgotText}>{t('login_forgot_password')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
           </View>
 
+          <LegalConsentCheckbox
+            checked={agreedToTerms}
+            onChange={(next) => {
+              setAgreedToTerms(next);
+              if (next && banner) setBanner('');
+            }}
+          />
+
           <View style={styles.footer}>
             <Button
-              label={loginMutation.isPending ? 'Signing in...' : 'Sign in'}
+              label={loginMutation.isPending ? t('login_submitting_btn') : t('login_submit_btn')}
               size="lg"
               fullWidth
               loading={loginMutation.isPending}
@@ -199,9 +233,9 @@ const LoginScreen: React.FC = () => {
           </View>
 
           <View style={styles.createAccountContainer}>
-            <Text style={styles.newText}>New user?</Text>
+            <Text style={styles.newText}>{t('login_new_user')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Welcome')}>
-              <Text style={styles.createText}>Create an account</Text>
+              <Text style={styles.createText}>{t('login_create_account')}</Text>
             </TouchableOpacity>
           </View>
         </KeyboardAwareScrollView>

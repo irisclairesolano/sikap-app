@@ -1,14 +1,5 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-} from 'react';
-import { getItemAsync, getItemSync, setItemAsync, deleteItemAsync } from '../utils/storage';
-import { subscribeAuthChanged } from '../store/authEvents';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { getItemAsync, getItemSync, setItemAsync } from '../utils/storage';
 import { en, TranslationKey } from '../locales/en';
 import { tl } from '../locales/tl';
 
@@ -22,45 +13,10 @@ interface LanguageContextType {
 
 export const STORAGE_KEY = 'sikap_app_language';
 
-export const getLanguageStorageKey = (userId?: number | string | null): string =>
-  userId !== undefined && userId !== null && String(userId).trim() !== ''
-    ? `${STORAGE_KEY}_user_${String(userId).trim()}`
-    : STORAGE_KEY;
-
-const parseUserIdFromProfile = (profileStr: string | null): string | null => {
-  if (!profileStr) return null;
-  try {
-    const parsed = JSON.parse(profileStr);
-    if (
-      parsed &&
-      parsed.id !== undefined &&
-      parsed.id !== null &&
-      String(parsed.id).trim() !== ''
-    ) {
-      return String(parsed.id).trim();
-    }
-  } catch {
-    // Ignore malformed profile JSON
-  }
-  return null;
-};
-
-const resolveStoredUserIdAsync = async (): Promise<string | null> => {
-  try {
-    const profileStr = await getItemAsync('user_profile');
-    return parseUserIdFromProfile(profileStr);
-  } catch {
-    return null;
-  }
-};
+export const getLanguageStorageKey = (_userId?: number | string | null): string => STORAGE_KEY;
 
 const getInitialLanguageSync = (): Language => {
   try {
-    const userId = parseUserIdFromProfile(getItemSync('user_profile'));
-    if (userId) {
-      const userSaved = getItemSync(getLanguageStorageKey(userId));
-      return userSaved === 'tl' || userSaved === 'en' ? userSaved : 'en';
-    }
     const saved = getItemSync(STORAGE_KEY);
     if (saved === 'en' || saved === 'tl') {
       return saved;
@@ -111,69 +67,34 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     currentActiveLanguage = initial;
     return initial;
   });
-  const activeUserIdRef = useRef<string | null>(
-    parseUserIdFromProfile(getItemSync('user_profile')),
-  );
 
   const applyLanguageState = useCallback((nextLang: Language) => {
     currentActiveLanguage = nextLang;
     setLanguageState(nextLang);
   }, []);
 
-  const syncLanguageWithAuth = useCallback(
-    async (isAuthEvent: boolean) => {
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
       try {
-        const userId = await resolveStoredUserIdAsync();
-        const prevUserId = activeUserIdRef.current;
-        activeUserIdRef.current = userId;
-
-        if (userId) {
-          const savedForUser = await getItemAsync(getLanguageStorageKey(userId));
-          const resolvedLang: Language =
-            savedForUser === 'en' || savedForUser === 'tl' ? savedForUser : 'en';
-          applyLanguageState(resolvedLang);
-          return;
+        const saved = await getItemAsync(STORAGE_KEY);
+        if (isMounted && (saved === 'en' || saved === 'tl')) {
+          applyLanguageState(saved);
         }
-
-        // No authenticated user: if logging out or auth state changed, reset to English
-        if (isAuthEvent || prevUserId !== null) {
-          applyLanguageState('en');
-          await deleteItemAsync(STORAGE_KEY);
-          return;
-        }
-
-        // Initial unauthenticated load
-        const savedGlobal = await getItemAsync(STORAGE_KEY);
-        const resolvedGlobal: Language =
-          savedGlobal === 'en' || savedGlobal === 'tl' ? savedGlobal : 'en';
-        applyLanguageState(resolvedGlobal);
       } catch (e) {
         console.warn('Failed to load saved language preference:', e);
       }
-    },
-    [applyLanguageState],
-  );
-
-  useEffect(() => {
-    syncLanguageWithAuth(false);
-    const unsubscribe = subscribeAuthChanged(() => {
-      syncLanguageWithAuth(true);
-    });
-    return unsubscribe;
-  }, [syncLanguageWithAuth]);
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [applyLanguageState]);
 
   const setLanguage = useCallback(
     async (newLang: Language) => {
       applyLanguageState(newLang);
       try {
-        const userId = await resolveStoredUserIdAsync();
-        activeUserIdRef.current = userId;
-        const targetKey = getLanguageStorageKey(userId);
-        await setItemAsync(targetKey, newLang);
-        if (userId) {
-          // Ensure a logged-in account's preference does not leak into the global unauthenticated key
-          await deleteItemAsync(STORAGE_KEY);
-        }
+        await setItemAsync(STORAGE_KEY, newLang);
       } catch (e) {
         console.warn('Failed to save language preference:', e);
       }

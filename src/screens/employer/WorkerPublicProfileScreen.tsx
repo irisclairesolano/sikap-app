@@ -146,6 +146,7 @@ export const WorkerPublicProfileScreen: React.FC = () => {
   );
 
   const status = appData?.status || passedStatus || 'pending';
+  const isJobCompleted = status === 'completed' || appData?.job?.status === 'completed';
 
   // SIKAP Progressive Disclosure Privacy Rules
   const isReferencesUnlocked =
@@ -159,7 +160,8 @@ export const WorkerPublicProfileScreen: React.FC = () => {
     ].includes(status) || Boolean(appData?.references_revealed);
 
   const isPhoneUnlocked =
-    ['accepted', 'completed', 'hired'].includes(status) || Boolean(appData?.contact_revealed);
+    !isJobCompleted &&
+    (['accepted', 'hired'].includes(status) || Boolean(appData?.contact_revealed));
 
   const characterReferences: any[] =
     appData?.worker?.character_references || passedCharacterReferences || [];
@@ -707,30 +709,32 @@ export const WorkerPublicProfileScreen: React.FC = () => {
           )}
         </View>
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: isJobCompleted ? 24 : 100 }} />
       </ScrollView>
 
-      {/* Docked Bottom Action Bar */}
-      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 14) }]}>
-        <View style={styles.bottomBarRow}>
-          {applicationId ? (
+      {/* Docked Bottom Action Bar (hidden once the job is completed) */}
+      {!isJobCompleted && (
+        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 14) }]}>
+          <View style={styles.bottomBarRow}>
+            {applicationId ? (
+              <Button
+                label={t('view_application_btn') || 'View Application'}
+                variant="outline"
+                size="base"
+                style={{ flex: 1 }}
+                onPress={handleViewApplication}
+              />
+            ) : null}
             <Button
-              label={t('view_application_btn') || 'View Application'}
-              variant="outline"
+              label={t('message_worker_btn') || 'Message Worker'}
+              variant="primary"
               size="base"
               style={{ flex: 1 }}
-              onPress={handleViewApplication}
+              onPress={handleOpenChat}
             />
-          ) : null}
-          <Button
-            label={t('message_worker_btn') || 'Message Worker'}
-            variant="primary"
-            size="base"
-            style={{ flex: 1 }}
-            onPress={handleOpenChat}
-          />
+          </View>
         </View>
-      </View>
+      )}
     </SafeAreaView>
   );
 };

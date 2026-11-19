@@ -1467,6 +1467,26 @@ export const en = {
   report_details: 'Details',
   error: 'Error',
   conversation_not_found: 'Conversation not found.',
+
+  // Login Screen
+  login_eyebrow: 'Sign in',
+  login_welcome_prefix: 'Welcome',
+  login_welcome_accent: 'back.',
+  login_subtitle: 'Sign in to manage your account.',
+  login_email_label: 'Email',
+  login_email_placeholder: 'you@example.com',
+  login_password_label: 'Password',
+  login_password_placeholder: 'Your password',
+  login_forgot_password: 'Forgot password?',
+  login_submit_btn: 'Sign in',
+  login_submitting_btn: 'Signing in...',
+  login_new_user: 'New user?',
+  login_create_account: 'Create an account',
+  login_fill_all_fields: 'Please fill in all fields.',
+  login_invalid_credentials: 'Invalid credentials.',
+  login_rejected_notice:
+    'Your previous application was rejected. Please log in to re-upload your ID.',
+  login_failed: 'Login failed',
 };
 
 export type TranslationKey = keyof typeof en;

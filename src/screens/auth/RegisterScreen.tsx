@@ -40,9 +40,19 @@ const RegisterScreen: React.FC = () => {
   const validateName = (name: string): { status: 'valid' | 'invalid' | null; message: string } => {
     if (!name) return { status: null, message: '' };
     if (name.length < 2)
-      return { status: 'invalid', message: 'Name must be at least 2 characters' };
+      return {
+        status: 'invalid',
+        message: isTagalog
+          ? 'Ang pangalan ay dapat hindi bababa sa 2 letra'
+          : 'Name must be at least 2 characters',
+      };
     if (!/^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\u00C0-\u017F\s.'-]+$/.test(name))
-      return { status: 'invalid', message: 'Name can only contain letters, dots, and hyphens' };
+      return {
+        status: 'invalid',
+        message: isTagalog
+          ? 'Mga letra, tuldok, at gitling lamang ang maaaring gamitin sa pangalan'
+          : 'Name can only contain letters, dots, and hyphens',
+      };
     return { status: 'valid', message: '' };
   };
 
@@ -51,7 +61,11 @@ const RegisterScreen: React.FC = () => {
   ): { status: 'valid' | 'invalid' | null; message: string } => {
     if (!email) return { status: null, message: '' };
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return { status: 'invalid', message: 'Invalid email format' };
+    if (!emailRegex.test(email))
+      return {
+        status: 'invalid',
+        message: isTagalog ? 'Hindi wastong format ng email' : 'Invalid email format',
+      };
     return { status: 'valid', message: '' };
   };
 
@@ -60,7 +74,11 @@ const RegisterScreen: React.FC = () => {
   ): { status: 'valid' | 'invalid' | null; message: string } => {
     if (!phone) return { status: null, message: '' };
     const phoneRegex = /^09\d{9}$/;
-    if (!phoneRegex.test(phone)) return { status: 'invalid', message: 'Use format: 09XXXXXXXX' };
+    if (!phoneRegex.test(phone))
+      return {
+        status: 'invalid',
+        message: isTagalog ? 'Gamitin ang format na: 09XXXXXXXXX' : 'Use format: 09XXXXXXXX',
+      };
     return { status: 'valid', message: '' };
   };
 
@@ -68,10 +86,26 @@ const RegisterScreen: React.FC = () => {
     password: string,
   ): { status: 'valid' | 'invalid' | null; message: string } => {
     if (!password) return { status: null, message: '' };
-    if (password.length < 8) return { status: 'invalid', message: 'At least 8 characters' };
-    if (!/[a-z]/.test(password)) return { status: 'invalid', message: 'Include lowercase' };
-    if (!/[A-Z]/.test(password)) return { status: 'invalid', message: 'Include uppercase' };
-    if (!/[0-9]/.test(password)) return { status: 'invalid', message: 'Include number' };
+    if (password.length < 8)
+      return {
+        status: 'invalid',
+        message: isTagalog ? 'Hindi bababa sa 8 karakter' : 'At least 8 characters',
+      };
+    if (!/[a-z]/.test(password))
+      return {
+        status: 'invalid',
+        message: isTagalog ? 'Maglagay ng maliit na letra' : 'Include lowercase',
+      };
+    if (!/[A-Z]/.test(password))
+      return {
+        status: 'invalid',
+        message: isTagalog ? 'Maglagay ng malaking letra' : 'Include uppercase',
+      };
+    if (!/[0-9]/.test(password))
+      return {
+        status: 'invalid',
+        message: isTagalog ? 'Maglagay ng numero' : 'Include number',
+      };
     return { status: 'valid', message: '' };
   };
 
@@ -80,7 +114,11 @@ const RegisterScreen: React.FC = () => {
     confirm?: string,
   ): { status: 'valid' | 'invalid' | null; message: string } => {
     if (!confirm) return { status: null, message: '' };
-    if (password !== confirm) return { status: 'invalid', message: 'Passwords do not match' };
+    if (password !== confirm)
+      return {
+        status: 'invalid',
+        message: isTagalog ? 'Hindi tugma ang mga password' : 'Passwords do not match',
+      };
     return { status: 'valid', message: '' };
   };
 
@@ -138,7 +176,7 @@ const RegisterScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.stepBadge}>
-          <Text style={styles.stepBadgeText}>1 of 4</Text>
+          <Text style={styles.stepBadgeText}>{isTagalog ? '1 sa 4' : '1 of 4'}</Text>
         </View>
         <View style={styles.langSelector}>
           <TouchableOpacity
@@ -199,10 +237,12 @@ const RegisterScreen: React.FC = () => {
               <Controller
                 control={control}
                 name="name"
-                rules={{ required: 'Name is required' }}
+                rules={{
+                  required: isTagalog ? 'Kinakailangan ang pangalan' : 'Name is required',
+                }}
                 render={({ field: { value, onChange }, fieldState }) => (
                   <Input
-                    label="Full Name"
+                    label={isTagalog ? 'Buong Pangalan' : 'Full Name'}
                     value={value}
                     onChangeText={(text) => {
                       const capitalized = capitalizeName(text);
@@ -222,7 +262,9 @@ const RegisterScreen: React.FC = () => {
               <Controller
                 control={control}
                 name="email"
-                rules={{ required: 'Email is required' }}
+                rules={{
+                  required: isTagalog ? 'Kinakailangan ang email' : 'Email is required',
+                }}
                 render={({ field: { value, onChange }, fieldState }) => (
                   <Input
                     label="Email"
@@ -245,10 +287,12 @@ const RegisterScreen: React.FC = () => {
               <Controller
                 control={control}
                 name="phone"
-                rules={{ required: 'Phone is required' }}
+                rules={{
+                  required: isTagalog ? 'Kinakailangan ang numero' : 'Phone is required',
+                }}
                 render={({ field: { value, onChange }, fieldState }) => (
                   <Input
-                    label="Phone (09...)"
+                    label={isTagalog ? 'Numero ng Telepono (09...)' : 'Phone (09...)'}
                     value={value}
                     onChangeText={(text) => {
                       onChange(text);
@@ -268,7 +312,9 @@ const RegisterScreen: React.FC = () => {
               <Controller
                 control={control}
                 name="password"
-                rules={{ required: 'Password is required' }}
+                rules={{
+                  required: isTagalog ? 'Kinakailangan ang password' : 'Password is required',
+                }}
                 render={({ field: { value, onChange }, fieldState }) => (
                   <Input
                     label="Password"
@@ -286,7 +332,9 @@ const RegisterScreen: React.FC = () => {
                       onPress: () => setShowPassword(!showPassword),
                     }}
                     error={fieldState.error?.message}
-                    placeholder="At least 8 characters..."
+                    placeholder={
+                      isTagalog ? 'Hindi bababa sa 8 karakter...' : 'At least 8 characters...'
+                    }
                     status={fieldStatus.password as any}
                     statusText={fieldStatusText.password}
                   />
@@ -296,10 +344,12 @@ const RegisterScreen: React.FC = () => {
               <Controller
                 control={control}
                 name="password_confirmation"
-                rules={{ required: 'Please confirm password' }}
+                rules={{
+                  required: isTagalog ? 'Pakikumpirma ang password' : 'Please confirm password',
+                }}
                 render={({ field: { value, onChange }, fieldState }) => (
                   <Input
-                    label="Confirm Password"
+                    label={isTagalog ? 'Kumpirmahin ang Password' : 'Confirm Password'}
                     value={value}
                     onChangeText={(text) => {
                       onChange(text);
@@ -318,7 +368,7 @@ const RegisterScreen: React.FC = () => {
                       onPress: () => setShowConfirmPassword(!showConfirmPassword),
                     }}
                     error={fieldState.error?.message}
-                    placeholder="Re-enter password..."
+                    placeholder={isTagalog ? 'Ilagay muli ang password...' : 'Re-enter password...'}
                     status={fieldStatus.confirmPassword as any}
                     statusText={fieldStatusText.confirmPassword}
                   />

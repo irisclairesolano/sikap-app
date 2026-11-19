@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAlert } from '../../contexts/AlertContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { authApi } from '../../api/auth';
 import { ApiClientError } from '../../api/client';
 import Button from '../../components/common/Button';
@@ -37,6 +38,8 @@ const IDUploadScreen: React.FC = () => {
   const userRole = role ?? 'worker';
   const insets = useSafeAreaInsets();
   const { showAlert } = useAlert();
+  const { language } = useLanguage();
+  const isTagalog = language === 'tl';
   const [banner, setBanner] = useState('');
   const [selectedFile, setSelectedFile] = useState<any>(null);
   const [selectedFileBack, setSelectedFileBack] = useState<any>(null);
@@ -327,9 +330,16 @@ const IDUploadScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </TouchableOpacity>
         <View style={styles.stepBadge}>
-          <Text style={styles.stepBadgeText}>4 of 4</Text>
+          <Text style={styles.stepBadgeText}>{isTagalog ? '4 sa 4' : '4 of 4'}</Text>
         </View>
         <View style={{ width: 40 }} />
+      </View>
+
+      <View style={[styles.progressBar, { paddingHorizontal: 26 }]}>
+        <View style={styles.progressActive} />
+        <View style={styles.progressActive} />
+        <View style={styles.progressActive} />
+        <View style={styles.progressActive} />
       </View>
 
       <ScrollView
@@ -337,13 +347,6 @@ const IDUploadScreen: React.FC = () => {
         contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 24) }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.progressBar}>
-          <View style={styles.progressActive} />
-          <View style={styles.progressActive} />
-          <View style={styles.progressActive} />
-          <View style={styles.progressActive} />
-        </View>
-
         <Text style={styles.title}>
           Verify your{'\n'}
           <Text style={styles.titleItalic}>identity.</Text>

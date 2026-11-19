@@ -1,13 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { JobPost } from '../types';
+import { useAuthCheck } from './useAuthCheck';
 
 export const useSavedJobs = () => {
+  const { user } = useAuthCheck();
+  const isApprovedWorker = user?.role === 'worker' && user?.registration_status === 'approved';
+
   return useQuery({
     queryKey: ['saved-jobs'],
     queryFn: async () => {
       return await apiClient<{ data: JobPost[] }>('/saved-jobs');
     },
+    enabled: isApprovedWorker,
+    retry: (failureCount, error: any) => error?.status !== 403 && failureCount < 2,
     staleTime: 10 * 1000,
   });
 };

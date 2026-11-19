@@ -187,7 +187,6 @@ export const CompletedJobOverview: React.FC<CompletedJobOverviewProps> = ({
           skills: (counterparty as any)?.skills,
           experiences: (counterparty as any)?.experiences,
           characterReferences: (counterparty as any)?.character_references,
-          phone: (counterparty as any)?.phone,
         });
       }
     } else {

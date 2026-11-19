@@ -23,7 +23,7 @@ import { AuthStackParamList } from '../../navigation/authTypes';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { PrivacyPolicyModal } from '../../components/common/PrivacyPolicyModal';
+import { LegalConsentCheckbox } from '../../components/common/LegalConsentCheckbox';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'RegisterStep2'>;
 type RouteProps = RouteProp<AuthStackParamList, 'RegisterStep2'>;
@@ -41,7 +41,6 @@ const RegisterStep2Screen: React.FC = () => {
   const [birthDateText, setBirthDateText] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [privacyConsent, setPrivacyConsent] = useState(false);
-  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const {
     control,
@@ -113,10 +112,9 @@ const RegisterStep2Screen: React.FC = () => {
     setBanner('');
     if (!privacyConsent) {
       setBanner(
-        t('privacy_consent_required') ||
-          (isTagalog
-            ? 'Kailangang sumang-ayon sa Patakaran sa Privacy upang makagawa ng account.'
-            : 'You must agree to the Privacy Policy to create an account.'),
+        isTagalog
+          ? 'Kailangang sumang-ayon sa Mga Tuntunin at Kundisyon at Patakaran sa Privacy upang makagawa ng account.'
+          : 'You must agree to the Terms & Conditions and Privacy Policy to create an account.',
       );
       return;
     }
@@ -322,30 +320,14 @@ const RegisterStep2Screen: React.FC = () => {
           </View>
         </View>
 
-        {/* Privacy Policy Consent Checkbox */}
-        <View style={styles.consentCard}>
-          <TouchableOpacity
-            style={styles.checkboxTouch}
-            onPress={() => setPrivacyConsent((prev) => !prev)}
-            activeOpacity={0.7}
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: privacyConsent }}
-          >
-            <View style={[styles.checkbox, privacyConsent && styles.checkboxChecked]}>
-              {privacyConsent && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
-            </View>
-          </TouchableOpacity>
-          <View style={styles.consentTextContainer}>
-            <Text style={styles.consentText}>
-              {t('privacy_consent') ||
-                (isTagalog ? 'Nabasa at sumasang-ayon ako sa ' : 'I have read and agree to the ')}
-              <Text style={styles.consentLink} onPress={() => setShowPrivacyModal(true)}>
-                {t('privacy_policy') || (isTagalog ? 'Patakaran sa Privacy' : 'Privacy Policy')}
-              </Text>
-              .
-            </Text>
-          </View>
-        </View>
+        {/* Terms & Privacy Policy Consent Checkbox */}
+        <LegalConsentCheckbox
+          checked={privacyConsent}
+          onChange={(next) => {
+            setPrivacyConsent(next);
+            if (next && banner) setBanner('');
+          }}
+        />
 
         <View style={styles.footer}>
           <Button
@@ -365,14 +347,6 @@ const RegisterStep2Screen: React.FC = () => {
           />
         </View>
       </KeyboardAwareScrollView>
-
-      {/* Scrollable Privacy Policy Pop-up reusing Settings policy */}
-      <PrivacyPolicyModal
-        visible={showPrivacyModal}
-        onClose={() => setShowPrivacyModal(false)}
-        onAccept={() => setPrivacyConsent(true)}
-        showAcceptButton={true}
-      />
     </View>
   );
 };

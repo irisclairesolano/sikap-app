@@ -1508,4 +1508,24 @@ export const tl: Record<TranslationKey, string> = {
   report_details: 'Mga Detalye',
   error: 'May Error',
   conversation_not_found: 'Hindi nahanap ang usapan.',
+
+  // Login Screen
+  login_eyebrow: 'Mag-log in',
+  login_welcome_prefix: 'Maligayang',
+  login_welcome_accent: 'pagbabalik.',
+  login_subtitle: 'Mag-log in upang pamahalaan ang iyong account.',
+  login_email_label: 'Email',
+  login_email_placeholder: 'ikaw@halimbawa.com',
+  login_password_label: 'Password',
+  login_password_placeholder: 'Iyong password',
+  login_forgot_password: 'Nakalimutan ang password?',
+  login_submit_btn: 'Mag-log in',
+  login_submitting_btn: 'Nagla-log in...',
+  login_new_user: 'Bagong user?',
+  login_create_account: 'Gumawa ng account',
+  login_fill_all_fields: 'Pakipunan ang lahat ng field.',
+  login_invalid_credentials: 'Maling email o password.',
+  login_rejected_notice:
+    'Hindi naaprubahan ang dati mong aplikasyon. Mag-log in upang muling mag-upload ng ID.',
+  login_failed: 'Nabigo ang pag-log in',
 };

@@ -24,6 +24,7 @@ import Input from '../../components/common/Input';
 import { skillsApi } from '../../api/skills';
 import { appendFileToFormData } from '../../utils/formData';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getAutocompleteSkills, getRecommendedSkills } from '../../utils/skillRecommendations';
 
 export const RoleOnboardingScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -429,7 +430,89 @@ export const RoleOnboardingScreen: React.FC = () => {
                   <Text style={styles.addButtonText}>{t('onboarding_add_skill_btn')}</Text>
                 </TouchableOpacity>
               </View>
+
+              {customSkill.trim().length > 0 &&
+                (() => {
+                  const trimmedQuery = customSkill.trim();
+                  const selectedSkillObjects = [...skills, ...customSkillsList].filter((s) =>
+                    selectedSkills.includes(s.id),
+                  );
+                  const autocompleteMatches = getAutocompleteSkills(
+                    trimmedQuery,
+                    skills,
+                    selectedSkillObjects,
+                    6,
+                  );
+                  const hasExactMatch = [...skills, ...customSkillsList].some(
+                    (s) => s.name.toLowerCase() === trimmedQuery.toLowerCase(),
+                  );
+
+                  return (
+                    <View style={styles.suggestionsContainer}>
+                      <Text style={styles.suggestionsHeader}>{t('skills_suggested_matches')}</Text>
+                      {autocompleteMatches.length > 0 ? (
+                        <View style={styles.skillsContainer}>
+                          {autocompleteMatches.map((skill) => (
+                            <TouchableOpacity
+                              key={`auto-${skill.id}`}
+                              style={styles.skillChip}
+                              onPress={() => {
+                                handleToggleSkill(skill.id);
+                                setCustomSkill('');
+                                setCustomSkillError('');
+                              }}
+                            >
+                              <Text style={styles.skillText}>+ {skill.name}</Text>
+                              {skill.category ? (
+                                <Text style={styles.suggestionCategory}>{skill.category}</Text>
+                              ) : null}
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      ) : (
+                        <Text style={styles.noMatchText}>
+                          No catalog match for &ldquo;{trimmedQuery}&rdquo;.
+                        </Text>
+                      )}
+                      {!hasExactMatch && (
+                        <TouchableOpacity
+                          style={styles.customFallbackButton}
+                          onPress={handleAddCustomSkill}
+                        >
+                          <Ionicons name="add-circle-outline" size={16} color={colors.primary} />
+                          <Text style={styles.customFallbackText}>
+                            Add &ldquo;{trimmedQuery}&rdquo; as custom skill
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  );
+                })()}
             </View>
+
+            {(() => {
+              const selectedSkillObjects = [...skills, ...customSkillsList].filter((s) =>
+                selectedSkills.includes(s.id),
+              );
+              const recommended = getRecommendedSkills(skills, selectedSkillObjects, 6);
+              if (recommended.length === 0) return null;
+              return (
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={styles.sectionHeader}>Recommended for you</Text>
+                  <View style={styles.skillsContainer}>
+                    {recommended.map((skill) => (
+                      <TouchableOpacity
+                        key={`rec-${skill.id}`}
+                        style={[styles.skillChip, styles.recommendedChip]}
+                        onPress={() => handleToggleSkill(skill.id)}
+                      >
+                        <Text style={styles.skillText}>+ {skill.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              );
+            })()}
 
             <View style={styles.skillsContainer}>
               {[...skills, ...customSkillsList]
@@ -652,6 +735,52 @@ const styles = StyleSheet.create({
     color: colors.ink,
     textAlign: 'center',
     paddingHorizontal: 32,
+  },
+  suggestionsContainer: {
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: colors.paperBright,
+    borderWidth: 1,
+    borderColor: colors.inkFaint,
+  },
+  suggestionsHeader: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: colors.inkMuted,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  suggestionCategory: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.inkMuted,
+    marginTop: 2,
+  },
+  noMatchText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkMuted,
+    marginBottom: 8,
+  },
+  customFallbackButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.inkFaint,
+  },
+  customFallbackText: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 13,
+    color: colors.primary,
+  },
+  recommendedChip: {
+    borderStyle: 'dashed',
+    borderColor: colors.primary,
   },
 });
 

@@ -10,6 +10,8 @@ import Button from '../../components/common/Button';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from '../../utils/storage';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TermsOfServiceModal } from '../../components/common/TermsOfServiceModal';
+import { PrivacyPolicyModal } from '../../components/common/PrivacyPolicyModal';
 
 type WelcomeScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Welcome'>;
 
@@ -18,13 +20,18 @@ const WelcomeScreen: React.FC = () => {
   const { language, setLanguage } = useLanguage();
   const isTagalog = language === 'tl';
 
+  const [pendingRole, setPendingRole] = React.useState<'worker' | 'employer' | null>(null);
+  const [showTermsModal, setShowTermsModal] = React.useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = React.useState(false);
+
   React.useEffect(() => {
     // Proactively clear any stale user profile cache when landing on welcome
     SecureStore.deleteItemAsync('user_profile').catch(() => {});
   }, []);
 
   const navigateToRegister = (role: 'worker' | 'employer') => {
-    navigation.navigate('Register', { role });
+    setPendingRole(role);
+    setShowTermsModal(true);
   };
 
   return (
@@ -133,8 +140,46 @@ const WelcomeScreen: React.FC = () => {
               {isTagalog ? 'Mag-log in' : 'Log in'}
             </Text>
           </View>
+
+          <View style={styles.legalRow}>
+            <TouchableOpacity
+              onPress={() => {
+                setPendingRole(null);
+                setShowTermsModal(true);
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.legalLink}>
+                {isTagalog ? 'Mga Tuntunin at Kundisyon' : 'Terms & Conditions'}
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.legalSeparator}>•</Text>
+            <TouchableOpacity onPress={() => setShowPrivacyModal(true)} activeOpacity={0.7}>
+              <Text style={styles.legalLink}>
+                {isTagalog ? 'Patakaran sa Privacy' : 'Privacy Policy'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
+
+      <TermsOfServiceModal
+        visible={showTermsModal}
+        onClose={() => {
+          setShowTermsModal(false);
+          setPendingRole(null);
+        }}
+        showAcceptButton={pendingRole !== null}
+        onAccept={() => {
+          if (pendingRole) {
+            const roleToNavigate = pendingRole;
+            setPendingRole(null);
+            navigation.navigate('Register', { role: roleToNavigate });
+          }
+        }}
+      />
+
+      <PrivacyPolicyModal visible={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
     </SafeAreaView>
   );
 };
@@ -302,6 +347,24 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 14,
     color: colors.primary,
+  },
+  legalRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 14,
+  },
+  legalLink: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 12,
+    color: colors.inkMuted,
+    textDecorationLine: 'underline',
+  },
+  legalSeparator: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkFaint,
   },
 });
 
