@@ -12,6 +12,9 @@
 - **Dual-Role Accounts & Progressive Data Disclosure**:
   - Users can switch between **Worker** and **Employer** personas with role-isolated reputation scores and 4-stage hiring/contact disclosure (`pending` -> `pending_negotiation` -> `employer_confirmed` -> `accepted` -> `completed`).
   - Supports bilingual English and Tagalog UI (`src/locales/en.ts`, `src/locales/tl.ts`), in-app negotiation action cards, and real-time Gemini chat translation.
+- **Schedule-Conflict Protection & Tiered Job Completion**:
+  - **Single-Active-Hired-Job Guard**: Workers are prevented from applying to or accepting a job whose scheduled date range (`schedule_date` to `expected_end_date`) overlaps with an already-accepted active job (`422 schedule_conflict`). Completing a multi-day job early immediately frees up the remaining calendar dates.
+  - **Tiered Completion & Early Multi-Day Auditing** (`MarkCompleteScreen` & `ActionCard`): Jobs cannot be marked complete before their scheduled start date (`job_not_started`; employers are directed to use *Cancel Hire* instead). When an employer ends a multi-day job before its scheduled end date, they must select an explicit early-completion reason (`finished_early`, `mutual_agreement`, or `terminated`) and may attach an optional note, which is recorded in the backend `ActivityLog`.
 - **4-Category Post-Job Reviews & Bayesian Reputation**:
   - Within a **7-day rating window** after completion, parties submit 4 role-specific 1–5 star ratings plus required written feedback:
     - **Employer → Worker** (`RateWorkerScreen`): *Quality of work*, *Punctuality*, *Communication*, *Behavior*.
