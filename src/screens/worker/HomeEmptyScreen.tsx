@@ -96,7 +96,7 @@ export const HomeEmptyScreen: React.FC = () => {
           <TouchableOpacity
             style={styles.appBarLeft}
             activeOpacity={0.7}
-            onPress={() => (navigation as any).navigate('Profile')}
+            onPress={() => (navigation as any).navigate('Me')}
           >
             <View style={styles.avatar}>
               {user?.avatar_url ? (

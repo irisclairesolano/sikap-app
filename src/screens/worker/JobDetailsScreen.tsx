@@ -64,7 +64,7 @@ export const JobDetailsScreen: React.FC = () => {
   const { t } = useLanguage();
   const route = useRoute<JobDetailsRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkerStackParamList>>();
-  const id = Number(route.params.id);
+  const id = Number(route.params?.id ?? (route.params as any)?.jobId);
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const handleGoBack = useCallback(() => {

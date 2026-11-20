@@ -412,7 +412,7 @@ export const EmployerPublicProfileScreen: React.FC = () => {
                   <TouchableOpacity
                     key={job.id}
                     activeOpacity={0.7}
-                    onPress={() => navigation.navigate('JobDetails' as any, { jobId: job.id })}
+                    onPress={() => navigation.navigate('JobDetails', { id: job.id })}
                   >
                     {rowContent}
                   </TouchableOpacity>

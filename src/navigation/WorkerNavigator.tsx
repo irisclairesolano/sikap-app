@@ -253,7 +253,7 @@ const FindStack: React.FC = () => {
       <Stack.Screen name="Apply" component={ApplyScreen} />
       <Stack.Screen name="ApplicationDetail" component={ApplicationDetailScreen} />
       <Stack.Screen name="AcceptHire" component={AcceptHireScreen} />
-      <Stack.Screen name="HireReceipt" component={HireReceiptScreen} />
+      <Stack.Screen name="HireReceipt" component={ApplicationDetailScreen} />
       <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
       <Stack.Screen name="Report" component={ReportScreen} />
       <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
@@ -273,7 +273,7 @@ const ApplicationsStack: React.FC = () => (
     <Stack.Screen name="Applications" component={MyApplicationsScreen} />
     <Stack.Screen name="ApplicationDetail" component={ApplicationDetailScreen} />
     <Stack.Screen name="AcceptHire" component={AcceptHireScreen} />
-    <Stack.Screen name="HireReceipt" component={HireReceiptScreen} />
+    <Stack.Screen name="HireReceipt" component={ApplicationDetailScreen} />
     <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
@@ -292,7 +292,7 @@ const NotificationsStack: React.FC = () => (
     <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
     <Stack.Screen name="Apply" component={ApplyScreen} />
     <Stack.Screen name="AcceptHire" component={AcceptHireScreen} />
-    <Stack.Screen name="HireReceipt" component={HireReceiptScreen} />
+    <Stack.Screen name="HireReceipt" component={ApplicationDetailScreen} />
     <Stack.Screen name="RateEmployer" component={RateEmployerScreen} />
     <Stack.Screen name="Report" component={ReportScreen} />
     <Stack.Screen name="EmployerPublicProfile" component={EmployerPublicProfileScreen} />
@@ -315,7 +315,7 @@ const ProfileStack: React.FC = () => (
     <Stack.Screen name="SupportTickets" component={SupportTicketsScreen} />
     <Stack.Screen name="MyReports" component={MyReportsScreen} />
     <Stack.Screen name="Reviews" component={ReviewsScreen} />
-    <Stack.Screen name="WorkHistory" component={WorkHistoryScreen} />
+    <Stack.Screen name="WorkHistory" component={AddWorkHistoryScreen} />
     <Stack.Screen name="AddSkills" component={AddSkillsScreen} />
     <Stack.Screen name="AddWorkHistory" component={AddWorkHistoryScreen} />
     <Stack.Screen name="CharacterReferences" component={AddCharacterReferencesScreen} />
