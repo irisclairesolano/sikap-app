@@ -24,6 +24,8 @@ import { useMessages } from '../../hooks/useMessages';
 import { triggerHaptic } from '../../utils/haptics';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { safeGoBack } from '../../utils/navigation';
+import { useJob } from '../../hooks/useJob';
+import { evaluateDoleOffer } from '../../utils/doleWage';
 
 type ConfirmHireScreenRouteProp = RouteProp<EmployerStackParamList, 'ConfirmHire'>;
 type ConfirmHireScreenNavigationProp = NativeStackNavigationProp<
@@ -63,6 +65,12 @@ const ConfirmHireScreen: React.FC = () => {
   );
 
   const [price, setPrice] = useState<string>('');
+  const { data: jobData } = useJob(jobId || 0);
+  const doleEval = evaluateDoleOffer({
+    amount: price,
+    duration: jobData?.duration,
+    durationUnit: jobData?.duration_unit,
+  });
   const confirmHireMutation = useConfirmHire();
   const { showAlert } = useAlert();
 
@@ -292,7 +300,7 @@ const ConfirmHireScreen: React.FC = () => {
                 DOLE Region V: ₱455/day
               </Text>
             </View>
-            {parseFloat(price) > 0 && parseFloat(price) < 455 ? (
+            {doleEval.valid && !doleEval.meetsBaseline ? (
               <View
                 style={{
                   flexDirection: 'row',
@@ -309,7 +317,10 @@ const ConfirmHireScreen: React.FC = () => {
                 <Ionicons name="warning-outline" size={14} color="#B45309" />
                 <Text style={{ flex: 1, fontFamily: fonts.body, fontSize: 11, color: '#92400E' }}>
                   {t('dole_wage_offer_below_warning', {
-                    amount: parseFloat(price).toLocaleString(),
+                    amount:
+                      doleEval.workdays > 1
+                        ? `${doleEval.amount.toLocaleString()} (≈ ₱${doleEval.dailyEquivalent.toLocaleString()}/day)`
+                        : doleEval.amount.toLocaleString(),
                   })}
                 </Text>
               </View>

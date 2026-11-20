@@ -1,12 +1,12 @@
 describe('Shortlist, Social Platforms, and Worker Stat Card Test Suite', () => {
-  it('renders shortlist button label as "Shortlist applicant" without question mark', () => {
+  it('renders shortlist button label as "Shortlist applicant" without question mark and accurate Stage 2 disclosure hint', () => {
     const buttonLabel = 'Shortlist applicant';
     const disclaimer =
-      'Shortlisting allows you to view contact info, negotiate details, and confirm the hire.';
+      'Shortlisting unlocks character references, opens negotiation chat, and lets you confirm the hire.';
 
     expect(buttonLabel).toBe('Shortlist applicant');
     expect(buttonLabel).not.toContain('?');
-    expect(disclaimer).toContain('Shortlisting allows you to view contact info');
+    expect(disclaimer).toContain('Shortlisting unlocks character references');
   });
 
   it('hides off-app negotiation social links for pending applicants and reveals post-shortlist', () => {

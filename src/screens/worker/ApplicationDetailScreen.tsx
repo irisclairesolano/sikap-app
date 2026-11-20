@@ -695,10 +695,6 @@ const ApplicationDetailScreen: React.FC = () => {
               </View>
               <View style={styles.minimalistChipsRow}>
                 <View style={styles.minimalistChip}>
-                  <Ionicons name="call-outline" size={13} color={colors.primaryDark} />
-                  <Text style={styles.minimalistChipText}>{t('hiring_mobile_number_chip')}</Text>
-                </View>
-                <View style={styles.minimalistChip}>
                   <Ionicons name="people-outline" size={13} color={colors.primaryDark} />
                   <Text style={styles.minimalistChipText}>
                     {t('hiring_character_references_chip')}
@@ -706,7 +702,7 @@ const ApplicationDetailScreen: React.FC = () => {
                 </View>
               </View>
               <Text style={styles.minimalistSharedFootnote}>
-                {t('hiring_chat_advice_footnote')}
+                {t('hiring_stage2_phone_protected_note')} {t('hiring_chat_advice_footnote')}
               </Text>
             </View>
           </View>
@@ -779,6 +775,33 @@ const ApplicationDetailScreen: React.FC = () => {
                 ₱{compensation ? Number(compensation).toLocaleString() : '0'}
               </Text>
               <Text style={styles.priceDesc}>Agreed price locked.</Text>
+            </View>
+
+            <View style={styles.minimalistSharedBox}>
+              <View style={styles.minimalistSharedHeader}>
+                <Ionicons name="eye-outline" size={16} color={colors.primary} />
+                <Text style={styles.minimalistSharedTitle}>
+                  {t('hiring_stage4_contact_disclosed_title')}
+                </Text>
+              </View>
+              <View style={styles.minimalistChipsRow}>
+                <View style={styles.minimalistChip}>
+                  <Ionicons name="call-outline" size={13} color={colors.primaryDark} />
+                  <Text style={styles.minimalistChipText}>{t('hiring_mobile_number_chip')}</Text>
+                </View>
+                <View style={styles.minimalistChip}>
+                  <Ionicons name="medkit-outline" size={13} color={colors.primaryDark} />
+                  <Text style={styles.minimalistChipText}>
+                    {t('hiring_emergency_contact_chip')}
+                  </Text>
+                </View>
+                <View style={styles.minimalistChip}>
+                  <Ionicons name="people-outline" size={13} color={colors.primaryDark} />
+                  <Text style={styles.minimalistChipText}>
+                    {t('hiring_character_references_chip')}
+                  </Text>
+                </View>
+              </View>
             </View>
 
             <View style={[styles.mintNotice, styles.mintNoticeEmerald]}>

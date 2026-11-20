@@ -226,4 +226,44 @@ describe('ActionCard DOLE Region V Wage Guidance', () => {
       ),
     ).toBeTruthy();
   });
+
+  it('flags multi-day total offers whose daily equivalent is below ₱455/day (Audit S-05: ₱1,200 over 3 days = ₱400/day)', async () => {
+    const multiDayOfferMessage: Message = {
+      id: 107,
+      conversation_id: 5,
+      sender_id: 1,
+      message_type: 'action_card',
+      card_type: 'accept_or_reject',
+      card_data: {
+        application_id: 42,
+        price: 1200,
+        final_agreed_price: 1200,
+        duration: 3,
+        duration_unit: 'Days',
+      },
+      card_resolved: false,
+      created_at: '2026-09-24T00:00:00.000Z',
+    };
+
+    const { getByText, queryByText } = await render(
+      <ActionCard
+        message={multiDayOfferMessage}
+        currentUserId={2}
+        currentUserRole="worker"
+        conversationId={5}
+        conversationStatus="open"
+        applicationStatus="employer_confirmed"
+        onActionComplete={jest.fn()}
+      />,
+    );
+
+    expect(getByText('Job Offer Received')).toBeTruthy();
+    expect(getByText('₱1,200.00')).toBeTruthy();
+    expect(queryByText('Meets DOLE Region V daily minimum wage baseline (₱455/day)')).toBeNull();
+    expect(
+      getByText(
+        'ℹ ₱1,200.00 (≈ ₱400/day) is below the full-day DOLE baseline (₱455/day). Verify this matches your agreed working hours or task scope.',
+      ),
+    ).toBeTruthy();
+  });
 });

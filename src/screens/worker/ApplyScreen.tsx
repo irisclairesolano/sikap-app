@@ -29,6 +29,7 @@ import { messagesApi } from '../../api/messages';
 import { triggerHaptic } from '../../utils/haptics';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { safeGoBack } from '../../utils/navigation';
+import { getRateUnitLabel } from '../../utils/rateUnit';
 
 type ApplyRouteProp = RouteProp<WorkerStackParamList, 'Apply'>;
 
@@ -747,9 +748,7 @@ export const ApplyScreen: React.FC = () => {
             </View>
             <View style={styles.summaryWageBox}>
               <Text style={styles.summaryWage}>₱{job.compensation}</Text>
-              <Text style={styles.summaryDuration}>
-                {job.duration_type === 'daily' ? t('per_day') : t('fixed_per_project')}
-              </Text>
+              <Text style={styles.summaryDuration}>{getRateUnitLabel(job, t)}</Text>
             </View>
           </View>
 
@@ -776,10 +775,7 @@ export const ApplyScreen: React.FC = () => {
               color={colors.mintDeep}
               style={styles.reassuranceIcon}
             />
-            <Text style={styles.reassuranceText}>
-              Your public profile is shared with the employer. Your phone number and character
-              references stay private until they shortlist you.
-            </Text>
+            <Text style={styles.reassuranceText}>{t('apply_privacy_reassurance')}</Text>
           </View>
         </ScrollView>
 

@@ -740,20 +740,26 @@ export const en = {
   hiring_privacy_shield_public_only: 'Only public info is visible',
   hiring_shortlist_action: 'Shortlist',
   hiring_shortlist_footer_hint:
-    'Shortlisting allows you to view contact info, negotiate details, and confirm the hire.',
+    'Shortlisting unlocks character references, opens negotiation chat, and lets you confirm the hire.',
   hiring_shortlist_prompt:
     'Are you sure you want to shortlist {applicantName} for the position of {jobTitle}?',
   hiring_shortlist_info:
-    "Shortlisting moves this applicant to the negotiation stage. The applicant's contact details and character references will be unlocked so you can verify their background and chat to agree on terms before confirming the hire.",
+    "Shortlisting moves this applicant to the negotiation stage. The applicant's character references will be unlocked so you can verify their background and chat to agree on terms. Direct phone and emergency contact details remain protected until the worker accepts your hire offer.",
   hiring_shortlist_success_msg:
-    'You have shortlisted {applicantName}. Their contact details and character references are now visible to you.',
+    'You have shortlisted {applicantName}. Their character references and negotiation chat are now available to you.',
+  apply_privacy_reassurance:
+    'Your public profile is shared with the employer. Character references unlock if they shortlist you; your phone number and emergency contact stay private until you accept a hire offer.',
 
   // Stage 2
   hiring_stage2_wants_to_talk: '{employerName} wants to talk.',
   hiring_stage2_shortlisted_desc:
     "You've been shortlisted for {jobTitle}. They may reach out to discuss the work and price.",
-  hiring_contact_disclosed_title: 'Contact & references shared with employer',
+  hiring_contact_disclosed_title: 'Character references shared with employer',
+  hiring_stage2_phone_protected_note:
+    'Your phone number and emergency contact stay private until you accept a formal hire offer.',
+  hiring_stage4_contact_disclosed_title: 'Direct contact & emergency details shared with employer',
   hiring_mobile_number_chip: 'Mobile number',
+  hiring_emergency_contact_chip: 'Emergency contact',
   hiring_character_references_chip: 'Character references',
   hiring_chat_advice_footnote:
     'You can message each other in chat to discuss work schedule, requirements, and agree on a price.',

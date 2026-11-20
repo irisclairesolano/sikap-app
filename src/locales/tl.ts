@@ -764,20 +764,26 @@ export const tl: Record<TranslationKey, string> = {
   hiring_privacy_shield_public_only: 'Pampublikong impormasyon lang ang makikita.',
   hiring_shortlist_action: 'Piliin',
   hiring_shortlist_footer_hint:
-    'Kapag napili mo ang aplikante, makikita mo na ang kanyang contact details. Maaari na rin kayong mag-usap tungkol sa trabaho at mapagkasunduan ang bayad.',
+    'Kapag napili mo ang aplikante, makikita mo na ang kanyang mga character reference at maaari na kayong mag-usap tungkol sa trabaho at bayad.',
   hiring_shortlist_prompt: 'Gusto mo bang piliin si {applicantName} para sa trabahong {jobTitle}?',
   hiring_shortlist_info:
-    'Kapag pinili mo ang aplikanteng ito, maaari na kayong mag-usap tungkol sa trabaho. Makikita mo na rin ang kanyang contact details at mga taong maaaring magbigay ng rekomendasyon tungkol sa kanya. Makakatulong ito para mas makilala mo ang aplikante bago kayo magkasundo sa trabaho.',
+    'Kapag pinili mo ang aplikanteng ito, maaari na kayong mag-chat tungkol sa trabaho at makikita mo na ang kanyang mga character reference. Ang kanyang numero ng telepono at emergency contact ay mabubuksan lamang kapag tinanggap na niya ang iyong opisyal na alok.',
   hiring_shortlist_success_msg:
-    'Napili mo na si {applicantName}! Makikita mo na ngayon ang kanyang contact details at mga taong maaaring magbigay ng rekomendasyon tungkol sa kanya.',
+    'Napili mo na si {applicantName}! Makikita mo na ngayon ang kanyang mga character reference at maaari na kayong mag-chat.',
+  apply_privacy_reassurance:
+    'Makikita ng employer ang iyong pampublikong profile. Mabubuksan ang iyong mga character reference kapag pinili (shortlist) ka; mananatiling pribado ang iyong numero ng telepono at emergency contact hanggang sa tanggapin mo ang alok ng trabaho.',
 
   // Stage 2
   hiring_stage2_wants_to_talk: 'Gustong makipag-usap sa iyo ni {employerName}.',
   hiring_stage2_shortlisted_desc:
     'Napili ka para sa trabahong {jobTitle}. Maaaring kontakin ka ng employer para pag-usapan ang trabaho at bayad.',
-  hiring_contact_disclosed_title:
-    'Naibahagi na sa employer ang iyong contact details at mga character reference.',
+  hiring_contact_disclosed_title: 'Naibahagi na sa employer ang iyong mga character reference.',
+  hiring_stage2_phone_protected_note:
+    'Mananatiling pribado ang iyong numero ng telepono at emergency contact hanggang sa tanggapin mo ang opisyal na alok.',
+  hiring_stage4_contact_disclosed_title:
+    'Naibahagi na sa employer ang iyong numero ng telepono at emergency contact.',
   hiring_mobile_number_chip: 'Numero ng cellphone',
+  hiring_emergency_contact_chip: 'Emergency contact',
   hiring_character_references_chip: 'Mga character reference',
   hiring_chat_advice_footnote:
     'Maaari kayong mag-chat para pag-usapan ang oras ng trabaho, mga kailangan, at ang bayad.',

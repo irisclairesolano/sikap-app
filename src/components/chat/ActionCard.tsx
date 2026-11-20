@@ -21,9 +21,9 @@ import { useConfirmHire } from '../../hooks/useJobApplications';
 import { EarlyCompletionReason, useMarkJobComplete } from '../../hooks/useJobs';
 import { useAcceptOffer, useRejectOffer, useFlagOffline } from '../../hooks/useApply';
 import { triggerHaptic } from '../../utils/haptics';
+import { DOLE_DAILY_MINIMUM, DOLE_HOURLY_MINIMUM, evaluateDoleOffer } from '../../utils/doleWage';
 
-export const DOLE_DAILY_MINIMUM = 455;
-export const DOLE_HOURLY_MINIMUM = 56.88;
+export { DOLE_DAILY_MINIMUM, DOLE_HOURLY_MINIMUM };
 
 interface ActionCardProps {
   message: Message;
@@ -151,6 +151,23 @@ const ActionCard: React.FC<ActionCardProps> = ({
     jobRateUnit ??
     (card_data?.rate_unit as string | undefined) ??
     (applicationObj?.job?.rate_unit as string | undefined);
+  const effectiveJobDuration =
+    (card_data?.duration as number | string | undefined) ??
+    (applicationObj?.job?.duration as number | string | undefined);
+  const effectiveJobDurationUnit =
+    (card_data?.duration_unit as string | undefined) ??
+    (applicationObj?.job?.duration_unit as string | undefined);
+
+  const inputDoleEval = evaluateDoleOffer({
+    amount: priceInput,
+    duration: effectiveJobDuration,
+    durationUnit: effectiveJobDurationUnit,
+  });
+  const offerDoleEval = evaluateDoleOffer({
+    amount: effectivePrice,
+    duration: effectiveJobDuration,
+    durationUnit: effectiveJobDurationUnit,
+  });
 
   const applyOptimisticCardUpdate = (patch: {
     cardResolved?: boolean;
@@ -504,7 +521,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
                     </View>
                     <View style={styles.stepContent}>
                       <Text style={styles.stepTitle}>{t('guide_worker_step2_title')}</Text>
-                      <Text style={styles.stepDesc}>{t('guide_worker_step2_desc')}</Text>
+                      <Text style={styles.stepDesc}>
+                        {t('guide_worker_step2_desc', {
+                          employerName: employerName || 'the employer',
+                        })}
+                      </Text>
                     </View>
                   </View>
 
@@ -818,16 +839,19 @@ const ActionCard: React.FC<ActionCardProps> = ({
                 </View>
 
                 {/* Real-time Sanity / DOLE benchmark warning / validation */}
-                {parseFloat(priceInput) > 0 && parseFloat(priceInput) < 455 ? (
+                {inputDoleEval.valid && !inputDoleEval.meetsBaseline ? (
                   <View style={styles.doleInputWarningBox} testID="dole-input-warning-box">
                     <Ionicons name="warning-outline" size={14} color="#B45309" />
                     <Text style={styles.doleInputWarningText}>
                       {t('dole_wage_offer_below_warning', {
-                        amount: parseFloat(priceInput).toLocaleString(),
+                        amount:
+                          inputDoleEval.workdays > 1
+                            ? `${inputDoleEval.amount.toLocaleString()} (≈ ₱${inputDoleEval.dailyEquivalent.toLocaleString()}/day)`
+                            : inputDoleEval.amount.toLocaleString(),
                       })}
                     </Text>
                   </View>
-                ) : parseFloat(priceInput) >= 455 ? (
+                ) : inputDoleEval.valid && inputDoleEval.meetsBaseline ? (
                   <View style={styles.doleInputSuccessBox} testID="dole-input-success-box">
                     <Ionicons name="checkmark-circle" size={14} color="#047857" />
                     <Text style={styles.doleInputSuccessText}>
@@ -947,22 +971,30 @@ const ActionCard: React.FC<ActionCardProps> = ({
           </View>
 
           {/* DOLE Region V Benchmark Comparison for Sent Offer */}
-          {effectivePrice != null && Number(effectivePrice) >= 455 ? (
+          {offerDoleEval.valid && offerDoleEval.meetsBaseline ? (
             <View style={styles.doleOfferBadgeSuccess}>
               <Ionicons name="checkmark-circle" size={13} color="#047857" />
               <Text style={styles.doleOfferBadgeSuccessText}>
                 {t('dole_wage_offer_meets_badge')}
               </Text>
             </View>
-          ) : effectivePrice != null && Number(effectivePrice) < 455 ? (
+          ) : offerDoleEval.valid && !offerDoleEval.meetsBaseline ? (
             <View style={styles.doleOfferBadgeNotice}>
               <Ionicons name="information-circle" size={13} color="#B45309" />
               <Text style={styles.doleOfferBadgeNoticeText}>
                 {t('dole_wage_offer_below_notice', {
-                  amount: Number(effectivePrice).toLocaleString('en-PH', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  }),
+                  amount:
+                    offerDoleEval.workdays > 1
+                      ? `${Number(effectivePrice).toLocaleString('en-PH', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })} (≈ ₱${offerDoleEval.dailyEquivalent.toLocaleString('en-PH', {
+                          maximumFractionDigits: 2,
+                        })}/day)`
+                      : Number(effectivePrice).toLocaleString('en-PH', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }),
                 })}
               </Text>
             </View>
@@ -1071,20 +1103,28 @@ const ActionCard: React.FC<ActionCardProps> = ({
         </View>
 
         {/* DOLE Region V Benchmark Comparison for Received Offer */}
-        {effectivePrice != null && Number(effectivePrice) >= 455 ? (
+        {offerDoleEval.valid && offerDoleEval.meetsBaseline ? (
           <View style={styles.doleOfferBadgeSuccess}>
             <Ionicons name="checkmark-circle" size={13} color="#047857" />
             <Text style={styles.doleOfferBadgeSuccessText}>{t('dole_wage_offer_meets_badge')}</Text>
           </View>
-        ) : effectivePrice != null && Number(effectivePrice) < 455 ? (
+        ) : offerDoleEval.valid && !offerDoleEval.meetsBaseline ? (
           <View style={styles.doleOfferBadgeNotice}>
             <Ionicons name="information-circle" size={13} color="#B45309" />
             <Text style={styles.doleOfferBadgeNoticeText}>
               {t('dole_wage_offer_below_notice', {
-                amount: Number(effectivePrice).toLocaleString('en-PH', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }),
+                amount:
+                  offerDoleEval.workdays > 1
+                    ? `${Number(effectivePrice).toLocaleString('en-PH', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })} (≈ ₱${offerDoleEval.dailyEquivalent.toLocaleString('en-PH', {
+                        maximumFractionDigits: 2,
+                      })}/day)`
+                    : Number(effectivePrice).toLocaleString('en-PH', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }),
               })}
             </Text>
           </View>
