@@ -274,7 +274,7 @@ describe('OnboardingTutorial', () => {
     expect(getByTestId('tutorial-step-title').props.children).toBe('Subaybayan ang Aplikasyon');
   }, 30000);
 
-  it('scopes language preference per user account and resets to English when switching to another account', async () => {
+  it('persists app-wide language preference across account switches', async () => {
     let api: any;
 
     await storage.setItemAsync('auth_token', 'token-101');
@@ -292,7 +292,7 @@ describe('OnboardingTutorial', () => {
       </LanguageProvider>,
     );
 
-    // Account A selects Filipino ('tl')
+    // User selects Filipino ('tl')
     await act(async () => {
       await api.setLanguage('tl');
     });
@@ -301,37 +301,22 @@ describe('OnboardingTutorial', () => {
     expect(api.t('my_profile')).toBe('Profile Ko');
     expect(await storage.getItemAsync(getLanguageStorageKey(101))).toBe('tl');
 
-    // Account A logs out -> language resets to English
+    // Preference persists across logout and switching accounts
     await act(async () => {
       await storage.deleteItemAsync('auth_token');
       await storage.deleteItemAsync('user_profile');
       notifyAuthChanged();
     });
 
-    expect(api.language).toBe('en');
-    expect(api.t('my_profile')).toBe('My Profile');
-
-    // Account B (id: 202) logs in with no saved language -> stays English
-    await act(async () => {
-      await storage.setItemAsync('auth_token', 'token-202');
-      await storage.setItemAsync(
-        'user_profile',
-        JSON.stringify({ id: 202, name: 'Maria Employer' }),
-      );
-      notifyAuthChanged();
-    });
-
-    expect(api.language).toBe('en');
-    expect(api.t('my_profile')).toBe('My Profile');
-
-    // Account A (id: 101) logs back in -> restores Filipino ('tl') automatically
-    await act(async () => {
-      await storage.setItemAsync('auth_token', 'token-101');
-      await storage.setItemAsync('user_profile', JSON.stringify({ id: 101, name: 'Juan Worker' }));
-      notifyAuthChanged();
-    });
-
     expect(api.language).toBe('tl');
     expect(api.t('my_profile')).toBe('Profile Ko');
+
+    // Switching back to English updates preference
+    await act(async () => {
+      await api.setLanguage('en');
+    });
+
+    expect(api.language).toBe('en');
+    expect(api.t('my_profile')).toBe('My Profile');
   }, 30000);
 });

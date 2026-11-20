@@ -36,16 +36,18 @@ describe('WelcomeScreen', () => {
     expect(getByText('Log in')).toBeTruthy();
   });
 
-  it('navigates to Register with worker role when Worker button is pressed', async () => {
-    const { getByText } = await render(<WelcomeScreen />);
-    fireEvent.press(getByText("I'm a Worker"));
+  it('navigates to Register with worker role after accepting Terms when Worker button is pressed', async () => {
+    const { getByText, findByText } = await render(<WelcomeScreen />);
+    await fireEvent.press(getByText("I'm a Worker"));
+    await fireEvent.press(await findByText('I Agree & Continue'));
 
     expect(mockNavigate).toHaveBeenCalledWith('Register', { role: 'worker' });
   });
 
-  it('navigates to Register with employer role when Employer button is pressed', async () => {
-    const { getByText } = await render(<WelcomeScreen />);
-    fireEvent.press(getByText("I'm an Employer"));
+  it('navigates to Register with employer role after accepting Terms when Employer button is pressed', async () => {
+    const { getByText, findByText } = await render(<WelcomeScreen />);
+    await fireEvent.press(getByText("I'm an Employer"));
+    await fireEvent.press(await findByText('I Agree & Continue'));
 
     expect(mockNavigate).toHaveBeenCalledWith('Register', { role: 'employer' });
   });

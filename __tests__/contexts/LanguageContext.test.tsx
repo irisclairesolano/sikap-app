@@ -45,7 +45,7 @@ describe('LanguageContext cross-account isolation and persistence', () => {
     jest.clearAllMocks();
   });
 
-  it('scopes language preference per user account and resets to English when switching to an account without saved preference', async () => {
+  it('persists app-wide language preference under STORAGE_KEY across auth changes', async () => {
     // 1. Account A (id: 101) is logged in
     mockStore.set('auth_token', 'token-101');
     mockStore.set('user_profile', JSON.stringify({ id: 101, name: 'Juan Worker' }));
@@ -67,17 +67,17 @@ describe('LanguageContext cross-account isolation and persistence', () => {
 
     expect(getByTestId('active-lang').props.children).toBe('en');
 
-    // 2. Account A switches to Filipino ('tl')
+    // 2. User switches to Filipino ('tl')
     await act(async () => {
       await latestApi!.setLanguage('tl');
     });
 
     expect(getByTestId('active-lang').props.children).toBe('tl');
     expect(getByTestId('sample-translation').props.children).toBe('Profile Ko');
-    expect(mockStore.get(getLanguageStorageKey(101))).toBe('tl');
-    expect(mockStore.has(STORAGE_KEY)).toBe(false);
+    expect(mockStore.get(STORAGE_KEY)).toBe('tl');
+    expect(getLanguageStorageKey(101)).toBe(STORAGE_KEY);
 
-    // 3. Account A logs out
+    // 3. Language preference persists across logout and login
     await act(async () => {
       await storage.deleteItemAsync('auth_token');
       await storage.deleteItemAsync('user_profile');
@@ -85,32 +85,16 @@ describe('LanguageContext cross-account isolation and persistence', () => {
       await Promise.resolve();
     });
 
-    expect(getByTestId('active-lang').props.children).toBe('en');
-    expect(getByTestId('sample-translation').props.children).toBe('My Profile');
-
-    // 4. Account B (id: 202) logs in for the first time (no language preference set)
-    await act(async () => {
-      await storage.setItemAsync('auth_token', 'token-202');
-      await storage.setItemAsync(
-        'user_profile',
-        JSON.stringify({ id: 202, name: 'Maria Employer' }),
-      );
-      notifyAuthChanged();
-      await Promise.resolve();
-    });
-
-    expect(getByTestId('active-lang').props.children).toBe('en');
-    expect(getByTestId('sample-translation').props.children).toBe('My Profile');
-
-    // 5. Account B logs out and Account A (id: 101) logs back in -> Filipino ('tl') is restored automatically
-    await act(async () => {
-      await storage.setItemAsync('auth_token', 'token-101');
-      await storage.setItemAsync('user_profile', JSON.stringify({ id: 101, name: 'Juan Worker' }));
-      notifyAuthChanged();
-      await Promise.resolve();
-    });
-
     expect(getByTestId('active-lang').props.children).toBe('tl');
     expect(getByTestId('sample-translation').props.children).toBe('Profile Ko');
+
+    // 4. Switching back to English updates STORAGE_KEY
+    await act(async () => {
+      await latestApi!.setLanguage('en');
+    });
+
+    expect(getByTestId('active-lang').props.children).toBe('en');
+    expect(getByTestId('sample-translation').props.children).toBe('My Profile');
+    expect(mockStore.get(STORAGE_KEY)).toBe('en');
   });
 });

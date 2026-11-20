@@ -110,6 +110,7 @@ describe('LoginScreen', () => {
 
     await fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
     await fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
+    await fireEvent.press(getByRole('checkbox'));
     await fireEvent.press(getByRole('button', { name: 'Sign in' }));
 
     await waitFor(() => {
@@ -135,6 +136,7 @@ describe('LoginScreen', () => {
 
     await fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
     await fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
+    await fireEvent.press(getByRole('checkbox'));
     await fireEvent.press(getByRole('button', { name: 'Sign in' }));
 
     await waitFor(() => {
@@ -163,6 +165,7 @@ describe('LoginScreen', () => {
 
     await fireEvent.changeText(getByPlaceholderText('you@example.com'), 'verify@example.com');
     await fireEvent.changeText(getByPlaceholderText('Your password'), 'password123');
+    await fireEvent.press(getByRole('checkbox'));
     await fireEvent.press(getByRole('button', { name: 'Sign in' }));
 
     await waitFor(() => {
