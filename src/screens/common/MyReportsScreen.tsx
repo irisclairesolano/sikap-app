@@ -28,15 +28,25 @@ const formatReportDate = (dateStr?: string | null) => {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-const formatReasonLabel = (type?: string, language?: string) => {
+const formatReasonLabel = (type?: string, language?: string, reportableType?: string) => {
   if (!type) return '';
+  const isJobReport = (reportableType || '').toLowerCase().includes('job');
   switch (type.toLowerCase()) {
     case 'harassment':
       return language === 'tl' ? 'Pang-aabuso o Harassment' : 'Harassment';
     case 'fake_account':
-      return language === 'tl' ? 'Pekeng Account' : 'Fake Account';
+      if (isJobReport) {
+        return language === 'tl' ? 'Panloloko o Pekeng Trabaho' : 'Fake / Scam Job';
+      }
+      return language === 'tl' ? 'Pekeng Account / Panloloko' : 'Fake Account / Scam';
     case 'inappropriate_job':
-      return language === 'tl' ? 'Hindi Angkop na Trabaho' : 'Inappropriate Job';
+      return isJobReport
+        ? language === 'tl'
+          ? 'Hindi Angkop na Nilalaman'
+          : 'Inappropriate Content'
+        : language === 'tl'
+          ? 'Hindi Angkop na Pag-uugali'
+          : 'Inappropriate Behavior';
     case 'flagged_content':
       return language === 'tl' ? 'Minarkahang Nilalaman' : 'Flagged Content';
     case 'other':
@@ -167,7 +177,7 @@ export const MyReportsScreen: React.FC = () => {
     const isExpanded = expandedReportId === item.id;
     const statusDetails = getStatusDetails(item.status);
     const targetInfo = getTargetTypeBadge(item.reportable_type);
-    const reasonLabel = formatReasonLabel(item.type, language);
+    const reasonLabel = formatReasonLabel(item.type, language, item.reportable_type);
 
     return (
       <View style={styles.card}>

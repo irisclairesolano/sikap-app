@@ -53,7 +53,16 @@ export const useDeleteJob = () => {
   });
 };
 
-export type MarkJobCompleteVariables = number | { jobId: number; applicationId?: number | null };
+export type EarlyCompletionReason = 'finished_early' | 'mutual_agreement' | 'terminated';
+
+export type MarkJobCompleteVariables =
+  | number
+  | {
+      jobId: number;
+      applicationId?: number | null;
+      earlyCompletionReason?: EarlyCompletionReason;
+      earlyCompletionNote?: string;
+    };
 
 export const useMarkJobComplete = () => {
   const queryClient = useQueryClient();
@@ -62,11 +71,22 @@ export const useMarkJobComplete = () => {
       const jobId = typeof variables === 'number' ? variables : variables.jobId;
       const applicationId =
         typeof variables === 'number' ? undefined : (variables.applicationId ?? undefined);
+      const earlyCompletionReason =
+        typeof variables === 'number' ? undefined : variables.earlyCompletionReason;
+      const earlyCompletionNote =
+        typeof variables === 'number' ? undefined : variables.earlyCompletionNote;
 
-      if (applicationId) {
+      const bodyPayload: Record<string, any> = {};
+      if (applicationId) bodyPayload.application_id = applicationId;
+      if (earlyCompletionReason) bodyPayload.early_completion_reason = earlyCompletionReason;
+      if (earlyCompletionNote && earlyCompletionNote.trim()) {
+        bodyPayload.early_completion_note = earlyCompletionNote.trim();
+      }
+
+      if (Object.keys(bodyPayload).length > 0) {
         return apiClient<{ message: string }>(`/jobs/${jobId}/complete`, {
           method: 'PATCH',
-          body: JSON.stringify({ application_id: applicationId }),
+          body: JSON.stringify(bodyPayload),
         });
       }
 

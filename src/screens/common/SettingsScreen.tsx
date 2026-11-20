@@ -293,16 +293,6 @@ const SettingRow = ({
           <Text style={[styles.settingRowTitle, isDestructive && { color: colors.error }]}>
             {title}
           </Text>
-          {hasBadge && (
-            <View
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: 3.5,
-                backgroundColor: '#EF4444',
-              }}
-            />
-          )}
         </View>
         {subtitle && (
           <Text

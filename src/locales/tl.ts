@@ -1255,7 +1255,7 @@ export const tl: Record<TranslationKey, string> = {
   my_apps_sort_newest: 'Pinakabago',
   my_apps_sort_pay: 'Sahod',
   my_apps_sort_oldest: 'Pinakauna',
-  my_apps_stage_applied: 'Nag-apply',
+  my_apps_stage_applied: 'Applied',
   my_apps_stage_shortlisted: 'Shortlisted',
   my_apps_stage_hired: 'Tinanggap',
   my_apps_stage_Offer_Received: 'May Alok na Trabaho',
@@ -1278,7 +1278,7 @@ export const tl: Record<TranslationKey, string> = {
   saved_jobs_browse_btn: 'Maghanap ng Trabaho',
 
   // 5-Stage Stepper
-  stepper_applied: 'Nag-apply',
+  stepper_applied: 'Applied',
   stepper_shortlisted: 'Shortlist',
   stepper_offer: 'Alok',
   stepper_hired: 'Tanggap',
@@ -1384,7 +1384,7 @@ export const tl: Record<TranslationKey, string> = {
   status_badge_completed: 'Natapos',
   status_badge_cancelled: 'Na-cancel',
   pipeline_section_title: 'Hiring Pipeline',
-  pipeline_stage_applied: 'Nag-apply',
+  pipeline_stage_applied: 'Applied',
   pipeline_stage_shortlist: 'Shortlist',
   pipeline_stage_offer: 'Offer',
   pipeline_stage_hired: 'Na-hire',

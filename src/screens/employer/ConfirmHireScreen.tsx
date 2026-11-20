@@ -338,7 +338,7 @@ const ConfirmHireScreen: React.FC = () => {
                   <Text style={styles.nextTextBold}>
                     {applicantName.split(' ')[0]} has 24 hours to respond.
                   </Text>{' '}
-                  They will get an SMS reminder.
+                  They will get an in-app reminder.
                 </Text>
               </View>
               <View style={styles.nextItem}>

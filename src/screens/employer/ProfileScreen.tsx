@@ -370,10 +370,7 @@ export const ProfileScreen: React.FC = () => {
             {hasReportsBadge && <View style={styles.cardRedDot} />}
           </View>
           <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={styles.supportTitle}>{t('my_reports') || 'My Reports'}</Text>
-              {hasReportsBadge && <View style={styles.titleRedDot} />}
-            </View>
+            <Text style={styles.supportTitle}>{t('my_reports') || 'My Reports'}</Text>
             <Text style={styles.supportSubtitle}>
               {t('my_reports_desc') || 'View submitted reports and admin responses'}
             </Text>

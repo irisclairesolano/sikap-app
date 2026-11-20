@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   tabBtnActive: {
-    backgroundColor: colors.peach,
+    backgroundColor: colors.primaryTint,
     borderWidth: 1,
     borderColor: colors.primary,
   },
@@ -599,12 +599,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: colors.peach,
+    backgroundColor: colors.primaryTint,
     padding: 12,
     borderRadius: 12,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'rgba(232, 93, 117, 0.2)',
+    borderColor: 'rgba(13, 27, 61, 0.15)',
   },
   noticeText: {
     flex: 1,

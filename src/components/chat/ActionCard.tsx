@@ -11,14 +11,14 @@ import { Message } from '../../types';
 import { colors, fonts } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { apiClient } from '../../api/client';
+import { apiClient, ApiClientError } from '../../api/client';
 import { applicationsApi } from '../../api/applications';
 import { messagesApi } from '../../api/messages';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAlert } from '../../contexts/AlertContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useConfirmHire } from '../../hooks/useJobApplications';
-import { useMarkJobComplete } from '../../hooks/useJobs';
+import { EarlyCompletionReason, useMarkJobComplete } from '../../hooks/useJobs';
 import { useAcceptOffer, useRejectOffer, useFlagOffline } from '../../hooks/useApply';
 import { triggerHaptic } from '../../utils/haptics';
 
@@ -1410,6 +1410,62 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       setOptimisticState(null);
                       queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
                       queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+                      if (
+                        err instanceof ApiClientError &&
+                        err.metadata?.code === 'early_completion_reason_required'
+                      ) {
+                        const submitWithReason = (reason: EarlyCompletionReason) => {
+                          triggerHaptic('success');
+                          applyOptimisticCardUpdate({
+                            cardResolved: true,
+                            applicationStatus: 'completed',
+                          });
+                          markJobCompleteMutation.mutate(
+                            {
+                              jobId: targetJobId,
+                              applicationId: targetAppId || undefined,
+                              earlyCompletionReason: reason,
+                            },
+                            {
+                              onSuccess: () => {
+                                showAlert(
+                                  'Job Completed',
+                                  'The job has been marked as complete. You can now submit your review.',
+                                );
+                                onActionComplete();
+                              },
+                              onError: (err2: any) => {
+                                setOptimisticState(null);
+                                showAlert(
+                                  'Action Failed',
+                                  err2.message || 'Unable to mark job complete.',
+                                );
+                              },
+                            },
+                          );
+                        };
+                        showAlert(
+                          'Ending Multi-Day Job Early',
+                          err.message || 'Please select a reason for ending this job early.',
+                          [
+                            {
+                              text: 'Work finished ahead of schedule',
+                              onPress: () => submitWithReason('finished_early'),
+                            },
+                            {
+                              text: 'Mutual agreement to end early',
+                              onPress: () => submitWithReason('mutual_agreement'),
+                            },
+                            {
+                              text: 'Ended early / Terminated',
+                              style: 'destructive',
+                              onPress: () => submitWithReason('terminated'),
+                            },
+                            { text: 'Cancel', style: 'cancel' },
+                          ],
+                        );
+                        return;
+                      }
                       showAlert('Action Failed', err.message || 'Unable to mark job complete.');
                     },
                   });
@@ -1597,6 +1653,59 @@ const ActionCard: React.FC<ActionCardProps> = ({
                       setOptimisticState(null);
                       queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
                       queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+                      if (
+                        err instanceof ApiClientError &&
+                        err.metadata?.code === 'early_completion_reason_required'
+                      ) {
+                        const submitWithReason = (reason: EarlyCompletionReason) => {
+                          triggerHaptic('success');
+                          applyOptimisticCardUpdate({
+                            cardResolved: true,
+                            applicationStatus: 'completed',
+                          });
+                          markJobCompleteMutation.mutate(
+                            {
+                              jobId: targetJobId,
+                              applicationId: targetAppId || undefined,
+                              earlyCompletionReason: reason,
+                            },
+                            {
+                              onSuccess: () => {
+                                showAlert(t('job_completed_title'), t('job_completed_review_msg'));
+                                onActionComplete();
+                              },
+                              onError: (err2: any) => {
+                                setOptimisticState(null);
+                                showAlert(
+                                  t('action_failed'),
+                                  err2.message || t('mark_job_complete_error'),
+                                );
+                              },
+                            },
+                          );
+                        };
+                        showAlert(
+                          'Ending Multi-Day Job Early',
+                          err.message || 'Please select a reason for ending this job early.',
+                          [
+                            {
+                              text: 'Work finished ahead of schedule',
+                              onPress: () => submitWithReason('finished_early'),
+                            },
+                            {
+                              text: 'Mutual agreement to end early',
+                              onPress: () => submitWithReason('mutual_agreement'),
+                            },
+                            {
+                              text: 'Ended early / Terminated',
+                              style: 'destructive',
+                              onPress: () => submitWithReason('terminated'),
+                            },
+                            { text: 'Cancel', style: 'cancel' },
+                          ],
+                        );
+                        return;
+                      }
                       showAlert(t('action_failed'), err.message || t('mark_job_complete_error'));
                     },
                   });

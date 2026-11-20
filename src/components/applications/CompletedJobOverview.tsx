@@ -1202,6 +1202,7 @@ const styles = StyleSheet.create({
   },
   ratingTitleRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 8,
@@ -1210,9 +1211,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 13,
     color: colors.ink,
+    flexShrink: 1,
   },
   ratingStarsBadge: {
     flexDirection: 'row',
+    flexShrink: 0,
     alignItems: 'center',
     gap: 3,
     backgroundColor: '#FEF3C7',
